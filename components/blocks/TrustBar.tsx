@@ -50,7 +50,7 @@ export default function TrustBar({
   const isExternalAvatar = testimonial.avatar.startsWith("http");
 
   return (
-    <section id="testimonials" className="bg-background">
+    <section id="testimonials" className="bg-background reveal">
       {/* Trusted By strip — subtle, matches light theme */}
       <div className="bg-muted/50 border-y border-border py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">

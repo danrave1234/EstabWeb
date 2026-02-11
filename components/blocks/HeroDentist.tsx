@@ -32,7 +32,7 @@ export default function HeroDentist({
     : subtitle.replace(/\[City Name\]/i, "").replace(/\s+/g, " ").trim();
 
   return (
-    <section className="relative bg-background overflow-hidden">
+    <section className="relative bg-background overflow-hidden reveal">
       <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/5 -skew-x-12 translate-x-1/2" />
       <div className="container mx-auto px-4 py-10 md:py-24 lg:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-0 items-center">

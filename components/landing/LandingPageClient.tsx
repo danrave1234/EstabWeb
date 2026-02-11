@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { ArrowRight, Zap, Smartphone, Shield, Layout, Globe, CheckCircle2 } from 'lucide-react'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { User as SupabaseUser } from '@supabase/supabase-js'
 import MainHeader from '@/components/shared/MainHeader'
 
@@ -35,7 +35,7 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
+        <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden reveal">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,var(--primary)/10,transparent)]" />
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center space-y-8">
@@ -70,7 +70,7 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
         </section>
 
         {/* Stats/Social Proof */}
-        <section className="py-12 border-y border-border bg-muted/30">
+        <section className="py-12 border-y border-border bg-muted/30 reveal">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {[
@@ -89,7 +89,7 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
         </section>
 
         {/* Features Grid */}
-        <section id="features" className="py-24 bg-background">
+        <section id="features" className="py-24 bg-background reveal">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16 space-y-4">
               <h2 className="text-3xl lg:text-5xl font-bold tracking-tight">Built for <span className="text-primary">Performance.</span></h2>
@@ -141,7 +141,7 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
         </section>
 
         {/* CTA Section */}
-        <section className="py-24">
+        <section className="py-24 reveal">
           <div className="container mx-auto px-4">
             <div className="bg-primary rounded-3xl p-12 lg:p-20 text-center text-primary-foreground relative overflow-hidden shadow-2xl shadow-primary/40">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />

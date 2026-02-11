@@ -22,7 +22,7 @@ export default function HeroClinic({
   trustSignals,
 }: HeroClinicProps) {
   return (
-    <section className="relative overflow-hidden bg-background">
+    <section className="relative overflow-hidden bg-background reveal">
       {/* Decorative patterns */}
       <div className="absolute top-0 right-0 w-[40%] h-full bg-primary/5 -skew-x-12 translate-x-1/4 z-0" />
       <div className="absolute top-1/4 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 z-0" />

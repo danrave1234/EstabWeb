@@ -1,13 +1,25 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
+
+const processChangeRequestSchema = z.object({
+  requestId: z.string().uuid(),
+  action: z.enum(['approved', 'rejected']),
+  adminNote: z.string().optional(),
+})
 
 export async function processChangeRequest(
   requestId: string,
   action: 'approved' | 'rejected',
   adminNote?: string
 ) {
+  const validated = processChangeRequestSchema.safeParse({ requestId, action, adminNote })
+  if (!validated.success) {
+    return { error: 'Invalid input' }
+  }
+
   const supabase = await createClient()
 
   // 1. Get the request data

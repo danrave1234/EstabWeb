@@ -1,32 +1,7 @@
 "use client";
 
-import {
-  Scale,
-  FileText,
-  ShieldCheck,
-  Gavel,
-  Wrench,
-  Clock,
-  Shield,
-  Home,
-  Car,
-  Zap,
-  ChevronRight,
-  type LucideIcon,
-} from "lucide-react";
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  Scale,
-  FileText,
-  ShieldCheck,
-  Gavel,
-  Wrench,
-  Clock,
-  Shield,
-  Home,
-  Car,
-  Zap,
-};
+import { ChevronRight } from "lucide-react";
+import DynamicIcon from "@/components/shared/DynamicIcon";
 
 export type FeatureItem = {
   title: string;
@@ -46,7 +21,7 @@ export default function FeaturesGrid({
   features,
 }: FeaturesGridProps) {
   return (
-    <section id="services" className="py-10 sm:py-16 px-4 sm:px-6 lg:px-8 bg-muted/30">
+    <section id="services" className="py-10 sm:py-16 px-4 sm:px-6 lg:px-8 bg-muted/30 reveal">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4">{title}</h2>
@@ -58,7 +33,6 @@ export default function FeaturesGrid({
         </div>
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {features.map((item, index) => {
-            const IconComponent = ICON_MAP[item.icon] ?? FileText;
             return (
               <div
                 key={index}
@@ -66,7 +40,7 @@ export default function FeaturesGrid({
               >
                 <div className="mb-3 sm:mb-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
-                    <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" strokeWidth={2} />
+                    <DynamicIcon name={item.icon} className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" strokeWidth={2} />
                   </div>
                 </div>
                 <h3 className="font-serif font-bold text-lg sm:text-xl text-foreground mb-1.5 sm:mb-2 leading-tight">

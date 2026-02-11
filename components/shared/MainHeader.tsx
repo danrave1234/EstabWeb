@@ -14,7 +14,7 @@ import {
   Layout,
   Settings
 } from "lucide-react"
-import { createClient } from "@/utils/supabase/client"
+import { createClient } from "@/lib/supabase/client"
 import { User as SupabaseUser } from "@supabase/supabase-js"
 
 interface MainHeaderProps {
@@ -68,6 +68,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
     ? (variant === "admin" 
         ? [
             { name: "Requests", href: "/admin/dashboard", icon: LayoutDashboard },
+            { name: "Clients", href: "/admin/clients", icon: Globe },
             { name: "Template", href: "/admin/template", icon: Layout },
           ] 
         : [])
@@ -161,14 +162,24 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
                       </div>
                       <div className="p-2">
                         {variant === "admin" ? (
-                          <Link
-                            href="/admin/dashboard"
-                            className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all"
-                            onClick={() => setUserMenuOpen(false)}
-                          >
-                            <LayoutDashboard className="w-4 h-4 text-primary" />
-                            Admin Dashboard
-                          </Link>
+                          <>
+                            <Link
+                              href="/admin/dashboard"
+                              className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all"
+                              onClick={() => setUserMenuOpen(false)}
+                            >
+                              <LayoutDashboard className="w-4 h-4 text-primary" />
+                              Admin Dashboard
+                            </Link>
+                            <Link
+                              href="/admin/clients"
+                              className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all"
+                              onClick={() => setUserMenuOpen(false)}
+                            >
+                              <Globe className="w-4 h-4 text-primary" />
+                              Clients
+                            </Link>
+                          </>
                         ) : (
                           <Link
                             href="/dashboard"

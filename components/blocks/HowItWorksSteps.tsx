@@ -1,16 +1,6 @@
 "use client";
 
-import { Calendar, ClipboardCheck, ShieldCheck } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  Calendar,
-  ClipboardCheck,
-  ShieldCheck,
-  Book: Calendar,
-  Wrench: ClipboardCheck,
-  Check: ShieldCheck,
-};
+import DynamicIcon from "@/components/shared/DynamicIcon";
 
 export type StepItem = {
   number: string;
@@ -53,7 +43,7 @@ export default function HowItWorksSteps({
 }: HowItWorksStepsProps) {
   const stepList = Array.isArray(steps) && steps.length > 0 ? steps : DEFAULT_STEPS;
   return (
-    <section id="how-it-works" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
+    <section id="how-it-works" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-muted/30 reveal">
       <div className="max-w-6xl mx-auto">
         {(title || subtitle) && (
           <div className="text-center mb-14">
@@ -71,7 +61,6 @@ export default function HowItWorksSteps({
         )}
         <div className="grid grid-cols-3 gap-4 sm:gap-8">
           {stepList.map((step, index) => {
-            const Icon = ICON_MAP[step.icon] ?? Calendar;
             return (
               <div
                 key={index}
@@ -81,7 +70,7 @@ export default function HowItWorksSteps({
                   {step.number}
                 </div>
                 <div className="mb-2 sm:mb-3">
-                  <Icon className="w-5 h-5 sm:w-8 sm:h-8 text-primary mx-auto" />
+                  <DynamicIcon name={step.icon} className="w-5 h-5 sm:w-8 sm:h-8 text-primary mx-auto" />
                 </div>
                 <h3 className="text-xs sm:text-base lg:text-xl font-bold text-foreground mb-1 sm:mb-2 leading-tight">
                   {step.title}

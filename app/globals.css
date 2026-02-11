@@ -208,6 +208,96 @@
   --muted: #2c3e50;
 }
 
+/* Medical & Health — Clinical Gold (dark elegant, healthcare) */
+[data-theme="clinical-gold"] {
+  --font-sans: var(--font-source-sans-3), system-ui, sans-serif;
+  --font-serif: var(--font-playfair-display), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #1f2937; /* slate-800 */
+  --primary: #b8892a; /* gold */
+  --primary-foreground: #ffffff;
+  --accent: #eab308; /* amber-500 */
+  --muted: #f5f5f4;
+  --muted-foreground: #6b7280;
+  --border: rgba(234, 179, 8, 0.15);
+}
+[data-theme="clinical-gold"][data-mode="dark"] {
+  --background: #0d0f14; /* near-black */
+  --foreground: #e5e7eb; /* gray-200 */
+  --primary: #f0c674; /* warm gold */
+  --primary-foreground: #0d0f14;
+  --accent: #eab308;
+  --muted: #151922; /* dark panel */
+  --muted-foreground: #9ca3af;
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+/* Red Theme — Crimson (Bold, energetic, urgent) */
+[data-theme="red-crimson"] {
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-serif: var(--font-libre-baskerville), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --primary: #d63031;
+  --primary-foreground: #ffffff;
+  --accent: #2d3436;
+  --muted: #fef1f1;
+  --muted-foreground: #636e72;
+  --border: rgba(214, 48, 49, 0.15);
+}
+[data-theme="red-crimson"][data-mode="dark"] {
+  --background: #1a0505;
+  --foreground: #fef1f1;
+  --primary: #ff4757;
+  --muted: #2d0a0a;
+  --muted-foreground: #a4b0be;
+  --border: rgba(255, 71, 87, 0.1);
+}
+
+/* Cyan Theme — Ocean (Fresh, modern, tech) */
+[data-theme="cyan-ocean"] {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: var(--font-source-serif-4), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --primary: #00a8ff;
+  --primary-foreground: #ffffff;
+  --accent: #0097e6;
+  --muted: #f0faff;
+  --muted-foreground: #475569;
+  --border: rgba(0, 168, 255, 0.15);
+}
+[data-theme="cyan-ocean"][data-mode="dark"] {
+  --background: #000d1a;
+  --foreground: #f0faff;
+  --primary: #00d2ff;
+  --muted: #001a33;
+  --muted-foreground: #94a3b8;
+  --border: rgba(0, 210, 255, 0.1);
+}
+
+/* Orange Theme — Amber (Warm, friendly, approachable) */
+[data-theme="orange-amber"] {
+  --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+  --font-serif: var(--font-lora), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #2d3436;
+  --primary: #f39c12;
+  --primary-foreground: #ffffff;
+  --accent: #e67e22;
+  --muted: #fff9f0;
+  --muted-foreground: #5c6b73;
+  --border: rgba(243, 156, 18, 0.15);
+}
+[data-theme="orange-amber"][data-mode="dark"] {
+  --background: #1a0f00;
+  --foreground: #fff9f0;
+  --primary: #f0932b;
+  --muted: #2d1a00;
+  --muted-foreground: #94a3b8;
+  --border: rgba(240, 147, 43, 0.1);
+}
+
 /* Tech & SaaS — The Nebula (AI, futuristic, dark mode) */
 [data-theme="nebula"] {
   color-scheme: dark;
@@ -297,6 +387,514 @@
   --border: rgba(255, 255, 255, 0.2);
 }
 
+/* New Requested Color Themes */
+/* 7. Dark Pink and White */
+[data-theme="dark-pink-white"] {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: var(--font-source-serif-4), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --primary: #b00063; /* dark pink */
+  --primary-foreground: #ffffff;
+  --accent: #ff4d94; /* hot pink */
+  --muted: #fff0f5; /* lavenderblush */
+  --muted-foreground: #6b7280;
+  --border: rgba(176, 0, 99, 0.15);
+}
+[data-theme="dark-pink-white"][data-mode="dark"] {
+  --background: #12060c;
+  --foreground: #ffe4ec;
+  --primary: #ff4d94;
+  --primary-foreground: #12060c;
+  --muted: #2a0b17;
+  --muted-foreground: #f5c2d7;
+  --border: rgba(255, 77, 148, 0.12);
+}
+
+/* 8. Blue and Mint */
+[data-theme="blue-mint"] {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: var(--font-lora), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --primary: #2563eb; /* blue */
+  --primary-foreground: #ffffff;
+  --accent: #2dd4bf; /* mint */
+  --muted: #f0fdf9;
+  --muted-foreground: #475569;
+  --border: rgba(37, 99, 235, 0.15);
+}
+[data-theme="blue-mint"][data-mode="dark"] {
+  --background: #0b1220;
+  --foreground: #e2f7f3;
+  --primary: #60a5fa;
+  --primary-foreground: #0b1220;
+  --accent: #2dd4bf;
+  --muted: #0b1f2a;
+  --muted-foreground: #a0aec0;
+  --border: rgba(96, 165, 250, 0.12);
+}
+
+/* 9. Red and Black */
+[data-theme="red-black"] {
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-serif: var(--font-libre-baskerville), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #111111;
+  --primary: #e11d48; /* red */
+  --primary-foreground: #ffffff;
+  --accent: #111111; /* black */
+  --muted: #fff1f2;
+  --muted-foreground: #4b5563;
+  --border: rgba(225, 29, 72, 0.15);
+}
+[data-theme="red-black"][data-mode="dark"] {
+  --background: #0a0a0a;
+  --foreground: #fef2f2;
+  --primary: #ff375f;
+  --primary-foreground: #0a0a0a;
+  --muted: #1a1a1a;
+  --muted-foreground: #e5e7eb;
+  --border: rgba(255, 55, 95, 0.12);
+}
+
+/* 10. Dark Green, Ivory, and Yellow */
+[data-theme="dark-green-ivory-yellow"] {
+  --font-sans: var(--font-open-sans), system-ui, sans-serif;
+  --font-serif: var(--font-lora), Georgia, serif;
+  --background: #fffff0; /* ivory */
+  --foreground: #1f2937;
+  --primary: #14532d; /* dark green */
+  --primary-foreground: #ffffff;
+  --accent: #eab308; /* yellow */
+  --muted: #f1f5e8;
+  --muted-foreground: #475569;
+  --border: rgba(20, 83, 45, 0.18);
+}
+[data-theme="dark-green-ivory-yellow"][data-mode="dark"] {
+  --background: #0b1b11;
+  --foreground: #e5f3df;
+  --primary: #22c55e;
+  --primary-foreground: #0b1b11;
+  --muted: #112317;
+  --muted-foreground: #b7cbb7;
+  --border: rgba(34, 197, 94, 0.12);
+}
+
+/* 11. Bright Green and Hot Pink */
+[data-theme="bright-green-hot-pink"] {
+  --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+  --font-serif: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+  --background: #ffffff;
+  --foreground: #111827;
+  --primary: #10b981; /* bright green */
+  --primary-foreground: #ffffff;
+  --accent: #ff1493; /* hot pink */
+  --muted: #f0fff7;
+  --muted-foreground: #4b5563;
+  --border: rgba(16, 185, 129, 0.18);
+}
+[data-theme="bright-green-hot-pink"][data-mode="dark"] {
+  --background: #0f172a;
+  --foreground: #e0ffe9;
+  --primary: #34d399;
+  --primary-foreground: #0f172a;
+  --muted: #0b1d16;
+  --muted-foreground: #b5f5d6;
+  --border: rgba(52, 211, 153, 0.12);
+}
+
+/* 12. Dark Grey and Yellow-Green */
+[data-theme="dark-grey-yellowgreen"] {
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
+  --font-serif: var(--font-archivo), system-ui, sans-serif;
+  --background: #ffffff;
+  --foreground: #1f2937; /* dark grey */
+  --primary: #1f2937;
+  --primary-foreground: #ffffff;
+  --accent: #9acd32; /* yellow-green */
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+  --border: rgba(31, 41, 55, 0.12);
+}
+[data-theme="dark-grey-yellowgreen"][data-mode="dark"] {
+  --background: #0b0f15;
+  --foreground: #e5e7eb;
+  --primary: #9acd32;
+  --primary-foreground: #0b0f15;
+  --muted: #141a22;
+  --muted-foreground: #cbd5e1;
+  --border: rgba(154, 205, 50, 0.12);
+}
+
+/* 13. Blue Shades and White */
+[data-theme="blue-shades-white"] {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: var(--font-geist-sans), system-ui, sans-serif;
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --primary: #1d4ed8; /* indigo/blue */
+  --primary-foreground: #ffffff;
+  --accent: #60a5fa; /* sky blue */
+  --muted: #eef6ff;
+  --muted-foreground: #475569;
+  --border: rgba(29, 78, 216, 0.15);
+}
+[data-theme="blue-shades-white"][data-mode="dark"] {
+  --background: #0b1220;
+  --foreground: #e5f0ff;
+  --primary: #60a5fa;
+  --primary-foreground: #0b1220;
+  --muted: #0f1b2d;
+  --muted-foreground: #94a3b8;
+  --border: rgba(96, 165, 250, 0.12);
+}
+
+/* 14. White and Lime Green */
+[data-theme="white-lime"] {
+  --font-sans: var(--font-nunito), system-ui, sans-serif;
+  --font-serif: var(--font-nunito), system-ui, sans-serif;
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --primary: #84cc16; /* lime */
+  --primary-foreground: #0a0a0a;
+  --accent: #a3e635;
+  --muted: #f7fee7;
+  --muted-foreground: #4b5563;
+  --border: rgba(132, 204, 22, 0.15);
+}
+[data-theme="white-lime"][data-mode="dark"] {
+  --background: #0b1305;
+  --foreground: #ecfccb;
+  --primary: #a3e635;
+  --primary-foreground: #0b1305;
+  --muted: #0e1a07;
+  --muted-foreground: #c4e7a0;
+  --border: rgba(163, 230, 53, 0.12);
+}
+
+/* 15. Beige and Dark Grey */
+[data-theme="beige-dark-grey"] {
+  --font-sans: var(--font-source-sans-3), system-ui, sans-serif;
+  --font-serif: var(--font-playfair-display), Georgia, serif;
+  --background: #f5f5dc; /* beige */
+  --foreground: #2d3436; /* dark grey */
+  --primary: #2d3436;
+  --primary-foreground: #ffffff;
+  --accent: #d2b48c; /* tan */
+  --muted: #f1efe3;
+  --muted-foreground: #5c6b73;
+  --border: rgba(45, 52, 54, 0.12);
+}
+[data-theme="beige-dark-grey"][data-mode="dark"] {
+  --background: #1e1e18;
+  --foreground: #f1efe3;
+  --primary: #d2b48c;
+  --primary-foreground: #1e1e18;
+  --muted: #24241d;
+  --muted-foreground: #c8c6b8;
+  --border: rgba(210, 180, 140, 0.12);
+}
+
+/* 16. Pastel Purple and Neutral Accents */
+[data-theme="pastel-purple-neutral"] {
+  --font-sans: var(--font-nunito), system-ui, sans-serif;
+  --font-serif: var(--font-cormorant-garamond), Georgia, serif;
+  --background: #fdfbff;
+  --foreground: #2d2640;
+  --primary: #c4b5fd; /* pastel purple */
+  --primary-foreground: #1a1625;
+  --accent: #a3a3a3; /* neutral */
+  --muted: #f3efff;
+  --muted-foreground: #5f5a7a;
+  --border: rgba(196, 181, 253, 0.18);
+}
+[data-theme="pastel-purple-neutral"][data-mode="dark"] {
+  --background: #1a1625;
+  --foreground: #f3efff;
+  --primary: #a78bfa;
+  --primary-foreground: #1a1625;
+  --muted: #2d2640;
+  --muted-foreground: #c7c1de;
+  --border: rgba(167, 139, 250, 0.12);
+}
+
+/* 17. Navy Blue and Electric Blue */
+[data-theme="navy-electric-blue"] {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: var(--font-geist-sans), system-ui, sans-serif;
+  --background: #ffffff;
+  --foreground: #0a1a44; /* navy */
+  --primary: #0a1a44;
+  --primary-foreground: #ffffff;
+  --accent: #00c2ff; /* electric blue */
+  --muted: #eef2ff;
+  --muted-foreground: #475569;
+  --border: rgba(10, 26, 68, 0.15);
+}
+[data-theme="navy-electric-blue"][data-mode="dark"] {
+  --background: #050b1a;
+  --foreground: #e6f7ff;
+  --primary: #00c2ff;
+  --primary-foreground: #050b1a;
+  --muted: #0c142b;
+  --muted-foreground: #b3dfff;
+  --border: rgba(0, 194, 255, 0.12);
+}
+
+/* 18. Color Gradient, White, and Dark Blue */
+[data-theme="gradient-white-dark-blue"] {
+  --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+  --font-serif: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+  --background: #ffffff;
+  --foreground: #0c2340; /* dark blue */
+  --primary: #0c2340;
+  --primary-foreground: #ffffff;
+  --accent: #3b82f6; /* blue */
+  --muted: #eef6ff;
+  --muted-foreground: #475569;
+  --border: rgba(12, 35, 64, 0.15);
+}
+[data-theme="gradient-white-dark-blue"][data-mode="dark"] {
+  --background: #0a1526;
+  --foreground: #e5f0ff;
+  --primary: #3b82f6;
+  --primary-foreground: #0a1526;
+  --muted: #0e1c33;
+  --muted-foreground: #a7b7d9;
+  --border: rgba(59, 130, 246, 0.12);
+}
+
+/* 19. White and Blue-Grey */
+[data-theme="white-blue-grey"] {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: var(--font-source-serif-4), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --primary: #64748b; /* blue-grey */
+  --primary-foreground: #ffffff;
+  --accent: #94a3b8;
+  --muted: #f1f5f9;
+  --muted-foreground: #475569;
+  --border: rgba(100, 116, 139, 0.15);
+}
+[data-theme="white-blue-grey"][data-mode="dark"] {
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --primary: #94a3b8;
+  --primary-foreground: #0f172a;
+  --muted: #1e293b;
+  --muted-foreground: #cbd5e1;
+  --border: rgba(148, 163, 184, 0.12);
+}
+
+/* 20. Bright Red and White */
+[data-theme="bright-red-white"] {
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-serif: var(--font-libre-baskerville), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --primary: #ef4444; /* bright red */
+  --primary-foreground: #ffffff;
+  --accent: #fecaca;
+  --muted: #fff1f2;
+  --muted-foreground: #6b7280;
+  --border: rgba(239, 68, 68, 0.15);
+}
+[data-theme="bright-red-white"][data-mode="dark"] {
+  --background: #1a0505;
+  --foreground: #ffe4e6;
+  --primary: #f87171;
+  --primary-foreground: #1a0505;
+  --muted: #2d0a0a;
+  --muted-foreground: #fecaca;
+  --border: rgba(248, 113, 113, 0.12);
+}
+
+/* 21. Classic Blue, Turquoise, and Gold */
+[data-theme="classic-blue-turquoise-gold"] {
+  --font-sans: var(--font-source-sans-3), system-ui, sans-serif;
+  --font-serif: var(--font-playfair-display), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #0f4c81; /* classic blue */
+  --primary: #0f4c81;
+  --primary-foreground: #ffffff;
+  --accent: #40e0d0; /* turquoise */
+  --muted: #f0f7fb;
+  --muted-foreground: #476b86;
+  --border: rgba(15, 76, 129, 0.15);
+}
+[data-theme="classic-blue-turquoise-gold"][data-mode="dark"] {
+  --background: #0a2033;
+  --foreground: #e6f7f3;
+  --primary: #40e0d0;
+  --primary-foreground: #0a2033;
+  --muted: #0f2b44;
+  --muted-foreground: #c5a059; /* gold hint */
+  --border: rgba(64, 224, 208, 0.12);
+}
+
+/* 23. Dark Royal Blue and Gold */
+[data-theme="dark-royal-blue-gold"] {
+  --font-sans: var(--font-source-sans-3), system-ui, sans-serif;
+  --font-serif: var(--font-playfair-display), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #0b1a4a; /* dark royal */
+  --primary: #0b1a4a;
+  --primary-foreground: #ffffff;
+  --accent: #d4af37; /* gold */
+  --muted: #eef2ff;
+  --muted-foreground: #475569;
+  --border: rgba(11, 26, 74, 0.15);
+}
+[data-theme="dark-royal-blue-gold"][data-mode="dark"] {
+  --background: #070f29;
+  --foreground: #fff7dc;
+  --primary: #d4af37;
+  --primary-foreground: #070f29;
+  --muted: #0e1a3a;
+  --muted-foreground: #f3e7b3;
+  --border: rgba(212, 175, 55, 0.12);
+}
+
+/* 24. White and Purple */
+[data-theme="white-purple"] {
+  --font-sans: var(--font-nunito), system-ui, sans-serif;
+  --font-serif: var(--font-cormorant-garamond), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #2d2640;
+  --primary: #8b5cf6; /* purple */
+  --primary-foreground: #ffffff;
+  --accent: #a78bfa;
+  --muted: #f5f3ff;
+  --muted-foreground: #5b5676;
+  --border: rgba(139, 92, 246, 0.15);
+}
+[data-theme="white-purple"][data-mode="dark"] {
+  --background: #1a1625;
+  --foreground: #eee9ff;
+  --primary: #a78bfa;
+  --primary-foreground: #1a1625;
+  --muted: #2d2640;
+  --muted-foreground: #c0b5f5;
+  --border: rgba(167, 139, 250, 0.12);
+}
+
+/* 25. Blue Shades, White, and Red-Violet */
+[data-theme="blue-shades-white-red-violet"] {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: var(--font-source-serif-4), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --primary: #2563eb; /* blue */
+  --primary-foreground: #ffffff;
+  --accent: #c71585; /* red-violet */
+  --muted: #eef6ff;
+  --muted-foreground: #475569;
+  --border: rgba(37, 99, 235, 0.15);
+}
+[data-theme="blue-shades-white-red-violet"][data-mode="dark"] {
+  --background: #0b1220;
+  --foreground: #e5f0ff;
+  --primary: #60a5fa;
+  --primary-foreground: #0b1220;
+  --muted: #0f1b2d;
+  --muted-foreground: #f2a2c9;
+  --border: rgba(96, 165, 250, 0.12);
+}
+
+/* 26. Light and Reddish Orange */
+[data-theme="light-reddish-orange"] {
+  --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+  --font-serif: var(--font-lora), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #2d3436;
+  --primary: #ff8c42; /* light orange */
+  --primary-foreground: #0a0a0a;
+  --accent: #ff4500; /* reddish orange */
+  --muted: #fff6ed;
+  --muted-foreground: #5c6b73;
+  --border: rgba(255, 140, 66, 0.15);
+}
+[data-theme="light-reddish-orange"][data-mode="dark"] {
+  --background: #1a0f00;
+  --foreground: #fff0e6;
+  --primary: #ff7a1a;
+  --primary-foreground: #1a0f00;
+  --muted: #2d1a00;
+  --muted-foreground: #ffd6bf;
+  --border: rgba(255, 122, 26, 0.12);
+}
+
+/* 27. White, Purple, and Orange */
+[data-theme="white-purple-orange"] {
+  --font-sans: var(--font-nunito), system-ui, sans-serif;
+  --font-serif: var(--font-nunito), system-ui, sans-serif;
+  --background: #ffffff;
+  --foreground: #2d2640;
+  --primary: #9333ea; /* purple */
+  --primary-foreground: #ffffff;
+  --accent: #fb923c; /* orange */
+  --muted: #f5f3ff;
+  --muted-foreground: #5b5676;
+  --border: rgba(147, 51, 234, 0.15);
+}
+[data-theme="white-purple-orange"][data-mode="dark"] {
+  --background: #1a1625;
+  --foreground: #f3efff;
+  --primary: #a78bfa;
+  --primary-foreground: #1a1625;
+  --muted: #2d2640;
+  --muted-foreground: #ffd0a6;
+  --border: rgba(251, 146, 60, 0.12);
+}
+
+/* 29. Deep Purple, Orange, Red, and Pink */
+[data-theme="deep-purple-orange-red-pink"] {
+  --font-sans: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-serif: var(--font-instrument-serif), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #111827;
+  --primary: #6d28d9; /* deep purple */
+  --primary-foreground: #ffffff;
+  --accent: #f97316; /* orange (others represented in UI swatch) */
+  --muted: #f5f3ff;
+  --muted-foreground: #6b7280;
+  --border: rgba(109, 40, 217, 0.15);
+}
+[data-theme="deep-purple-orange-red-pink"][data-mode="dark"] {
+  --background: #0f1221;
+  --foreground: #ede9fe;
+  --primary: #a78bfa;
+  --primary-foreground: #0f1221;
+  --muted: #1b1630;
+  --muted-foreground: #fecaca;
+  --border: rgba(167, 139, 250, 0.12);
+}
+
+/* 30. Brown and Beige */
+[data-theme="brown-beige"] {
+  --font-sans: var(--font-source-sans-3), system-ui, sans-serif;
+  --font-serif: var(--font-playfair-display), Georgia, serif;
+  --background: #f5f5dc; /* beige */
+  --foreground: #2d2d2d;
+  --primary: #8b5e3c; /* brown */
+  --primary-foreground: #ffffff;
+  --accent: #d2b48c; /* tan */
+  --muted: #ece7d5;
+  --muted-foreground: #5c6b73;
+  --border: rgba(139, 94, 60, 0.18);
+}
+[data-theme="brown-beige"][data-mode="dark"] {
+  --background: #1e1c17;
+  --foreground: #f1efe3;
+  --primary: #d2b48c;
+  --primary-foreground: #1e1c17;
+  --muted: #232018;
+  --muted-foreground: #c8c6b8;
+  --border: rgba(210, 180, 140, 0.12);
+}
+
 /* Typography Styles — Placed here to override theme defaults */
 [data-typography="modern"] {
   --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif !important;
@@ -363,4 +961,44 @@ body {
   .btn-hover-effect {
     @apply transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg;
   }
+}
+
+
+/* Themed Scrollbars (match project theme variables) */
+/* Firefox */
+:root,
+body,
+.custom-scrollbar {
+  scrollbar-color: var(--primary) var(--muted);
+  scrollbar-width: thin;
+}
+
+/* WebKit-based (Chrome, Edge, Safari) */
+.custom-scrollbar::-webkit-scrollbar,
+body::-webkit-scrollbar,
+html::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+html::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+html::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+  border-radius: 9999px;
+  border: 2px solid var(--muted);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+html::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary);
+  /* Slight emphasis on hover */
+  box-shadow: inset 0 0 0 9999px color-mix(in oklab, var(--primary) 10%, transparent);
 }

@@ -21,7 +21,7 @@ export default function FAQTwoColumn({
   if (!items?.length) return null;
 
   return (
-    <section id="faq" className="py-8 sm:py-16 px-4 sm:px-6 lg:px-8 bg-background">
+    <section id="faq" className="py-8 sm:py-16 px-4 sm:px-6 lg:px-8 bg-background reveal">
       <div className="max-w-5xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
           <div className="lg:col-span-5 reveal">

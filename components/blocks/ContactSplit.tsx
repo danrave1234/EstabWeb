@@ -36,7 +36,7 @@ export default function ContactSplit({
   };
 
   return (
-    <section id="contact" className="bg-background">
+    <section id="contact" className="bg-background reveal">
       <div className="grid grid-cols-1 lg:grid-cols-2">
         {/* Contact Info Side */}
         <div className="bg-primary p-8 sm:p-16 lg:p-24 text-primary-foreground reveal">

@@ -24,7 +24,7 @@ export default function HeroBlock({
   const isExternalImage = backgroundImage.startsWith("http");
 
   return (
-    <section className="container mx-auto px-4 py-8 md:py-20 lg:py-24">
+    <section className="container mx-auto px-4 py-8 md:py-20 lg:py-24 reveal">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-8 lg:gap-12 items-center">
           <div className="lg:col-span-12 space-y-4 lg:space-y-8">
             <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight text-foreground order-1 lg:order-none lg:mb-0 leading-tight">

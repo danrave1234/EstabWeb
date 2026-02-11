@@ -30,7 +30,7 @@ export default function HeroChiropractor({
   const hasImage = backgroundImage?.startsWith("http");
 
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-background">
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-background reveal">
       {/* Background: video or image */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         {hasVideo ? (

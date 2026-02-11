@@ -28,7 +28,7 @@ export default function HeroPool({
   const isExternal = (url: string) => url?.startsWith("http");
 
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-background">
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-background reveal">
       {/* Background: Image with deep overlay */}
       <div className="absolute inset-0 z-0">
         {hasImage ? (

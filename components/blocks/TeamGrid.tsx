@@ -1,4 +1,4 @@
-"use client";
+import Image from "next/image";
 
 export type TeamMember = {
   imageUrl: string;
@@ -21,7 +21,7 @@ export default function TeamGrid({
   if (!members?.length) return null;
 
   return (
-    <section className="py-12 sm:py-24 px-4 sm:px-6 lg:px-8 bg-background">
+    <section className="py-12 sm:py-24 px-4 sm:px-6 lg:px-8 bg-background reveal">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16 reveal">
           <h2 className="text-3xl sm:text-5xl font-bold text-foreground mb-4 tracking-tight">
@@ -36,10 +36,12 @@ export default function TeamGrid({
           {members.map((member, index) => (
             <div key={index} className="group relative flex flex-col items-center">
               <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden mb-6 shadow-lg bg-muted">
-                <img
+                <Image
                   src={member.imageUrl}
                   alt={member.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
                   {member.bioUrl && (

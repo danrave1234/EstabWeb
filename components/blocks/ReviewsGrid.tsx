@@ -23,7 +23,7 @@ export default function ReviewsGrid({
   if (!testimonials?.length) return null;
 
   return (
-    <section id="reviews" className="py-12 sm:py-24 px-4 sm:px-6 lg:px-8 bg-muted/20">
+    <section id="reviews" className="py-12 sm:py-24 px-4 sm:px-6 lg:px-8 bg-muted/20 reveal">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16 reveal">
           <h2 className="text-3xl sm:text-5xl font-bold text-foreground mb-4 tracking-tight">

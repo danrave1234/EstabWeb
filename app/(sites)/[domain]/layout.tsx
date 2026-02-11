@@ -1,97 +1,103 @@
 import type { Metadata } from "next";
 import path from "path";
 import fs from "fs/promises";
-import {
-  Geist,
-  Geist_Mono,
-  Playfair_Display,
-  Source_Sans_3,
-  DM_Sans,
-  Libre_Baskerville,
-  Nunito,
-  Archivo,
-  Lora,
-  Source_Serif_4,
-  Cormorant_Garamond,
-  Open_Sans,
-  Space_Grotesk,
-  Plus_Jakarta_Sans,
-  Instrument_Serif,
-} from "next/font/google";
-import "@fortawesome/fontawesome-free/css/all.min.css";
-import "../../globals.css";
+import "@/app/globals.css";
+import { fontVariables } from "@/lib/fonts";
 import ScrollReveal from "@/components/shared/ScrollReveal";
 import { Toaster } from "sonner";
+import { createClient } from "@/lib/supabase/server";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-const playfair = Playfair_Display({ variable: "--font-playfair-display", subsets: ["latin"] });
-const sourceSans = Source_Sans_3({ variable: "--font-source-sans-3", subsets: ["latin"] });
-const dmSans = DM_Sans({ variable: "--font-dm-sans", subsets: ["latin"] });
-const libreBaskerville = Libre_Baskerville({ variable: "--font-libre-baskerville", weight: "400", subsets: ["latin"] });
-const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"] });
-const archivo = Archivo({ variable: "--font-archivo", subsets: ["latin"] });
-const lora = Lora({ variable: "--font-lora", subsets: ["latin"] });
-const sourceSerif = Source_Serif_4({ variable: "--font-source-serif-4", subsets: ["latin"] });
-const cormorant = Cormorant_Garamond({ variable: "--font-cormorant-garamond", weight: "400", subsets: ["latin"] });
-const openSans = Open_Sans({ variable: "--font-open-sans", subsets: ["latin"] });
-const spaceGrotesk = Space_Grotesk({ variable: "--font-space-grotesk", subsets: ["latin"] });
-const plusJakarta = Plus_Jakarta_Sans({ variable: "--font-plus-jakarta-sans", subsets: ["latin"] });
-const instrumentSerif = Instrument_Serif({ variable: "--font-instrument-serif", weight: "400", subsets: ["latin"] });
-
-const fontVariables = [
-  geistSans.variable,
-  geistMono.variable,
-  playfair.variable,
-  sourceSans.variable,
-  dmSans.variable,
-  libreBaskerville.variable,
-  nunito.variable,
-  archivo.variable,
-  lora.variable,
-  sourceSerif.variable,
-  cormorant.variable,
-  openSans.variable,
-  spaceGrotesk.variable,
-  plusJakarta.variable,
-  instrumentSerif.variable,
-].join(" ");
-
-export const metadata: Metadata = {
-  title: "Client Site Preview",
-  description: "Dynamic website rendered from EstabWeb configuration.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ domain: string }>;
+}): Promise<Metadata> {
+  const { domain } = await params;
+  return {
+    title: `${domain} | Site Preview`,
+    description: `Dynamic website preview for ${domain} rendered from EstabWeb configuration.`,
+  };
+}
 
 const SITE_DATA_PATH = path.join(process.cwd(), "config", "site-data.json");
 const VALID_COLOR_THEMES = [
-  "partner", "justice", "modern", "frost-fire", "reliable", "eco-clean", 
-  "surgeon", "wellness", "holistic", "nebula", "flow", "mono",
+  "partner", "justice", "modern", "frost-fire", "reliable", "eco-clean",
+  "surgeon", "wellness", "holistic", "clinical-gold", "red-crimson", "cyan-ocean", "orange-amber",
+  // New requested themes
+  "dark-pink-white", "blue-mint", "red-black", "dark-green-ivory-yellow", "bright-green-hot-pink",
+  "dark-grey-yellowgreen", "blue-shades-white", "white-lime", "beige-dark-grey", "pastel-purple-neutral",
+  "navy-electric-blue", "gradient-white-dark-blue", "white-blue-grey", "bright-red-white",
+  "classic-blue-turquoise-gold", "dark-royal-blue-gold", "white-purple", "blue-shades-white-red-violet",
+  "light-reddish-orange", "white-purple-orange", "deep-purple-orange-red-pink", "brown-beige",
+  // Existing tech themes
+  "nebula", "flow", "mono",
 ] as const;
 
 export default async function SiteLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ domain: string }>;
 }) {
   let colorTheme = "partner";
   let mode = "light";
   let typography = "elegant";
 
   try {
-    const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
-    const data = JSON.parse(raw);
-    
-    if (data.colorTheme && VALID_COLOR_THEMES.includes(data.colorTheme)) {
-      colorTheme = data.colorTheme;
-    }
-    if (data.darkMode) {
-      mode = "dark";
-    }
-    if (data.typographyStyle) {
-      typography = data.typographyStyle;
+    const { domain } = await params;
+
+    // Attempt to load per-project config by subdomain first
+    try {
+      const supabase = await createClient();
+      const { data: rows } = await supabase
+        .from("projects")
+        .select("subdomain,custom_domain,current_config,draft_config")
+        .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`)
+        .limit(1);
+
+      const dbRow = rows?.[0] as any | undefined;
+      const dbConf = (dbRow?.draft_config ?? dbRow?.current_config) as any | undefined;
+      if (dbConf) {
+        if (dbConf.colorTheme && VALID_COLOR_THEMES.includes(dbConf.colorTheme)) {
+          colorTheme = dbConf.colorTheme;
+        }
+        if (dbConf.darkMode) {
+          mode = "dark";
+        }
+        if (dbConf.typographyStyle) {
+          typography = dbConf.typographyStyle;
+        }
+      } else {
+        // Fallback to shared file when no project found
+        const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
+        const fileConf = JSON.parse(raw);
+        if (fileConf.colorTheme && VALID_COLOR_THEMES.includes(fileConf.colorTheme)) {
+          colorTheme = fileConf.colorTheme;
+        }
+        if (fileConf.darkMode) {
+          mode = "dark";
+        }
+        if (fileConf.typographyStyle) {
+          typography = fileConf.typographyStyle;
+        }
+      }
+    } catch {
+      // If Supabase query fails for any reason, fallback to file
+      const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
+      const data = JSON.parse(raw);
+      if (data.colorTheme && VALID_COLOR_THEMES.includes(data.colorTheme)) {
+        colorTheme = data.colorTheme;
+      }
+      if (data.darkMode) {
+        mode = "dark";
+      }
+      if (data.typographyStyle) {
+        typography = data.typographyStyle;
+      }
     }
   } catch {
-    // use default
+    // use defaults
   }
 
   return (

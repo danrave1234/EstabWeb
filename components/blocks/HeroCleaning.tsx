@@ -1,5 +1,3 @@
-"use client";
-
 import Image from "next/image";
 import TrustSignals from "@/components/shared/TrustSignals";
 
@@ -30,10 +28,9 @@ export default function HeroCleaning({
 }: HeroCleaningProps) {
   const hasSplit = beforeImageUrl && afterImageUrl;
   const imageUrl = singleImageUrl || (hasSplit ? afterImageUrl : null);
-  const isExternal = (url: string) => url?.startsWith("http");
 
   return (
-    <section className="relative overflow-hidden bg-background">
+    <section className="relative overflow-hidden bg-background reveal">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-background to-background" aria-hidden="true" />
       <div className="container mx-auto px-4 py-10 md:py-24 lg:py-32">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto space-y-8 sm:space-y-10">
@@ -70,43 +67,25 @@ export default function HeroCleaning({
               {hasSplit ? (
                 <div className="grid grid-cols-2 gap-4 rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-background">
                   <div className="relative aspect-[4/3] bg-muted">
-                    {isExternal(beforeImageUrl!) ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={beforeImageUrl}
-                        alt="Before cleaning"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Image
-                        src={beforeImageUrl!}
-                        alt="Before cleaning"
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 1024px) 50vw, 42vw"
-                      />
-                    )}
+                    <Image
+                      src={beforeImageUrl!}
+                      alt="Before cleaning"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 50vw, 42vw"
+                    />
                     <div className="absolute top-4 left-4 px-3 py-1.5 bg-black/60 backdrop-blur-md text-white text-xs font-bold rounded-full uppercase tracking-wider">
                       Before
                     </div>
                   </div>
                   <div className="relative aspect-[4/3] bg-muted">
-                    {isExternal(afterImageUrl!) ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={afterImageUrl}
-                        alt="After cleaning"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Image
-                        src={afterImageUrl!}
-                        alt="After cleaning"
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 1024px) 50vw, 42vw"
-                      />
-                    )}
+                    <Image
+                      src={afterImageUrl!}
+                      alt="After cleaning"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 50vw, 42vw"
+                    />
                     <div className="absolute top-4 left-4 px-3 py-1.5 bg-primary backdrop-blur-md text-primary-foreground text-xs font-bold rounded-full uppercase tracking-wider">
                       After
                     </div>
@@ -114,22 +93,13 @@ export default function HeroCleaning({
                 </div>
               ) : imageUrl ? (
                 <div className="relative aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-background">
-                  {isExternal(imageUrl) ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={imageUrl}
-                      alt="Professional cleaning service"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Image
-                      src={imageUrl}
-                      alt="Professional cleaning service"
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 1024px) 100vw, 80vw"
-                    />
-                  )}
+                  <Image
+                    src={imageUrl}
+                    alt="Professional cleaning service"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 80vw"
+                  />
                 </div>
               ) : null}
             </div>

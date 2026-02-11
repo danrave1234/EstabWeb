@@ -24,7 +24,7 @@ export default function PatientFaq({
   if (!items?.length) return null;
 
   return (
-    <section id="faq" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background">
+    <section id="faq" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background reveal">
       <div className="max-w-2xl mx-auto">
         {(title || subtitle) && (
           <div className="text-center mb-10 sm:mb-12">

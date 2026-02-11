@@ -23,7 +23,7 @@ export default function TeamCarousel({
   if (!members?.length) return null;
 
   return (
-    <section id="team" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background">
+    <section id="team" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background reveal">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10 sm:mb-12">
           {title && (

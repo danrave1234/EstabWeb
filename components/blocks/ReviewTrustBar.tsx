@@ -25,7 +25,7 @@ export default function ReviewTrustBar({
   testimonials,
 }: ReviewTrustBarProps) {
   return (
-    <section id="reviews" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background">
+    <section id="reviews" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background reveal">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col items-center mb-12">
           <div className="flex gap-0.5 mb-2">

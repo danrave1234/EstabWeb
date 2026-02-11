@@ -1,14 +1,7 @@
 "use client";
 
-import { Scale, Shield, Briefcase, Gavel, ChevronRight } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  Scale,
-  Shield,
-  Briefcase,
-  Gavel,
-};
+import { ChevronRight } from "lucide-react";
+import DynamicIcon from "@/components/shared/DynamicIcon";
 
 export type PracticeAreaItem = {
   title: string;
@@ -31,7 +24,7 @@ export default function PracticeAreasGrid({
   linkText = "Learn More",
 }: PracticeAreasGridProps) {
   return (
-    <section id="services" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background">
+    <section id="services" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background reveal">
       <div className="max-w-6xl mx-auto">
         {(title || subtitle) && (
           <div className="text-center mb-16">
@@ -49,7 +42,6 @@ export default function PracticeAreasGrid({
         )}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8">
           {items.map((item, index) => {
-            const Icon = ICON_MAP[item.icon] ?? Scale;
             const href = item.href ?? "#";
             return (
               <article
@@ -58,7 +50,7 @@ export default function PracticeAreasGrid({
               >
                 <div className="mb-3 sm:mb-6">
                   <div className="w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center text-primary border border-primary/20 rounded bg-primary/5">
-                    <Icon className="w-5 h-5 sm:w-7 sm:h-7 shrink-0" strokeWidth={2} />
+                    <DynamicIcon name={item.icon} className="w-5 h-5 sm:w-7 sm:h-7 shrink-0" strokeWidth={2} />
                   </div>
                 </div>
                 <h3 className="font-serif text-base sm:text-xl font-bold text-foreground mb-2 sm:mb-4 leading-tight">

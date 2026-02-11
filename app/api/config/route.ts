@@ -18,6 +18,9 @@ function deepMerge(target: Record<string, unknown>, source: Record<string, unkno
   return out;
 }
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");

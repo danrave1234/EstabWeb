@@ -1,13 +1,24 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
+
+const authSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+})
 
 export async function login(formData: FormData) {
+  const validatedFields = authSchema.safeParse(Object.fromEntries(formData.entries()))
+  
+  if (!validatedFields.success) {
+    return { error: validatedFields.error.errors[0].message }
+  }
+
+  const { email, password } = validatedFields.data
   const supabase = await createClient()
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
 
   const { data: { user }, error } = await supabase.auth.signInWithPassword({ email, password })
   if (error) return { error: error.message }
@@ -23,9 +34,14 @@ export async function login(formData: FormData) {
 }
 
 export async function signup(formData: FormData) {
+  const validatedFields = authSchema.safeParse(Object.fromEntries(formData.entries()))
+  
+  if (!validatedFields.success) {
+    return { error: validatedFields.error.errors[0].message }
+  }
+
+  const { email, password } = validatedFields.data
   const supabase = await createClient()
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
 
   const { data: { user }, error } = await supabase.auth.signUp({ email, password })
   if (error) return { error: error.message }

@@ -1,5 +1,3 @@
-"use client";
-
 import Image from "next/image";
 
 export type HeroAuthorityProps = {
@@ -21,10 +19,8 @@ export default function HeroAuthority({
   primaryCTAHref = "#contact",
   secondaryCTAHref = "#services",
 }: HeroAuthorityProps) {
-  const isExternalImage = backgroundImage.startsWith("http");
-
   return (
-    <section className="container mx-auto px-4 py-8 md:py-20 lg:py-24">
+    <section className="container mx-auto px-4 py-8 md:py-20 lg:py-24 reveal">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-y-0 lg:gap-x-16 items-start">
         {/* Text Content Column */}
         <div className="lg:col-span-5 lg:space-y-8 border-l-2 border-primary/70 pl-6 lg:pl-8 flex flex-col relative">
@@ -42,22 +38,13 @@ export default function HeroAuthority({
           {/* Mobile Image - inserted here to be below subtitle and above buttons */}
           <div className="lg:hidden my-10 -ml-6 w-[calc(100%+1.5rem)]">
             <div className="relative aspect-[4/3] rounded-sm overflow-hidden shadow-2xl grayscale-[0.15]">
-              {isExternalImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={backgroundImage}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Image
-                  src={backgroundImage}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes="100vw"
-                />
-              )}
+              <Image
+                src={backgroundImage}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="100vw"
+              />
             </div>
           </div>
 
@@ -80,22 +67,13 @@ export default function HeroAuthority({
         {/* Desktop Image Column */}
         <div className="hidden lg:block lg:col-span-7 relative">
           <div className="relative aspect-[4/3] rounded-sm overflow-hidden shadow-2xl grayscale-[0.15] hover:grayscale-0 transition-all duration-700">
-            {isExternalImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={backgroundImage}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <Image
-                src={backgroundImage}
-                alt=""
-                fill
-                className="object-cover"
-                sizes="50vw"
-              />
-            )}
+            <Image
+              src={backgroundImage}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="50vw"
+            />
             <div
               className="absolute inset-0 bg-gradient-to-tr from-foreground/5 to-transparent pointer-events-none"
               aria-hidden

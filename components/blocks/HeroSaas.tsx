@@ -24,7 +24,7 @@ export default function HeroSaas({
   const isExternalImage = backgroundImage.startsWith("http");
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-muted/50 to-background">
+    <section className="relative overflow-hidden bg-gradient-to-b from-muted/50 to-background reveal">
       <div className="container mx-auto px-4 py-10 md:py-24 lg:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-8 lg:gap-12 items-center">
           <div className="lg:col-span-6 space-y-4 sm:space-y-6">

@@ -24,7 +24,7 @@ export default function HeroPestControl({
   trustSignals,
 }: HeroPestControlProps) {
   return (
-    <section className="relative overflow-hidden bg-background border-b border-border">
+    <section className="relative overflow-hidden bg-background border-b border-border reveal">
       {/* Decorative pattern or gradient */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,var(--primary)/10,transparent)] z-0" aria-hidden="true" />
       

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, X, ChevronRight, ChevronLeft, Download, Moon, Sun, Type, Layout, Palette, PanelTop, PanelBottom, Layers } from "lucide-react";
+import { Settings, X, ChevronRight, ChevronLeft, Download, Moon, Sun, Type, Layout, Palette, PanelTop, PanelBottom, Layers, Copy, Check } from "lucide-react";
 import { GENRE_PRESETS, GENRE_LABELS } from "@/config/presets";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/Dialog";
 
 const SECTIONS = [
   { id: "hero", label: "Hero" },
@@ -43,12 +45,39 @@ const COLOR_THEMES = [
   { value: "partner", label: "Partner", primary: "#1a2b3c" },
   { value: "justice", label: "Justice", primary: "#2d3436" },
   { value: "modern", label: "Modern", primary: "#000000" },
-  { value: "frost-fire", label: "Frost-Fire", primary: "#0984e3" },
-  { value: "reliable", label: "Reliable", primary: "#2d3436" },
-  { value: "eco-clean", label: "Eco-Clean", primary: "#00b894" },
-  { value: "surgeon", label: "Surgeon", primary: "#0984e3" },
-  { value: "wellness", label: "Wellness", primary: "#6c5ce7" },
-  { value: "holistic", label: "Holistic", primary: "#218c74" },
+  { value: "frost-fire", label: "Frost-Fire", primary: "#0984e3", swatch: "linear-gradient(90deg,#0984e3 0%,#e17055 100%)" },
+  { value: "reliable", label: "Reliable", primary: "#2d3436", swatch: "linear-gradient(90deg,#2d3436 0%,#fdcb6e 100%)" },
+  { value: "eco-clean", label: "Eco-Clean", primary: "#00b894", swatch: "linear-gradient(90deg,#00b894 0%,#00cec9 100%)" },
+  { value: "surgeon", label: "Surgeon", primary: "#0984e3", swatch: "linear-gradient(90deg,#0984e3 0%,#74b9ff 100%)" },
+  { value: "wellness", label: "Wellness", primary: "#6c5ce7", swatch: "linear-gradient(90deg,#6c5ce7 0%,#a29bfe 100%)" },
+  { value: "holistic", label: "Holistic", primary: "#218c74", swatch: "linear-gradient(90deg,#218c74 0%,#f7f1e3 100%)" },
+  { value: "clinical-gold", label: "Clinical Gold", primary: "#eab308", swatch: "linear-gradient(90deg,#0d0f14 0%,#f0c674 50%,#eab308 100%)" },
+  { value: "red-crimson", label: "Red Crimson", primary: "#d63031" },
+  { value: "cyan-ocean", label: "Cyan Ocean", primary: "#00a8ff" },
+  { value: "orange-amber", label: "Orange Amber", primary: "#f39c12" },
+  // New requested themes with multi-color swatches
+  { value: "dark-pink-white", label: "Dark Pink + White", primary: "#b00063", swatch: "linear-gradient(90deg,#b00063 0%,#ff4d94 50%,#ffffff 100%)" },
+  { value: "blue-mint", label: "Blue + Mint", primary: "#2563eb", swatch: "linear-gradient(90deg,#2563eb 0%,#2dd4bf 100%)" },
+  { value: "red-black", label: "Red + Black", primary: "#e11d48", swatch: "linear-gradient(90deg,#e11d48 0%,#111111 100%)" },
+  { value: "dark-green-ivory-yellow", label: "Dark Green + Ivory + Yellow", primary: "#14532d", swatch: "linear-gradient(90deg,#14532d 0%,#fffff0 50%,#eab308 100%)" },
+  { value: "bright-green-hot-pink", label: "Bright Green + Hot Pink", primary: "#10b981", swatch: "linear-gradient(90deg,#10b981 0%,#ff1493 100%)" },
+  { value: "dark-grey-yellowgreen", label: "Dark Grey + Yellow-Green", primary: "#1f2937", swatch: "linear-gradient(90deg,#1f2937 0%,#9acd32 100%)" },
+  { value: "blue-shades-white", label: "Blue Shades + White", primary: "#1d4ed8", swatch: "linear-gradient(90deg,#1d4ed8 0%,#60a5fa 50%,#ffffff 100%)" },
+  { value: "white-lime", label: "White + Lime Green", primary: "#84cc16", swatch: "linear-gradient(90deg,#ffffff 0%,#84cc16 100%)" },
+  { value: "beige-dark-grey", label: "Beige + Dark Grey", primary: "#2d3436", swatch: "linear-gradient(90deg,#f5f5dc 0%,#2d3436 100%)" },
+  { value: "pastel-purple-neutral", label: "Pastel Purple + Neutral", primary: "#c4b5fd", swatch: "linear-gradient(90deg,#c4b5fd 0%,#a3a3a3 100%)" },
+  { value: "navy-electric-blue", label: "Navy + Electric Blue", primary: "#0a1a44", swatch: "linear-gradient(90deg,#0a1a44 0%,#00c2ff 100%)" },
+  { value: "gradient-white-dark-blue", label: "Gradient + White + Dark Blue", primary: "#0c2340", swatch: "linear-gradient(90deg,#ffffff 0%,#3b82f6 50%,#0c2340 100%)" },
+  { value: "white-blue-grey", label: "White + Blue-Grey", primary: "#64748b", swatch: "linear-gradient(90deg,#ffffff 0%,#64748b 100%)" },
+  { value: "bright-red-white", label: "Bright Red + White", primary: "#ef4444", swatch: "linear-gradient(90deg,#ef4444 0%,#ffffff 100%)" },
+  { value: "classic-blue-turquoise-gold", label: "Classic Blue + Turquoise + Gold", primary: "#0f4c81", swatch: "linear-gradient(90deg,#0f4c81 0%,#40e0d0 50%,#c5a059 100%)" },
+  { value: "dark-royal-blue-gold", label: "Dark Royal Blue + Gold", primary: "#0b1a4a", swatch: "linear-gradient(90deg,#0b1a4a 0%,#d4af37 100%)" },
+  { value: "white-purple", label: "White + Purple", primary: "#8b5cf6", swatch: "linear-gradient(90deg,#ffffff 0%,#8b5cf6 100%)" },
+  { value: "blue-shades-white-red-violet", label: "Blue Shades + White + Red-Violet", primary: "#2563eb", swatch: "linear-gradient(90deg,#2563eb 0%,#ffffff 50%,#c71585 100%)" },
+  { value: "light-reddish-orange", label: "Light + Reddish Orange", primary: "#ff8c42", swatch: "linear-gradient(90deg,#ff8c42 0%,#ff4500 100%)" },
+  { value: "white-purple-orange", label: "White + Purple + Orange", primary: "#9333ea", swatch: "linear-gradient(90deg,#ffffff 0%,#9333ea 50%,#fb923c 100%)" },
+  { value: "deep-purple-orange-red-pink", label: "Deep Purple + Orange + Red + Pink", primary: "#6d28d9", swatch: "linear-gradient(90deg,#6d28d9 0%,#f97316 33%,#ef4444 66%,#ec4899 100%)" },
+  { value: "brown-beige", label: "Brown + Beige", primary: "#8b5e3c", swatch: "linear-gradient(90deg,#8b5e3c 0%,#f5f5dc 100%)" },
   { value: "nebula", label: "Nebula", primary: "#6c5ce7" },
   { value: "flow", label: "Flow", primary: "#4834d4" },
   { value: "mono", label: "Mono", primary: "#000000" },
@@ -61,6 +90,13 @@ export default function SiteEditorSidebar() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"presets" | "style" | "sections">("presets");
+  const [prefix, setPrefix] = useState("");
+  const [maxUses, setMaxUses] = useState<number>(1);
+  const [expireDays, setExpireDays] = useState<number>(7);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetch("/api/config")
@@ -114,7 +150,7 @@ export default function SiteEditorSidebar() {
       )}
 
       {/* Sidebar Content */}
-      <aside className={`fixed left-0 top-0 bottom-0 w-80 bg-background border-r border-border z-[120] shadow-2xl transition-transform duration-500 ease-out ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside className={`fixed left-0 top-0 bottom-0 w-96 bg-background border-r border-border z-[120] shadow-2xl transition-transform duration-500 ease-out ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
@@ -188,6 +224,81 @@ export default function SiteEditorSidebar() {
                     Export DNA (JSON)
                     <ChevronRight className="w-4 h-4" />
                   </button>
+
+                  <div className="pt-2 space-y-2">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground block">Code Prefix (Optional)</label>
+                    <div className="flex gap-2">
+                      <input 
+                        value={prefix}
+                        onChange={(e) => setPrefix(e.target.value)}
+                        placeholder="e.g. ACME"
+                        className="flex-1 p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground block mb-1">Max Redemptions</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={maxUses}
+                          onChange={(e) => setMaxUses(Math.max(1, Number(e.target.value) || 1))}
+                          className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground block mb-1">Expires In (days)</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={expireDays}
+                          onChange={(e) => setExpireDays(Math.max(1, Number(e.target.value) || 7))}
+                          className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-1">
+                      <button
+                        disabled={isGenerating}
+                        onClick={async () => {
+                          setIsGenerating(true);
+                          try {
+                            const days = Math.max(1, Number(expireDays) || 7);
+                            const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+                            const res = await fetch('/api/codes', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ 
+                                prefix,
+                                payload: data,
+                                max_uses: Math.max(1, Number(maxUses) || 1),
+                                expires_at: expiresAt
+                              })
+                            });
+                            const { code, error } = await res.json();
+                            if (error) throw new Error(error);
+                            
+                            try { await navigator.clipboard.writeText(code); } catch {}
+                            setGeneratedCode(code);
+                            setCopied(true);
+                            setIsCodeModalOpen(true);
+                            toast.success('Share Code created and copied to clipboard');
+                          } catch (err: any) {
+                            console.error(err);
+                            toast.error(err?.message || 'Failed to create code');
+                          } finally {
+                            setIsGenerating(false);
+                            setTimeout(() => setCopied(false), 1500);
+                          }
+                        }}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded text-[10px] font-bold disabled:opacity-50"
+                      >
+                        {isGenerating ? "..." : "Create Code"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Genre Presets */}
@@ -254,7 +365,7 @@ export default function SiteEditorSidebar() {
                       >
                         <span
                           className="h-4 w-4 shrink-0 rounded-full border border-black/10"
-                          style={{ backgroundColor: t.primary }}
+                          style={{ background: (t as any).swatch || t.primary }}
                         />
                         {t.label}
                       </button>
@@ -382,6 +493,37 @@ export default function SiteEditorSidebar() {
           </div>
         </div>
       </aside>
+
+      {/* Share Code Modal */}
+      <Dialog open={isCodeModalOpen} onOpenChange={(o) => { setIsCodeModalOpen(o); if (!o) setCopied(false); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Share Code Created</DialogTitle>
+            <DialogDescription>
+              Give this code to your client. They can paste it in their dashboard to import the template.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <input
+                value={generatedCode}
+                readOnly
+                className="flex-1 p-2 text-sm bg-muted/30 border border-border rounded"
+              />
+              <button
+                onClick={async () => {
+                  try { await navigator.clipboard.writeText(generatedCode); setCopied(true); toast.success('Copied'); } catch { toast.error('Copy failed'); }
+                }}
+                className="inline-flex items-center gap-1 px-3 py-2 bg-primary text-primary-foreground rounded text-xs font-bold"
+              >
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />} {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">Format supports optional prefixes (e.g., ACME-XXXXXX). Keep it private if the template is limited-use.</p>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <style jsx global>{`
         .animate-spin-slow {

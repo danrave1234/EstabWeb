@@ -3,10 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
+import DynamicIcon from "@/components/shared/DynamicIcon";
 
 export type NavItem = {
   name: string;
   href: string;
+  icon?: string;
 };
 
 export type HeaderProps = {
@@ -86,8 +88,9 @@ export default function Header({
               <a
                 key={item.name}
                 href={item.href}
-                className="px-4 py-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg"
+                className="px-4 py-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2"
               >
+                {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
                 {item.name}
               </a>
             ))}
@@ -124,8 +127,9 @@ export default function Header({
                 key={item.name}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="py-3 px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl font-medium transition-colors"
+                className="py-3 px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl font-medium transition-colors flex items-center gap-2"
               >
+                {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
                 {item.name}
               </a>
             ))}

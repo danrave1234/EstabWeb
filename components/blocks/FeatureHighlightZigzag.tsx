@@ -20,7 +20,7 @@ export default function FeatureHighlightZigzag({
   items,
 }: FeatureHighlightZigzagProps) {
   return (
-    <section id="highlights" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
+    <section id="highlights" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-muted/30 reveal">
       <div className="max-w-6xl mx-auto">
         {(title || subtitle) && (
           <div className="text-center mb-10 sm:mb-14">

@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs/promises";
 import nextDynamic from "next/dynamic";
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 // Shared components
@@ -48,6 +48,7 @@ const SimpleFooter = nextDynamic(() => import("@/components/blocks/SimpleFooter"
 const MinimalFooter = nextDynamic(() => import("@/components/blocks/MinimalFooter"));
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const SITE_DATA_PATH = path.join(process.cwd(), "config", "site-data.json");
 

@@ -1,38 +1,12 @@
-'use client'
-
 import * as React from 'react'
 import Link from 'next/link'
-import { ArrowRight, Zap, Smartphone, Shield, Layout, Globe, CheckCircle2, Menu, X, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react'
-import { createClient } from '@/utils/supabase/client'
-import { User as SupabaseUser } from '@supabase/supabase-js'
+import { ArrowRight, Zap, Smartphone, Shield, Layout, Globe, CheckCircle2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
 import MainHeader from '@/components/shared/MainHeader'
 
-export default function EstabWebLanding() {
-  const [user, setUser] = React.useState<SupabaseUser | null>(null)
-  const [loading, setLoading] = React.useState(true)
-
-  React.useEffect(() => {
-    const supabase = createClient()
-    
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      setLoading(false)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const handleSignOut = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    window.location.href = '/'
-  }
-
-  const userInitials = user?.email?.split('@')[0].slice(0, 2).toUpperCase() || 'U'
+export default async function EstabWebLanding() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -40,7 +14,7 @@ export default function EstabWebLanding() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
+        <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden reveal">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,var(--primary)/10,transparent)]" />
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center space-y-8">
@@ -75,7 +49,7 @@ export default function EstabWebLanding() {
         </section>
 
         {/* Stats/Social Proof */}
-        <section className="py-12 border-y border-border bg-muted/30">
+        <section className="py-12 border-y border-border bg-muted/30 reveal">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {[
@@ -94,7 +68,7 @@ export default function EstabWebLanding() {
         </section>
 
         {/* Features Grid */}
-        <section id="features" className="py-24 bg-background">
+        <section id="features" className="py-24 bg-background reveal">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16 space-y-4">
               <h2 className="text-3xl lg:text-5xl font-bold tracking-tight">Built for <span className="text-primary">Performance.</span></h2>
@@ -146,7 +120,7 @@ export default function EstabWebLanding() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-24">
+        <section className="py-24 reveal">
           <div className="container mx-auto px-4">
             <div className="bg-primary rounded-3xl p-12 lg:p-20 text-center text-primary-foreground relative overflow-hidden shadow-2xl shadow-primary/40">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
@@ -181,8 +155,9 @@ export default function EstabWebLanding() {
               <span className="font-bold tracking-tight">EstabWeb</span>
             </div>
             <div className="flex gap-8 text-sm text-muted-foreground">
-              <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
+              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+              <Link href="/cookies" className="hover:text-primary transition-colors">Cookie Policy</Link>
               <Link href="#" className="hover:text-primary transition-colors">Contact</Link>
             </div>
             <div className="text-sm text-muted-foreground">
