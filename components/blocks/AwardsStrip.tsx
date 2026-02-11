@@ -1,0 +1,57 @@
+"use client";
+
+import { Award, ShieldCheck, Star, Users } from "lucide-react";
+
+export type AwardItem = {
+  label: string;
+  sublabel?: string;
+  icon?: "Award" | "ShieldCheck" | "Star" | "Users";
+};
+
+export type AwardsStripProps = {
+  title?: string;
+  items: AwardItem[];
+};
+
+const ICON_MAP = {
+  Award,
+  ShieldCheck,
+  Star,
+  Users,
+};
+
+export default function AwardsStrip({ title, items }: AwardsStripProps) {
+  return (
+    <section id="credentials" className="w-full bg-muted/20 border-y border-border py-8 sm:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        {title && (
+          <p className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-8 sm:mb-10">
+            {title}
+          </p>
+        )}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 items-center">
+          {items.map((item, index) => {
+            const Icon = item.icon ? ICON_MAP[item.icon] : Award;
+            return (
+              <div key={index} className="flex flex-col items-center text-center space-y-2 group">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-background rounded-full flex items-center justify-center border border-border shadow-sm group-hover:border-primary/30 group-hover:bg-primary/5 transition-all duration-300">
+                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary group-hover:scale-110 transition-transform" />
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-sm sm:text-base font-bold text-foreground">
+                    {item.label}
+                  </p>
+                  {item.sublabel && (
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                      {item.sublabel}
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}

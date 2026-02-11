@@ -1,0 +1,366 @@
+@import "tailwindcss";
+
+/* Default / fallback */
+:root {
+  --background: #f8f9fa;
+  --foreground: #1a1a1a;
+  --primary: #1a2b3c;
+  --primary-foreground: #ffffff;
+  --accent: #c5a059;
+  --muted: #f1f2f6;
+  --muted-foreground: #636e72;
+  --border: rgba(0, 0, 0, 0.1);
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: var(--font-playfair-display), Georgia, serif;
+  --radius: 0.5rem;
+}
+
+/* Dark Mode Base */
+[data-mode="dark"] {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --border: rgba(255, 255, 255, 0.1);
+}
+
+/* The Partner — Traditional, high-end, elite */
+[data-theme="partner"] {
+  --font-sans: var(--font-source-sans-3), system-ui, sans-serif;
+  --font-serif: var(--font-playfair-display), Georgia, serif;
+  --background: #f8f9fa;
+  --foreground: #1a2b3c;
+  --primary: #1a2b3c;
+  --primary-foreground: #ffffff;
+  --accent: #c5a059;
+  --muted: #eef0f4;
+  --muted-foreground: #5c6b73;
+  --border: rgba(26, 43, 60, 0.12);
+}
+[data-theme="partner"][data-mode="dark"] {
+  --background: #0a0f16;
+  --foreground: #eef0f4;
+  --primary: #c5a059;
+  --primary-foreground: #0a0f16;
+  --muted: #1a2b3c;
+  --muted-foreground: #94a3b8;
+}
+
+/* The Justice — Aggressive, strong, urgent */
+[data-theme="justice"] {
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-serif: var(--font-libre-baskerville), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #2d3436;
+  --primary: #2d3436;
+  --primary-foreground: #ffffff;
+  --accent: #d63031;
+  --muted: #f8f9fa;
+  --muted-foreground: #636e72;
+  --border: rgba(45, 52, 54, 0.15);
+}
+[data-theme="justice"][data-mode="dark"] {
+  --background: #1a1a1a;
+  --foreground: #f5f5f5;
+  --primary: #d63031;
+  --muted: #2d3436;
+}
+
+/* The Modern — Minimalist, clean, tech-legal */
+[data-theme="modern"] {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: var(--font-geist-sans), system-ui, sans-serif;
+  --background: #f1f2f6;
+  --foreground: #000000;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --accent: #636e72;
+  --muted: #e8e9ed;
+  --muted-foreground: #636e72;
+  --border: rgba(0, 0, 0, 0.1);
+}
+[data-theme="modern"][data-mode="dark"] {
+  --background: #000000;
+  --foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --muted: #1a1a1a;
+}
+
+/* HVAC & Home Services — The Frost-Fire (Cold/Hot) */
+[data-theme="frost-fire"] {
+  --font-sans: var(--font-nunito), system-ui, sans-serif;
+  --font-serif: var(--font-nunito), system-ui, sans-serif;
+  --background: #ffffff;
+  --foreground: #2d3436;
+  --primary: #0984e3;
+  --primary-foreground: #ffffff;
+  --accent: #e17055;
+  --muted: #f5f8fa;
+  --muted-foreground: #636e72;
+  --border: rgba(9, 132, 227, 0.15);
+}
+[data-theme="frost-fire"][data-mode="dark"] {
+  --background: #001e3c;
+  --foreground: #f1f5f9;
+  --primary: #3498db;
+  --muted: #0a2d4d;
+}
+
+/* HVAC & Home Services — The Reliable (Heavy-duty, construction) */
+[data-theme="reliable"] {
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
+  --font-serif: var(--font-archivo), system-ui, sans-serif;
+  --background: #fafafa;
+  --foreground: #2d3436;
+  --primary: #2d3436;
+  --primary-foreground: #ffffff;
+  --accent: #fdcb6e;
+  --muted: #f0f0f0;
+  --muted-foreground: #636e72;
+  --border: rgba(45, 52, 54, 0.12);
+}
+[data-theme="reliable"][data-mode="dark"] {
+  --background: #121212;
+  --foreground: #fdcb6e;
+  --primary: #fdcb6e;
+  --primary-foreground: #121212;
+  --muted: #2a2a2a;
+}
+
+/* HVAC & Home Services — The Eco-Clean (Maintenance, plumbing, fresh) */
+[data-theme="eco-clean"] {
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-serif: var(--font-lora), Georgia, serif;
+  --background: #f9fff9;
+  --foreground: #2d3436;
+  --primary: #00b894;
+  --primary-foreground: #ffffff;
+  --accent: #00cec9;
+  --muted: #e8f5e9;
+  --muted-foreground: #00695c;
+  --border: rgba(0, 184, 148, 0.2);
+}
+[data-theme="eco-clean"][data-mode="dark"] {
+  --background: #002b21;
+  --foreground: #e8f5e9;
+  --primary: #00cec9;
+  --muted: #004d3d;
+}
+
+/* Medical & Health — The Surgeon (Sterile, safe, corporate medical) */
+[data-theme="surgeon"] {
+  --font-sans: var(--font-source-sans-3), system-ui, sans-serif;
+  --font-serif: var(--font-source-serif-4), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #2d3436;
+  --primary: #0984e3;
+  --primary-foreground: #ffffff;
+  --accent: #74b9ff;
+  --muted: #f5f8fa;
+  --muted-foreground: #636e72;
+  --border: rgba(9, 132, 227, 0.12);
+}
+[data-theme="surgeon"][data-mode="dark"] {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --primary: #38bdf8;
+  --muted: #1e293b;
+}
+
+/* Medical & Health — The Wellness (Dental, dermatology, aesthetic) */
+[data-theme="wellness"] {
+  --font-sans: var(--font-nunito), system-ui, sans-serif;
+  --font-serif: var(--font-cormorant-garamond), Georgia, serif;
+  --background: #fdfbff;
+  --foreground: #2d3436;
+  --primary: #6c5ce7;
+  --primary-foreground: #ffffff;
+  --accent: #a29bfe;
+  --muted: #f0eeff;
+  --muted-foreground: #5f5a7a;
+  --border: rgba(108, 92, 231, 0.15);
+}
+[data-theme="wellness"][data-mode="dark"] {
+  --background: #1a1625;
+  --foreground: #f0eeff;
+  --primary: #a29bfe;
+  --muted: #2d2640;
+}
+
+/* Medical & Health — The Holistic (Therapy, organic, natural health) */
+[data-theme="holistic"] {
+  --font-sans: var(--font-open-sans), system-ui, sans-serif;
+  --font-serif: var(--font-lora), Georgia, serif;
+  --background: #fefcf8;
+  --foreground: #2d3436;
+  --primary: #218c74;
+  --primary-foreground: #ffffff;
+  --accent: #f7f1e3;
+  --muted: #f5f0e8;
+  --muted-foreground: #5c6b73;
+  --border: rgba(33, 140, 116, 0.18);
+}
+[data-theme="holistic"][data-mode="dark"] {
+  --background: #1b2621;
+  --foreground: #f7f1e3;
+  --primary: #2ecc71;
+  --muted: #2c3e50;
+}
+
+/* Tech & SaaS — The Nebula (AI, futuristic, dark mode) */
+[data-theme="nebula"] {
+  color-scheme: dark;
+  --font-sans: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-serif: var(--font-space-grotesk), system-ui, sans-serif;
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --primary: #6c5ce7;
+  --primary-foreground: #ffffff;
+  --accent: #00cec9;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --border: rgba(148, 163, 184, 0.2);
+}
+/* Already dark, so light mode override or just same */
+[data-theme="nebula"][data-mode="light"] {
+  color-scheme: light;
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+  --muted: #e2e8f0;
+  --muted-foreground: #475569;
+}
+
+/* Tech & SaaS — The Flow (Modern app, friendly, high energy) */
+[data-theme="flow"] {
+  --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+  --font-serif: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+  --background: #ffffff;
+  --foreground: #1e293b;
+  --primary: #4834d4;
+  --primary-foreground: #ffffff;
+  --accent: #eb4d4b;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --border: rgba(72, 52, 212, 0.15);
+}
+[data-theme="flow"][data-mode="dark"] {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --primary: #818cf8;
+  --muted: #1e293b;
+}
+
+/* EstabWeb — Centralized website theme (dark blue + green, Poppins/Manrope) */
+[data-theme="estabweb"] {
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-serif: var(--font-poppins), system-ui, sans-serif;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --primary: #0f172a;
+  --primary-foreground: #ffffff;
+  --accent: #10b981;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --border: rgba(15, 23, 42, 0.1);
+}
+[data-theme="estabweb"][data-mode="dark"] {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --primary: #10b981;
+  --primary-foreground: #0f172a;
+  --accent: #10b981;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --border: rgba(255, 255, 255, 0.1);
+}
+
+/* Tech & SaaS — The Mono (High-end, design-focused, bold) */
+[data-theme="mono"] {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: var(--font-instrument-serif), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #000000;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --accent: #ffffff;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --border: rgba(0, 0, 0, 0.12);
+}
+[data-theme="mono"][data-mode="dark"] {
+  --background: #000000;
+  --foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --muted: #111111;
+  --border: rgba(255, 255, 255, 0.2);
+}
+
+/* Typography Styles — Placed here to override theme defaults */
+[data-typography="modern"] {
+  --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif !important;
+  --font-serif: var(--font-plus-jakarta-sans), system-ui, sans-serif !important;
+}
+[data-typography="elegant"] {
+  --font-sans: var(--font-source-sans-3), system-ui, sans-serif !important;
+  --font-serif: var(--font-playfair-display), Georgia, serif !important;
+}
+[data-typography="bold"] {
+  --font-sans: var(--font-space-grotesk), system-ui, sans-serif !important;
+  --font-serif: var(--font-instrument-serif), Georgia, serif !important;
+}
+[data-typography="clinical"] {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif !important;
+  --font-serif: var(--font-source-serif-4), Georgia, serif !important;
+}
+[data-typography="technical"] {
+  --font-sans: var(--font-space-grotesk), system-ui, sans-serif !important;
+  --font-serif: var(--font-space-grotesk), system-ui, sans-serif !important;
+}
+[data-typography="playful"] {
+  --font-sans: var(--font-nunito), system-ui, sans-serif !important;
+  --font-serif: var(--font-nunito), system-ui, sans-serif !important;
+}
+[data-typography="traditional"] {
+  --font-sans: var(--font-source-sans-3), system-ui, sans-serif !important;
+  --font-serif: var(--font-libre-baskerville), Georgia, serif !important;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Scroll Reveals */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.8s ease-out;
+}
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@layer components {
+  .btn-hover-effect {
+    @apply transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg;
+  }
+}
