@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import fs from "fs/promises";
-
-const SITE_DATA_PATH = path.join(process.cwd(), "config", "site-data.json");
+import { createClient } from "@/lib/supabase/server";
 
 function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
   const out = { ...target };
@@ -23,11 +20,22 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
-    const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
-    const data = JSON.parse(raw);
-    return NextResponse.json(data);
+    const supabase = await createClient();
+    const { data: config, error } = await supabase
+      .from("site_config")
+      .select("payload")
+      .eq("key", "global")
+      .single();
+
+    if (error || !config) {
+      // If global config doesn't exist in DB, it might not have been migrated yet.
+      // The getSiteConfig auto-migration will handle this on the first load of the site.
+      return NextResponse.json({});
+    }
+
+    return NextResponse.json(config.payload);
   } catch (err) {
-    console.error("Failed to read site-data.json:", err);
+    console.error("Failed to read config from DB:", err);
     return NextResponse.json(
       { error: "Failed to load config" },
       { status: 500 }
@@ -38,22 +46,40 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Record<string, unknown>;
-    let existing: Record<string, unknown> = {};
-    try {
-      const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
-      existing = JSON.parse(raw);
-    } catch {
-      // file missing or invalid; will write body as-is
-    }
+    const supabase = await createClient();
+
+    // 1. Get current global config
+    const { data: config } = await supabase
+      .from("site_config")
+      .select("id, payload")
+      .eq("key", "global")
+      .single();
+
+    let existing: Record<string, unknown> = (config?.payload as Record<string, unknown>) || {};
     const merged = deepMerge(existing, body);
-    await fs.writeFile(
-      SITE_DATA_PATH,
-      JSON.stringify(merged, null, 2),
-      "utf-8"
-    );
+
+    if (config) {
+      // 2. Update existing global config
+      await supabase
+        .from("site_config")
+        .update({ 
+          payload: merged,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", config.id);
+    } else {
+      // 3. Create global config if it doesn't exist
+      await supabase
+        .from("site_config")
+        .insert({
+          key: "global",
+          payload: merged
+        });
+    }
+
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("Failed to write site-data.json:", err);
+    console.error("Failed to save config to DB:", err);
     return NextResponse.json(
       { error: "Failed to save config" },
       { status: 500 }

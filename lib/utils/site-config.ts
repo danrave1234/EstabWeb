@@ -64,6 +64,17 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           const hasCurrent = dbRow?.current_config && Object.keys(dbRow.current_config).length > 0;
           dbConf = hasCurrent ? dbRow.current_config : dbRow.draft_config;
         }
+      } else if (domain === 'master' || domain === 'localhost' || domain === 'localhost:3000' || domain === 'localhost:3001') {
+        // Look for global config in site_config table
+        const { data } = await supabase
+          .from("site_config")
+          .select("payload")
+          .eq("key", "global")
+          .single();
+        
+        if (data) {
+          dbConf = data.payload;
+        }
       }
     }
     
@@ -74,10 +85,34 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
     console.error("Error fetching site config from DB:", error);
   }
 
-  // Fallback to file
+  // Fallback to file only if DB fails or is empty
   try {
     const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
-    return JSON.parse(raw);
+    const fileData = JSON.parse(raw);
+    
+    // AUTO-MIGRATION: If we have file data but no DB data for 'global', seed it.
+    if (domain === 'master' || domain === 'localhost' || domain === 'localhost:3000' || domain === 'localhost:3001') {
+      try {
+        const supabase = await createClient();
+        const { data: globalConfig } = await supabase
+          .from("site_config")
+          .select("id")
+          .eq("key", "global")
+          .single();
+
+        if (!globalConfig) {
+           await supabase.from("site_config").insert({
+             key: "global",
+             payload: fileData
+           });
+           console.log("Auto-migrated site-data.json to site_config table in DB");
+        }
+      } catch (migrateErr) {
+        console.error("Auto-migration failed:", migrateErr);
+      }
+    }
+
+    return fileData;
   } catch (error) {
     console.error("Error reading site-data.json:", error);
     return null;

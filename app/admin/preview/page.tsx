@@ -1,8 +1,7 @@
-import path from "path";
-import fs from "fs/promises";
 import nextDynamic from "next/dynamic";
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { getSiteConfig } from "@/lib/utils/site-config";
 
 // Shared components
 import FloatingCTA from "@/components/shared/FloatingCTA";
@@ -50,8 +49,6 @@ const MinimalFooter = nextDynamic(() => import("@/components/blocks/MinimalFoote
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const SITE_DATA_PATH = path.join(process.cwd(), "config", "site-data.json");
-
 export default async function AdminPreviewPage() {
   const supabase = await createClient()
 
@@ -64,30 +61,17 @@ export default async function AdminPreviewPage() {
   }
 
   // Admin check
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  const data = await getSiteConfig("master");
 
-  if (profile?.role !== 'admin') {
-    return redirect('/dashboard')
-  }
-
-  let raw: string;
-  try {
-    raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
-  } catch {
+  if (!data) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <p className="text-muted-foreground text-sm sm:text-base">
-          config/site-data.json not found.
+          Configuration not found.
         </p>
       </div>
     );
   }
-
-  const data = JSON.parse(raw);
   const {
     theme = "lawyer",
     activeSections = ["hero"],

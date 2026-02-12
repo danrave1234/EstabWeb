@@ -60,6 +60,23 @@ create table if not exists change_requests (
   admin_note text
 );
 
+-- Global Site Configuration & Presets
+create table if not exists site_config (
+  id uuid primary key default gen_random_uuid(),
+  key text unique not null, -- e.g. 'global', 'presets'
+  payload jsonb not null default '{}',
+  updated_at timestamptz default now()
+);
+
+-- RLS for site_config
+alter table if exists site_config enable row level security;
+
+drop policy if exists "Public read access for site_config" on site_config;
+create policy "Public read access for site_config" on site_config for select using (true);
+
+drop policy if exists "Admin all access for site_config" on site_config;
+create policy "Admin all access for site_config" on site_config for all to authenticated using (is_admin()) with check (is_admin());
+
 -- Usage increment helper
 create or replace function increment_usage(p_code_id uuid)
 returns void

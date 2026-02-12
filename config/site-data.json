@@ -1,15 +1,15 @@
 {
-  "theme": "lawyer",
-  "colorTheme": "orange-amber",
+  "theme": "pest-control",
+  "colorTheme": "frost-fire",
   "headerStyle": "solid",
   "footerStyle": "lead-magnet",
   "activeSections": [
-    "hero",
-    "awards",
-    "practice-areas",
-    "blog",
-    "team-grid",
-    "contact-split"
+    "hero-emergency",
+    "how-it-works",
+    "features",
+    "review-trust-bar",
+    "free-consultation",
+    "contact"
   ],
   "brand": {
     "name": "Your Business Name",
@@ -34,15 +34,15 @@
     }
   ],
   "hero": {
-    "title": "Dedicated Legal Defense You Can Trust",
-    "subtitle": "Protecting your rights and securing your future with expert legal representation tailored to your case.",
-    "primaryCTA": "Free Consultation",
-    "secondaryCTA": "View Practice Areas",
-    "backgroundImage": "https://images.unsplash.com/photo-1505664194779-8beaceb93744?w=1080&q=80",
+    "title": "Your Headline Here.",
+    "subtitle": "A short description of what you offer. Edit this in site-data or config.",
+    "primaryCTA": "Get Started",
+    "secondaryCTA": "Learn More",
+    "backgroundImage": "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1080&q=80",
     "trustSignals": [
-      "AV Preeminent Rated",
-      "Super Lawyers 2024",
-      "Former Prosecutors"
+      "Licensed & Insured",
+      "5-Star Rated",
+      "Local Business"
     ]
   },
   "features": {
@@ -82,31 +82,31 @@
     "formHeading": "Contact Us",
     "formSubmitText": "Submit",
     "formThankYouText": "Thank you!",
-    "email": "danravekeh123@gmail.com",
-    "phone": "09999834196",
-    "address": "Philippines"
+    "email": "contact@yourbusiness.com",
+    "phone": "+63 912 345 6789",
+    "address": "123 Main St, Your City"
   },
   "practiceAreas": {
-    "title": "Expertise You Can Depend On",
-    "subtitle": "We handle a wide range of legal matters with precision and care.",
+    "title": "Our Services",
+    "subtitle": "Tailored to your needs. Customize in site-data.",
     "items": [
       {
-        "href": "#",
+        "title": "Service One",
+        "description": "Description of your first offering.",
         "icon": "Scale",
-        "title": "Criminal Defense",
-        "description": "Vigorous defense for all felony and misdemeanor charges."
+        "href": "#"
       },
       {
-        "href": "#",
-        "icon": "Scale",
-        "title": "Personal Injury",
-        "description": "Securing maximum compensation for your physical and emotional recovery."
+        "title": "Service Two",
+        "description": "Description of your second offering.",
+        "icon": "Briefcase",
+        "href": "#"
       },
       {
-        "href": "#",
-        "icon": "ShieldCheck",
-        "title": "Family Law",
-        "description": "Compassionate guidance through divorce, custody, and support matters."
+        "title": "Service Three",
+        "description": "Description of your third offering.",
+        "icon": "Shield",
+        "href": "#"
       }
     ]
   },
@@ -137,13 +137,13 @@
     "buttonThankYou": "Request received."
   },
   "heroEmergency": {
-    "title": "Need help? We're here.",
-    "subtitle": "Fast, reliable service.",
-    "primaryCTA": "Call Now",
-    "primaryCTAHref": "tel:+18005551234",
-    "secondaryCTA": "Schedule Online",
-    "secondaryCTAHref": "#schedule",
-    "imageUrl": "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80"
+    "title": "No Heat? No AC? We're on the Way!",
+    "subtitle": "Expert HVAC repair and installation available 24/7 for your home's comfort.",
+    "primaryCTA": "Emergency Dispatch",
+    "primaryCTAHref": "tel:+18005559999",
+    "secondaryCTA": "Book Maintenance",
+    "secondaryCTAHref": "#book",
+    "imageUrl": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=1080"
   },
   "howItWorks": {
     "title": "How It Works",
@@ -387,5 +387,5 @@
       }
     ]
   },
-  "typographyStyle": "elegant"
+  "typographyStyle": "technical"
 }
