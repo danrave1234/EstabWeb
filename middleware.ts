@@ -5,7 +5,7 @@ import { updateSession } from '@/lib/supabase/middleware'
 function copyCookies(from: NextResponse, to: NextResponse) {
   try {
     for (const c of from.cookies.getAll()) {
-      to.cookies.set({ name: c.name, value: c.value, ...c })
+      to.cookies.set(c)
     }
   } catch {}
 }
@@ -13,6 +13,11 @@ function copyCookies(from: NextResponse, to: NextResponse) {
 export async function middleware(request: NextRequest) {
   // Always refresh Supabase session cookies first
   const sessionRes = await updateSession(request)
+
+  // If updateSession returned a redirect (e.g., unauthorized access), return it immediately
+  if (sessionRes.status >= 300 && sessionRes.status < 400) {
+    return sessionRes
+  }
 
   const url = request.nextUrl
   const hostHeader = request.headers.get('host')?.toLowerCase() || ''
@@ -23,33 +28,76 @@ export async function middleware(request: NextRequest) {
   const isRoot = hostname === ROOT_DOMAIN || hostname === `www.${ROOT_DOMAIN}` || isDevHost
   const isAdmin = hostname === `admin.${ROOT_DOMAIN}` || hostname.startsWith('admin.')
 
+  // Pass preview and projectId to layouts via headers since layouts don't get searchParams
+  const requestHeaders = new Headers(request.headers)
+  if (url.searchParams.has('preview')) {
+    requestHeaders.set('x-preview-mode', url.searchParams.get('preview') || 'false')
+  }
+  if (url.searchParams.has('projectId')) {
+    requestHeaders.set('x-project-id', url.searchParams.get('projectId') || '')
+  }
+  if (url.searchParams.has('requestId')) {
+    requestHeaders.set('x-request-id', url.searchParams.get('requestId') || '')
+  }
+
   // Route admin.* hosts to /(admin) route group
   if (isAdmin) {
     const dest = new URL(`/admin${url.pathname === '/' ? '' : url.pathname}${url.search}`, request.url)
-    const res = NextResponse.rewrite(dest)
+    const res = NextResponse.rewrite(dest, {
+      request: {
+        headers: requestHeaders,
+      },
+    })
     copyCookies(sessionRes, res)
     return res
   }
 
   // For non-root hosts (subdomains or custom domains), route to /(sites)/[domain]
-  if (!isRoot) {
+  // We exclude common paths that should be handled by the root app
+  const isCommonPath = url.pathname.startsWith('/api') || 
+                       url.pathname.startsWith('/admin') ||
+                       url.pathname.startsWith('/login') ||
+                       url.pathname.startsWith('/dashboard') ||
+                       url.pathname.startsWith('/auth')
+
+  const isPathBasedDomain = isDevHost && url.pathname !== '/' && !isCommonPath
+
+  if ((!isRoot || isPathBasedDomain) && !isCommonPath) {
     let domainParam: string
-    if (hostname.endsWith(`.${ROOT_DOMAIN}`)) {
+    if (isPathBasedDomain) {
+      domainParam = url.pathname.split('/')[1]
+    } else if (hostname.endsWith(`.${ROOT_DOMAIN}`)) {
       domainParam = hostname.slice(0, -(ROOT_DOMAIN.length + 1)) // subdomain part
     } else {
       domainParam = hostname // custom domain
     }
 
     // Preserve path for potential nested routes (e.g., /blog)
-    const passthroughPath = url.pathname === '/' ? '' : url.pathname
+    const passthroughPath = isPathBasedDomain 
+      ? (url.pathname.replace(`/${domainParam}`, '') || '')
+      : (url.pathname === '/' ? '' : url.pathname)
+    
     const dest = new URL(`/${domainParam}${passthroughPath}${url.search}`, request.url)
-    const res = NextResponse.rewrite(dest)
+    
+    const res = NextResponse.rewrite(dest, {
+      request: {
+        headers: requestHeaders,
+      },
+    })
+
     copyCookies(sessionRes, res)
     return res
   }
 
   // Default: proceed as normal for root domain and dev hosts
-  return sessionRes
+  // But still pass through the headers for previews on localhost
+  const res = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  })
+  copyCookies(sessionRes, res)
+  return res
 }
 
 export const config = {

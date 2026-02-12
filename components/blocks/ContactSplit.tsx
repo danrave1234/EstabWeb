@@ -74,7 +74,7 @@ export default function ContactSplit({
                   <MapPin className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">Office</p>
+                  <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">Location</p>
                   <p className="text-xl font-bold leading-tight">{address}</p>
                 </div>
               </div>

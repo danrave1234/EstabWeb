@@ -6,18 +6,18 @@ import FloatingCTA from "@/components/shared/FloatingCTA";
 import { useLivePreview } from "./LivePreviewProvider";
 
 // Shared components
-const Header = nextDynamic(() => import("@/components/shared/Header"), { ssr: false });
+const Header = nextDynamic(() => import("@/components/shared/Header"));
 
 // Hero blocks
-const HeroAuthority = nextDynamic(() => import("@/components/blocks/HeroAuthority"), { ssr: false });
-const HeroSaas = nextDynamic(() => import("@/components/blocks/HeroSaas"), { ssr: false });
-const HeroChiropractor = nextDynamic(() => import("@/components/blocks/HeroChiropractor"), { ssr: false });
-const HeroDentist = nextDynamic(() => import("@/components/blocks/HeroDentist"), { ssr: false });
-const HeroClinic = nextDynamic(() => import("@/components/blocks/HeroClinic"), { ssr: false });
-const HeroCleaning = nextDynamic(() => import("@/components/blocks/HeroCleaning"), { ssr: false });
-const HeroPool = nextDynamic(() => import("@/components/blocks/HeroPool"), { ssr: false });
-const HeroPestControl = nextDynamic(() => import("@/components/blocks/HeroPestControl"), { ssr: false });
-const HeroEmergency = nextDynamic(() => import("@/components/blocks/HeroEmergency"), { ssr: false });
+const HeroAuthority = nextDynamic(() => import("@/components/blocks/HeroAuthority"));
+const HeroSaas = nextDynamic(() => import("@/components/blocks/HeroSaas"));
+const HeroChiropractor = nextDynamic(() => import("@/components/blocks/HeroChiropractor"));
+const HeroDentist = nextDynamic(() => import("@/components/blocks/HeroDentist"));
+const HeroClinic = nextDynamic(() => import("@/components/blocks/HeroClinic"));
+const HeroCleaning = nextDynamic(() => import("@/components/blocks/HeroCleaning"));
+const HeroPool = nextDynamic(() => import("@/components/blocks/HeroPool"));
+const HeroPestControl = nextDynamic(() => import("@/components/blocks/HeroPestControl"));
+const HeroEmergency = nextDynamic(() => import("@/components/blocks/HeroEmergency"));
 
 // Content blocks
 const FeaturesGrid = nextDynamic(() => import("@/components/blocks/FeaturesGrid"));
@@ -86,7 +86,7 @@ export default function SiteTemplate({ data: serverData, isAdmin = false }: Site
     primaryCTA: hero.primaryCTA ?? "Get started",
     secondaryCTA: hero.secondaryCTA ?? "Learn more",
     backgroundImage: hero.backgroundImage ?? "",
-    primaryCTAHref: hero.primaryCTAHref ?? "#contact",
+    primaryCTAHref: hero.primaryCTAHref ?? "/contact",
     secondaryCTAHref: hero.secondaryCTAHref ?? "#services",
   };
 
@@ -100,7 +100,7 @@ export default function SiteTemplate({ data: serverData, isAdmin = false }: Site
     secondaryCTA: hero.secondaryCTA ?? "See Our 5-Star Reviews",
     backgroundVideoUrl: hero.backgroundVideoUrl ?? "",
     backgroundImage: hero.backgroundImage ?? "",
-    primaryCTAHref: hero.primaryCTAHref ?? "#contact",
+    primaryCTAHref: hero.primaryCTAHref ?? "/contact",
     secondaryCTAHref: hero.secondaryCTAHref ?? "#reviews",
     trustSignals,
   };
@@ -111,7 +111,7 @@ export default function SiteTemplate({ data: serverData, isAdmin = false }: Site
     primaryCTA: hero.primaryCTA ?? "Book Appointment",
     imageUrl: hero.imageUrl ?? hero.backgroundImage ?? "",
     cityName: hero.cityName ?? "",
-    primaryCTAHref: hero.primaryCTAHref ?? "#contact",
+    primaryCTAHref: hero.primaryCTAHref ?? "/contact",
     secondaryCTA: hero.secondaryCTA ?? undefined,
     secondaryCTAHref: hero.secondaryCTAHref ?? "#about",
     trustSignals,
@@ -174,9 +174,9 @@ export default function SiteTemplate({ data: serverData, isAdmin = false }: Site
     "attorney-profile": { name: "About", href: "#about" },
     testimonials: { name: "Testimonials", href: "#testimonials" },
     "review-trust-bar": { name: "Reviews", href: "#reviews" },
-    contact: { name: "Contact", href: "#contact" },
-    "free-consultation": { name: "Free Consultation", href: "#contact" },
-    "pricing": { name: "Pricing", href: "#pricing" },
+    contact: { name: "Contact", href: "/contact" },
+    "free-consultation": { name: "Free Consultation", href: "/contact" },
+    "pricing": { name: "Pricing", href: "/pricing" },
     "awards": { name: "Credentials", href: "#credentials" },
     "blog": { name: "Insights", href: "#blog" },
   };
@@ -203,7 +203,7 @@ export default function SiteTemplate({ data: serverData, isAdmin = false }: Site
         logoUrl={brand.logoUrl}
         navigation={navigationFromSections}
         ctaText={heroProps.primaryCTA}
-        ctaHref="#contact"
+        ctaHref="/contact"
         headerStyle={headerStyle}
       />
       <main className="flex-1">
@@ -464,7 +464,11 @@ export default function SiteTemplate({ data: serverData, isAdmin = false }: Site
         const footerFormHeading = (footer && footer.formHeading) || "Stay connected";
         const footerFormSubmitText = (footer && footer.formSubmitText) || "Submit";
         const footerFormThankYouText = (footer && footer.formThankYouText) || "Thank you!";
-        const footerSocial = (footer && footer.social) || {};
+        const footerSocial = {
+          ...(footer?.social || {}),
+          showSocial: footer?.showSocial,
+          showContact: footer?.showContact,
+        };
         const privacyUrl = (footer && footer.privacyUrl) || "#";
         const termsUrl = (footer && footer.termsUrl) || "#";
         const cookieUrl = (footer && footer.cookieUrl) || "#";
@@ -524,7 +528,7 @@ export default function SiteTemplate({ data: serverData, isAdmin = false }: Site
       <FloatingCTA 
         phone={contact.phone} 
         ctaText={heroProps.primaryCTA} 
-        ctaHref="#contact" 
+        ctaHref="/contact" 
       />
     </div>
   );

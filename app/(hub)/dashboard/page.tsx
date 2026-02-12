@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Layout, Globe, ChevronRight, ExternalLink } from 'lucide-react'
 import ClientDashboardPreview from '@/components/dashboard/ClientDashboardPreview'
 import MainHeader from '@/components/shared/MainHeader'
@@ -52,7 +53,7 @@ export default async function DashboardPage({
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">No project assigned</h1>
           <p className="text-muted-foreground max-w-md">
-            You don't have an active project assigned to your account yet. You can still start by applying a Template Code below.
+            You don&apos;t have an active project assigned to your account yet. You can still start by applying a Template Code below.
           </p>
           <div className="mt-8">
             <NoProjectRedeem />
@@ -65,7 +66,14 @@ export default async function DashboardPage({
           </Link>
         </main>
         <footer className="py-8 border-t border-border bg-muted/30">
-          <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+          <div className="container mx-auto px-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Image 
+              src="/Logo.svg" 
+              alt="EstabWeb Logo" 
+              width={24} 
+              height={24} 
+              className="w-6 h-6 object-contain"
+            />
             © 2026 EstabWeb. All rights reserved.
           </div>
         </footer>
@@ -155,7 +163,14 @@ export default async function DashboardPage({
       </main>
 
       <footer className="py-8 border-t border-border bg-muted/30">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+        <div className="container mx-auto px-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Image 
+            src="/Logo.svg" 
+            alt="EstabWeb Logo" 
+            width={24} 
+            height={24} 
+            className="w-6 h-6 object-contain"
+          />
           © 2026 EstabWeb. All rights reserved.
         </div>
       </footer>

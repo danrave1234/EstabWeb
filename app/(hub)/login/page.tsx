@@ -3,9 +3,10 @@
 import * as React from "react"
 import { login, signup } from "@/app/actions/auth"
 import { toast } from "sonner"
-import { LogIn, UserPlus, ArrowRight, Loader2, Zap, Shield, Globe, CheckCircle2 } from "lucide-react"
+import { LogIn, UserPlus, ArrowRight, Loader2, Zap, Shield, Globe, CheckCircle2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
+import Image from "next/image"
 
 function LoginContent() {
   const searchParams = useSearchParams()
@@ -39,7 +40,14 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex bg-background relative">
+      <Link 
+        href="/"
+        className="absolute top-8 left-8 z-50 flex items-center gap-2 text-foreground lg:text-primary-foreground hover:opacity-80 transition-all group"
+      >
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        <span className="text-sm font-medium">Back</span>
+      </Link>
       {/* Left Side - Branding & Visuals (Hidden on Mobile) */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-primary items-center justify-center p-12">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent)]" />
@@ -52,10 +60,14 @@ function LoginContent() {
         <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-black/10 rounded-full blur-3xl" />
 
         <div className="relative z-10 max-w-lg w-full text-primary-foreground space-y-12">
-          <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="w-12 h-12 bg-white text-primary rounded-xl flex items-center justify-center font-bold text-2xl shadow-2xl group-hover:-rotate-6 transition-transform">
-              E
-            </div>
+          <Link href="/" className="items-center gap-3 group hidden lg:flex">
+            <Image 
+              src="/Logo.svg" 
+              alt="EstabWeb Logo" 
+              width={48} 
+              height={48} 
+              className="w-12 h-12 object-contain group-hover:-rotate-6 transition-transform"
+            />
             <span className="text-3xl font-bold tracking-tighter">EstabWeb</span>
           </Link>
 
@@ -101,10 +113,16 @@ function LoginContent() {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 md:p-12 relative bg-background">
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 md:p-12 pt-24 lg:pt-12 relative bg-background">
         <div className="absolute top-8 right-8 lg:hidden">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold text-lg">E</div>
+            <Image 
+              src="/Logo.svg" 
+              alt="EstabWeb Logo" 
+              width={32} 
+              height={32} 
+              className="w-8 h-8 object-contain"
+            />
             <span className="font-bold tracking-tight text-foreground">EstabWeb</span>
           </Link>
         </div>

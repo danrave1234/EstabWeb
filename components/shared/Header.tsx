@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
@@ -50,7 +51,7 @@ export default function Header({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-18">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-3 shrink-0 group">
+          <Link href="/" className="flex items-center gap-3 shrink-0 group">
             {logoUrl ? (
               logoUrl.startsWith("http") ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -80,7 +81,7 @@ export default function Header({
             <span className="font-bold text-lg tracking-tight text-foreground hidden sm:inline">
               {brandName}
             </span>
-          </a>
+          </Link>
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">

@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function POST(_req: Request, { params }: { params: { id: string } }) {
+export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -23,16 +24,19 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     const { data: cr, error: crErr } = await supabase
       .from('change_requests')
       .select('id,project_id,requested_changes,status')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (crErr || !cr) return NextResponse.json({ error: 'Change request not found' }, { status: 404 })
     if (cr.status !== 'pending') return NextResponse.json({ error: 'Request is not pending' }, { status: 400 })
 
-    // Apply to project (promote to live)
+    // Apply to project (promote to live) and clear draft
     const { error: upProjErr } = await supabase
       .from('projects')
-      .update({ current_config: cr.requested_changes, draft_config: cr.requested_changes })
+      .update({ 
+        current_config: cr.requested_changes, 
+        draft_config: {} // Clear draft once approved
+      })
       .eq('id', cr.project_id)
 
     if (upProjErr) return NextResponse.json({ error: upProjErr.message }, { status: 400 })
@@ -40,8 +44,12 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     // Mark request approved
     const { error: upCrErr } = await supabase
       .from('change_requests')
-      .update({ status: 'approved', decided_at: new Date().toISOString() })
-      .eq('id', params.id)
+      .update({ 
+        status: 'approved', 
+        decided_at: new Date().toISOString(),
+        decided_by: user.id
+      })
+      .eq('id', id)
 
     if (upCrErr) return NextResponse.json({ error: upCrErr.message }, { status: 400 })
 

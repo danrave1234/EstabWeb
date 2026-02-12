@@ -18,6 +18,5 @@ export function getLucideIcon(name?: string): LucideIcon {
 }
 
 export default function DynamicIcon({ name, className, strokeWidth = 2 }: { name?: string; className?: string; strokeWidth?: number }) {
-  const Icon = getLucideIcon(name);
-  return <Icon className={className} strokeWidth={strokeWidth} />;
+  return React.createElement(getLucideIcon(name), { className, strokeWidth });
 }

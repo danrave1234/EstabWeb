@@ -82,6 +82,9 @@ export async function POST(req: Request) {
       draft_config: next
     }
     
+    // Reset any pending change requests if applying a full template (optional, but cleaner)
+    // await supabase.from('change_requests').delete().eq('project_id', project.id).eq('status', 'pending')
+    
     // Fetch current subdomain to see if we need to set one
     const { data: currentProj } = await supabase
       .from('projects')

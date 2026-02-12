@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { getSectionKey } from '@/lib/utils/config-mapping'
 
 const processChangeRequestSchema = z.object({
   requestId: z.string().uuid(),
@@ -22,6 +23,18 @@ export async function processChangeRequest(
 
   const supabase = await createClient()
 
+  // Verify authorization
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') return { error: 'Forbidden' }
+
   // 1. Get the request data
   const { data: request, error: fetchError } = await supabase
     .from('change_requests')
@@ -38,33 +51,32 @@ export async function processChangeRequest(
     const sectionId = request.section_id
     const requestedChanges = request.requested_changes
 
-    // Deep clone current config
-    const newConfig = JSON.parse(JSON.stringify(project.current_config))
+    let newConfig: any
 
-    // Map section_id to config key
-    const sectionKey = sectionId === 'hero-emergency' ? 'heroEmergency' : 
-                       sectionId === 'practice-areas' ? 'practiceAreas' :
-                       sectionId === 'attorney-profile' ? 'attorneyProfile' :
-                       sectionId === 'free-consultation' ? 'freeConsultation' :
-                       sectionId === 'how-it-works' ? 'howItWorks' :
-                       sectionId === 'review-trust-bar' ? 'reviewTrustBar' :
-                       sectionId === 'feature-highlight' ? 'featureHighlight' :
-                       sectionId === 'team-carousel' ? 'teamCarousel' :
-                       sectionId === 'patient-faq' ? 'patientFaq' :
-                       sectionId === 'pricing' ? 'pricingTable' :
-                       sectionId === 'awards' ? 'awardsStrip' :
-                       sectionId;
+    if (!sectionId || sectionId === 'full-site') {
+      // If no sectionId or 'full-site', this is a full site configuration snapshot
+      newConfig = requestedChanges
+    } else {
+      // Deep clone current config for partial update
+      newConfig = JSON.parse(JSON.stringify(project.current_config))
 
-    // Update the config
-    newConfig[sectionKey] = {
-      ...newConfig[sectionKey],
-      ...requestedChanges
+      // Map section_id to config key
+      const sectionKey = getSectionKey(sectionId);
+
+      // Update the specific section
+      newConfig[sectionKey] = {
+        ...newConfig[sectionKey],
+        ...requestedChanges
+      }
     }
 
-    // Update project config
+    // Update project config and clear draft
     const { error: projectError } = await supabase
       .from('projects')
-      .update({ current_config: newConfig })
+      .update({ 
+        current_config: newConfig,
+        draft_config: {} // Clear draft once approved
+      })
       .eq('id', request.project_id)
 
     if (projectError) return { error: projectError.message }
@@ -75,7 +87,9 @@ export async function processChangeRequest(
     .from('change_requests')
     .update({ 
       status: action,
-      admin_note: adminNote || null
+      admin_note: adminNote || null,
+      decided_at: new Date().toISOString(),
+      decided_by: user.id
     })
     .eq('id', requestId)
 
@@ -84,8 +98,9 @@ export async function processChangeRequest(
   // 3. Live Sync / Revalidation
   // Revalidate the home page (where client sites render)
   revalidatePath('/')
-  // Revalidate the admin dashboard
-  revalidatePath('/admin-internal/dashboard', 'page')
+  // Revalidate the admin dashboard and approvals page
+  revalidatePath('/admin/dashboard', 'page')
+  revalidatePath('/admin/approvals', 'page')
 
   return { success: true }
 }

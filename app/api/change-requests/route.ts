@@ -27,9 +27,10 @@ export async function POST(req: Request) {
       .from('change_requests')
       .insert({
         project_id: projectId,
-        user_id: user.id,
+        requested_by: user.id, // Correct column name is requested_by per schema
         status: 'pending',
         requested_changes: snapshot,
+        section_id: 'full-site' // Indicate this is a full draft snapshot
       })
       .select('id')
       .single()

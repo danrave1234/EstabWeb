@@ -40,7 +40,7 @@ export default function HeroAuthority({
             <div className="relative aspect-[4/3] rounded-sm overflow-hidden shadow-2xl grayscale-[0.15]">
               <Image
                 src={backgroundImage}
-                alt=""
+                alt={title}
                 fill
                 className="object-cover"
                 sizes="100vw"
@@ -69,7 +69,7 @@ export default function HeroAuthority({
           <div className="relative aspect-[4/3] rounded-sm overflow-hidden shadow-2xl grayscale-[0.15] hover:grayscale-0 transition-all duration-700">
             <Image
               src={backgroundImage}
-              alt=""
+              alt={title}
               fill
               className="object-cover"
               sizes="50vw"

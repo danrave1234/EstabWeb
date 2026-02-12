@@ -120,7 +120,7 @@ export default async function AdminPreviewPage() {
     primaryCTA: hero.primaryCTA ?? "Get started",
     secondaryCTA: hero.secondaryCTA ?? "Learn more",
     backgroundImage: hero.backgroundImage ?? "",
-    primaryCTAHref: hero.primaryCTAHref ?? "#contact",
+    primaryCTAHref: hero.primaryCTAHref ?? "/contact",
     secondaryCTAHref: hero.secondaryCTAHref ?? "#services",
   };
 
@@ -134,7 +134,7 @@ export default async function AdminPreviewPage() {
     secondaryCTA: hero.secondaryCTA ?? "See Our 5-Star Reviews",
     backgroundVideoUrl: hero.backgroundVideoUrl ?? "",
     backgroundImage: hero.backgroundImage ?? "",
-    primaryCTAHref: hero.primaryCTAHref ?? "#contact",
+    primaryCTAHref: hero.primaryCTAHref ?? "/contact",
     secondaryCTAHref: hero.secondaryCTAHref ?? "#reviews",
     trustSignals,
   };
@@ -145,7 +145,7 @@ export default async function AdminPreviewPage() {
     primaryCTA: hero.primaryCTA ?? "Book Appointment",
     imageUrl: hero.imageUrl ?? hero.backgroundImage ?? "",
     cityName: hero.cityName ?? "",
-    primaryCTAHref: hero.primaryCTAHref ?? "#contact",
+    primaryCTAHref: hero.primaryCTAHref ?? "/contact",
     secondaryCTA: hero.secondaryCTA ?? undefined,
     secondaryCTAHref: hero.secondaryCTAHref ?? "#about",
     trustSignals,
@@ -216,9 +216,9 @@ export default async function AdminPreviewPage() {
     "attorney-profile": { name: "About", href: "#about" },
     testimonials: { name: "Testimonials", href: "#testimonials" },
     "review-trust-bar": { name: "Reviews", href: "#reviews" },
-    contact: { name: "Contact", href: "#contact" },
-    "free-consultation": { name: "Free Consultation", href: "#contact" },
-    "pricing": { name: "Pricing", href: "#pricing" },
+    contact: { name: "Contact", href: "/contact" },
+    "free-consultation": { name: "Free Consultation", href: "/contact" },
+    "pricing": { name: "Pricing", href: "/pricing" },
     "awards": { name: "Credentials", href: "#credentials" },
     "blog": { name: "Insights", href: "#blog" },
   };
@@ -245,7 +245,7 @@ export default async function AdminPreviewPage() {
         logoUrl={brand.logoUrl}
         navigation={navigationFromSections}
         ctaText={heroProps.primaryCTA}
-        ctaHref="#contact"
+        ctaHref="/contact"
         headerStyle={headerStyle}
       />
       <main className="flex-1">
@@ -566,7 +566,7 @@ export default async function AdminPreviewPage() {
       <FloatingCTA 
         phone={contact.phone} 
         ctaText={heroProps.primaryCTA} 
-        ctaHref="#contact" 
+        ctaHref="/contact" 
       />
     </div>
   );

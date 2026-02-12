@@ -55,13 +55,13 @@ export default function HeroSaas({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={backgroundImage}
-                  alt=""
+                  alt={title}
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <Image
                   src={backgroundImage}
-                  alt=""
+                  alt={title}
                   fill
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 50vw"

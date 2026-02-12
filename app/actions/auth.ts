@@ -14,7 +14,7 @@ export async function login(formData: FormData) {
   const validatedFields = authSchema.safeParse(Object.fromEntries(formData.entries()))
   
   if (!validatedFields.success) {
-    return { error: validatedFields.error.errors[0].message }
+    return { error: validatedFields.error.issues[0].message }
   }
 
   const { email, password } = validatedFields.data
@@ -37,7 +37,7 @@ export async function signup(formData: FormData) {
   const validatedFields = authSchema.safeParse(Object.fromEntries(formData.entries()))
   
   if (!validatedFields.success) {
-    return { error: validatedFields.error.errors[0].message }
+    return { error: validatedFields.error.issues[0].message }
   }
 
   const { email, password } = validatedFields.data

@@ -1,7 +1,17 @@
+import type { Metadata } from "next";
 import React from 'react';
 import MainHeader from '@/components/shared/MainHeader';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import Image from 'next/image';
+
+export const metadata: Metadata = {
+  title: "Cookie Policy",
+  description: "How we use cookies to improve your experience on EstabWeb.",
+  alternates: {
+    canonical: "/cookies",
+  },
+};
 
 export default async function CookiePage() {
   const supabase = await createClient();
@@ -42,7 +52,7 @@ export default async function CookiePage() {
             </p>
             <ul className="list-disc pl-6 space-y-2">
               <li><strong>Essential cookies:</strong> We may use essential cookies to authenticate users and prevent fraudulent use of user accounts.</li>
-              <li><strong>Preferences cookies:</strong> We may use preferences cookies to remember information that changes the way the Service behaves or looks, such as the "remember me" functionality.</li>
+              <li><strong>Preferences cookies:</strong> We may use preferences cookies to remember information that changes the way the Service behaves or looks, such as the &quot;remember me&quot; functionality.</li>
               <li><strong>Analytics cookies:</strong> We may use analytics cookies to track information how the Service is used so that we can make improvements.</li>
             </ul>
           </section>
@@ -50,7 +60,7 @@ export default async function CookiePage() {
           <section>
             <h2 className="text-2xl font-semibold mt-8 mb-4 text-primary">4. Your Choices Regarding Cookies</h2>
             <p>
-              If you'd like to delete cookies or instruct your web browser to delete or refuse cookies, please visit the help pages of your web browser. Please note, however, that if you delete cookies or refuse to accept them, you might not be able to use all of the features we offer.
+              If you&apos;d like to delete cookies or instruct your web browser to delete or refuse cookies, please visit the help pages of your web browser. Please note, however, that if you delete cookies or refuse to accept them, you might not be able to use all of the features we offer.
             </p>
           </section>
 
@@ -66,7 +76,13 @@ export default async function CookiePage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-primary-foreground font-bold">E</div>
+              <Image 
+                src="/Logo.svg" 
+                alt="EstabWeb Logo" 
+                width={32} 
+                height={32} 
+                className="w-8 h-8 object-contain"
+              />
               <span className="font-bold tracking-tight">EstabWeb</span>
             </div>
             <div className="flex gap-8 text-sm text-muted-foreground">

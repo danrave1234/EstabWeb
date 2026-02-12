@@ -1,13 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Settings, X, ChevronRight, ChevronLeft, Download, Moon, Sun, Type, Layout, Palette, PanelTop, PanelBottom, Layers, Copy, Check } from "lucide-react";
+import { Settings, X, ChevronRight, ChevronLeft, Download, Moon, Sun, Type, Layout, Palette, PanelTop, PanelBottom, Layers, Copy, Check, Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import { GENRE_PRESETS, GENRE_LABELS } from "@/config/presets";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/Dialog";
+import ImageUpload from "./ImageUpload";
 
 const SECTIONS = [
-  { id: "hero", label: "Hero" },
   { id: "hero-emergency", label: "Emergency Hero" },
   { id: "awards", label: "Awards Strip" },
   { id: "features", label: "Features (Grid)" },
@@ -89,7 +90,7 @@ export default function SiteEditorSidebar() {
   const [isOpen, setIsVisible] = useState(false);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"presets" | "style" | "sections">("presets");
+  const [activeTab, setActiveTab] = useState<"presets" | "style" | "sections" | "blog" | "brand" | "team" | "contact">("presets");
   const [prefix, setPrefix] = useState("");
   const [maxUses, setMaxUses] = useState<number>(1);
   const [expireDays, setExpireDays] = useState<number>(7);
@@ -162,13 +163,13 @@ export default function SiteEditorSidebar() {
               <p className="text-xs text-muted-foreground mt-0.5">Live configuration & DNA</p>
             </div>
             <div className="flex items-center gap-2">
-              <a 
+              <Link 
                 href="/admin"
                 className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground"
                 title="Back to Admin"
               >
                 <ChevronLeft className="w-5 h-5" />
-              </a>
+              </Link>
               <button 
                 onClick={() => setIsVisible(false)}
                 className="p-2 hover:bg-muted rounded-full transition-colors"
@@ -197,6 +198,30 @@ export default function SiteEditorSidebar() {
               className={`flex-1 py-2 text-xs font-bold transition-colors ${activeTab === "sections" ? "bg-primary/10 text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
             >
               Sections
+            </button>
+            <button
+              onClick={() => setActiveTab("blog")}
+              className={`flex-1 py-2 text-xs font-bold transition-colors ${activeTab === "blog" ? "bg-primary/10 text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Blog
+            </button>
+            <button
+              onClick={() => setActiveTab("brand")}
+              className={`flex-1 py-2 text-xs font-bold transition-colors ${activeTab === "brand" ? "bg-primary/10 text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Brand
+            </button>
+            <button
+              onClick={() => setActiveTab("team")}
+              className={`flex-1 py-2 text-xs font-bold transition-colors ${activeTab === "team" ? "bg-primary/10 text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Team
+            </button>
+            <button
+              onClick={() => setActiveTab("contact")}
+              className={`flex-1 py-2 text-xs font-bold transition-colors ${activeTab === "contact" ? "bg-primary/10 text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Contact
             </button>
           </div>
 
@@ -483,6 +508,501 @@ export default function SiteEditorSidebar() {
               </div>
             )}
 
+            {activeTab === "blog" && (
+              <div className="space-y-4">
+                <div className="space-y-4 p-3 border border-border rounded-xl bg-muted/20">
+                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Layout className="w-3 h-3" /> Blog Section Header
+                  </h3>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Section Title</label>
+                    <input
+                      value={data.blog?.title || ""}
+                      onChange={(e) => {
+                        setData({ ...data, blog: { ...data.blog, title: e.target.value } });
+                      }}
+                      onBlur={() => updateData(data)}
+                      className="w-full p-2 text-xs border rounded bg-background"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Section Subtitle</label>
+                    <textarea
+                      value={data.blog?.subtitle || ""}
+                      onChange={(e) => {
+                        setData({ ...data, blog: { ...data.blog, subtitle: e.target.value } });
+                      }}
+                      onBlur={() => updateData(data)}
+                      rows={2}
+                      className="w-full p-2 text-xs border rounded bg-background resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <ImageIcon className="w-3 h-3" /> Blog Posts
+                  </h3>
+                  <button
+                    onClick={() => {
+                      const newPost = {
+                        title: "New Blog Post",
+                        excerpt: "A brief summary of your new article.",
+                        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                        category: "News",
+                        imageUrl: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80",
+                      };
+                      const currentPosts = data.blog?.posts || [];
+                      updateData({
+                        ...data,
+                        blog: {
+                          ...data.blog,
+                          posts: [newPost, ...currentPosts]
+                        }
+                      });
+                    }}
+                    className="p-1.5 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition shadow-sm"
+                    title="Add Post"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  {(data.blog?.posts || []).map((post: any, index: number) => (
+                    <div key={index} className="p-3 border border-border rounded-xl bg-muted/20 space-y-3 relative group/post">
+                      <button
+                        onClick={() => {
+                          const posts = [...data.blog.posts];
+                          posts.splice(index, 1);
+                          updateData({ ...data, blog: { ...data.blog, posts } });
+                        }}
+                        className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover/post:opacity-100 transition shadow-sm"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Title</label>
+                        <input
+                          value={post.title}
+                          onChange={(e) => {
+                            const posts = [...data.blog.posts];
+                            posts[index] = { ...post, title: e.target.value };
+                            setData({ ...data, blog: { ...data.blog, posts } });
+                          }}
+                          onBlur={() => updateData(data)}
+                          className="w-full p-2 text-xs border rounded bg-background"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Excerpt</label>
+                        <textarea
+                          value={post.excerpt}
+                          onChange={(e) => {
+                            const posts = [...data.blog.posts];
+                            posts[index] = { ...post, excerpt: e.target.value };
+                            setData({ ...data, blog: { ...data.blog, posts } });
+                          }}
+                          onBlur={() => updateData(data)}
+                          rows={2}
+                          className="w-full p-2 text-xs border rounded bg-background resize-none"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground">Category</label>
+                          <input
+                            value={post.category}
+                            onChange={(e) => {
+                              const posts = [...data.blog.posts];
+                              posts[index] = { ...post, category: e.target.value };
+                              setData({ ...data, blog: { ...data.blog, posts } });
+                            }}
+                            onBlur={() => updateData(data)}
+                            className="w-full p-2 text-xs border rounded bg-background"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground">Date</label>
+                          <input
+                            value={post.date}
+                            onChange={(e) => {
+                              const posts = [...data.blog.posts];
+                              posts[index] = { ...post, date: e.target.value };
+                              setData({ ...data, blog: { ...data.blog, posts } });
+                            }}
+                            onBlur={() => updateData(data)}
+                            className="w-full p-2 text-xs border rounded bg-background"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Image</label>
+                        <ImageUpload
+                          value={post.imageUrl}
+                          onChange={(url) => {
+                            const posts = [...data.blog.posts];
+                            posts[index] = { ...post, imageUrl: url };
+                            updateData({ ...data, blog: { ...data.blog, posts } });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === "brand" && (
+              <div className="space-y-6">
+                <div className="space-y-4 p-3 border border-border rounded-xl bg-muted/20">
+                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <ImageIcon className="w-3 h-3" /> Brand Identity
+                  </h3>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Business Name</label>
+                    <input
+                      value={data.brand?.name || ""}
+                      onChange={(e) => {
+                        setData({ ...data, brand: { ...data.brand, name: e.target.value } });
+                      }}
+                      onBlur={() => updateData(data)}
+                      className="w-full p-2 text-xs border rounded bg-background"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Logo</label>
+                    <ImageUpload
+                      value={data.brand?.logoUrl || ""}
+                      onChange={(url) => {
+                        updateData({ ...data, brand: { ...data.brand, logoUrl: url } });
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 p-3 border border-border rounded-xl bg-muted/20">
+                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Layout className="w-3 h-3" /> Hero Content
+                  </h3>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Hero Title</label>
+                    <input
+                      value={data.hero?.title || ""}
+                      onChange={(e) => {
+                        setData({ ...data, hero: { ...data.hero, title: e.target.value } });
+                      }}
+                      onBlur={() => updateData(data)}
+                      className="w-full p-2 text-xs border rounded bg-background"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Hero Subtitle</label>
+                    <textarea
+                      value={data.hero?.subtitle || ""}
+                      onChange={(e) => {
+                        setData({ ...data, hero: { ...data.hero, subtitle: e.target.value } });
+                      }}
+                      onBlur={() => updateData(data)}
+                      rows={3}
+                      className="w-full p-2 text-xs border rounded bg-background resize-none"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Hero Background Image</label>
+                    <ImageUpload
+                      value={data.hero?.backgroundImage || ""}
+                      onChange={(url) => {
+                        updateData({ ...data, hero: { ...data.hero, backgroundImage: url } });
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 p-3 border border-border rounded-xl bg-muted/20">
+                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Palette className="w-3 h-3" /> Footer Settings
+                  </h3>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={data.footer?.showContact !== false}
+                        onChange={(e) => {
+                          updateData({ ...data, footer: { ...data.footer, showContact: e.target.checked } });
+                        }}
+                        className="rounded border-border text-primary focus:ring-primary"
+                      />
+                      Show Contact Info
+                    </label>
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Social Links & Visibility</label>
+                    <div className="space-y-3">
+                      {['facebook', 'twitter', 'linkedin', 'instagram'].map((platform) => (
+                        <div key={platform} className="space-y-1.5 p-2 rounded-lg bg-muted/30 border border-border">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold uppercase text-muted-foreground">{platform}</span>
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={data.footer?.social?.[`${platform}Enabled`] !== false}
+                                onChange={(e) => {
+                                  const social = { ...data.footer?.social, [`${platform}Enabled`]: e.target.checked };
+                                  updateData({ ...data, footer: { ...data.footer, social } });
+                                }}
+                                className="h-3 w-3 rounded border-border text-primary focus:ring-primary"
+                              />
+                              <span className="text-[9px] font-bold uppercase text-muted-foreground">Show</span>
+                            </label>
+                          </div>
+                          <input
+                            placeholder={`https://${platform}.com/yourpage`}
+                            value={data.footer?.social?.[platform] || ""}
+                            onChange={(e) => {
+                              const social = { ...data.footer?.social, [platform]: e.target.value };
+                              setData({ ...data, footer: { ...data.footer, social } });
+                            }}
+                            onBlur={() => updateData(data)}
+                            className="w-full p-1.5 text-[10px] border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "team" && (
+              <div className="space-y-4">
+                <div className="space-y-4 p-3 border border-border rounded-xl bg-muted/20">
+                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Layout className="w-3 h-3" /> Team Section Header
+                  </h3>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Section Title</label>
+                    <input
+                      value={data.teamCarousel?.title || ""}
+                      onChange={(e) => {
+                        setData({ ...data, teamCarousel: { ...data.teamCarousel, title: e.target.value } });
+                      }}
+                      onBlur={() => updateData(data)}
+                      className="w-full p-2 text-xs border rounded bg-background"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Section Subtitle</label>
+                    <textarea
+                      value={data.teamCarousel?.subtitle || ""}
+                      onChange={(e) => {
+                        setData({ ...data, teamCarousel: { ...data.teamCarousel, subtitle: e.target.value } });
+                      }}
+                      onBlur={() => updateData(data)}
+                      rows={2}
+                      className="w-full p-2 text-xs border rounded bg-background resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <ImageIcon className="w-3 h-3" /> Team Members
+                  </h3>
+                  <button
+                    onClick={() => {
+                      const newMember = {
+                        name: "New Member",
+                        specialty: "Position / Role",
+                        imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
+                        bioUrl: "#",
+                      };
+                      const currentMembers = data.teamCarousel?.members || [];
+                      updateData({
+                        ...data,
+                        teamCarousel: {
+                          ...data.teamCarousel,
+                          members: [...currentMembers, newMember]
+                        }
+                      });
+                    }}
+                    className="p-1.5 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition shadow-sm"
+                    title="Add Member"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  {(data.teamCarousel?.members || []).map((member: any, index: number) => (
+                    <div key={index} className="p-3 border border-border rounded-xl bg-muted/20 space-y-3 relative group/member">
+                      <button
+                        onClick={() => {
+                          const members = [...data.teamCarousel.members];
+                          members.splice(index, 1);
+                          updateData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                        }}
+                        className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover/member:opacity-100 transition shadow-sm"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Name</label>
+                        <input
+                          value={member.name}
+                          onChange={(e) => {
+                            const members = [...data.teamCarousel.members];
+                            members[index] = { ...member, name: e.target.value };
+                            setData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                          }}
+                          onBlur={() => updateData(data)}
+                          className="w-full p-2 text-xs border rounded bg-background"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Specialty / Role</label>
+                        <input
+                          value={member.specialty}
+                          onChange={(e) => {
+                            const members = [...data.teamCarousel.members];
+                            members[index] = { ...member, specialty: e.target.value };
+                            setData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                          }}
+                          onBlur={() => updateData(data)}
+                          className="w-full p-2 text-xs border rounded bg-background"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Bio Link</label>
+                        <input
+                          value={member.bioUrl || ""}
+                          onChange={(e) => {
+                            const members = [...data.teamCarousel.members];
+                            members[index] = { ...member, bioUrl: e.target.value };
+                            setData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                          }}
+                          onBlur={() => updateData(data)}
+                          className="w-full p-2 text-xs border rounded bg-background"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Photo</label>
+                        <ImageUpload
+                          value={member.imageUrl}
+                          onChange={(url) => {
+                            const members = [...data.teamCarousel.members];
+                            members[index] = { ...member, imageUrl: url };
+                            updateData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === "contact" && (
+              <div className="space-y-4">
+                <div className="space-y-4 p-3 border border-border rounded-xl bg-muted/20">
+                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Layout className="w-3 h-3" /> Contact Section Content
+                  </h3>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Form Heading</label>
+                    <input
+                      value={data.contact?.formHeading || ""}
+                      onChange={(e) => {
+                        setData({ ...data, contact: { ...data.contact, formHeading: e.target.value } });
+                      }}
+                      onBlur={() => updateData(data)}
+                      className="w-full p-2 text-xs border rounded bg-background"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Tagline</label>
+                    <textarea
+                      value={data.contact?.tagline || ""}
+                      onChange={(e) => {
+                        setData({ ...data, contact: { ...data.contact, tagline: e.target.value } });
+                      }}
+                      onBlur={() => updateData(data)}
+                      rows={2}
+                      className="w-full p-2 text-xs border rounded bg-background resize-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Email</label>
+                      <input
+                        value={data.contact?.email || ""}
+                        onChange={(e) => {
+                          setData({ ...data, contact: { ...data.contact, email: e.target.value } });
+                        }}
+                        onBlur={() => updateData(data)}
+                        className="w-full p-2 text-xs border rounded bg-background"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Phone</label>
+                      <input
+                        value={data.contact?.phone || ""}
+                        onChange={(e) => {
+                          setData({ ...data, contact: { ...data.contact, phone: e.target.value } });
+                        }}
+                        onBlur={() => updateData(data)}
+                        className="w-full p-2 text-xs border rounded bg-background"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Address</label>
+                    <textarea
+                      value={data.contact?.address || ""}
+                      onChange={(e) => {
+                        setData({ ...data, contact: { ...data.contact, address: e.target.value } });
+                      }}
+                      onBlur={() => updateData(data)}
+                      rows={2}
+                      className="w-full p-2 text-xs border rounded bg-background resize-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Submit Button</label>
+                      <input
+                        value={data.contact?.formSubmitText || ""}
+                        onChange={(e) => {
+                          setData({ ...data, contact: { ...data.contact, formSubmitText: e.target.value } });
+                        }}
+                        onBlur={() => updateData(data)}
+                        className="w-full p-2 text-xs border rounded bg-background"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Thank You Text</label>
+                      <input
+                        value={data.contact?.formThankYouText || ""}
+                        onChange={(e) => {
+                          setData({ ...data, contact: { ...data.contact, formThankYouText: e.target.value } });
+                        }}
+                        onBlur={() => updateData(data)}
+                        className="w-full p-2 text-xs border rounded bg-background"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Footer */}

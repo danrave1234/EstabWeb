@@ -1,15 +1,54 @@
 import * as React from 'react'
 import Link from 'next/link'
-import { ArrowRight, Zap, Smartphone, Shield, Layout, Globe, CheckCircle2 } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowRight, Zap, Smartphone, Shield, Layout, Globe, CheckCircle2, ChevronDown } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import MainHeader from '@/components/shared/MainHeader'
+import StructuredData from '@/components/shared/StructuredData'
 
 export default async function EstabWebLanding() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  const faqs = [
+    {
+      q: "How fast can I really launch a website?",
+      a: "Once you choose a template and provide your basic business info, our system generates your site instantly. You can be live on a custom domain in less than an hour."
+    },
+    {
+      q: "Do I need to know how to code?",
+      a: "Not at all. EstabWeb is built for business owners, not developers. We handle all the technical details, hosting, and updates so you can focus on your business."
+    },
+    {
+      q: "Can I use my own domain name?",
+      a: "Yes! Our plans support custom domains (like yourbusiness.com). We even help you with the DNS setup."
+    },
+    {
+      q: "Is the hosting included?",
+      a: "Yes, high-performance managed hosting is included in every plan. Your site is deployed to a global CDN for lightning-fast speeds."
+    },
+    {
+      q: "How does the SEO optimization work?",
+      a: "We automatically generate technical SEO elements like sitemaps, meta tags, and JSON-LD structured data. Our templates are also built with clean, semantic HTML that search engines love."
+    }
+  ];
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
+      <StructuredData 
+        data={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": faqs.map(faq => ({
+            "@type": "Question",
+            "name": faq.q,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": faq.a
+            }
+          }))
+        }}
+      />
       <MainHeader initialUser={user} />
 
       <main className="flex-1">
@@ -119,6 +158,28 @@ export default async function EstabWebLanding() {
           </div>
         </section>
 
+        {/* FAQ Section */}
+        <section id="faq" className="py-24 bg-muted/30 reveal">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-3xl lg:text-5xl font-bold tracking-tight text-center mb-16">Frequently Asked <span className="text-primary">Questions.</span></h2>
+              <div className="space-y-6">
+                {faqs.map((faq, i) => (
+                  <div key={i} className="p-6 bg-background rounded-2xl border border-border shadow-sm">
+                    <h3 className="text-lg font-bold mb-3 flex items-start gap-3">
+                      <span className="text-primary">Q:</span>
+                      {faq.q}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed pl-8">
+                      {faq.a}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* CTA Section */}
         <section className="py-24 reveal">
           <div className="container mx-auto px-4">
@@ -132,10 +193,10 @@ export default async function EstabWebLanding() {
                     href="/login?mode=signup" 
                     className="w-full sm:w-auto px-10 py-4 bg-white text-primary rounded-full text-lg font-bold hover:scale-105 transition-all shadow-xl"
                   >
-                    Get Started Free
+                    Get Started
                   </Link>
                   <Link 
-                    href="/login" 
+                    href="/contact" 
                     className="w-full sm:w-auto px-10 py-4 bg-primary-foreground/10 border border-white/20 rounded-full text-lg font-bold hover:bg-white/20 transition-all"
                   >
                     Contact Sales
@@ -151,14 +212,20 @@ export default async function EstabWebLanding() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-primary-foreground font-bold">E</div>
+              <Image 
+                src="/Logo.svg" 
+                alt="EstabWeb Logo" 
+                width={32} 
+                height={32} 
+                className="w-8 h-8 object-contain"
+              />
               <span className="font-bold tracking-tight">EstabWeb</span>
             </div>
             <div className="flex gap-8 text-sm text-muted-foreground">
+              <Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
+              <Link href="/contact" className="hover:text-primary transition-colors">Contact</Link>
               <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
               <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-              <Link href="/cookies" className="hover:text-primary transition-colors">Cookie Policy</Link>
-              <Link href="#" className="hover:text-primary transition-colors">Contact</Link>
             </div>
             <div className="text-sm text-muted-foreground">
               © 2026 EstabWeb. All rights reserved.

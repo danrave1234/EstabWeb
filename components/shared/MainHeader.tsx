@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import Image from "next/image"
 import { 
   Menu, 
   X, 
@@ -74,8 +75,8 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
         : [])
     : [
         { name: "Features", href: "/#features" },
-        { name: "How it Works", href: "/#how-it-works" },
-        { name: "Pricing", href: "/#pricing" },
+        { name: "Pricing", href: "/pricing" },
+        { name: "Contact", href: "/contact" },
       ]
 
   return (
@@ -91,9 +92,13 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
         <div className="flex-1 flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
             <div className="relative">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg shadow-primary/20 group-hover:shadow-primary/30 group-hover:-rotate-3 transition-all duration-300">
-                E
-              </div>
+              <Image 
+                src="/Logo.svg" 
+                alt="EstabWeb Logo" 
+                width={40} 
+                height={40} 
+                className="w-10 h-10 object-contain group-hover:-rotate-3 transition-all duration-300"
+              />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-background rounded-full" />
             </div>
             <span className="text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300 hidden lg:inline">

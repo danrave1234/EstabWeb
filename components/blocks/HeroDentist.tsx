@@ -78,13 +78,13 @@ export default function HeroDentist({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={imageUrl}
-                    alt="Smiling patient or staff"
+                    alt={title}
                     className="w-full h-full object-cover object-top"
                   />
                 ) : (
                   <Image
                     src={imageUrl}
-                    alt="Smiling patient or staff"
+                    alt={title}
                     fill
                     className="object-cover object-top"
                     sizes="(max-width: 1024px) 100vw, 50vw"

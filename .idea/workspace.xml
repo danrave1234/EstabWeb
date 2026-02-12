@@ -5,74 +5,54 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b9be6954-e5db-449f-a3c9-fcc837817c2e" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/robots.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/components/shared/StructuredData.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/lib/utils/site-config.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/Logo.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/Logo.svg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.output.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(hub)/cookies/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(hub)/cookies/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/(hub)/dashboard/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(hub)/dashboard/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(hub)/error.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(hub)/error.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/(hub)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(hub)/layout.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/(hub)/login/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(hub)/login/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(hub)/not-found.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(hub)/not-found.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/(hub)/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(hub)/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(hub)/privacy/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(hub)/privacy/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(hub)/terms/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(hub)/terms/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/(sites)/[domain]/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(sites)/[domain]/layout.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/(sites)/[domain]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(sites)/[domain]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/(sites/)/[domain/]/page.tsx" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/app/actions/admin.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/actions/admin.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/actions/auth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/actions/auth.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/dashboard/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/dashboard/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/admin/approvals/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/approvals/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/admin/dashboard/AdminDashboardRequests.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/dashboard/AdminDashboardRequests.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/admin/preview/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/preview/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/auth/callback/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/auth/callback/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/config/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/config/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/auth/signout/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth/signout/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/globals.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/AttorneyProfile.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/AttorneyProfile.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/AwardsStrip.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/AwardsStrip.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/BlogGrid.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/BlogGrid.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/change-requests/[id]/approve/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/change-requests/[id]/approve/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/change-requests/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/change-requests/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/codes/redeem/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/codes/redeem/route.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/blocks/ContactForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/ContactForm.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/blocks/ContactSplit.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/ContactSplit.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/FAQTwoColumn.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/FAQTwoColumn.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/FeatureHighlightZigzag.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/FeatureHighlightZigzag.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/FeaturesGrid.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/FeaturesGrid.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/FeaturesModern.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/FeaturesModern.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/FreeConsultationForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/FreeConsultationForm.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/blocks/HeroAuthority.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/HeroAuthority.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/HeroBlock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/HeroBlock.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/blocks/HeroChiropractor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/HeroChiropractor.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/blocks/HeroCleaning.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/HeroCleaning.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/HeroClinic.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/HeroClinic.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/blocks/HeroDentist.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/HeroDentist.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/HeroEmergency.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/HeroEmergency.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/HeroPestControl.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/HeroPestControl.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/HeroPool.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/HeroPool.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/blocks/HeroSaas.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/HeroSaas.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/HowItWorksSteps.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/HowItWorksSteps.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/blocks/LeadMagnetFooter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/LeadMagnetFooter.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/PatientFaq.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/PatientFaq.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/PracticeAreasGrid.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/PracticeAreasGrid.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/PricingTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/PricingTable.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/ReviewTrustBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/ReviewTrustBar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/ReviewsGrid.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/ReviewsGrid.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/TeamCarousel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/TeamCarousel.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/TeamGrid.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/TeamGrid.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/blocks/TrustBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/TrustBar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/blocks/MinimalFooter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/MinimalFooter.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/blocks/SimpleFooter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/blocks/SimpleFooter.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/dashboard/ClientDashboardPreview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/dashboard/ClientDashboardPreview.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/landing/LandingPageClient.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/landing/LandingPageClient.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/shared/DynamicIcon.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/shared/DynamicIcon.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/shared/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/shared/Header.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/shared/MainHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/shared/MainHeader.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/shared/ScrollReveal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/shared/ScrollReveal.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/shared/SiteEditorSidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/shared/SiteEditorSidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/ui/Dialog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/ui/Dialog.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/presets.ts" beforeDir="false" afterPath="$PROJECT_DIR$/config/presets.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/shared/SiteTemplate.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/shared/SiteTemplate.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config/site-data.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/site-data.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/supabase.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/proxy.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/app.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/app.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/app.module.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/app.module.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/tsconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/supabase/client.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/supabase/middleware.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/supabase/server.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/whitelabel-flow.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/whitelabel-flow.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eslint.config.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/eslint.config.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/supabase/middleware.ts" beforeDir="false" afterPath="$PROJECT_DIR$/lib/supabase/middleware.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/middleware.ts" beforeDir="false" afterPath="$PROJECT_DIR$/middleware.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase_schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/supabase_schema.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,33 +82,37 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
-    &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Danrave/Desktop/Project/template-nextjs-nestjs/boilerplate&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;npm.Next.js: server-side.executor&quot;: &quot;Run&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;junie.application.models&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files (x86)\\JetBrains\\IntelliJ IDEA 2024.2.4\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "git-widget-placeholder": "main",
+    "js.debugger.nextJs.config.created.client": "true",
+    "js.debugger.nextJs.config.created.server": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/Danrave/Desktop/Project/template-nextjs-nestjs/boilerplate",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "npm.Next.js: server-side.executor": "Run",
+    "settings.editor.selected.configurable": "junie.application.models",
+    "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "C:\\Program Files (x86)\\JetBrains\\IntelliJ IDEA 2024.2.4\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Danrave\Desktop\Project\template-nextjs-nestjs\boilerplate" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Danrave\Desktop\Project\template-nextjs-nestjs\boilerplate\public" />
     </key>
   </component>
   <component name="RunManager" selected="npm.Next.js: server-side">
@@ -161,7 +145,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1770784012695</updated>
-      <workItem from="1770784013826" duration="33065000" />
+      <workItem from="1770784013826" duration="33552000" />
+      <workItem from="1770850058740" duration="10066000" />
     </task>
     <servers />
   </component>

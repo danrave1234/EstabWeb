@@ -41,7 +41,7 @@ This document summarizes the current multi‑tenant website flow, routing, data 
   - Edit sections → autosaved LOCALLY to browser storage (no DB writes until saved).
   - Save Draft → persists local changes to `projects.draft_config` via `POST /api/project-config`.
   - Preview draft with an iframe that loads `/{subdomain}?preview=true` (shows last saved draft from DB).
-  - Submit for Approval → `POST /api/change-requests` which snapshots the current `draft_config` from DB into `change_requests.requested_changes` with status `pending`.
+  - Submit for Approval → `POST /api/change-requests` which snapshots the current `draft_config` from DB into `change_requests.requested_changes` with status `pending`. Clear local changes on success.
   - Discard Local → clears local (unsaved) changes and reverts the editor back to the last saved draft.
 
 ## Admin Approval Center
@@ -49,9 +49,10 @@ This document summarizes the current multi‑tenant website flow, routing, data 
 - Endpoints:
   - `POST /api/change-requests` (client) — creates a `pending` change request from a `draft_config` snapshot.
   - `POST /api/change-requests/[id]/approve` (admin) — requires `profiles.role === 'admin'`.
-    - Sets `projects.current_config = requested_changes` and also updates `draft_config` to keep them in sync.
+    - Sets `projects.current_config = requested_changes` and clears `projects.draft_config = {}`.
     - Marks the request as `approved` (with `decided_at`).
     - Calls `revalidatePath('/{domain}')` to clear cache for that client’s site.
+    - Result: Site preview falls back to `current_config` (Live) until new edits are made.
 
 ## Data Model (Supabase)
 - `projects`: `{ id, owner_id, subdomain, custom_domain, current_config jsonb, draft_config jsonb, ... }`
@@ -70,7 +71,7 @@ This document summarizes the current multi‑tenant website flow, routing, data 
 2) Client logs into `/dashboard`, redeems the code; a project is created/updated and seeded (both `current_config` + `draft_config`).
 3) Client edits content in the dashboard; autosaves go to `draft_config`. The dashboard preview iframe shows `?preview=true` (draft).
 4) Client clicks “Submit for Approval” (`POST /api/change-requests`) which snapshots `draft_config` into a pending request.
-5) Admin opens `/admin/approvals` and clicks “Approve” — publishing the `requested_changes` to `current_config` (and syncing `draft_config`), then revalidates the site path.
+5) Admin opens `/admin/approvals` and clicks “Approve” — publishing the `requested_changes` to `current_config` and clearing `draft_config`, then revalidates the site path.
 6) Public site at the client’s subdomain or custom domain serves `current_config` automatically via middleware‑routed `/(sites)/[domain]`.
 
 ## Fallback Demo Mode

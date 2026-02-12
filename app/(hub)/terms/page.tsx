@@ -1,7 +1,17 @@
+import type { Metadata } from "next";
 import React from 'react';
 import MainHeader from '@/components/shared/MainHeader';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import Image from 'next/image';
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description: "The rules and guidelines for using the EstabWeb platform.",
+  alternates: {
+    canonical: "/terms",
+  },
+};
 
 export default async function TermsPage() {
   const supabase = await createClient();
@@ -18,7 +28,7 @@ export default async function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mt-8 mb-4 text-primary">1. Acceptance of Terms</h2>
             <p>
-              By accessing and using EstabWeb (the "Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our Service.
+              By accessing and using EstabWeb (the &quot;Service&quot;), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our Service.
             </p>
           </section>
 
@@ -90,7 +100,13 @@ export default async function TermsPage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-primary-foreground font-bold">E</div>
+              <Image 
+                src="/Logo.svg" 
+                alt="EstabWeb Logo" 
+                width={32} 
+                height={32} 
+                className="w-8 h-8 object-contain"
+              />
               <span className="font-bold tracking-tight">EstabWeb</span>
             </div>
             <div className="flex gap-8 text-sm text-muted-foreground">

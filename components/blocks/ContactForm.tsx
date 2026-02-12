@@ -114,7 +114,7 @@ export default function ContactForm({
                     <MapPin className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Office Address</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Location</p>
                     <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">
                       {address}
                     </p>

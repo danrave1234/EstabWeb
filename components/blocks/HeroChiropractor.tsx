@@ -55,7 +55,7 @@ export default function HeroChiropractor({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={backgroundImage}
-              alt=""
+              alt={title}
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div

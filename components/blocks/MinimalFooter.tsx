@@ -70,18 +70,22 @@ export default function MinimalFooter({
           {tagline}
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground font-medium">
-          {contact.phone && <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="hover:text-primary transition-colors">{contact.phone}</a>}
-          {contact.email && <a href={`mailto:${contact.email}`} className="hover:text-primary transition-colors">{contact.email}</a>}
-          {contact.address && <span>{contact.address}</span>}
-        </div>
+        {social.showContact !== false && (
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground font-medium">
+            {contact.phone && <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="hover:text-primary transition-colors">{contact.phone}</a>}
+            {contact.email && <a href={`mailto:${contact.email}`} className="hover:text-primary transition-colors">{contact.email}</a>}
+            {contact.address && <span>{contact.address}</span>}
+          </div>
+        )}
 
-        <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground font-medium uppercase tracking-wider">
-          {social.facebook && <a href={social.facebook} className="hover:text-primary transition-colors">Facebook</a>}
-          {social.twitter && <a href={social.twitter} className="hover:text-primary transition-colors">Twitter</a>}
-          {social.linkedin && <a href={social.linkedin} className="hover:text-primary transition-colors">LinkedIn</a>}
-          {social.instagram && <a href={social.instagram} className="hover:text-primary transition-colors">Instagram</a>}
-        </div>
+        {social.showSocial !== false && (
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground font-medium uppercase tracking-wider">
+            {social.facebook && social.facebookEnabled !== false && <a href={social.facebook} className="hover:text-primary transition-colors">Facebook</a>}
+            {social.twitter && social.twitterEnabled !== false && <a href={social.twitter} className="hover:text-primary transition-colors">Twitter</a>}
+            {social.linkedin && social.linkedinEnabled !== false && <a href={social.linkedin} className="hover:text-primary transition-colors">LinkedIn</a>}
+            {social.instagram && social.instagramEnabled !== false && <a href={social.instagram} className="hover:text-primary transition-colors">Instagram</a>}
+          </div>
+        )}
 
         <div className="mt-2 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-muted-foreground">
           <a href={privacyUrl} className="hover:text-foreground">

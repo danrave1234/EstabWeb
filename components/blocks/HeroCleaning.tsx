@@ -95,7 +95,7 @@ export default function HeroCleaning({
                 <div className="relative aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-background">
                   <Image
                     src={imageUrl}
-                    alt="Professional cleaning service"
+                    alt={title}
                     fill
                     className="object-cover"
                     sizes="(max-width: 1024px) 100vw, 80vw"

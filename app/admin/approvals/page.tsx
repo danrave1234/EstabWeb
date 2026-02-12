@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import ApproveButton from '@/components/admin/ApproveButton'
+import Link from 'next/link'
+import { Eye } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,11 +37,22 @@ export default async function AdminApprovalsPage() {
                   <div className="font-semibold">{r.id}</div>
                   <div className="text-muted-foreground text-xs">Project: {r.project_id} • {r.status}</div>
                 </div>
-                {r.status === 'pending' ? (
-                  <ApproveButton id={r.id} />
-                ) : (
-                  <span className="text-xs text-muted-foreground">{r.status}</span>
-                )}
+                <div className="flex items-center gap-3">
+                  <Link 
+                    href={`/admin/dashboard/requests/${r.id}`}
+                    className="p-2 hover:bg-muted rounded-full transition-colors text-primary"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Link>
+                  {r.status === 'pending' && (
+                    <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-medium">
+                      Pending
+                    </span>
+                  )}
+                  {r.status !== 'pending' && (
+                    <span className="text-xs text-muted-foreground">{r.status}</span>
+                  )}
+                </div>
               </div>
             ))
           )}

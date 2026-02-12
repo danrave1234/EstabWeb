@@ -43,7 +43,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Public routes
-  const publicRoutes = ['/', '/login']
+  const publicRoutes = ['/', '/login', '/pricing', '/contact', '/terms', '/privacy', '/cookies']
   if (publicRoutes.includes(path)) {
     if (user && path === '/login') {
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()

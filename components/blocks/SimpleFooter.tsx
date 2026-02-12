@@ -85,45 +85,51 @@ export default function SimpleFooter({
         </div>
 
         <div className="grid w-full max-w-xl gap-10 sm:grid-cols-2">
-          <div className="space-y-4 text-sm text-muted-foreground flex flex-col items-center text-center sm:items-start sm:text-left">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
-              Contact
-            </h3>
-            <a href={`tel:${phoneHref}`} className="block hover:text-foreground">
-              {contact.phone}
-            </a>
-            <a href={`mailto:${contact.email}`} className="block hover:text-foreground">
-              {contact.email}
-            </a>
-            <p className="whitespace-pre-line">{contact.address}</p>
-          </div>
+          {social.showContact !== false && (
+            <div className="space-y-4 text-sm text-muted-foreground flex flex-col items-center text-center sm:items-start sm:text-left">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
+                Contact
+              </h3>
+              <a href={`tel:${phoneHref}`} className="block hover:text-foreground">
+                {contact.phone}
+              </a>
+              <a href={`mailto:${contact.email}`} className="block hover:text-foreground">
+                {contact.email}
+              </a>
+              <p className="whitespace-pre-line">{contact.address}</p>
+            </div>
+          )}
 
           <div className="space-y-4 text-sm text-muted-foreground flex flex-col items-center text-center sm:items-start sm:text-left">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
-              Follow
-            </h3>
-            <div className="flex flex-wrap justify-center sm:justify-start gap-4">
-              {social.facebook && (
-                <a href={social.facebook} className="hover:text-foreground">
-                  Facebook
-                </a>
-              )}
-              {social.twitter && (
-                <a href={social.twitter} className="hover:text-foreground">
-                  Twitter
-                </a>
-              )}
-              {social.linkedin && (
-                <a href={social.linkedin} className="hover:text-foreground">
-                  LinkedIn
-                </a>
-              )}
-              {social.instagram && (
-                <a href={social.instagram} className="hover:text-foreground">
-                  Instagram
-                </a>
-              )}
-            </div>
+            {social.showSocial !== false && (
+              <>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
+                  Follow
+                </h3>
+                <div className="flex flex-wrap justify-center sm:justify-start gap-4">
+                  {social.facebook && social.facebookEnabled !== false && (
+                    <a href={social.facebook} className="hover:text-foreground">
+                      Facebook
+                    </a>
+                  )}
+                  {social.twitter && social.twitterEnabled !== false && (
+                    <a href={social.twitter} className="hover:text-foreground">
+                      Twitter
+                    </a>
+                  )}
+                  {social.linkedin && social.linkedinEnabled !== false && (
+                    <a href={social.linkedin} className="hover:text-foreground">
+                      LinkedIn
+                    </a>
+                  )}
+                  {social.instagram && social.instagramEnabled !== false && (
+                    <a href={social.instagram} className="hover:text-foreground">
+                      Instagram
+                    </a>
+                  )}
+                </div>
+              </>
+            )}
 
             <div className="mt-6 flex flex-wrap justify-center sm:justify-start gap-4 text-xs">
               <a href={privacyUrl} className="hover:text-foreground">

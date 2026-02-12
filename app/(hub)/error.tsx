@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { AlertTriangle, Home, RotateCcw } from 'lucide-react'
 import MainHeader from '@/components/shared/MainHeader'
 
@@ -54,7 +55,14 @@ export default function HubError({
       </main>
 
       <footer className="py-8 border-t border-border bg-muted/30">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+        <div className="container mx-auto px-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Image 
+            src="/Logo.svg" 
+            alt="EstabWeb Logo" 
+            width={24} 
+            height={24} 
+            className="w-6 h-6 object-contain"
+          />
           © 2026 EstabWeb. All rights reserved.
         </div>
       </footer>

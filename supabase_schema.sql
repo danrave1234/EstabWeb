@@ -51,10 +51,13 @@ create table if not exists change_requests (
   id uuid primary key default gen_random_uuid(),
   project_id uuid references projects(id) on delete cascade,
   requested_by uuid references auth.users(id),
-  section_key text,
-  requested_data jsonb not null,
+  section_id text,
+  requested_changes jsonb not null,
   status text not null default 'pending' check (status in ('pending','approved','rejected')),
-  created_at timestamptz default now()
+  created_at timestamptz default now(),
+  decided_at timestamptz,
+  decided_by uuid references auth.users(id),
+  admin_note text
 );
 
 -- Usage increment helper
@@ -67,6 +70,22 @@ as $$
 $$;
 revoke all on function increment_usage(uuid) from public;
 grant execute on function increment_usage(uuid) to authenticated;
+
+-- Admin check helper
+create or replace function is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from profiles
+    where id = auth.uid()
+    and role = 'admin'
+  );
+$$;
+revoke all on function is_admin() from public;
+grant execute on function is_admin() to authenticated;
 
 -- Profiles: roles + user metadata
 create table if not exists profiles (
@@ -89,7 +108,7 @@ drop policy if exists profiles_select_self on profiles;
 create policy profiles_select_self on profiles for select to authenticated using (auth.uid() = id);
 
 drop policy if exists profiles_admin_select on profiles;
-create policy profiles_admin_select on profiles for select to authenticated using (exists (select 1 from profiles pr where pr.id = auth.uid() and pr.role = 'admin'));
+create policy profiles_admin_select on profiles for select to authenticated using (is_admin());
 
 -- POLICIES: Projects
 drop policy if exists projects_select_owner on projects;
@@ -102,11 +121,11 @@ drop policy if exists projects_update_owner on projects;
 create policy projects_update_owner on projects for update to authenticated using (client_id = auth.uid()) with check (client_id = auth.uid());
 
 drop policy if exists projects_admin_select on projects;
-create policy projects_admin_select on projects for select to authenticated using (exists (select 1 from profiles pr where pr.id = auth.uid() and pr.role = 'admin'));
+create policy projects_admin_select on projects for select to authenticated using (is_admin());
 
 -- POLICIES: Template Codes
 drop policy if exists template_codes_admin_all on template_codes;
-create policy template_codes_admin_all on template_codes for all to authenticated using (exists (select 1 from profiles pr where pr.id = auth.uid() and pr.role = 'admin')) with check (exists (select 1 from profiles pr where pr.id = auth.uid() and pr.role = 'admin'));
+create policy template_codes_admin_all on template_codes for all to authenticated using (is_admin()) with check (is_admin());
 
 drop policy if exists "Users can view codes for validation" on template_codes;
 create policy "Users can view codes for validation" on template_codes for select to authenticated using (true);
@@ -126,11 +145,26 @@ drop policy if exists change_requests_insert on change_requests;
 create policy change_requests_insert on change_requests for insert to authenticated with check (exists (select 1 from projects p where p.id = project_id and p.client_id = auth.uid()));
 
 drop policy if exists change_requests_admin_all on change_requests;
-create policy change_requests_admin_all on change_requests for all to authenticated using (exists (select 1 from profiles pr where pr.id = auth.uid() and pr.role = 'admin'));
+create policy change_requests_admin_all on change_requests for all to authenticated using (is_admin());
 
 -- POLICIES: Project Versions
 drop policy if exists project_versions_select_owner on project_versions;
 create policy project_versions_select_owner on project_versions for select to authenticated using (exists (select 1 from projects p where p.id = project_versions.project_id and p.client_id = auth.uid()));
 
 drop policy if exists project_versions_admin_select on project_versions;
-create policy project_versions_admin_select on project_versions for select to authenticated using (exists (select 1 from profiles pr where pr.id = auth.uid() and pr.role = 'admin'));
+create policy project_versions_admin_select on project_versions for select to authenticated using (is_admin());
+
+-- STORAGE: site-assets bucket and policies
+-- Note: Run these in the SQL Editor to ensure the storage schema exists
+insert into storage.buckets (id, name, public) 
+values ('site-assets', 'site-assets', true)
+on conflict (id) do update set public = true;
+
+drop policy if exists "Public Access" on storage.objects;
+create policy "Public Access" on storage.objects for select using (bucket_id = 'site-assets');
+
+drop policy if exists "Authenticated Upload" on storage.objects;
+create policy "Authenticated Upload" on storage.objects for insert to authenticated with check (bucket_id = 'site-assets');
+
+drop policy if exists "Owner Delete" on storage.objects;
+create policy "Owner Delete" on storage.objects for delete to authenticated using (bucket_id = 'site-assets');

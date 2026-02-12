@@ -5,6 +5,7 @@ import { ChevronRight, FileText, Settings, Eye, Layout, Send, Key } from "lucide
 import Link from "next/link"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
+import ImageUpload from "@/components/shared/ImageUpload"
 import {
   Dialog,
   DialogContent,
@@ -70,26 +71,29 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
     } catch {}
   }, [LOCAL_KEY])
 
-  const currentConfig = project.current_config || {}
-  const activeSections = currentConfig.activeSections || []
+  const hasDraft = project.draft_config && Object.keys(project.draft_config).length > 0
+  const baseConfig = hasDraft ? project.draft_config : (project.current_config || {})
+  const activeSections = baseConfig.activeSections || []
   // Use the project's subdomain for preview; always include projectId so the page can fetch by ID when subdomain/custom domain isn't set.
   const basePath = project?.subdomain ? `/${project.subdomain}` : '/preview'
   const previewPath = `${basePath}?preview=true&projectId=${project.id}`
 
-  // When the iframe indicates it's ready, send a full snapshot: current_config overlaid with local (unsaved) edits
+  // When the iframe indicates it's ready, send a full snapshot: baseConfig overlaid with local (unsaved) edits
   React.useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       if ((e.data as any)?.type === 'LIVE_PREVIEW_READY') {
-        const full = deepMerge(currentConfig, modified)
+        const full = deepMerge(baseConfig, modified)
         sendToIframe({ type: 'LIVE_PREVIEW_FULL', data: full })
       }
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
-  }, [currentConfig, modified, sendToIframe])
+  }, [baseConfig, modified, sendToIframe])
 
   const sectionIdToKey = React.useCallback((id: string) => {
-    return id === 'hero-emergency' ? 'heroEmergency' :
+    return id === 'brand' ? 'brand' :
+           id === 'hero' ? 'hero' :
+           id === 'hero-emergency' ? 'heroEmergency' :
            id === 'practice-areas' ? 'practiceAreas' :
            id === 'attorney-profile' ? 'attorneyProfile' :
            id === 'free-consultation' ? 'freeConsultation' :
@@ -100,6 +104,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
            id === 'patient-faq' ? 'patientFaq' :
            id === 'pricing' ? 'pricingTable' :
            id === 'awards' ? 'awardsStrip' :
+           id === 'team-grid' ? 'teamCarousel' :
+           id === 'contact-split' ? 'contact' :
            id
   }, [])
 
@@ -133,22 +139,22 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   React.useEffect(() => {
     const timer = setTimeout(() => {
       if (Object.keys(modified).length === 0) return
-      const full = deepMerge(currentConfig, modified)
+      const full = deepMerge(baseConfig, modified)
       sendToIframe({ type: 'LIVE_PREVIEW_FULL', data: full })
     }, 150) // 150ms debounce is fast enough to feel instant but slow enough to batch keystrokes
 
     return () => clearTimeout(timer)
-  }, [modified, currentConfig, sendToIframe])
+  }, [modified, baseConfig, sendToIframe])
 
   // Load full section object for the selected section (including arrays like items/steps)
   React.useEffect(() => {
     if (selectedSection) {
       const sectionKey = sectionIdToKey(selectedSection)
       const local = (modified as any)?.[sectionKey]
-      const base = local ?? currentConfig[sectionKey] ?? {}
+      const base = local ?? baseConfig[sectionKey] ?? {}
       setFormValues(base as Record<string, any>)
     }
-  }, [selectedSection, currentConfig, modified, sectionIdToKey])
+  }, [selectedSection, baseConfig, modified, sectionIdToKey])
 
   const handleRedeem = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -226,19 +232,50 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
 
           <div className="space-y-1">
             <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Site Settings
+            </div>
+            <button
+              onClick={() => setSelectedSection('brand')}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
+            >
+              <span>Brand & Identity</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+            <button
+              onClick={() => setSelectedSection('hero')}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
+            >
+              <span>Hero Section</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+            <button
+              onClick={() => setSelectedSection('footer')}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
+            >
+              <span>Footer & Socials</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+
+            <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Site Sections
             </div>
             {activeSections.length > 0 ? (
-              activeSections.map((section: string) => (
-                <button
-                  key={section}
-                  onClick={() => setSelectedSection(section)}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
-                >
-                  <span className="capitalize">{section.replace(/-/g, ' ')}</span>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
-              ))
+              activeSections
+                .filter((s: string) => s !== 'hero')
+                .map((section: string) => {
+                // If it's team-grid, we show it but use team-carousel logic for now if needed
+                // actually we just show the name from activeSections
+                return (
+                  <button
+                    key={section}
+                    onClick={() => setSelectedSection(section)}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
+                  >
+                    <span className="capitalize">{section.replace(/-/g, ' ')}</span>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                )
+              })
             ) : (
               <p className="px-3 py-2 text-sm text-muted-foreground italic">No sections defined</p>
             )}
@@ -333,11 +370,11 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                 }
                 if (selectedSection) {
                   const sectionKey = sectionIdToKey(selectedSection)
-                  const base = currentConfig[sectionKey] || {}
+                  const base = baseConfig[sectionKey] || {}
                   setFormValues(base as any)
                 }
-                // push the clean current config back into the preview
-                sendToIframe({ type: 'LIVE_PREVIEW_FULL', data: currentConfig })
+                // push the clean base config back into the preview
+                sendToIframe({ type: 'LIVE_PREVIEW_FULL', data: baseConfig })
                 toast.success('Local changes discarded')
               }}
               className="flex items-center gap-2 px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-semibold hover:bg-muted transition-all duration-200 shadow-sm"
@@ -413,7 +450,13 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
           <form onSubmit={(e) => e.preventDefault()} className="space-y-4 py-4">
             <div className="max-h-[60vh] overflow-y-auto space-y-6 px-1">
               {/* 1) Basic text fields in this section */}
-              {Object.entries(formValues).filter(([_, v]) => typeof v === 'string').map(([key, value]) => (
+              {Object.entries(formValues)
+                .filter(([key, v]) => {
+                  if (typeof v !== 'string') return false;
+                  const k = key.toLowerCase();
+                  return !k.includes('url') && !k.includes('image');
+                })
+                .map(([key, value]) => (
                 <div key={key} className="space-y-2">
                   <label className="text-sm font-medium capitalize text-foreground">
                     {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
@@ -458,6 +501,44 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   )}
                 </div>
               ))}
+
+              {/* 1.5) Logo and Hero Background Image uploads */}
+              {(() => {
+                const sectionKey = sectionIdToKey(selectedSection || '')
+                if (sectionKey === 'brand') {
+                  return (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">Logo Image</label>
+                      <ImageUpload
+                        value={formValues.logoUrl || ''}
+                        onChange={(url) => {
+                          const next = { ...formValues, logoUrl: url }
+                          setFormValues(next)
+                          setModified(m => ({ ...m, brand: next }))
+                          autoSaveSection('brand', next)
+                        }}
+                      />
+                    </div>
+                  )
+                }
+                if (sectionKey === 'hero') {
+                  return (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">Background Image</label>
+                      <ImageUpload
+                        value={formValues.backgroundImage || ''}
+                        onChange={(url) => {
+                          const next = { ...formValues, backgroundImage: url }
+                          setFormValues(next)
+                          setModified(m => ({ ...m, hero: next }))
+                          autoSaveSection('hero', next)
+                        }}
+                      />
+                    </div>
+                  )
+                }
+                return null
+              })()}
 
               {/* 2) Awards editor (labels, sublabels, icons) */}
               {(() => {
@@ -593,6 +674,235 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                       </div>
                     ))}
                     <button type="button" className="px-3 py-1.5 text-xs font-semibold bg-primary text-primary-foreground rounded" onClick={() => update([...(items||[]), { title: '', description: '', icon: 'Gavel', href: '#' }])}>Add Practice Area</button>
+                  </div>
+                )
+              })()}
+
+              {/* 4) Blog editor (posts) */}
+              {(() => {
+                const isBlog = sectionIdToKey(selectedSection || '') === 'blog'
+                const posts = (formValues as any)?.posts
+                if (!isBlog || !Array.isArray(posts)) return null
+                const update = (nextPosts: any[]) => {
+                  const next = { ...formValues, posts: nextPosts }
+                  setFormValues(next)
+                  const sectionKey = sectionIdToKey(selectedSection!)
+                  setModified((m) => ({ ...m, [sectionKey]: next }))
+                  autoSaveSection(selectedSection!, next)
+                }
+                return (
+                  <div className="space-y-3">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Blog Posts</div>
+                    {posts.map((post: any, idx: number) => (
+                      <div key={idx} className="p-3 rounded-lg bg-muted/30 border border-border space-y-3">
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Title</label>
+                          <input
+                            className="w-full px-2 py-1.5 bg-background border border-border rounded text-sm"
+                            value={post.title || ''}
+                            onChange={(e) => { const copy = posts.slice(); copy[idx] = { ...post, title: e.target.value }; update(copy) }}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Excerpt</label>
+                          <textarea
+                            className="w-full px-2 py-1.5 bg-background border border-border rounded text-sm min-h-[60px]"
+                            value={post.excerpt || ''}
+                            onChange={(e) => { const copy = posts.slice(); copy[idx] = { ...post, excerpt: e.target.value }; update(copy) }}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-xs text-muted-foreground">Category</label>
+                            <input
+                              className="w-full px-2 py-1.5 bg-background border border-border rounded text-sm"
+                              value={post.category || ''}
+                              onChange={(e) => { const copy = posts.slice(); copy[idx] = { ...post, category: e.target.value }; update(copy) }}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-muted-foreground">Date</label>
+                            <input
+                              className="w-full px-2 py-1.5 bg-background border border-border rounded text-sm"
+                              value={post.date || ''}
+                              onChange={(e) => { const copy = posts.slice(); copy[idx] = { ...post, date: e.target.value }; update(copy) }}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Image</label>
+                          <ImageUpload
+                            value={post.imageUrl || ''}
+                            onChange={(url) => {
+                              const copy = posts.slice()
+                              copy[idx] = { ...post, imageUrl: url }
+                              update(copy)
+                            }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between pt-1">
+                          <div className="flex gap-2">
+                            <button type="button" className="px-2 py-1 text-xs border rounded" onClick={() => { const copy = posts.slice(); const t = copy[idx-1]; if (idx>0){copy[idx-1]=copy[idx]; copy[idx]=t; update(copy)} }}>Up</button>
+                            <button type="button" className="px-2 py-1 text-xs border rounded" onClick={() => { const copy = posts.slice(); const t = copy[idx+1]; if (idx<posts.length-1){copy[idx+1]=copy[idx]; copy[idx]=t; update(copy)} }}>Down</button>
+                          </div>
+                          <button type="button" className="px-2 py-1 text-xs border rounded text-red-600" onClick={() => { const copy = posts.slice(); copy.splice(idx,1); update(copy) }}>Remove</button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 text-xs font-semibold bg-primary text-primary-foreground rounded"
+                      onClick={() => update([...(posts || []), { title: 'New Post', excerpt: '', category: 'News', date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), imageUrl: '' }])}
+                    >
+                      Add Blog Post
+                    </button>
+                  </div>
+                )
+              })()}
+
+              {/* 5) Team editor (members) */}
+              {(() => {
+                const isTeam = sectionIdToKey(selectedSection || '') === 'teamCarousel'
+                const members = (formValues as any)?.members
+                if (!isTeam || !Array.isArray(members)) return null
+                const update = (nextMembers: any[]) => {
+                  const next = { ...formValues, members: nextMembers }
+                  setFormValues(next)
+                  const sectionKey = sectionIdToKey(selectedSection!)
+                  setModified((m) => ({ ...m, [sectionKey]: next }))
+                  autoSaveSection(selectedSection!, next)
+                }
+                return (
+                  <div className="space-y-3">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Team Members</div>
+                    {members.map((member: any, idx: number) => (
+                      <div key={idx} className="p-3 rounded-lg bg-muted/30 border border-border space-y-3">
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Name</label>
+                          <input
+                            className="w-full px-2 py-1.5 bg-background border border-border rounded text-sm"
+                            value={member.name || ''}
+                            onChange={(e) => { const copy = members.slice(); copy[idx] = { ...member, name: e.target.value }; update(copy) }}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Specialty / Role</label>
+                          <input
+                            className="w-full px-2 py-1.5 bg-background border border-border rounded text-sm"
+                            value={member.specialty || ''}
+                            onChange={(e) => { const copy = members.slice(); copy[idx] = { ...member, specialty: e.target.value }; update(copy) }}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Bio Link</label>
+                          <input
+                            className="w-full px-2 py-1.5 bg-background border border-border rounded text-sm"
+                            value={member.bioUrl || ''}
+                            onChange={(e) => { const copy = members.slice(); copy[idx] = { ...member, bioUrl: e.target.value }; update(copy) }}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs text-muted-foreground">Photo</label>
+                          <ImageUpload
+                            value={member.imageUrl || ''}
+                            onChange={(url) => {
+                              const copy = members.slice()
+                              copy[idx] = { ...member, imageUrl: url }
+                              update(copy)
+                            }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between pt-1">
+                          <div className="flex gap-2">
+                            <button type="button" className="px-2 py-1 text-xs border rounded" onClick={() => { const copy = members.slice(); const t = copy[idx-1]; if (idx>0){copy[idx-1]=copy[idx]; copy[idx]=t; update(copy)} }}>Up</button>
+                            <button type="button" className="px-2 py-1 text-xs border rounded" onClick={() => { const copy = members.slice(); const t = copy[idx+1]; if (idx<members.length-1){copy[idx+1]=copy[idx]; copy[idx]=t; update(copy)} }}>Down</button>
+                          </div>
+                          <button type="button" className="px-2 py-1 text-xs border rounded text-red-600" onClick={() => { const copy = members.slice(); copy.splice(idx,1); update(copy) }}>Remove</button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 text-xs font-semibold bg-primary text-primary-foreground rounded"
+                      onClick={() => update([...(members || []), { name: 'New Member', specialty: 'Position', imageUrl: '', bioUrl: '#' }])}
+                    >
+                      Add Team Member
+                    </button>
+                  </div>
+                )
+              })()}
+
+              {/* 6) Contact Split editor (handled by basic text fields usually, but explicitly ensuring labels) */}
+              {(() => {
+                const sectionKey = sectionIdToKey(selectedSection || '')
+                if (sectionKey !== 'contact') return null
+                // The existing automatic filtering handle strings, but contact split has many
+                return null // Already covered by automatic logic
+              })()}
+
+              {/* 7) Footer editor (socials toggle and links) */}
+              {(() => {
+                const sectionKey = sectionIdToKey(selectedSection || '')
+                if (sectionKey !== 'footer') return null
+                const update = (next: any) => {
+                  setFormValues(next)
+                  setModified((m) => ({ ...m, footer: next }))
+                  autoSaveSection('footer', next)
+                }
+                return (
+                  <div className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-foreground">Show Social Icons</label>
+                        <input
+                          type="checkbox"
+                          checked={formValues.showSocial !== false}
+                          onChange={(e) => update({ ...formValues, showSocial: e.target.checked })}
+                          className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-foreground">Show Contact Info</label>
+                        <input
+                          type="checkbox"
+                          checked={formValues.showContact !== false}
+                          onChange={(e) => update({ ...formValues, showContact: e.target.checked })}
+                          className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Social Links & Visibility</label>
+                      {['facebook', 'twitter', 'linkedin', 'instagram'].map((platform) => (
+                        <div key={platform} className="space-y-2 p-3 rounded-lg bg-muted/30 border border-border">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-medium text-foreground capitalize">{platform}</label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={formValues.social?.[`${platform}Enabled`] !== false}
+                                onChange={(e) => {
+                                  const social = { ...formValues.social, [`${platform}Enabled`]: e.target.checked }
+                                  update({ ...formValues, social })
+                                }}
+                                className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                              />
+                              <span className="text-xs text-muted-foreground">Enabled</span>
+                            </label>
+                          </div>
+                          <input
+                            className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm focus:ring-1 focus:ring-primary outline-none"
+                            placeholder={`https://${platform}.com/...`}
+                            value={formValues.social?.[platform] || ''}
+                            onChange={(e) => {
+                              const social = { ...formValues.social, [platform]: e.target.value }
+                              update({ ...formValues, social })
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )
               })()}

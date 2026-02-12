@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight, Zap, Smartphone, Shield, Layout, Globe, CheckCircle2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { User as SupabaseUser } from '@supabase/supabase-js'
@@ -172,7 +173,13 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-primary-foreground font-bold">E</div>
+              <Image 
+                src="/Logo.svg" 
+                alt="EstabWeb Logo" 
+                width={32} 
+                height={32} 
+                className="w-8 h-8 object-contain"
+              />
               <span className="font-bold tracking-tight">EstabWeb</span>
             </div>
             <div className="flex gap-8 text-sm text-muted-foreground">

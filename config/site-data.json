@@ -30,7 +30,7 @@
     },
     {
       "name": "Contact",
-      "href": "#contact"
+      "href": "/contact"
     }
   ],
   "hero": {
@@ -82,9 +82,9 @@
     "formHeading": "Contact Us",
     "formSubmitText": "Submit",
     "formThankYouText": "Thank you!",
-    "email": "contact@yourbusiness.com",
-    "phone": "+63 912 345 6789",
-    "address": "123 Main St, Your City"
+    "email": "danravekeh123@gmail.com",
+    "phone": "09999834196",
+    "address": "Philippines"
   },
   "practiceAreas": {
     "title": "Expertise You Can Depend On",
