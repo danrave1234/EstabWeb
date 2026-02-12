@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getSectionKey } from '@/lib/utils/config-mapping'
+import { generateSubdomain } from '@/lib/codes'
+import { deepMerge } from '@/lib/utils'
 
 const processChangeRequestSchema = z.object({
   requestId: z.string().uuid(),
@@ -54,15 +56,13 @@ export async function processChangeRequest(
     const sectionId = request.section_id
     const requestedChanges = request.requested_changes
 
-    let newConfig: any
+    // Deep clone current config for update
+    let newConfig = JSON.parse(JSON.stringify(project.current_config || {}))
 
     if (!sectionId || sectionId === 'full-site') {
-      // If no sectionId or 'full-site', this is a full site configuration snapshot
-      newConfig = requestedChanges
+      // Merge the requested changes (draft) into the current config instead of replacing it
+      newConfig = deepMerge(newConfig, requestedChanges)
     } else {
-      // Deep clone current config for partial update
-      newConfig = JSON.parse(JSON.stringify(project.current_config || {}))
-
       // Map section_id to config key
       const sectionKey = getSectionKey(sectionId);
 
@@ -74,15 +74,24 @@ export async function processChangeRequest(
     }
 
     const nextVersion = (project.config_version || 0) + 1
+    const updatePayload: any = { 
+      current_config: newConfig,
+      draft_config: {}, // Clear draft once approved
+      config_version: nextVersion
+    }
+
+    // NEW: If brand name was updated, also update the subdomain to match the brand name
+    const oldBrandName = (project.current_config as any)?.brand?.name
+    const newBrandName = (newConfig as any)?.brand?.name
+
+    if (newBrandName && newBrandName !== oldBrandName) {
+      updatePayload.subdomain = generateSubdomain(newBrandName)
+    }
 
     // Update project config and clear draft
     const { error: projectError } = await supabase
       .from('projects')
-      .update({ 
-        current_config: newConfig,
-        draft_config: {}, // Clear draft once approved
-        config_version: nextVersion
-      })
+      .update(updatePayload)
       .eq('id', request.project_id)
 
     if (projectError) return { error: projectError.message }
@@ -115,10 +124,23 @@ export async function processChangeRequest(
   revalidatePath('/')
   
   // Revalidate the specific site if domain is known
-  const project = Array.isArray(request.projects) ? request.projects[0] : request.projects
-  const domainParam = project?.subdomain || project?.custom_domain
+  // We fetch the latest project state to get the (potentially new) subdomain
+  const { data: latestProj } = await supabase
+    .from('projects')
+    .select('subdomain, custom_domain')
+    .eq('id', request.project_id)
+    .single()
+
+  const domainParam = latestProj?.subdomain || latestProj?.custom_domain
   if (domainParam) {
     revalidatePath(`/${domainParam}`)
+  }
+
+  // Also revalidate the old domain if it was different
+  const oldProject = Array.isArray(request.projects) ? request.projects[0] : request.projects
+  const oldDomainParam = oldProject?.subdomain || oldProject?.custom_domain
+  if (oldDomainParam && oldDomainParam !== domainParam) {
+    revalidatePath(`/${oldDomainParam}`)
   }
 
   // Revalidate the admin dashboard and approvals page

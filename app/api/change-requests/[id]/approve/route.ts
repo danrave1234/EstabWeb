@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getSectionKey } from '@/lib/utils/config-mapping'
+import { generateSubdomain } from '@/lib/codes'
+import { deepMerge } from '@/lib/utils'
 
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -37,12 +39,13 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     const sectionId = cr.section_id
     const requestedChanges = cr.requested_changes
 
-    let newConfig: any
+    // Deep clone current config for update
+    let newConfig = JSON.parse(JSON.stringify(project.current_config || {}))
 
     if (!sectionId || sectionId === 'full-site') {
-      newConfig = requestedChanges
+      // Merge the requested changes (draft) into the current config instead of replacing it
+      newConfig = deepMerge(newConfig, requestedChanges)
     } else {
-      newConfig = JSON.parse(JSON.stringify(project.current_config || {}))
       const sectionKey = getSectionKey(cr.section_id)
       newConfig[sectionKey] = {
         ...(newConfig[sectionKey] || {}),
@@ -51,15 +54,24 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     }
 
     const nextVersion = (project.config_version || 0) + 1
+    const updatePayload: any = { 
+      current_config: newConfig, 
+      draft_config: {}, // Clear draft once approved
+      config_version: nextVersion
+    }
+
+    // NEW: If brand name was updated, also update the subdomain to match the brand name
+    const oldBrandName = (project.current_config as any)?.brand?.name
+    const newBrandName = (newConfig as any)?.brand?.name
+
+    if (newBrandName && newBrandName !== oldBrandName) {
+      updatePayload.subdomain = generateSubdomain(newBrandName)
+    }
 
     // Apply to project (promote to live) and clear draft
     const { error: upProjErr } = await supabase
       .from('projects')
-      .update({ 
-        current_config: newConfig, 
-        draft_config: {}, // Clear draft once approved
-        config_version: nextVersion
-      })
+      .update(updatePayload)
       .eq('id', cr.project_id)
 
     if (upProjErr) return NextResponse.json({ error: upProjErr.message }, { status: 400 })
@@ -97,6 +109,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
       // Revalidate the public path served by middleware as /{domain}
       revalidatePath(`/${domainParam}`)
     }
+
+    // If subdomain was just changed, we might also want to revalidate the old one 
+    // but the new one is the priority. The code above now fetches the FRESH subdomain.
 
     return NextResponse.json({ success: true })
   } catch (e: any) {

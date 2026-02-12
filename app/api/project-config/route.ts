@@ -1,23 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-
-function deepMerge<T extends Record<string, any>>(a: T, b: T): T {
-  const out: any = Array.isArray(a) ? [...a] : { ...a }
-  for (const k of Object.keys(b)) {
-    const av = (a as any)?.[k]
-    const bv = (b as any)[k]
-    if (
-      av && bv &&
-      typeof av === 'object' && typeof bv === 'object' &&
-      !Array.isArray(av) && !Array.isArray(bv)
-    ) {
-      out[k] = deepMerge(av, bv)
-    } else {
-      out[k] = bv
-    }
-  }
-  return out
-}
+import { deepMerge } from '@/lib/utils'
 
 export async function POST(req: Request) {
   try {
@@ -30,17 +13,21 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // Load
+    // Load project to get both current and draft configs
     const { data: proj, error } = await supabase
       .from('projects')
-      .select('id,draft_config')
+      .select('id, current_config, draft_config')
       .eq('id', projectId)
       .single()
 
     if (error || !proj) return NextResponse.json({ error: 'Project not found' }, { status: 404 })
 
-    const existing = (proj.draft_config ?? {}) as Record<string, unknown>
-    const next = deepMerge(existing, patch as Record<string, unknown>)
+    // If there's an existing draft, use it as the base. 
+    // Otherwise, use the current_config as the base for the new draft.
+    const hasDraft = proj.draft_config && Object.keys(proj.draft_config).length > 0
+    const base = hasDraft ? (proj.draft_config as any) : (proj.current_config as any || {})
+    
+    const next = deepMerge(base, patch as Record<string, unknown>)
 
     const { error: upErr } = await supabase
       .from('projects')

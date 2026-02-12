@@ -9,8 +9,8 @@ export const generateTemplateCode = (prefix?: string) => {
   return trimmed ? `${trimmed.toUpperCase()}-${part}` : part;
 };
 
-export const generateSubdomain = (email: string) => {
-  const prefix = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+export const generateSubdomain = (input: string) => {
+  const prefix = input.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
   const part = randomPart().toLowerCase();
   return `${prefix}-${part}`;
 };

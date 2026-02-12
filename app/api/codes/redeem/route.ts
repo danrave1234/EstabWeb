@@ -1,24 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateSubdomain } from '@/lib/codes'
-
-function deepMerge<T extends Record<string, any>>(a: T, b: T): T {
-  const out: any = Array.isArray(a) ? [...a] : { ...a }
-  for (const k of Object.keys(b)) {
-    const av = (a as any)?.[k]
-    const bv = (b as any)[k]
-    if (
-      av && bv &&
-      typeof av === 'object' && typeof bv === 'object' &&
-      !Array.isArray(av) && !Array.isArray(bv)
-    ) {
-      out[k] = deepMerge(av, bv)
-    } else {
-      out[k] = bv
-    }
-  }
-  return out
-}
+import { deepMerge } from '@/lib/utils'
 
 export async function POST(req: Request) {
   try {
@@ -93,7 +76,9 @@ export async function POST(req: Request) {
       .single()
 
     if (!currentProj?.subdomain) {
-      updatePayload.subdomain = generateSubdomain(user.email || 'user')
+      // Use brand name if available in the template payload, otherwise fall back to email
+      const brandName = (next as any)?.brand?.name
+      updatePayload.subdomain = generateSubdomain(brandName || user.email || 'user')
     }
 
     const { error: upErr } = await supabase
