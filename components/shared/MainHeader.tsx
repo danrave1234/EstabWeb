@@ -197,7 +197,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
                         )}
                         {variant === "client" && (
                           <Link
-                            href="/dashboard/requests"
+                            href="/admin/approvals"
                             className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all"
                             onClick={() => setUserMenuOpen(false)}
                           >
@@ -283,7 +283,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
                 )}
                 {variant === "client" && (
                   <Link
-                    href="/dashboard/requests"
+                    href="/admin/approvals"
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-muted-foreground"
                   >

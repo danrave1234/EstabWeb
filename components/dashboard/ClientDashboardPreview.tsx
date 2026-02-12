@@ -286,7 +286,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               Tools
             </div>
             <Link 
-              href="/dashboard/requests"
+              href="/admin/approvals"
               className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground transition-colors"
             >
               <FileText className="w-4 h-4 text-primary" />
