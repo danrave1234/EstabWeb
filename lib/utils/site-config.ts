@@ -62,8 +62,19 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
         console.log(`[getSiteConfig] DB Query result for "${domain}": count=${count}, dataLen=${data?.length || 0}`);
         if (data && data.length > 0) {
           console.log(`[getSiteConfig] Found matches: ${data.map(d => `ID:${d.id} Sub:${d.subdomain} Cust:${d.custom_domain}`).join(', ')}`);
+        } else {
+          // If no match found, let's try a case-insensitive search just in case
+          const { data: ciData } = await supabase
+            .from("projects")
+            .select("id,subdomain,custom_domain,current_config,draft_config")
+            .ilike("subdomain", domain)
+            .limit(1);
+          if (ciData?.[0]) {
+            console.log(`[getSiteConfig] Found project via case-insensitive search: ${ciData[0].id}`);
+            dbRow = ciData[0];
+          }
         }
-        dbRow = data?.[0];
+        if (!dbRow) dbRow = data?.[0];
       }
 
       if (dbRow) {
@@ -99,12 +110,12 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
     console.error("Error fetching site config from DB:", error);
   }
 
-  // Fallback to file only if DB fails or is empty
+  // Fallback to file if DB fails, is empty, OR NO PROJECT WAS FOUND
   try {
     const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
     const fileData = JSON.parse(raw);
     
-    // AUTO-MIGRATION: If we have file data but no DB data for 'global', seed it.
+    console.log(`[getSiteConfig] Using file fallback for domain: "${domain}"`);
     if (domain === 'master' || domain === 'localhost' || domain === 'localhost:3000' || domain === 'localhost:3001') {
       try {
         const supabase = await createClient();
