@@ -49,12 +49,17 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           .limit(1);
         dbRow = data?.[0];
       } else {
-        console.log(`[getSiteConfig] Searching by domain: ${domain}`);
-        const { data } = await supabase
+        console.log(`[getSiteConfig] Searching by domain: "${domain}"`);
+        // We search by both exact match (for subdomains) AND custom domains
+        const { data, error } = await supabase
           .from("projects")
           .select("id,subdomain,custom_domain,current_config,draft_config")
           .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`)
           .limit(1);
+        
+        if (error) {
+          console.error(`[getSiteConfig] DB Error for domain "${domain}":`, error);
+        }
         dbRow = data?.[0];
       }
 
