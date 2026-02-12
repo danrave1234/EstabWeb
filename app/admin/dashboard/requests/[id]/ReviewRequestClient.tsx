@@ -31,14 +31,16 @@ export default function ReviewRequestClient({ request }: ReviewRequestClientProp
       const p = port ? `:${port}` : ''
       
       let url = '#'
-      // If we're on localhost, use path-based routing (handled by our middleware update)
+      // Use the project's own domain if it has one, otherwise subdomain
+      const project = request.projects
+      const projectDomain = project?.custom_domain || (project?.subdomain ? `${project.subdomain}.estabweb.com` : hostname)
+      
+      // If we're on localhost, use path-based routing
       if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        url = `/${request.projects?.subdomain}?preview=true&requestId=${request.id}`
+        url = `/${project?.subdomain || 'master'}?preview=true&requestId=${request.id}&projectId=${project?.id}`
       } else {
-        // On production, build the subdomain URL
-        // Assumes admin is at admin.estabweb.com and sites are at [subdomain].estabweb.com
-        const rootDomain = hostname.replace('admin.', '')
-        url = `${protocol}//${request.projects?.subdomain}.${rootDomain}${p}?preview=true&requestId=${request.id}`
+        // On production, use the project domain
+        url = `${protocol}//${projectDomain}${p}?preview=true&requestId=${request.id}&projectId=${project?.id}`
       }
       setPreviewUrl(url)
     }
@@ -90,7 +92,7 @@ export default function ReviewRequestClient({ request }: ReviewRequestClientProp
             <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Globe className="w-3.5 h-3.5" />
-                {request.projects?.subdomain}.lawyerflow.io
+                {request.projects?.custom_domain || `${request.projects?.subdomain}.estabweb.com`}
               </span>
               <span className="flex items-center gap-1 uppercase tracking-wider text-[10px] font-bold">
                 <Shield className="w-3.5 h-3.5" />
