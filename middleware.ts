@@ -67,9 +67,9 @@ export async function middleware(request: NextRequest) {
     if (isPathBasedDomain) {
       domainParam = url.pathname.split('/')[1]
     } else if (hostname.endsWith(`.${ROOT_DOMAIN}`)) {
-      domainParam = hostname.slice(0, -(ROOT_DOMAIN.length + 1)) // subdomain part
+      domainParam = hostname.slice(0, -(ROOT_DOMAIN.length + 1)).toLowerCase() // Ensure lowercase for DB lookup
     } else {
-      domainParam = hostname // custom domain
+      domainParam = hostname.toLowerCase() // custom domain lowercase
     }
 
     // Preserve path for potential nested routes (e.g., /blog)

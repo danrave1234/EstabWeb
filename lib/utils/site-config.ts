@@ -48,6 +48,10 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           .limit(1);
         dbRow = data?.[0];
       } else {
+        // Find project by subdomain or custom domain
+        // In production, the "domain" passed here is just the subdomain part (e.g. "danravekeh12345-5nzznm")
+        // because of how middleware rewrites: /(sites)/[domainParam]
+        
         const { data } = await supabase
           .from("projects")
           .select("id,subdomain,custom_domain,current_config,draft_config")
