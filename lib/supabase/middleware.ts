@@ -4,6 +4,9 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request })
 
+  const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com').toLowerCase()
+  const cookieDomain = process.env.NODE_ENV === 'production' ? `.${ROOT_DOMAIN}` : undefined
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -13,9 +16,17 @@ export async function updateSession(request: NextRequest) {
         setAll: (cookiesToSet) => {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
+          cookiesToSet.forEach(({ name, value, options }) => 
+            response.cookies.set(name, value, { ...options, domain: cookieDomain })
+          )
         },
       },
+      cookieOptions: {
+        domain: cookieDomain,
+        path: '/',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+      }
     }
   )
 
