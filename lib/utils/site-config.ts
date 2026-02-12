@@ -50,31 +50,44 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
         dbRow = data?.[0];
       } else {
         console.log(`[getSiteConfig] Searching by domain: "${domain}"`);
-        // We search by both exact match (for subdomains) AND custom domains
+        
+        // 1. Try exact match
         const { data, error, count } = await supabase
           .from("projects")
           .select("id,subdomain,custom_domain,current_config,draft_config", { count: 'exact' })
           .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`);
         
-        if (error) {
-          console.error(`[getSiteConfig] DB Error for domain "${domain}":`, error);
+        dbRow = data?.[0];
+
+        // 2. If no match, and it looks like a subdomain of our root domains, try just the subdomain part
+        if (!dbRow) {
+          const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com').toLowerCase();
+          if (domain.endsWith(`.${ROOT_DOMAIN}`)) {
+            const sub = domain.slice(0, -(ROOT_DOMAIN.length + 1));
+            console.log(`[getSiteConfig] No exact match for "${domain}", trying subdomain "${sub}"`);
+            const { data: subData } = await supabase
+              .from("projects")
+              .select("id,subdomain,custom_domain,current_config,draft_config")
+              .eq("subdomain", sub)
+              .limit(1);
+            dbRow = subData?.[0];
+          }
         }
-        console.log(`[getSiteConfig] DB Query result for "${domain}": count=${count}, dataLen=${data?.length || 0}`);
-        if (data && data.length > 0) {
-          console.log(`[getSiteConfig] Found matches: ${data.map(d => `ID:${d.id} Sub:${d.subdomain} Cust:${d.custom_domain}`).join(', ')}`);
-        } else {
-          // If no match found, let's try a case-insensitive search just in case
+
+        // 3. Fallback: Case-insensitive search
+        if (!dbRow) {
+          console.log(`[getSiteConfig] Still no match, trying case-insensitive search for "${domain}"`);
           const { data: ciData } = await supabase
             .from("projects")
             .select("id,subdomain,custom_domain,current_config,draft_config")
             .ilike("subdomain", domain)
             .limit(1);
-          if (ciData?.[0]) {
-            console.log(`[getSiteConfig] Found project via case-insensitive search: ${ciData[0].id}`);
-            dbRow = ciData[0];
-          }
+          dbRow = ciData?.[0];
         }
-        if (!dbRow) dbRow = data?.[0];
+
+        if (error) {
+          console.error(`[getSiteConfig] DB Error for domain "${domain}":`, error);
+        }
       }
 
       if (dbRow) {
