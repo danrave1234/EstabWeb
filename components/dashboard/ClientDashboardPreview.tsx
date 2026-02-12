@@ -48,8 +48,23 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const [isRedeeming, setIsRedeeming] = React.useState(false)
   const [isSaving, setIsSaving] = React.useState(false)
   const [modified, setModified] = React.useState<Record<string, any>>({})
+  const [hasPendingRequest, setHasPendingRequest] = React.useState(false)
   
   const supabase = createClient()
+
+  React.useEffect(() => {
+    const checkPending = async () => {
+      const { data } = await supabase
+        .from('change_requests')
+        .select('id')
+        .eq('project_id', project.id)
+        .eq('status', 'pending')
+        .limit(1)
+        .maybeSingle()
+      setHasPendingRequest(!!data)
+    }
+    checkPending()
+  }, [project.id, supabase])
 
   const sendToIframe = React.useCallback((message: any) => {
     try {
@@ -383,12 +398,31 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
             </button>
             <button
               onClick={async () => {
-                if (Object.keys(modified).length > 0) {
-                  toast.error('You have local changes. Save Draft before submitting for approval.')
+                if (hasPendingRequest) {
+                  toast.error('A change request is already pending. Please wait for it to be reviewed.')
                   return
                 }
+                
                 setIsQueueing(true)
                 try {
+                  // If there are local changes, save them first
+                  if (Object.keys(modified).length > 0) {
+                    const saveRes = await fetch('/api/project-config', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ projectId: project.id, patch: modified })
+                    })
+                    const saveJson = await saveRes.json()
+                    if (!saveRes.ok) throw new Error(saveJson.error || 'Failed to auto-save draft before submission')
+                    
+                    // Clear local changes after successful auto-save
+                    setModified({})
+                    if (typeof window !== 'undefined') {
+                      localStorage.removeItem(LOCAL_KEY)
+                    }
+                  }
+
+                  // Now submit the change request (which snapshots the draft from DB)
                   const res = await fetch('/api/change-requests', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -396,17 +430,20 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   })
                   const json = await res.json()
                   if (!res.ok) throw new Error(json.error || 'Failed to submit for approval')
-                  toast.success('Submitted for approval')
+                  
+                  toast.success('Draft saved and submitted for approval')
+                  setHasPendingRequest(true)
+                  refreshPreview()
                 } catch (e: any) {
                   toast.error(e?.message || 'Failed to submit for approval')
                 } finally {
                   setIsQueueing(false)
                 }
               }}
-              disabled={isQueueing}
+              disabled={isQueueing || hasPendingRequest}
               className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all"
             >
-              {isQueueing ? 'Submitting…' : 'Submit for Approval'}
+              {isQueueing ? 'Submitting…' : hasPendingRequest ? 'Pending Review' : 'Submit for Approval'}
             </button>
           </div>
         </header>

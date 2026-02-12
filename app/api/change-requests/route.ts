@@ -23,6 +23,19 @@ export async function POST(req: Request) {
 
     const snapshot = (proj.draft_config ?? {}) as Record<string, unknown>
 
+    // Prevent duplicate pending requests
+    const { data: existing, error: existErr } = await supabase
+      .from('change_requests')
+      .select('id')
+      .eq('project_id', projectId)
+      .eq('status', 'pending')
+      .limit(1)
+      .maybeSingle()
+
+    if (existing) {
+      return NextResponse.json({ error: 'A change request is already pending for this project.' }, { status: 400 })
+    }
+
     const { data: inserted, error: insErr } = await supabase
       .from('change_requests')
       .insert({
