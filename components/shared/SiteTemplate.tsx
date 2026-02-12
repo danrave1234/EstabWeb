@@ -222,8 +222,8 @@ export default function SiteTemplate({ data: serverData, isAdmin = false }: Site
               return (
                 <HeroEmergency
                   key="hero-emergency"
-                  title={heroEmergency.title ?? "Broken AC? We'll be there in 2 hours."}
-                  subtitle={heroEmergency.subtitle ?? "No Hidden Fees."}
+                  title={heroEmergency.title ?? "Need help? We're here."}
+                  subtitle={heroEmergency.subtitle ?? "Fast, reliable service."}
                   primaryCTA={heroEmergency.primaryCTA ?? "Call Now"}
                   primaryCTAHref={heroEmergency.primaryCTAHref ?? "tel:+18005551234"}
                   secondaryCTA={heroEmergency.secondaryCTA ?? "Schedule Online"}
