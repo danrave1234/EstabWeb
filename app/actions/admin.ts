@@ -47,7 +47,10 @@ export async function processChangeRequest(
   }
 
   if (action === 'approved') {
-    const project = request.projects
+    // Ensure project is an object
+    const project = Array.isArray(request.projects) ? request.projects[0] : request.projects
+    if (!project) return { error: 'Project data missing' }
+
     const sectionId = request.section_id
     const requestedChanges = request.requested_changes
 
@@ -58,28 +61,40 @@ export async function processChangeRequest(
       newConfig = requestedChanges
     } else {
       // Deep clone current config for partial update
-      newConfig = JSON.parse(JSON.stringify(project.current_config))
+      newConfig = JSON.parse(JSON.stringify(project.current_config || {}))
 
       // Map section_id to config key
       const sectionKey = getSectionKey(sectionId);
 
       // Update the specific section
       newConfig[sectionKey] = {
-        ...newConfig[sectionKey],
+        ...(newConfig[sectionKey] || {}),
         ...requestedChanges
       }
     }
+
+    const nextVersion = (project.config_version || 0) + 1
 
     // Update project config and clear draft
     const { error: projectError } = await supabase
       .from('projects')
       .update({ 
         current_config: newConfig,
-        draft_config: {} // Clear draft once approved
+        draft_config: {}, // Clear draft once approved
+        config_version: nextVersion
       })
       .eq('id', request.project_id)
 
     if (projectError) return { error: projectError.message }
+
+    // Create a version snapshot
+    await supabase
+      .from('project_versions')
+      .insert({
+        project_id: request.project_id,
+        version: nextVersion,
+        snapshot: newConfig
+      })
   }
 
   // 2. Update request status and note
@@ -98,6 +113,14 @@ export async function processChangeRequest(
   // 3. Live Sync / Revalidation
   // Revalidate the home page (where client sites render)
   revalidatePath('/')
+  
+  // Revalidate the specific site if domain is known
+  const project = Array.isArray(request.projects) ? request.projects[0] : request.projects
+  const domainParam = project?.subdomain || project?.custom_domain
+  if (domainParam) {
+    revalidatePath(`/${domainParam}`)
+  }
+
   // Revalidate the admin dashboard and approvals page
   revalidatePath('/admin/dashboard', 'page')
   revalidatePath('/admin/approvals', 'page')

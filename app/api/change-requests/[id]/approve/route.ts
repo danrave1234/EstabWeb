@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getSectionKey } from '@/lib/utils/config-mapping'
 
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -23,23 +24,54 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     // Load change request
     const { data: cr, error: crErr } = await supabase
       .from('change_requests')
-      .select('id,project_id,requested_changes,status')
+      .select('*, projects(*)')
       .eq('id', id)
       .single()
 
     if (crErr || !cr) return NextResponse.json({ error: 'Change request not found' }, { status: 404 })
     if (cr.status !== 'pending') return NextResponse.json({ error: 'Request is not pending' }, { status: 400 })
 
+    const project = Array.isArray(cr.projects) ? cr.projects[0] : cr.projects
+    if (!project) return NextResponse.json({ error: 'Project data missing' }, { status: 400 })
+
+    const sectionId = cr.section_id
+    const requestedChanges = cr.requested_changes
+
+    let newConfig: any
+
+    if (!sectionId || sectionId === 'full-site') {
+      newConfig = requestedChanges
+    } else {
+      newConfig = JSON.parse(JSON.stringify(project.current_config || {}))
+      const sectionKey = getSectionKey(cr.section_id)
+      newConfig[sectionKey] = {
+        ...(newConfig[sectionKey] || {}),
+        ...requestedChanges
+      }
+    }
+
+    const nextVersion = (project.config_version || 0) + 1
+
     // Apply to project (promote to live) and clear draft
     const { error: upProjErr } = await supabase
       .from('projects')
       .update({ 
-        current_config: cr.requested_changes, 
-        draft_config: {} // Clear draft once approved
+        current_config: newConfig, 
+        draft_config: {}, // Clear draft once approved
+        config_version: nextVersion
       })
       .eq('id', cr.project_id)
 
     if (upProjErr) return NextResponse.json({ error: upProjErr.message }, { status: 400 })
+
+    // Create a version snapshot
+    await supabase
+      .from('project_versions')
+      .insert({
+        project_id: cr.project_id,
+        version: nextVersion,
+        snapshot: newConfig
+      })
 
     // Mark request approved
     const { error: upCrErr } = await supabase

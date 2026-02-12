@@ -123,6 +123,9 @@ create policy projects_update_owner on projects for update to authenticated usin
 drop policy if exists projects_admin_select on projects;
 create policy projects_admin_select on projects for select to authenticated using (is_admin());
 
+drop policy if exists projects_admin_update on projects;
+create policy projects_admin_update on projects for update to authenticated using (is_admin()) with check (is_admin());
+
 -- POLICIES: Template Codes
 drop policy if exists template_codes_admin_all on template_codes;
 create policy template_codes_admin_all on template_codes for all to authenticated using (is_admin()) with check (is_admin());
@@ -152,7 +155,7 @@ drop policy if exists project_versions_select_owner on project_versions;
 create policy project_versions_select_owner on project_versions for select to authenticated using (exists (select 1 from projects p where p.id = project_versions.project_id and p.client_id = auth.uid()));
 
 drop policy if exists project_versions_admin_select on project_versions;
-create policy project_versions_admin_select on project_versions for select to authenticated using (is_admin());
+create policy project_versions_admin_all on project_versions for all to authenticated using (is_admin());
 
 -- STORAGE: site-assets bucket and policies
 -- Note: Run these in the SQL Editor to ensure the storage schema exists
