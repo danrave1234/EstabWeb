@@ -41,6 +41,7 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
       let dbRow: any | undefined;
 
       if (projectId) {
+        console.log(`[getSiteConfig] Searching by projectId: ${projectId}`);
         const { data } = await supabase
           .from("projects")
           .select("id,subdomain,custom_domain,current_config,draft_config")
@@ -48,10 +49,7 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           .limit(1);
         dbRow = data?.[0];
       } else {
-        // Find project by subdomain or custom domain
-        // In production, the "domain" passed here is just the subdomain part (e.g. "danravekeh12345-5nzznm")
-        // because of how middleware rewrites: /(sites)/[domainParam]
-        
+        console.log(`[getSiteConfig] Searching by domain: ${domain}`);
         const { data } = await supabase
           .from("projects")
           .select("id,subdomain,custom_domain,current_config,draft_config")
@@ -61,6 +59,7 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
       }
 
       if (dbRow) {
+        console.log(`[getSiteConfig] Found project in DB: ${dbRow.id}`);
         if (isPreview) {
           const hasDraft = dbRow?.draft_config && Object.keys(dbRow.draft_config).length > 0;
           dbConf = hasDraft ? dbRow.draft_config : dbRow.current_config;
@@ -69,6 +68,7 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           dbConf = hasCurrent ? dbRow.current_config : dbRow.draft_config;
         }
       } else if (domain === 'master' || domain === 'localhost' || domain === 'localhost:3000' || domain === 'localhost:3001') {
+        console.log(`[getSiteConfig] Falling back to global site_config for: ${domain}`);
         // Look for global config in site_config table
         const { data } = await supabase
           .from("site_config")
@@ -79,6 +79,8 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
         if (data) {
           dbConf = data.payload;
         }
+      } else {
+        console.log(`[getSiteConfig] No project found for domain: ${domain}`);
       }
     }
     
