@@ -51,14 +51,17 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
       } else {
         console.log(`[getSiteConfig] Searching by domain: "${domain}"`);
         // We search by both exact match (for subdomains) AND custom domains
-        const { data, error } = await supabase
+        const { data, error, count } = await supabase
           .from("projects")
-          .select("id,subdomain,custom_domain,current_config,draft_config")
-          .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`)
-          .limit(1);
+          .select("id,subdomain,custom_domain,current_config,draft_config", { count: 'exact' })
+          .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`);
         
         if (error) {
           console.error(`[getSiteConfig] DB Error for domain "${domain}":`, error);
+        }
+        console.log(`[getSiteConfig] DB Query result for "${domain}": count=${count}, dataLen=${data?.length || 0}`);
+        if (data && data.length > 0) {
+          console.log(`[getSiteConfig] Found matches: ${data.map(d => `ID:${d.id} Sub:${d.subdomain} Cust:${d.custom_domain}`).join(', ')}`);
         }
         dbRow = data?.[0];
       }

@@ -72,6 +72,8 @@ export async function middleware(request: NextRequest) {
       domainParam = hostname.toLowerCase() // custom domain lowercase
     }
 
+    console.log(`[middleware] Routing domain: "${hostname}" -> "${domainParam}" (ROOT_DOMAIN: "${ROOT_DOMAIN}")`);
+
     // Preserve path for potential nested routes (e.g., /blog)
     const passthroughPath = isPathBasedDomain 
       ? (url.pathname.replace(`/${domainParam}`, '') || '')
