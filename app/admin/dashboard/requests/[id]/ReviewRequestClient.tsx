@@ -33,7 +33,9 @@ export default function ReviewRequestClient({ request }: ReviewRequestClientProp
       let url = '#'
       // Use the project's own domain if it has one, otherwise subdomain
       const project = request.projects
-      const projectDomain = project?.custom_domain || (project?.subdomain ? `${project.subdomain}.estabweb.com` : hostname)
+      
+      const rootDomain = hostname.replace(/^www\./, '').replace(/^admin\./, '')
+      const projectDomain = project?.custom_domain || (project?.subdomain ? `${project.subdomain}.${rootDomain}` : hostname)
       
       // If we're on localhost, use path-based routing
       if (hostname === 'localhost' || hostname === '127.0.0.1') {
@@ -92,7 +94,7 @@ export default function ReviewRequestClient({ request }: ReviewRequestClientProp
             <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Globe className="w-3.5 h-3.5" />
-                {request.projects?.custom_domain || `${request.projects?.subdomain}.estabweb.com`}
+                {previewUrl.replace(/^https?:\/\//, '').split('?')[0]}
               </span>
               <span className="flex items-center gap-1 uppercase tracking-wider text-[10px] font-bold">
                 <Shield className="w-3.5 h-3.5" />

@@ -22,7 +22,7 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
         .single();
       
       if (request && request.projects) {
-        const project = request.projects;
+        const project = Array.isArray(request.projects) ? request.projects[0] : request.projects;
         const sectionId = request.section_id;
         const requestedChanges = request.requested_changes;
 

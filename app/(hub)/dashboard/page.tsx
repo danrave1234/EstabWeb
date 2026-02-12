@@ -110,7 +110,8 @@ export default async function DashboardPage({
             <TableBody>
               {projects.map((project) => {
                 const siteName = (project.current_config as any)?.brand?.name || "My Website"
-                const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.estabweb.com` : "Not set")
+                const rootDomain = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '').replace(/^dashboard\./, '') : 'estabweb.com'
+                const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.${rootDomain}` : "Not set")
                 const previewUrl = project.custom_domain ? `https://${project.custom_domain}` : (project.subdomain ? `/${project.subdomain}` : "#")
 
                 return (
