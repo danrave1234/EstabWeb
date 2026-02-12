@@ -1,8 +1,18 @@
+import type { Metadata } from "next";
 import "@/app/globals.css";
 import { fontVariables } from "@/lib/fonts";
 import { mainSiteConfig } from "@/config/main-site-config";
 import { createClient } from "@/lib/supabase/server";
 import AdminLayoutClient from "./AdminLayoutClient";
+
+export const metadata: Metadata = {
+  title: "Admin Dashboard | EstabWeb",
+  icons: {
+    icon: "/Logo.png",
+    shortcut: "/Logo.png",
+    apple: "/Logo.png",
+  },
+};
 
 export default async function AdminLayout({
   children,

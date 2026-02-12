@@ -24,6 +24,8 @@ export async function generateMetadata({
   const description = seo.description || `Welcome to ${brand.name || domain}. Built with EstabWeb.`;
   const keywords = seo.keywords || [];
 
+  const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
+
   return {
     title,
     description,
@@ -42,7 +44,9 @@ export async function generateMetadata({
       images: brand.logoUrl ? [brand.logoUrl] : [],
     },
     icons: {
-      icon: brand.favicon || "/favicon.ico",
+      icon: iconUrl,
+      shortcut: iconUrl,
+      apple: iconUrl,
     },
     metadataBase: new URL(`https://${host}`),
     alternates: {
