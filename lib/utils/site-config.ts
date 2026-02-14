@@ -15,16 +15,23 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
     let dbConf: any;
 
     if (requestId) {
-      const { data: request } = await supabase
+      console.log(`[getSiteConfig] Fetching by requestId: ${requestId}`);
+      const { data: request, error: reqError } = await supabase
         .from('change_requests')
         .select('*, projects(*)')
         .eq('id', requestId)
         .single();
       
+      if (reqError) {
+        console.error(`[getSiteConfig] Error fetching change request:`, reqError);
+      }
+
       if (request && request.projects) {
         const project = Array.isArray(request.projects) ? request.projects[0] : request.projects;
         const sectionId = request.section_id;
         const requestedChanges = request.requested_changes;
+
+        console.log(`[getSiteConfig] Applying changes for section: ${sectionId}`);
 
         if (!sectionId || sectionId === 'full-site') {
           dbConf = requestedChanges;
@@ -99,7 +106,18 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           const hasCurrent = dbRow?.current_config && Object.keys(dbRow.current_config).length > 0;
           dbConf = hasCurrent ? dbRow.current_config : dbRow.draft_config;
         }
-      } else if (domain === 'master' || domain === 'localhost' || domain === 'localhost:3000' || domain === 'localhost:3001') {
+      } else if (domain === 'master') {
+        console.log(`[getSiteConfig] Fetching master template config`);
+        const { data } = await supabase
+          .from("site_config")
+          .select("payload")
+          .eq("key", "template_master")
+          .single();
+        
+        if (data) {
+          dbConf = data.payload;
+        }
+      } else if (domain === 'localhost' || domain === 'localhost:3000' || domain === 'localhost:3001') {
         console.log(`[getSiteConfig] Falling back to global site_config for: ${domain}`);
         // Look for global config in site_config table
         const { data } = await supabase
@@ -129,7 +147,26 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
     const fileData = JSON.parse(raw);
     
     console.log(`[getSiteConfig] Using file fallback for domain: "${domain}"`);
-    if (domain === 'master' || domain === 'localhost' || domain === 'localhost:3000' || domain === 'localhost:3001') {
+    if (domain === 'master') {
+      try {
+        const supabase = await createClient();
+        const { data: templateConfig } = await supabase
+          .from("site_config")
+          .select("id")
+          .eq("key", "template_master")
+          .single();
+
+        if (!templateConfig) {
+           await supabase.from("site_config").insert({
+             key: "template_master",
+             payload: fileData
+           });
+           console.log("Auto-migrated site-data.json to template_master in DB");
+        }
+      } catch (migrateErr) {
+        console.error("Auto-migration failed for master:", migrateErr);
+      }
+    } else if (domain === 'localhost' || domain === 'localhost:3000' || domain === 'localhost:3001') {
       try {
         const supabase = await createClient();
         const { data: globalConfig } = await supabase

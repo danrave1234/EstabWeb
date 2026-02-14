@@ -8,6 +8,7 @@ export type PracticeAreaItem = {
   description: string;
   icon: string;
   href?: string;
+  imageUrl?: string;
 };
 
 export type PracticeAreasGridProps = {
@@ -17,12 +18,25 @@ export type PracticeAreasGridProps = {
   linkText?: string;
 };
 
+function ensureArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    const obj = value as Record<string, T>;
+    return Object.keys(obj)
+      .filter((k) => /^\d+$/.test(k))
+      .sort((a, b) => Number(a) - Number(b))
+      .map((k) => obj[k]);
+  }
+  return [];
+}
+
 export default function PracticeAreasGrid({
   title = "Practice Areas",
   subtitle,
-  items,
+  items: rawItems,
   linkText = "Learn More",
 }: PracticeAreasGridProps) {
+  const items = ensureArray<PracticeAreaItem>(rawItems);
   return (
     <section id="services" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background reveal">
       <div className="max-w-6xl mx-auto">
@@ -49,8 +63,12 @@ export default function PracticeAreasGrid({
                 className="bg-background border border-border rounded-lg p-4 sm:p-8 flex flex-col shadow-sm"
               >
                 <div className="mb-3 sm:mb-6">
-                  <div className="w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center text-primary border border-primary/20 rounded bg-primary/5">
-                    <DynamicIcon name={item.icon} className="w-5 h-5 sm:w-7 sm:h-7 shrink-0" strokeWidth={2} />
+                  <div className="w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center text-primary border border-primary/20 rounded overflow-hidden bg-primary/5">
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <DynamicIcon name={item.icon} className="w-5 h-5 sm:w-7 sm:h-7 shrink-0" strokeWidth={2} />
+                    )}
                   </div>
                 </div>
                 <h3 className="font-serif text-base sm:text-xl font-bold text-foreground mb-2 sm:mb-4 leading-tight">

@@ -1,12 +1,13 @@
 "use client";
 
+import DynamicIcon from "@/components/shared/DynamicIcon";
 import { Check } from "lucide-react";
-import * as Icons from "lucide-react";
 
 export type FeatureItem = {
   title: string;
   description: string;
   icon: string;
+  imageUrl?: string;
 };
 
 export type FeaturesModernProps = {
@@ -25,8 +26,8 @@ export default function FeaturesModern({
   return (
     <section className="py-12 sm:py-24 px-4 sm:px-6 lg:px-8 bg-background overflow-hidden reveal">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div className="reveal">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          <div className="lg:col-span-5 reveal">
             <h2 className="text-3xl sm:text-5xl font-bold text-foreground mb-6 tracking-tight leading-[1.1]">
               {title}
             </h2>
@@ -45,9 +46,8 @@ export default function FeaturesModern({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 reveal">
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4 reveal">
             {features.map((feature, index) => {
-              const IconComponent = (Icons as any)[feature.icon] || Icons.Shield;
               return (
                 <div
                   key={index}
@@ -55,7 +55,15 @@ export default function FeaturesModern({
                     index === 1 ? "bg-primary text-primary-foreground sm:mt-8" : "bg-muted/30"
                   }`}
                 >
-                  <IconComponent className={`w-10 h-10 mb-6 ${index === 1 ? "text-primary-foreground" : "text-primary"}`} />
+                  <div className="mb-6">
+                    <div className="w-10 h-10 overflow-hidden flex items-center justify-center">
+                      {feature.imageUrl ? (
+                        <img src={feature.imageUrl} alt={feature.title} className="w-full h-full object-contain" />
+                      ) : (
+                        <DynamicIcon name={feature.icon} className={`w-full h-full ${index === 1 ? "text-primary-foreground" : "text-primary"}`} />
+                      )}
+                    </div>
+                  </div>
                   <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
                   <p className={`text-sm leading-relaxed ${index === 1 ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
                     {feature.description}

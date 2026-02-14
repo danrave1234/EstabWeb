@@ -15,12 +15,14 @@ export type BlogGridProps = {
   title?: string;
   subtitle?: string;
   posts: BlogPost[];
+  linkText?: string;
 };
 
 export default function BlogGrid({
   title = "Latest Insights",
   subtitle = "Expert advice and updates from our team.",
   posts = [],
+  linkText = "Read Article",
 }: BlogGridProps) {
   if (!posts?.length) return null;
 
@@ -75,7 +77,7 @@ export default function BlogGrid({
                   href={post.href ?? "#"}
                   className="inline-flex items-center gap-2 text-sm font-bold text-primary group/link"
                 >
-                  Read Article
+                  {linkText}
                   <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
                 </a>
               </div>

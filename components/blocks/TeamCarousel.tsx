@@ -13,12 +13,14 @@ export type TeamCarouselProps = {
   title?: string;
   subtitle?: string;
   members: TeamMember[];
+  linkText?: string;
 };
 
 export default function TeamCarousel({
   title = "Our Team",
   subtitle,
   members,
+  linkText = "View Bio",
 }: TeamCarouselProps) {
   if (!members?.length) return null;
 
@@ -79,7 +81,7 @@ export default function TeamCarousel({
                   href={member.bioUrl ?? "#"}
                   className="w-full py-2 text-[10px] sm:text-sm font-semibold text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors"
                 >
-                  View Bio
+                  {linkText}
                 </a>
               </article>
             );

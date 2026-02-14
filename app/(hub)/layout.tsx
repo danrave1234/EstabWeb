@@ -5,6 +5,8 @@ import { mainSiteConfig } from "@/config/main-site-config";
 import ScrollReveal from "@/components/shared/ScrollReveal";
 import { Toaster } from "sonner";
 import StructuredData from "@/components/shared/StructuredData";
+import { createClient } from "@/lib/supabase/server";
+import HubLayoutClient from "@/components/shared/HubLayoutClient";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://estabweb.com";
 
@@ -68,11 +70,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HubLayout({
+export default async function HubLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const sessionUser = user || null;
+
   const colorTheme = mainSiteConfig.colorTheme;
   const mode = mainSiteConfig.darkMode ? "dark" : "light";
   const typography = mainSiteConfig.typographyStyle;
@@ -96,8 +104,10 @@ export default function HubLayout({
         />
       </head>
       <body className="antialiased">
-        <ScrollReveal />
-        {children}
+        <HubLayoutClient initialUser={sessionUser}>
+          <ScrollReveal />
+          {children}
+        </HubLayoutClient>
         <Toaster position="top-right" richColors />
       </body>
     </html>

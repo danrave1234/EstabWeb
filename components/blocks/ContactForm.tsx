@@ -12,6 +12,12 @@ export type ContactFormProps = {
   email: string;
   phone: string;
   address: string;
+  nameLabel?: string;
+  emailLabel?: string;
+  infoLabel?: string;
+  callLabel?: string;
+  locationLabel?: string;
+  emailUsLabel?: string;
 };
 
 export default function ContactForm({
@@ -22,6 +28,12 @@ export default function ContactForm({
   email,
   phone,
   address,
+  nameLabel = "Your Name",
+  emailLabel = "Email Address",
+  infoLabel = "Contact Information",
+  callLabel = "Call us",
+  locationLabel = "Location",
+  emailUsLabel = "Email Us",
 }: ContactFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "" });
@@ -54,7 +66,7 @@ export default function ContactForm({
           <div className="bg-background p-6 sm:p-8 rounded-2xl shadow-sm border border-border">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5 ml-1">Your Name</label>
+                <label className="block text-sm font-medium text-foreground mb-1.5 ml-1">{nameLabel}</label>
                 <input
                   type="text"
                   placeholder="John Doe"
@@ -67,7 +79,7 @@ export default function ContactForm({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5 ml-1">Email Address</label>
+                <label className="block text-sm font-medium text-foreground mb-1.5 ml-1">{emailLabel}</label>
                 <input
                   type="email"
                   placeholder="john@example.com"
@@ -92,7 +104,7 @@ export default function ContactForm({
           <div className="space-y-8 lg:pt-2">
             <div>
               <h3 className="text-sm font-bold uppercase tracking-widest text-primary/70 mb-6 ml-1">
-                Contact Information
+                {infoLabel}
               </h3>
               
               <div className="space-y-6">
@@ -104,7 +116,7 @@ export default function ContactForm({
                     <Phone className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Call us</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{callLabel}</p>
                     <p className="text-lg font-bold text-foreground">{phone}</p>
                   </div>
                 </a>
@@ -114,7 +126,7 @@ export default function ContactForm({
                     <MapPin className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Location</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">{locationLabel}</p>
                     <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">
                       {address}
                     </p>
@@ -129,7 +141,7 @@ export default function ContactForm({
                     <Mail className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">Email Us</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">{emailUsLabel}</p>
                     <span className="text-sm text-foreground group-hover:text-primary transition-colors font-medium">{email}</span>
                   </div>
                 </a>

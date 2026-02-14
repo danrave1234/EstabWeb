@@ -620,7 +620,7 @@
 }
 
 /* 17. Navy Blue and Electric Blue */
-[data-theme="navy-electric-blue"] {
+[data-theme="navy-electric-blue"], [data-theme="navy-electric"] {
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-serif: var(--font-geist-sans), system-ui, sans-serif;
   --background: #ffffff;
@@ -632,7 +632,7 @@
   --muted-foreground: #475569;
   --border: rgba(10, 26, 68, 0.15);
 }
-[data-theme="navy-electric-blue"][data-mode="dark"] {
+[data-theme="navy-electric-blue"][data-mode="dark"], [data-theme="navy-electric"][data-mode="dark"] {
   --background: #050b1a;
   --foreground: #e6f7ff;
   --primary: #00c2ff;
@@ -895,6 +895,138 @@
   --border: rgba(210, 180, 140, 0.12);
 }
 
+/* 23. Dark Green and Ivory */
+[data-theme="dark-green-ivory"] {
+  --font-sans: var(--font-source-sans-3), system-ui, sans-serif;
+  --font-serif: var(--font-libre-baskerville), Georgia, serif;
+  --background: #fffff0; /* ivory */
+  --foreground: #14532d; /* dark green */
+  --primary: #14532d;
+  --primary-foreground: #fffff0;
+  --accent: #eab308; /* yellow/gold */
+  --muted: #f0fdf4;
+  --muted-foreground: #166534;
+  --border: rgba(20, 83, 45, 0.15);
+}
+[data-theme="dark-green-ivory"][data-mode="dark"] {
+  --background: #064e3b;
+  --foreground: #f0fdf4;
+  --primary: #eab308;
+  --primary-foreground: #064e3b;
+  --muted: #065f46;
+  --muted-foreground: #d1fae5;
+}
+
+/* 24. Fiesta Red and Yellow — Local energy, strong, attention-grabbing */
+[data-theme="fiesta-red-yellow"] {
+  --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+  --font-serif: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --primary: #c1121f;
+  --primary-foreground: #ffffff;
+  --accent: #ffbe0b;
+  --muted: #fefae0;
+  --muted-foreground: #780000;
+  --border: rgba(193, 18, 31, 0.15);
+}
+[data-theme="fiesta-red-yellow"][data-mode="dark"] {
+  --background: #1a0204;
+  --foreground: #fefae0;
+  --primary: #ffbe0b;
+  --primary-foreground: #1a0204;
+  --muted: #3a0408;
+  --muted-foreground: #ffbe0b;
+}
+
+/* 25. Barangay Blue — Government-ish trust */
+[data-theme="barangay-blue"] {
+  --font-sans: var(--font-source-sans-3), system-ui, sans-serif;
+  --font-serif: var(--font-libre-baskerville), Georgia, serif;
+  --background: #f8f9fa;
+  --foreground: #1d3557;
+  --primary: #1d3557;
+  --primary-foreground: #ffffff;
+  --accent: #457b9d;
+  --muted: #f1faee;
+  --muted-foreground: #457b9d;
+  --border: rgba(29, 53, 87, 0.15);
+}
+[data-theme="barangay-blue"][data-mode="dark"] {
+  --background: #0d1b2a;
+  --foreground: #f1faee;
+  --primary: #a8dadc;
+  --primary-foreground: #0d1b2a;
+  --muted: #1d3557;
+  --muted-foreground: #a8dadc;
+}
+
+/* 26. Tropical Teal — Resort / island / PH warmth */
+[data-theme="tropical-teal"] {
+  --font-sans: var(--font-nunito), system-ui, sans-serif;
+  --font-serif: var(--font-nunito), system-ui, sans-serif;
+  --background: #ffffff;
+  --foreground: #004d4d;
+  --primary: #008080;
+  --primary-foreground: #ffffff;
+  --accent: #f4a261;
+  --muted: #e0f2f1;
+  --muted-foreground: #004d4d;
+  --border: rgba(0, 128, 128, 0.15);
+}
+[data-theme="tropical-teal"][data-mode="dark"] {
+  --background: #002626;
+  --foreground: #e0f2f1;
+  --primary: #26a69a;
+  --primary-foreground: #002626;
+  --muted: #004d4d;
+  --muted-foreground: #26a69a;
+}
+
+/* 27. Luxury Black and Gold */
+[data-theme="luxury-black-gold"] {
+  --font-sans: var(--font-playfair-display), Georgia, serif;
+  --font-serif: var(--font-playfair-display), Georgia, serif;
+  --background: #ffffff;
+  --foreground: #111111;
+  --primary: #111111;
+  --primary-foreground: #c6a75e;
+  --accent: #c6a75e;
+  --muted: #f5f5f5;
+  --muted-foreground: #666666;
+  --border: rgba(17, 17, 17, 0.15);
+}
+[data-theme="luxury-black-gold"][data-mode="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --primary: #c6a75e;
+  --primary-foreground: #0a0a0a;
+  --muted: #1a1a1a;
+  --muted-foreground: #a1a1a1;
+}
+
+/* 28. Facebook Blue — Optimized for chat-driven businesses */
+[data-theme="facebook-blue"] {
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: var(--font-geist-sans), system-ui, sans-serif;
+  --background: #ffffff;
+  --foreground: #1c1e21;
+  --primary: #1877f2;
+  --primary-foreground: #ffffff;
+  --accent: #42a5f5;
+  --muted: #f0f2f5;
+  --muted-foreground: #606770;
+  --border: rgba(24, 119, 242, 0.15);
+}
+[data-theme="facebook-blue"][data-mode="dark"] {
+  --background: #18191a;
+  --foreground: #e4e6eb;
+  --primary: #2e89ff;
+  --primary-foreground: #ffffff;
+  --muted: #242526;
+  --muted-foreground: #b0b3b8;
+}
+
 /* Typography Styles — Placed here to override theme defaults */
 [data-typography="modern"] {
   --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif !important;
@@ -937,6 +1069,17 @@
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
   --font-mono: var(--font-geist-mono);
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
 body {

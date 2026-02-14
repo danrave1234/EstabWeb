@@ -4,12 +4,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Home, Search, ArrowLeft } from 'lucide-react'
 import MainHeader from '@/components/shared/MainHeader'
+import MainFooter from '@/components/shared/MainFooter'
 
 export default function HubNotFound() {
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <MainHeader />
-      
+    <>
       <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
         <div className="space-y-6 max-w-md mx-auto reveal">
           <div className="relative mb-8">
@@ -46,19 +45,6 @@ export default function HubNotFound() {
           </div>
         </div>
       </main>
-
-      <footer className="py-8 border-t border-border bg-muted/30">
-        <div className="container mx-auto px-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Image 
-            src="/Logo.svg" 
-            alt="EstabWeb Logo" 
-            width={24} 
-            height={24} 
-            className="w-6 h-6 object-contain"
-          />
-          © 2026 EstabWeb. All rights reserved.
-        </div>
-      </footer>
-    </div>
+    </>
   )
 }

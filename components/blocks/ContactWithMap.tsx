@@ -1,0 +1,150 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Mail, Phone, MapPin, Clock } from "lucide-react";
+
+export type ContactWithMapProps = {
+  title?: string;
+  subtitle?: string;
+  email: string;
+  phone: string;
+  address: string;
+  googleMapsEmbedUrl?: string;
+  businessHours?: { day: string; hours: string }[];
+  formHeading?: string;
+  formSubmitText?: string;
+  formThankYouText?: string;
+};
+
+export default function ContactWithMap({
+  title = "Visit Our Office",
+  subtitle = "We're conveniently located and ready to welcome you.",
+  email,
+  phone,
+  address,
+  googleMapsEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3861.1896053744943!2d121.0416973!3d14.5408669!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397c8eb44f2d373%3A0x1d35a83a44838634!2sBGC!5e0!3m2!1sen!2sph!4v1700000000000!5m2!1sen!2sph",
+  businessHours = [
+    { day: "Mon - Fri", hours: "9:00 AM - 6:00 PM" },
+    { day: "Saturday", hours: "10:00 AM - 4:00 PM" },
+    { day: "Sunday", hours: "Closed" },
+  ],
+  formHeading = "Send us a Message",
+  formSubmitText = "Send Message",
+  formThankYouText = "Message Sent!",
+}: ContactWithMapProps) {
+  const router = useRouter();
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitted(true);
+    setTimeout(() => {
+      router.push("/success");
+    }, 1000);
+  };
+
+  return (
+    <section id="contact-map" className="py-16 sm:py-24 bg-background reveal">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+          {/* Form & Details */}
+          <div className="space-y-12">
+            <div className="space-y-4">
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                {title}
+              </h2>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                {subtitle}
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <input
+                  type="text"
+                  required
+                  placeholder="Your Name"
+                  className="w-full bg-muted/30 border border-border rounded-xl p-4 text-foreground focus:ring-2 focus:ring-primary focus:bg-background transition-all outline-none"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                />
+                <input
+                  type="email"
+                  required
+                  placeholder="Email Address"
+                  className="w-full bg-muted/30 border border-border rounded-xl p-4 text-foreground focus:ring-2 focus:ring-primary focus:bg-background transition-all outline-none"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                />
+              </div>
+              <textarea
+                required
+                rows={4}
+                placeholder="How can we help you today?"
+                className="w-full bg-muted/30 border border-border rounded-xl p-4 text-foreground focus:ring-2 focus:ring-primary focus:bg-background transition-all outline-none resize-none"
+                value={formData.message}
+                onChange={(e) => setFormData({...formData, message: e.target.value})}
+              />
+              <button
+                type="submit"
+                disabled={isSubmitted}
+                className="px-10 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:shadow-xl hover:shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
+              >
+                {isSubmitted ? formThankYouText : formSubmitText}
+              </button>
+            </form>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-4">
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Contact Details</h4>
+                <div className="space-y-3">
+                  <a href={`tel:${phone}`} className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
+                    <Phone className="w-4 h-4" />
+                    <span className="text-sm font-medium">{phone}</span>
+                  </a>
+                  <a href={`mailto:${email}`} className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
+                    <Mail className="w-4 h-4" />
+                    <span className="text-sm font-medium">{email}</span>
+                  </a>
+                  <div className="flex items-start gap-3 text-muted-foreground">
+                    <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span className="text-sm font-medium leading-tight">{address}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Business Hours</h4>
+                <div className="space-y-2">
+                  {businessHours.map((item, i) => (
+                    <div key={i} className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">{item.day}</span>
+                      <span className="font-bold text-foreground">{item.hours}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Map Side */}
+          <div className="relative h-[500px] lg:h-auto min-h-[400px] rounded-3xl overflow-hidden shadow-2xl border border-border">
+             <iframe
+               src={googleMapsEmbedUrl}
+               width="100%"
+               height="100%"
+               style={{ border: 0 }}
+               allowFullScreen
+               loading="lazy"
+               referrerPolicy="no-referrer-when-downgrade"
+               className="absolute inset-0 grayscale contrast-125"
+             />
+             <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-black/10" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

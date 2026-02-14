@@ -9,6 +9,7 @@ export type AttorneyProfileProps = {
   bioParagraph2: string;
   signatureName: string;
   headshotUrl: string;
+  aboutLabel?: string;
 };
 
 export default function AttorneyProfile({
@@ -18,6 +19,7 @@ export default function AttorneyProfile({
   bioParagraph2,
   signatureName,
   headshotUrl,
+  aboutLabel = "Professional headshot",
 }: AttorneyProfileProps) {
   const isExternalImage = headshotUrl.startsWith("http");
 
@@ -46,7 +48,7 @@ export default function AttorneyProfile({
                 )
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-                  Professional headshot
+                  {aboutLabel}
                 </div>
               )}
             </div>

@@ -16,12 +16,18 @@ export type PricingTableProps = {
   title?: string;
   subtitle?: string;
   plans: PricingPlan[];
+  mostPopularLabel?: string;
+  startingAtLabel?: string;
+  periodLabel?: string;
 };
 
 export default function PricingTable({
   title = "Simple, Transparent Pricing",
   subtitle = "Choose the plan that's right for your business.",
   plans,
+  mostPopularLabel = "Most Popular",
+  startingAtLabel = "Starting at",
+  periodLabel = "/package",
 }: PricingTableProps) {
   return (
     <section id="pricing" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background reveal">
@@ -53,17 +59,20 @@ export default function PricingTable({
             >
               {plan.isPopular && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full uppercase tracking-widest">
-                  Most Popular
+                  {mostPopularLabel}
                 </div>
               )}
 
               <div className="mb-8">
                 <h3 className="text-xl font-bold text-foreground mb-2">{plan.name}</h3>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl sm:text-4xl font-bold text-foreground">{plan.price}</span>
-                  <span className="text-muted-foreground text-sm">/month</span>
+                <div className="flex flex-col gap-0.5 mb-2">
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{startingAtLabel}</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl sm:text-4xl font-bold text-foreground">{plan.price.includes("₱") || plan.price.toLowerCase().includes("php") ? plan.price : `₱${plan.price}`}</span>
+                    <span className="text-muted-foreground text-sm">{periodLabel}</span>
+                  </div>
                 </div>
-                <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {plan.description}
                 </p>
               </div>

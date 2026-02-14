@@ -2,12 +2,15 @@
 
 import Image from "next/image";
 
+import DynamicIcon from "@/components/shared/DynamicIcon";
+
 export type HeroBlockProps = {
   title: string;
   subtitle: string;
   primaryCTA: string;
   secondaryCTA: string;
-  backgroundImage: string;
+  backgroundImage?: string;
+  icon?: string;
   primaryCTAHref?: string;
   secondaryCTAHref?: string;
 };
@@ -18,10 +21,11 @@ export default function HeroBlock({
   primaryCTA,
   secondaryCTA,
   backgroundImage,
+  icon,
   primaryCTAHref = "#contact",
   secondaryCTAHref = "#services",
 }: HeroBlockProps) {
-  const isExternalImage = backgroundImage.startsWith("http");
+  const isExternalImage = backgroundImage?.startsWith("http");
 
   return (
     <section className="container mx-auto px-4 py-8 md:py-20 lg:py-24 reveal">
@@ -49,27 +53,37 @@ export default function HeroBlock({
             </div>
           </div>
         <div className="lg:col-span-6 order-3 lg:order-none">
-          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
-            {isExternalImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={backgroundImage}
-                alt=""
-                className="w-full h-full object-cover"
-              />
+          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center bg-muted">
+            {backgroundImage ? (
+              <>
+                {isExternalImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={backgroundImage}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Image
+                    src={backgroundImage}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                )}
+                <div
+                  className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-foreground/5 to-transparent pointer-events-none"
+                  aria-hidden
+                />
+              </>
+            ) : icon ? (
+              <div className="w-24 h-24 sm:w-32 sm:h-32 text-primary opacity-20">
+                <DynamicIcon name={icon} className="w-full h-full" />
+              </div>
             ) : (
-              <Image
-                src={backgroundImage}
-                alt=""
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
+              <div className="text-muted-foreground text-sm">Image</div>
             )}
-            <div
-              className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-foreground/5 to-transparent pointer-events-none"
-              aria-hidden
-            />
           </div>
         </div>
       </div>

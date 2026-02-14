@@ -4,12 +4,10 @@ import Image from 'next/image'
 import { ArrowRight, Zap, Smartphone, Shield, Layout, Globe, CheckCircle2, ChevronDown } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import MainHeader from '@/components/shared/MainHeader'
+import MainFooter from '@/components/shared/MainFooter'
 import StructuredData from '@/components/shared/StructuredData'
 
 export default async function EstabWebLanding() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
   const faqs = [
     {
       q: "How fast can I really launch a website?",
@@ -34,7 +32,7 @@ export default async function EstabWebLanding() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <>
       <StructuredData 
         data={{
           "@context": "https://schema.org",
@@ -49,7 +47,6 @@ export default async function EstabWebLanding() {
           }))
         }}
       />
-      <MainHeader initialUser={user} />
 
       <main className="flex-1">
         {/* Hero Section */}
@@ -77,10 +74,10 @@ export default async function EstabWebLanding() {
                   <ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link 
-                  href="#how-it-works" 
+                  href="/pricing" 
                   className="w-full sm:w-auto px-8 py-4 bg-background border border-border rounded-full text-lg font-bold hover:bg-muted transition-all flex items-center justify-center gap-2"
                 >
-                  See How it Works
+                  View Pricing
                 </Link>
               </div>
             </div>
@@ -208,31 +205,6 @@ export default async function EstabWebLanding() {
         </section>
       </main>
 
-      <footer className="py-12 border-t border-border bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-2">
-              <Image 
-                src="/Logo.svg" 
-                alt="EstabWeb Logo" 
-                width={32} 
-                height={32} 
-                className="w-8 h-8 object-contain"
-              />
-              <span className="font-bold tracking-tight">EstabWeb</span>
-            </div>
-            <div className="flex gap-8 text-sm text-muted-foreground">
-              <Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
-              <Link href="/contact" className="hover:text-primary transition-colors">Contact</Link>
-              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              © 2026 EstabWeb. All rights reserved.
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </>
   )
 }

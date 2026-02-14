@@ -7,6 +7,7 @@ export type StepItem = {
   title: string;
   description: string;
   icon: string;
+  imageUrl?: string;
 };
 
 export type HowItWorksStepsProps = {
@@ -70,7 +71,13 @@ export default function HowItWorksSteps({
                   {step.number}
                 </div>
                 <div className="mb-2 sm:mb-3">
-                  <DynamicIcon name={step.icon} className="w-5 h-5 sm:w-8 sm:h-8 text-primary mx-auto" />
+                  <div className="w-8 h-8 sm:w-12 sm:h-12 overflow-hidden mx-auto flex items-center justify-center">
+                    {step.imageUrl ? (
+                      <img src={step.imageUrl} alt={step.title} className="w-full h-full object-contain" />
+                    ) : (
+                      <DynamicIcon name={step.icon} className="w-5 h-5 sm:w-8 sm:h-8 text-primary mx-auto" />
+                    )}
+                  </div>
                 </div>
                 <h3 className="text-xs sm:text-base lg:text-xl font-bold text-foreground mb-1 sm:mb-2 leading-tight">
                   {step.title}

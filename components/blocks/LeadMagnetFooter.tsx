@@ -33,6 +33,11 @@ export type LeadMagnetFooterProps = {
   privacyUrl: string;
   termsUrl: string;
   cookieUrl: string;
+  contactUsLabel?: string;
+  callUsNowLabel?: string;
+  privacyLabel?: string;
+  termsLabel?: string;
+  cookieLabel?: string;
 };
 
 export default function LeadMagnetFooter({
@@ -47,6 +52,11 @@ export default function LeadMagnetFooter({
   privacyUrl,
   termsUrl,
   cookieUrl,
+  contactUsLabel = "Contact Us",
+  callUsNowLabel = "Call us now",
+  privacyLabel = "Privacy Policy",
+  termsLabel = "Terms of Service",
+  cookieLabel = "Cookie Policy",
 }: LeadMagnetFooterProps) {
   const [formData, setFormData] = useState({ name: "", email: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -194,7 +204,7 @@ export default function LeadMagnetFooter({
           {social.showContact !== false && (
             <div className="flex flex-col space-y-8">
               <h3 className="text-xl font-bold tracking-tight text-foreground text-center lg:text-left">
-                Contact Us
+                {contactUsLabel}
               </h3>
 
               <a href={`tel:${phoneHref}`} className="group block w-full max-w-[280px] sm:max-w-sm mx-auto lg:mx-0">
@@ -203,7 +213,7 @@ export default function LeadMagnetFooter({
                     <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" aria-hidden />
                   </div>
                   <div className="flex-1">
-                    <p className="text-muted-foreground text-[10px] sm:text-xs uppercase tracking-wider font-semibold">Call us now</p>
+                    <p className="text-muted-foreground text-[10px] sm:text-xs uppercase tracking-wider font-semibold">{callUsNowLabel}</p>
                     <p className="text-lg sm:text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
                       {contact.phone}
                     </p>
@@ -248,19 +258,19 @@ export default function LeadMagnetFooter({
                 href={privacyUrl}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                Privacy Policy
+                {privacyLabel}
               </a>
               <a
                 href={termsUrl}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                Terms of Service
+                {termsLabel}
               </a>
               <a
                 href={cookieUrl}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                Cookie Policy
+                {cookieLabel}
               </a>
             </div>
           </div>

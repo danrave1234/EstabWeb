@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import DynamicIcon from "@/components/shared/DynamicIcon";
 
 export type FeatureHighlightItem = {
-  imageUrl: string;
+  imageUrl?: string;
+  icon?: string;
   title: string;
   description: string;
 };
@@ -39,14 +41,14 @@ export default function FeatureHighlightZigzag({
         <div className="space-y-10 md:space-y-16 lg:space-y-24">
           {items.map((item, index) => {
             const imageLeft = index % 2 === 0;
-            const isExternal = item.imageUrl.startsWith("http");
+            const isExternal = item.imageUrl?.startsWith("http");
             return (
               <div
                 key={index}
                 className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 items-center"
               >
                 <div
-                  className={`relative aspect-[4/3] rounded-2xl overflow-hidden bg-muted ${
+                  className={`relative aspect-[4/3] rounded-2xl overflow-hidden bg-muted flex items-center justify-center ${
                     !imageLeft ? "md:order-2" : ""
                   }`}
                 >
@@ -67,6 +69,10 @@ export default function FeatureHighlightZigzag({
                         sizes="(max-width: 768px) 100vw, 50vw"
                       />
                     )
+                  ) : item.icon ? (
+                    <div className="w-20 h-20 sm:w-32 sm:h-32 text-primary opacity-20">
+                      <DynamicIcon name={item.icon} className="w-full h-full" />
+                    </div>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
                       Image

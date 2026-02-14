@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import React from 'react';
 import MainHeader from '@/components/shared/MainHeader';
+import MainFooter from '@/components/shared/MainFooter';
 import { createClient } from '@/lib/supabase/server';
 import { headers } from 'next/headers';
 import Link from 'next/link';
@@ -16,8 +17,6 @@ export const metadata: Metadata = {
 };
 
 export default async function PricingPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
   const heads = await headers();
   const country = heads.get("x-vercel-ip-country") || "PH";
   const isPH = country === "PH";
@@ -51,10 +50,9 @@ export default async function PricingPage() {
   const displayPlans = isPH ? [plans[1]] : [plans[0]];
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <MainHeader initialUser={user} />
-      <main className="flex-1 container mx-auto px-4 py-6 flex flex-col justify-center">
-        <div className="text-center max-w-2xl mx-auto mb-6">
+    <>
+      <main className="flex-1 container mx-auto px-4 pt-24 pb-12 flex flex-col justify-center">
+        <div className="text-center max-w-2xl mx-auto mb-12">
           <h1 className="text-4xl lg:text-5xl font-bold mb-2 tracking-tight">Simple, Transparent Pricing</h1>
           <p className="text-base text-muted-foreground">No hidden fees. A professional website that works for you.</p>
         </div>
@@ -107,30 +105,6 @@ export default async function PricingPage() {
           ))}
         </div>
       </main>
-      <footer className="py-6 border-t border-border bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-2">
-              <Image 
-                src="/Logo.svg" 
-                alt="EstabWeb Logo" 
-                width={32} 
-                height={32} 
-                className="w-8 h-8 object-contain"
-              />
-              <span className="font-bold tracking-tight">EstabWeb</span>
-            </div>
-            <div className="flex gap-8 text-sm text-muted-foreground">
-              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-              <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              © 2026 EstabWeb. All rights reserved.
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </>
   );
 }

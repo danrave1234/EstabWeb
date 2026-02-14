@@ -12,6 +12,20 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+    // 0) Ensure profile exists
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .single()
+    
+    if (!profile) {
+      console.log('[redeem] Profile missing for user, creating one...', user.id)
+      await supabase
+        .from('profiles')
+        .insert({ id: user.id, email: user.email, role: 'client' })
+    }
+
     // 1) Load template code
     const { data: c, error: codeErr } = await supabase
       .from('template_codes')
@@ -46,12 +60,26 @@ export async function POST(req: Request) {
       if (!project) return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     } else {
       // Optional: create a minimal project if not provided
+      const subdomain = generateSubdomain(user.email || 'user')
       const { data: newProj, error: newErr } = await supabase
         .from('projects')
-        .insert({ current_config: {}, draft_config: {}, client_id: user.id })
+        .insert({ 
+          current_config: {}, 
+          draft_config: {}, 
+          client_id: user.id,
+          subdomain
+        })
         .select('id,current_config')
         .single()
-      if (newErr || !newProj) return NextResponse.json({ error: 'Failed to create project' }, { status: 400 })
+      
+      if (newErr || !newProj) {
+        console.error('[redeem] Project creation failed:', newErr)
+        return NextResponse.json({ 
+          error: 'Failed to create project',
+          details: newErr?.message,
+          code: newErr?.code
+        }, { status: 400 })
+      }
       project = newProj
     }
 
@@ -75,7 +103,7 @@ export async function POST(req: Request) {
       .eq('id', project.id)
       .single()
 
-    if (!currentProj?.subdomain) {
+    if (!currentProj?.subdomain && !updatePayload.subdomain) {
       // Use brand name if available in the template payload, otherwise fall back to email
       const brandName = (next as any)?.brand?.name
       updatePayload.subdomain = generateSubdomain(brandName || user.email || 'user')

@@ -1,41 +1,168 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { generateTemplateCode } from '@/lib/codes'
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { generateTemplateCode } from '@/lib/codes';
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const body = await req.json()
-    const { label, payload, preset_key, expires_at, max_uses = 1, prefix } = body || {}
-
-    const expiresIso = expires_at
-      ? new Date(expires_at).toISOString()
-      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-
-    if (!payload || typeof payload !== 'object') {
-      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const code = generateTemplateCode(prefix)
+    // Admin check
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const { label, payload, prefix, expires_at, max_uses = 1 } = body;
+
+    if (!payload || typeof payload !== 'object') {
+      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+    }
+
+    const code = generateTemplateCode(prefix);
 
     const { error } = await supabase.from('template_codes').insert({
       code,
-      label: label ?? null,
+      label: label || (prefix ? `${prefix} Template` : 'Template'),
       payload,
-      preset_key: preset_key ?? null,
+      preset_key: payload.theme,
       created_by: user.id,
-      expires_at: expiresIso,
+      expires_at: expires_at ? new Date(expires_at).toISOString() : null,
       max_uses,
-      status: 'active',
-    })
+    });
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
 
-    return NextResponse.json({ code })
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message || 'Failed to create code' }, { status: 500 })
+    return NextResponse.json({ code });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // Admin check
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profile?.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const { data, error } = await supabase
+    .from('template_codes')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  return NextResponse.json(data);
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Admin check
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const { id, expires_at, max_uses, status } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
+    }
+
+    const updateData: any = {};
+    if (expires_at !== undefined) updateData.expires_at = expires_at;
+    if (max_uses !== undefined) updateData.max_uses = max_uses;
+    if (status !== undefined) updateData.status = status;
+
+    const { error } = await supabase
+      .from('template_codes')
+      .update(updateData)
+      .eq('id', id);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Admin check
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
+    }
+
+    const { error } = await supabase
+      .from('template_codes')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { AlertTriangle, Home, RotateCcw } from 'lucide-react'
 import MainHeader from '@/components/shared/MainHeader'
+import MainFooter from '@/components/shared/MainFooter'
 
 export default function HubError({
   error,
@@ -19,9 +20,7 @@ export default function HubError({
   }, [error])
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <MainHeader />
-      
+    <>
       <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
         <div className="space-y-6 max-w-md mx-auto reveal">
           <div className="w-20 h-20 bg-red-100 dark:bg-red-900/20 rounded-3xl flex items-center justify-center mx-auto mb-2 shadow-sm border border-red-200 dark:border-red-800">
@@ -53,19 +52,6 @@ export default function HubError({
           </div>
         </div>
       </main>
-
-      <footer className="py-8 border-t border-border bg-muted/30">
-        <div className="container mx-auto px-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Image 
-            src="/Logo.svg" 
-            alt="EstabWeb Logo" 
-            width={24} 
-            height={24} 
-            className="w-6 h-6 object-contain"
-          />
-          © 2026 EstabWeb. All rights reserved.
-        </div>
-      </footer>
-    </div>
+    </>
   )
 }

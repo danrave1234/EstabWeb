@@ -66,6 +66,19 @@ export default function LivePreviewProvider({ initialData, children }: LivePrevi
     return () => window.removeEventListener('message', handleMessage)
   }, [])
 
+  // Apply Global Site Settings (theme, colors, typography, dark mode) to the document
+  // so they take effect in the iframe when the user changes them in the dashboard.
+  React.useEffect(() => {
+    if (!data || typeof document === 'undefined') return
+    const root = document.documentElement
+    const colorTheme = data.colorTheme || 'partner'
+    const mode = data.darkMode ? 'dark' : 'light'
+    const typography = data.typographyStyle || 'elegant'
+    root.setAttribute('data-theme', colorTheme)
+    root.setAttribute('data-mode', mode)
+    root.setAttribute('data-typography', typography)
+  }, [data])
+
   return (
     <LivePreviewContext.Provider value={data}>
       {children}

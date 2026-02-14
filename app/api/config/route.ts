@@ -24,7 +24,7 @@ export async function GET() {
     const { data: config, error } = await supabase
       .from("site_config")
       .select("payload")
-      .eq("key", "global")
+      .eq("key", "template_master")
       .single();
 
     if (error || !config) {
@@ -48,18 +48,18 @@ export async function POST(request: Request) {
     const body = (await request.json()) as Record<string, unknown>;
     const supabase = await createClient();
 
-    // 1. Get current global config
+    // 1. Get current template master config
     const { data: config } = await supabase
       .from("site_config")
       .select("id, payload")
-      .eq("key", "global")
+      .eq("key", "template_master")
       .single();
 
     let existing: Record<string, unknown> = (config?.payload as Record<string, unknown>) || {};
     const merged = deepMerge(existing, body);
 
     if (config) {
-      // 2. Update existing global config
+      // 2. Update existing template master config
       await supabase
         .from("site_config")
         .update({ 
@@ -68,11 +68,11 @@ export async function POST(request: Request) {
         })
         .eq("id", config.id);
     } else {
-      // 3. Create global config if it doesn't exist
+      // 3. Create template master config if it doesn't exist
       await supabase
         .from("site_config")
         .insert({
-          key: "global",
+          key: "template_master",
           payload: merged
         });
     }

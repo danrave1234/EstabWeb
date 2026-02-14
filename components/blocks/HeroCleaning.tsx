@@ -11,6 +11,7 @@ export type HeroCleaningProps = {
   primaryCTAHref?: string;
   secondaryCTA?: string;
   secondaryCTAHref?: string;
+  benefitText?: string;
   trustSignals?: string[];
 };
 
@@ -24,6 +25,7 @@ export default function HeroCleaning({
   primaryCTAHref = "#quote",
   secondaryCTA,
   secondaryCTAHref = "#services",
+  benefitText = "Sparkling Clean.",
   trustSignals,
 }: HeroCleaningProps) {
   const hasSplit = beforeImageUrl && afterImageUrl;
@@ -36,7 +38,7 @@ export default function HeroCleaning({
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto space-y-8 sm:space-y-10">
           <div className="space-y-4 sm:space-y-6">
             <h1 className="font-sans text-2xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1]">
-              <span className="text-primary block mb-1 opacity-90 text-sm sm:text-2xl uppercase tracking-widest font-bold">Sparkling Clean.</span>
+              <span className="text-primary block mb-1 opacity-90 text-sm sm:text-2xl uppercase tracking-widest font-bold">{benefitText}</span>
               {title}
             </h1>
             <p className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -65,7 +67,7 @@ export default function HeroCleaning({
             <div className="absolute inset-0 bg-primary/5 rounded-[3rem] rotate-2 scale-105" />
             <div className="relative">
               {hasSplit ? (
-                <div className="grid grid-cols-2 gap-4 rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-background">
+                <div className="grid grid-cols-2 gap-4 rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-background bg-muted/20">
                   <div className="relative aspect-[4/3] bg-muted">
                     <Image
                       src={beforeImageUrl!}
@@ -92,7 +94,7 @@ export default function HeroCleaning({
                   </div>
                 </div>
               ) : imageUrl ? (
-                <div className="relative aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-background">
+                <div className="relative aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-background bg-muted/20">
                   <Image
                     src={imageUrl}
                     alt={title}

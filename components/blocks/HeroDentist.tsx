@@ -12,6 +12,9 @@ export type HeroDentistProps = {
   primaryCTAHref?: string;
   secondaryCTA?: string;
   secondaryCTAHref?: string;
+  benefitText?: string;
+  benefitIcon?: string;
+  benefitImageUrl?: string;
   trustSignals?: string[];
 };
 
@@ -24,6 +27,9 @@ export default function HeroDentist({
   primaryCTAHref = "#contact",
   secondaryCTA,
   secondaryCTAHref = "#about",
+  benefitText = "Accepting New Patients",
+  benefitIcon,
+  benefitImageUrl,
   trustSignals,
 }: HeroDentistProps) {
   const isExternalImage = imageUrl?.startsWith("http");
@@ -39,8 +45,14 @@ export default function HeroDentist({
           <div className="lg:col-span-7 lg:pr-12 order-2 lg:order-1 relative z-10">
             <div className="bg-background/80 backdrop-blur-xl p-6 sm:p-12 lg:p-16 rounded-[1.5rem] sm:rounded-[2rem] shadow-2xl shadow-primary/10 border border-border">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-primary/10 text-primary rounded-full text-[10px] sm:text-sm font-bold mb-4 sm:mb-8 animate-pulse">
-                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full" />
-                Accepting New Patients
+                {benefitImageUrl ? (
+                  <div className="w-4 h-4 rounded-full overflow-hidden shrink-0">
+                    <img src={benefitImageUrl} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full" />
+                )}
+                {benefitText}
               </div>
               <h1 className="font-sans text-2xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground mb-4 sm:mb-6 leading-tight">
                 {title}

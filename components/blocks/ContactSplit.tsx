@@ -12,6 +12,12 @@ export type ContactSplitProps = {
   email: string;
   phone: string;
   address: string;
+  callLabel?: string;
+  emailUsLabel?: string;
+  locationLabel?: string;
+  nameLabel?: string;
+  emailLabel?: string;
+  messageLabel?: string;
 };
 
 export default function ContactSplit({
@@ -22,6 +28,12 @@ export default function ContactSplit({
   email,
   phone,
   address,
+  callLabel = "Call Us",
+  emailUsLabel = "Email Us",
+  locationLabel = "Location",
+  nameLabel = "Your Name",
+  emailLabel = "Email Address",
+  messageLabel = "Message",
 }: ContactSplitProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
@@ -54,7 +66,7 @@ export default function ContactSplit({
                   <Phone className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">Call Us</p>
+                  <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">{callLabel}</p>
                   <p className="text-xl font-bold">{phone}</p>
                 </div>
               </div>
@@ -64,7 +76,7 @@ export default function ContactSplit({
                   <Mail className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">Email Us</p>
+                  <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">{emailUsLabel}</p>
                   <p className="text-xl font-bold">{email}</p>
                 </div>
               </div>
@@ -74,7 +86,7 @@ export default function ContactSplit({
                   <MapPin className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">Location</p>
+                  <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">{locationLabel}</p>
                   <p className="text-xl font-bold leading-tight">{address}</p>
                 </div>
               </div>
@@ -87,7 +99,7 @@ export default function ContactSplit({
           <div className="max-w-md w-full">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Your Name</label>
+                <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">{nameLabel}</label>
                 <input
                   type="text"
                   required
@@ -98,7 +110,7 @@ export default function ContactSplit({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Email Address</label>
+                <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">{emailLabel}</label>
                 <input
                   type="email"
                   required
@@ -109,7 +121,7 @@ export default function ContactSplit({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Message</label>
+                <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">{messageLabel}</label>
                 <textarea
                   rows={4}
                   required

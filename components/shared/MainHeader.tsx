@@ -26,6 +26,7 @@ interface MainHeaderProps {
 
 export default function MainHeader({ initialUser, variant, userEmail }: MainHeaderProps) {
   const [user, setUser] = React.useState<SupabaseUser | null>(initialUser || null)
+  const [loading, setLoading] = React.useState(!initialUser)
   const [userMenuOpen, setUserMenuOpen] = React.useState(false)
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [scrolled, setScrolled] = React.useState(false)
@@ -44,11 +45,18 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
     if (!initialUser) {
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (user) setUser(user)
+        setLoading(false)
       })
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        // Double check user authenticity when session changes
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user ?? null)
+      } else {
+        setUser(null)
+      }
     })
 
     return () => {
@@ -57,27 +65,31 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
     }
   }, [supabase])
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    window.location.href = "/"
+  const handleSignOut = () => {
+    const form = document.createElement('form')
+    form.method = 'POST'
+    form.action = '/auth/signout'
+    document.body.appendChild(form)
+    form.submit()
   }
 
   const displayEmail = user?.email || userEmail
   const userInitials = displayEmail?.split('@')[0].slice(0, 2).toUpperCase() || 'U'
 
-  const navLinks = isDashboard 
+  const navLinks = React.useMemo(() => isDashboard 
     ? (variant === "admin" 
         ? [
             { name: "Requests", href: "/admin/dashboard", icon: LayoutDashboard },
             { name: "Clients", href: "/admin/clients", icon: Globe },
             { name: "Template", href: "/admin/template", icon: Layout },
+            { name: "Codes", href: "/admin/codes", icon: Settings },
           ] 
         : [])
     : [
-        { name: "Features", href: "/#features" },
+        { name: "Home", href: "/" },
         { name: "Pricing", href: "/pricing" },
         { name: "Contact", href: "/contact" },
-      ]
+      ], [isDashboard, variant])
 
   return (
     <header 
@@ -139,11 +151,16 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
         {/* Action Buttons Area */}
         <div className="flex-1 flex items-center justify-end gap-4">
           <div className="hidden md:flex items-center gap-4">
-            {user ? (
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-20 h-9 bg-muted animate-pulse rounded-full" />
+                <div className="w-28 h-9 bg-muted animate-pulse rounded-full" />
+              </div>
+            ) : user ? (
               <div className="relative">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-3 p-1 pl-3 pr-1.5 rounded-full border border-border bg-background hover:bg-muted/50 transition-all duration-200 group"
+                  className="flex items-center gap-3 p-1 pl-3 pr-1.5 rounded-full border border-border bg-background hover:bg-muted/50 transition-all duration-200 group cursor-pointer"
                 >
                   <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                     Account
@@ -170,7 +187,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
                           <>
                             <Link
                               href="/admin/dashboard"
-                              className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all"
+                              className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all cursor-pointer"
                               onClick={() => setUserMenuOpen(false)}
                             >
                               <LayoutDashboard className="w-4 h-4 text-primary" />
@@ -178,7 +195,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
                             </Link>
                             <Link
                               href="/admin/clients"
-                              className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all"
+                              className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all cursor-pointer"
                               onClick={() => setUserMenuOpen(false)}
                             >
                               <Globe className="w-4 h-4 text-primary" />
@@ -188,7 +205,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
                         ) : (
                           <Link
                             href="/dashboard"
-                            className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all"
+                            className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all cursor-pointer"
                             onClick={() => setUserMenuOpen(false)}
                           >
                             <LayoutDashboard className="w-4 h-4 text-primary" />
@@ -198,7 +215,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
                         {variant === "client" && (
                           <Link
                             href="/admin/approvals"
-                            className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all"
+                            className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all cursor-pointer"
                             onClick={() => setUserMenuOpen(false)}
                           >
                             <Settings className="w-4 h-4 text-primary" />
@@ -207,7 +224,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
                         )}
                         <button
                           onClick={handleSignOut}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all text-left"
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all text-left cursor-pointer"
                         >
                           <LogOut className="w-4 h-4" />
                           Sign out
@@ -260,7 +277,12 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
               </Link>
             ))}
             <div className="h-px bg-border my-2" />
-            {user ? (
+            {loading ? (
+              <div className="grid grid-cols-2 gap-3 mt-2">
+                <div className="h-11 bg-muted animate-pulse rounded-xl" />
+                <div className="h-11 bg-muted animate-pulse rounded-xl" />
+              </div>
+            ) : user ? (
               <>
                 {variant === "admin" ? (
                   <Link

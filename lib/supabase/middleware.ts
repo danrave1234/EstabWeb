@@ -37,10 +37,9 @@ export async function updateSession(request: NextRequest) {
     return response
   }
 
-  const { data: { user } } = await supabase.auth.getUser()
-
   // Handle /admin routes
   if (path.startsWith('/admin')) {
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
@@ -53,22 +52,28 @@ export async function updateSession(request: NextRequest) {
     return response
   }
 
-  // Public routes
-  const publicRoutes = ['/', '/login', '/pricing', '/contact', '/terms', '/privacy', '/cookies']
-  if (publicRoutes.includes(path)) {
-    if (user && path === '/login') {
+  // Protected routes - require auth
+  const protectedRoutes = ['/dashboard', '/onboarding']
+  const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
+
+  if (isProtectedRoute) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    return response
+  }
+
+  // Public routes check (for login redirect only)
+  if (path === '/login') {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
       if (profile?.role === 'admin') {
         return NextResponse.redirect(new URL('/admin', request.url))
       }
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
-    return response
-  }
-
-  // Protected routes - require auth
-  if (!user) {
-    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   return response

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Reveal from "@/components/shared/Reveal";
 
 export type TeamMember = {
   imageUrl: string;
@@ -11,28 +12,30 @@ export type TeamGridProps = {
   title?: string;
   subtitle?: string;
   members: TeamMember[];
+  linkText?: string;
 };
 
 export default function TeamGrid({
   title = "Meet Our Team",
   subtitle = "The experts dedicated to your success.",
   members = [],
+  linkText = "View Profile",
 }: TeamGridProps) {
   if (!members?.length) return null;
 
   return (
-    <section className="py-12 sm:py-24 px-4 sm:px-6 lg:px-8 bg-background reveal">
+    <Reveal as="section" className="py-12 sm:py-24 px-4 sm:px-6 lg:px-8 bg-background">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16 reveal">
+        <Reveal as="div" className="text-center mb-16">
           <h2 className="text-3xl sm:text-5xl font-bold text-foreground mb-4 tracking-tight">
             {title}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {subtitle}
           </p>
-        </div>
+        </Reveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 reveal">
+        <Reveal as="div" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {members.map((member, index) => (
             <div key={index} className="group relative flex flex-col items-center">
               <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden mb-6 shadow-lg bg-muted">
@@ -49,7 +52,7 @@ export default function TeamGrid({
                       href={member.bioUrl}
                       className="text-white text-sm font-bold flex items-center gap-2"
                     >
-                      View Profile &rarr;
+                      {linkText} &rarr;
                     </a>
                   )}
                 </div>
@@ -60,8 +63,8 @@ export default function TeamGrid({
               </p>
             </div>
           ))}
-        </div>
+        </Reveal>
       </div>
-    </section>
+    </Reveal>
   );
 }

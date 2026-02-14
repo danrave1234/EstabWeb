@@ -9,6 +9,10 @@ export type HeroClinicProps = {
   secondaryCTA: string;
   primaryCTAHref?: string;
   secondaryCTAHref?: string;
+  backgroundImage?: string;
+  benefitText?: string;
+  benefitIcon?: string;
+  benefitImageUrl?: string;
   trustSignals?: string[];
 };
 
@@ -19,18 +23,41 @@ export default function HeroClinic({
   secondaryCTA,
   primaryCTAHref = "#doctors",
   secondaryCTAHref = "#portal",
+  backgroundImage,
+  benefitText = "Professional Healthcare",
+  benefitIcon,
+  benefitImageUrl,
   trustSignals,
 }: HeroClinicProps) {
+  const hasImage = backgroundImage?.startsWith("http");
+
   return (
     <section className="relative overflow-hidden bg-background reveal">
       {/* Decorative patterns */}
       <div className="absolute top-0 right-0 w-[40%] h-full bg-primary/5 -skew-x-12 translate-x-1/4 z-0" />
       <div className="absolute top-1/4 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 z-0" />
       
+      {hasImage && (
+        <div className="absolute inset-0 z-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={backgroundImage}
+            alt=""
+            className="w-full h-full object-cover opacity-10"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+        </div>
+      )}
+
       <div className="container relative z-10 mx-auto px-4 py-12 sm:py-20 md:py-28 lg:py-32">
         <div className="mx-auto max-w-4xl text-center flex flex-col items-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 text-primary rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-8 border border-primary/20">
-            Professional Healthcare
+            {benefitImageUrl ? (
+              <div className="w-4 h-4 rounded-full overflow-hidden shrink-0">
+                <img src={benefitImageUrl} alt="" className="w-full h-full object-cover" />
+              </div>
+            ) : null}
+            {benefitText}
           </div>
           <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.1]">
             {title}

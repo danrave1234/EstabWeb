@@ -15,6 +15,7 @@ export type ReviewTrustBarProps = {
   sourceLabel?: string;
   sourceLogoUrl?: string;
   testimonials: ReviewItem[];
+  verifiedLabel?: string;
 };
 
 export default function ReviewTrustBar({
@@ -23,6 +24,7 @@ export default function ReviewTrustBar({
   sourceLabel = "Google & Yelp",
   sourceLogoUrl,
   testimonials,
+  verifiedLabel = "Verified",
 }: ReviewTrustBarProps) {
   return (
     <section id="reviews" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background reveal">
@@ -73,7 +75,7 @@ export default function ReviewTrustBar({
                 {review.verified !== false && (
                   <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-primary font-medium">
                     <BadgeCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                    Verified
+                    {verifiedLabel}
                   </span>
                 )}
               </div>

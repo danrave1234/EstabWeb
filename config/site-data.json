@@ -387,5 +387,22 @@
       }
     ]
   },
-  "typographyStyle": "elegant"
+  "typographyStyle": "elegant",
+  "legal": {
+    "privacypolicy": {
+      "title": "Privacy Policy",
+      "content": "Our commitment to protecting your data and privacy.",
+      "lastUpdated": "February 14, 2026"
+    },
+    "termsofservice": {
+      "title": "Terms of Service",
+      "content": "Please read these terms carefully before using our service.",
+      "lastUpdated": "February 14, 2026"
+    },
+    "cookiepolicy": {
+      "title": "Cookie Policy",
+      "content": "This policy explains how we use cookies.",
+      "lastUpdated": "February 14, 2026"
+    }
+  }
 }

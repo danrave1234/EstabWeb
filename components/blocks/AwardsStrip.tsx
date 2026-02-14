@@ -6,6 +6,7 @@ export type AwardItem = {
   label: string;
   sublabel?: string;
   icon?: string;
+  imageUrl?: string;
 };
 
 export type AwardsStripProps = {
@@ -26,8 +27,12 @@ export default function AwardsStrip({ title, items }: AwardsStripProps) {
           {items.map((item, index) => {
             return (
               <div key={index} className="flex flex-col items-center text-center space-y-2 group">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-background rounded-full flex items-center justify-center border border-border shadow-sm group-hover:border-primary/30 group-hover:bg-primary/5 transition-all duration-300">
-                  <DynamicIcon name={item.icon} className="w-5 h-5 sm:w-6 sm:h-6 text-primary group-hover:scale-110 transition-transform" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-background rounded-full overflow-hidden flex items-center justify-center border border-border shadow-sm group-hover:border-primary/30 group-hover:bg-primary/5 transition-all duration-300 text-primary">
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.label} className="w-full h-full object-cover" />
+                  ) : (
+                    <DynamicIcon name={item.icon} className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform" />
+                  )}
                 </div>
                 <div className="space-y-0.5">
                   <p className="text-sm sm:text-base font-bold text-foreground">

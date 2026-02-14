@@ -16,8 +16,8 @@ create table if not exists template_codes (
 create table if not exists code_redemptions (
   id uuid primary key default gen_random_uuid(),
   code_id uuid references template_codes(id) on delete cascade,
-  redeemed_by uuid,
-  project_id uuid,
+  redeemed_by uuid references auth.users(id),
+  project_id uuid references projects(id),
   redeemed_at timestamptz default now(),
   success boolean not null default true,
   reason text
@@ -111,6 +111,20 @@ create table if not exists profiles (
   role text default 'client' check (role in ('admin', 'client')),
   created_at timestamptz default now()
 );
+
+-- Trigger to create profile on signup
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, email, role)
+  values (new.id, new.email, 'client');
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create or replace trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
 
 -- RLS Enablement
 alter table if exists profiles enable row level security;

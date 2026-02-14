@@ -5,6 +5,7 @@ import { Shield, Clock, Lock } from "lucide-react";
 
 export type FreeConsultationFormProps = {
   headline: string;
+  subtitle?: string;
   bullet1: string;
   bullet2: string;
   bullet3: string;
@@ -19,6 +20,7 @@ export type FreeConsultationFormProps = {
 
 export default function FreeConsultationForm({
   headline,
+  subtitle,
   bullet1,
   bullet2,
   bullet3,
@@ -54,6 +56,11 @@ export default function FreeConsultationForm({
             <h2 className="font-serif text-xl sm:text-3xl md:text-4xl font-bold text-foreground leading-tight">
               {headline}
             </h2>
+            {subtitle && (
+              <p className="text-sm sm:text-lg text-muted-foreground leading-relaxed">
+                {subtitle}
+              </p>
+            )}
             <ul className="space-y-4">
               <li className="flex gap-3">
                 <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0 mt-0.5" />

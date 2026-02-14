@@ -32,7 +32,7 @@ export default function ScrollReveal() {
 
     const updateObservers = () => {
       const obs = ensureObserver();
-      const reveals = document.querySelectorAll(".reveal");
+      const reveals = document.querySelectorAll(".reveal:not([data-reveal-managed])");
       reveals.forEach((el) => {
         obs.observe(el);
       });

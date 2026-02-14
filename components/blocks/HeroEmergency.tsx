@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Phone } from "lucide-react";
+import DynamicIcon from "@/components/shared/DynamicIcon";
 
 export type HeroEmergencyProps = {
   title: string;
@@ -8,7 +9,8 @@ export type HeroEmergencyProps = {
   primaryCTAHref: string;
   secondaryCTA: string;
   secondaryCTAHref: string;
-  imageUrl: string;
+  imageUrl?: string;
+  icon?: string;
 };
 
 export default function HeroEmergency({
@@ -19,6 +21,7 @@ export default function HeroEmergency({
   secondaryCTA,
   secondaryCTAHref,
   imageUrl,
+  icon,
 }: HeroEmergencyProps) {
   return (
     <section className="container mx-auto px-4 py-8 md:py-20 lg:py-24 reveal">
@@ -47,18 +50,22 @@ export default function HeroEmergency({
             </div>
           </div>
         <div className="lg:col-span-6 order-3 lg:order-none">
-          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl bg-muted">
+          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl bg-muted flex items-center justify-center">
             {imageUrl ? (
               <Image
                 src={imageUrl}
-                alt="Technician at work"
+                alt={title}
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
+            ) : icon ? (
+              <div className="w-32 h-32 sm:w-48 sm:h-48 text-primary opacity-20">
+                <DynamicIcon name={icon} className="w-full h-full" />
+              </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-                Technician photo
+                Image
               </div>
             )}
           </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import React from 'react';
 import MainHeader from '@/components/shared/MainHeader';
+import MainFooter from '@/components/shared/MainFooter';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,12 +15,8 @@ export const metadata: Metadata = {
 };
 
 export default async function TermsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <MainHeader initialUser={user} />
+    <>
       <main className="flex-1 container mx-auto px-4 py-24 max-w-4xl">
         <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
         <div className="prose prose-neutral dark:prose-invert max-w-none space-y-6">
@@ -96,30 +93,6 @@ export default async function TermsPage() {
           </section>
         </div>
       </main>
-      <footer className="py-12 border-t border-border bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-2">
-              <Image 
-                src="/Logo.svg" 
-                alt="EstabWeb Logo" 
-                width={32} 
-                height={32} 
-                className="w-8 h-8 object-contain"
-              />
-              <span className="font-bold tracking-tight">EstabWeb</span>
-            </div>
-            <div className="flex gap-8 text-sm text-muted-foreground">
-              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-              <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              © 2026 EstabWeb. All rights reserved.
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </>
   );
 }

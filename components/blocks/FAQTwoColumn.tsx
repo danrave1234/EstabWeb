@@ -30,7 +30,7 @@ export default function FAQTwoColumn({
                 <HelpCircle className="w-3 h-3" /> Support
               </div>
               <h2 className="text-3xl sm:text-5xl font-bold text-foreground mb-6 tracking-tight leading-[1.1]">
-                Frequently Asked <br className="hidden lg:block" /> Questions
+                {title || "Frequently Asked Questions"}
               </h2>
               <p className="text-muted-foreground leading-relaxed">
                 {subtitle}

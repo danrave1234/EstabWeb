@@ -58,7 +58,13 @@ export async function middleware(request: NextRequest) {
                        url.pathname.startsWith('/admin') ||
                        url.pathname.startsWith('/login') ||
                        url.pathname.startsWith('/dashboard') ||
+                       url.pathname.startsWith('/onboarding') ||
                        url.pathname.startsWith('/auth')
+
+  // Set the path in headers for layout variant detection (only for root app)
+  if (isRoot || isCommonPath) {
+    requestHeaders.set('x-invoke-path', url.pathname)
+  }
 
   const isPathBasedDomain = isDevHost && url.pathname !== '/' && !isCommonPath
 

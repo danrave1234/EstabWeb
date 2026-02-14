@@ -63,7 +63,8 @@ const VALID_COLOR_THEMES = [
   "dark-grey-yellowgreen", "blue-shades-white", "white-lime", "beige-dark-grey", "pastel-purple-neutral",
   "navy-electric-blue", "gradient-white-dark-blue", "white-blue-grey", "bright-red-white",
   "classic-blue-turquoise-gold", "dark-royal-blue-gold", "white-purple", "blue-shades-white-red-violet",
-  "light-reddish-orange", "white-purple-orange", "deep-purple-orange-red-pink", "brown-beige",
+  "light-reddish-orange", "white-purple-orange", "deep-purple-orange-red-pink", "brown-beige", "navy-electric",
+  "dark-green-ivory", "fiesta-red-yellow", "barangay-blue", "tropical-teal", "luxury-black-gold", "facebook-blue",
   // Existing tech themes
   "nebula", "flow", "mono",
 ] as const;

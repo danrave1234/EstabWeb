@@ -3,10 +3,12 @@
 import * as React from 'react'
 import { Key } from 'lucide-react'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 export default function NoProjectRedeem() {
   const [code, setCode] = React.useState('')
   const [loading, setLoading] = React.useState(false)
+  const router = useRouter()
 
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -19,8 +21,8 @@ export default function NoProjectRedeem() {
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Failed to redeem')
-      toast.success('Template applied! Creating your project...')
-      window.location.reload()
+      toast.success('Template applied! Redirecting...')
+      router.push(`/dashboard?projectId=${json.projectId}`)
     } catch (e: any) {
       toast.error(e?.message || 'Failed to apply code')
     } finally {
@@ -29,23 +31,24 @@ export default function NoProjectRedeem() {
   }
 
   return (
-    <div className="w-full max-w-md bg-muted/30 border border-border rounded-2xl p-4 text-left">
-      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2 mb-2">
-        <Key className="w-3 h-3" /> Apply Template Code
+    <div className="w-full max-w-sm bg-card border border-border rounded-3xl p-6 shadow-xl shadow-foreground/5 text-left relative overflow-hidden group transition-all hover:border-primary/20">
+      <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
+        <Key className="w-3.5 h-3.5 text-primary" /> 
+        Redeem Design Code
       </div>
-      <form onSubmit={handleApply} className="flex gap-2">
+      <form onSubmit={handleApply} className="flex flex-col gap-3">
         <input
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          placeholder="ENTER-CODE-HERE"
-          className="flex-1 p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none uppercase"
+          placeholder="PASTE-CODE-HERE"
+          className="w-full px-4 py-3.5 text-xs border border-border rounded-xl bg-muted/30 focus:ring-4 focus:ring-primary/5 focus:border-primary outline-none uppercase transition-all font-bold tracking-widest placeholder:text-muted-foreground/30"
         />
         <button
           type="submit"
           disabled={loading || !code.trim()}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded text-[10px] font-bold disabled:opacity-50"
+          className="w-full py-3.5 bg-foreground text-background rounded-xl text-[10px] font-black uppercase tracking-[0.1em] disabled:opacity-50 hover:bg-primary hover:text-primary-foreground transition-all shadow-lg active:scale-95"
         >
-          {loading ? 'Applying...' : 'Apply'}
+          {loading ? 'Activating...' : 'Activate Now'}
         </button>
       </form>
     </div>

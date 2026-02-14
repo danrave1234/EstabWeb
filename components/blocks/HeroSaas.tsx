@@ -1,13 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import DynamicIcon from "@/components/shared/DynamicIcon";
 
 export type HeroSaasProps = {
   title: string;
   subtitle: string;
   primaryCTA: string;
   secondaryCTA: string;
-  backgroundImage: string;
+  backgroundImage?: string;
+  icon?: string;
   primaryCTAHref?: string;
   secondaryCTAHref?: string;
 };
@@ -18,10 +20,11 @@ export default function HeroSaas({
   primaryCTA,
   secondaryCTA,
   backgroundImage,
+  icon,
   primaryCTAHref = "#contact",
   secondaryCTAHref = "#services",
 }: HeroSaasProps) {
-  const isExternalImage = backgroundImage.startsWith("http");
+  const isExternalImage = backgroundImage?.startsWith("http");
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-muted/50 to-background reveal">
@@ -50,22 +53,30 @@ export default function HeroSaas({
             </div>
           </div>
           <div className="lg:col-span-6 order-3 lg:order-none">
-            <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl border border-border">
-              {isExternalImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={backgroundImage}
-                  alt={title}
-                  className="w-full h-full object-cover"
-                />
+            <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl border border-border flex items-center justify-center bg-muted">
+              {backgroundImage ? (
+                isExternalImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={backgroundImage}
+                    alt={title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Image
+                    src={backgroundImage}
+                    alt={title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                )
+              ) : icon ? (
+                <div className="w-24 h-24 sm:w-32 sm:h-32 text-primary opacity-20">
+                  <DynamicIcon name={icon} className="w-full h-full" />
+                </div>
               ) : (
-                <Image
-                  src={backgroundImage}
-                  alt={title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
+                <div className="text-muted-foreground text-sm">Image</div>
               )}
             </div>
           </div>

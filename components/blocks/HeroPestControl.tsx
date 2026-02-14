@@ -10,6 +10,9 @@ export type HeroPestControlProps = {
   primaryCTAHref?: string;
   secondaryCTAHref?: string;
   backgroundImage?: string;
+  benefitText?: string;
+  benefitIcon?: string;
+  benefitImageUrl?: string;
   trustSignals?: string[];
 };
 
@@ -21,6 +24,9 @@ export default function HeroPestControl({
   primaryCTAHref = "#estimate",
   secondaryCTAHref = "#bundles",
   backgroundImage,
+  benefitText = "Rapid Response Team",
+  benefitIcon,
+  benefitImageUrl,
   trustSignals,
 }: HeroPestControlProps) {
   return (
@@ -32,7 +38,12 @@ export default function HeroPestControl({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-10 lg:gap-16 items-center">
           <div className="lg:col-span-6 space-y-6 sm:space-y-8 flex flex-col items-center lg:items-start text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-widest border border-primary/20 reveal">
-              Rapid Response Team
+              {benefitImageUrl ? (
+                <div className="w-4 h-4 rounded-full overflow-hidden shrink-0">
+                  <img src={benefitImageUrl} alt="" className="w-full h-full object-cover" />
+                </div>
+              ) : null}
+              {benefitText}
             </div>
             <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-foreground leading-[1.1] reveal">
               {title}

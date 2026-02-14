@@ -23,8 +23,13 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
       })
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user ?? null)
+      } else {
+        setUser(null)
+      }
     })
 
     return () => subscription.unsubscribe()

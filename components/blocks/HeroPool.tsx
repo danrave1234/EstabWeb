@@ -11,6 +11,9 @@ export type HeroPoolProps = {
   primaryCTAHref?: string;
   secondaryCTA?: string;
   secondaryCTAHref?: string;
+  benefitText?: string;
+  benefitIcon?: string;
+  benefitImageUrl?: string;
   trustSignals?: string[];
 };
 
@@ -22,6 +25,9 @@ export default function HeroPool({
   primaryCTAHref = "#inspection",
   secondaryCTA,
   secondaryCTAHref = "#services",
+  benefitText = "Pool & Spa Services",
+  benefitIcon,
+  benefitImageUrl,
   trustSignals,
 }: HeroPoolProps) {
   const hasImage = backgroundImage?.startsWith("http");
@@ -76,8 +82,14 @@ export default function HeroPool({
       <div className="container relative z-10 mx-auto px-4 py-12 sm:py-20 md:py-24">
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 backdrop-blur-md text-primary rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-8 border border-primary/20 reveal">
-            <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            Pool & Spa Services
+            {benefitImageUrl ? (
+              <div className="w-4 h-4 rounded-full overflow-hidden shrink-0">
+                <img src={benefitImageUrl} alt="" className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+            )}
+            {benefitText}
           </div>
           <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.05] mb-6 reveal">
             {title}

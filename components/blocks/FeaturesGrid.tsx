@@ -7,6 +7,7 @@ export type FeatureItem = {
   title: string;
   description: string;
   icon: string;
+  imageUrl?: string;
 };
 
 export type FeaturesGridProps = {
@@ -39,8 +40,12 @@ export default function FeaturesGrid({
                 className="bg-background rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col"
               >
                 <div className="mb-3 sm:mb-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
-                    <DynamicIcon name={item.icon} className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" strokeWidth={2} />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg overflow-hidden flex items-center justify-center text-primary">
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <DynamicIcon name={item.icon} className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" strokeWidth={2} />
+                    )}
                   </div>
                 </div>
                 <h3 className="font-serif font-bold text-lg sm:text-xl text-foreground mb-1.5 sm:mb-2 leading-tight">

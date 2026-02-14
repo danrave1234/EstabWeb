@@ -15,6 +15,11 @@ type SimpleFooterProps = {
   privacyUrl: string;
   termsUrl: string;
   cookieUrl: string;
+  contactLabel?: string;
+  followLabel?: string;
+  privacyLabel?: string;
+  termsLabel?: string;
+  cookieLabel?: string;
 };
 
 export default function SimpleFooter({
@@ -27,6 +32,11 @@ export default function SimpleFooter({
   privacyUrl,
   termsUrl,
   cookieUrl,
+  contactLabel = "Contact",
+  followLabel = "Follow",
+  privacyLabel = "Privacy Policy",
+  termsLabel = "Terms of Service",
+  cookieLabel = "Cookie Policy",
 }: SimpleFooterProps) {
   const initials = brandName
     .split(" ")
@@ -88,7 +98,7 @@ export default function SimpleFooter({
           {social.showContact !== false && (
             <div className="space-y-4 text-sm text-muted-foreground flex flex-col items-center text-center sm:items-start sm:text-left">
               <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
-                Contact
+                {contactLabel}
               </h3>
               <a href={`tel:${phoneHref}`} className="block hover:text-foreground">
                 {contact.phone}
@@ -104,7 +114,7 @@ export default function SimpleFooter({
             {social.showSocial !== false && (
               <>
                 <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
-                  Follow
+                  {followLabel}
                 </h3>
                 <div className="flex flex-wrap justify-center sm:justify-start gap-4">
                   {social.facebook && social.facebookEnabled !== false && (
@@ -133,13 +143,13 @@ export default function SimpleFooter({
 
             <div className="mt-6 flex flex-wrap justify-center sm:justify-start gap-4 text-xs">
               <a href={privacyUrl} className="hover:text-foreground">
-                Privacy Policy
+                {privacyLabel}
               </a>
               <a href={termsUrl} className="hover:text-foreground">
-                Terms of Service
+                {termsLabel}
               </a>
               <a href={cookieUrl} className="hover:text-foreground">
-                Cookie Policy
+                {cookieLabel}
               </a>
             </div>
           </div>
