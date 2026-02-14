@@ -2,9 +2,10 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Upload, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+
+const UPLOAD_TIMEOUT_MS = 30000;
 
 interface ImageUploadProps {
   value: string;
@@ -12,16 +13,15 @@ interface ImageUploadProps {
   bucket?: string;
 }
 
-export default function ImageUpload({ value, onChange, bucket = "site-assets" }: ImageUploadProps) {
+export default function ImageUpload({ value, onChange }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const supabase = createClient();
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
 
-    // Basic validation
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file.");
       return;
@@ -32,30 +32,38 @@ export default function ImageUpload({ value, onChange, bucket = "site-assets" }:
       return;
     }
 
+    setIsUploading(true);
     try {
-      setIsUploading(true);
-      
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-      const filePath = fileName;
+      const formData = new FormData();
+      formData.append("file", file);
 
-      const { error: uploadError, data } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
 
-      if (uploadError) {
-        throw uploadError;
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json.error || "Upload failed");
       }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(filePath);
-
-      onChange(publicUrl);
-      toast.success("Image uploaded successfully!");
+      if (json.url) {
+        onChange(json.url);
+        toast.success("Image uploaded successfully!");
+      } else {
+        throw new Error("No URL returned");
+      }
     } catch (error: any) {
+      if (error?.name === "AbortError") {
+        toast.error("Upload timed out. Try a smaller image.");
+      } else {
+        toast.error(error?.message || "Failed to upload image.");
+      }
       console.error("Upload error:", error);
-      toast.error(error.message || "Failed to upload image.");
     } finally {
       setIsUploading(false);
     }
