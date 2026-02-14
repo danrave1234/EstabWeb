@@ -3,7 +3,7 @@
 import * as React from "react"
 import { login, signup } from "@/app/actions/auth"
 import { toast } from "sonner"
-import { LogIn, UserPlus, ArrowRight, Loader2, Zap, Shield, Globe, CheckCircle2, ArrowLeft, Eye, EyeOff } from "lucide-react"
+import { LogIn, UserPlus, ArrowRight, Loader2, Zap, Shield, Globe, CheckCircle2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import Image from "next/image"
@@ -14,7 +14,6 @@ function LoginContent() {
   
   const [isPending, setIsPending] = React.useState(false)
   const [mode, setMode] = React.useState<'login' | 'signup'>(initialMode)
-  const [showPassword, setShowPassword] = React.useState(false)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -159,25 +158,15 @@ function LoginContent() {
                 <label className="text-sm font-semibold text-foreground/80 ml-1" htmlFor="password">
                   Password
                 </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    required
-                    className="w-full px-4 py-3.5 pr-12 bg-muted/40 border border-border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/40"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((p) => !p)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  required
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                  className="w-full px-4 py-3.5 bg-muted/40 border border-border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/40"
+                />
               </div>
 
               <button
