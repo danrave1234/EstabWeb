@@ -89,7 +89,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ received: true })
     }
 
-    const supabase = createServiceClient()
+    let supabase: ReturnType<typeof createServiceClient>
+    try {
+      supabase = createServiceClient()
+    } catch (e: any) {
+      console.error('[paymongo webhook] Failed to initialize Supabase service client:', e.message)
+      return NextResponse.json({ error: 'Internal configuration error' }, { status: 500 })
+    }
     const projectId = await extractProjectId(body, supabase)
     console.log('[paymongo webhook] Extracted projectId:', projectId, 'from event:', eventType)
     
