@@ -56,6 +56,7 @@ const SECTIONS = [
   { id: "price-preview-strip", label: "Price Preview Strip" },
   { id: "emergency-cta-strip", label: "Emergency CTA Strip" },
   { id: "maintenance-plans", label: "Maintenance Plans" },
+  { id: "product-grid", label: "Product Grid (Ecommerce)" },
   { id: "before-after-gallery-grid", label: "Before/After Gallery Grid" },
   { id: "promo-cta-section", label: "Promo CTA Section" },
   { id: "contact", label: "Contact" },
@@ -81,6 +82,7 @@ const HERO_OPTIONS = [
   { value: "luxury-soft", label: "Salon" },
   { value: "academic-clean", label: "School" },
   { value: "hvac-urgent", label: "HVAC" },
+  { value: "ecommerce", label: "E-commerce" },
 ];
 
 const COLOR_THEMES = [
@@ -674,6 +676,7 @@ export default function SiteEditorSidebar() {
                             theme: preset.theme,
                             colorTheme: preset.colorTheme,
                             typographyStyle: preset.typographyStyle || data.typographyStyle,
+                            footerStyle: 'minimal',
                             activeSections: preset.activeSections,
                             ...preset.content
                           };

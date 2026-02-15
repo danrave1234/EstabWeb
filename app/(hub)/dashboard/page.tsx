@@ -57,56 +57,58 @@ export default async function DashboardPage({
   // If no projects at all, show the redeem/empty state
   if (!projects || projects.length === 0) {
     return (
-      <main className="flex-1 flex flex-col items-center justify-center p-4 text-center min-h-[80vh]">
-        <div className="relative mb-12">
+      <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 text-center min-h-[calc(100vh-64px)] pt-20 sm:pt-24">
+        <div className="relative mb-6 sm:mb-12">
           <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
-          <div className="relative w-32 h-32 bg-primary rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-primary/40 rotate-6 hover:rotate-0 transition-transform duration-500 overflow-hidden">
+          <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-primary rounded-[1.5rem] sm:rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-primary/40 rotate-6 hover:rotate-0 transition-transform duration-500 overflow-hidden">
             <Image 
               src="/Logo.svg" 
               alt="EstabWeb Logo" 
               width={64} 
               height={64} 
-              className="w-16 h-16 object-contain invert brightness-0"
+              className="w-12 h-12 sm:w-16 sm:h-16 object-contain invert brightness-0"
             />
           </div>
         </div>
         
-        <h1 className="text-5xl sm:text-7xl font-black text-foreground mb-6 tracking-tight leading-none">
+        <h1 className="text-3xl sm:text-7xl font-black text-foreground mb-3 sm:mb-6 tracking-tight leading-none">
           Build something <span className="text-primary">extraordinary</span>.
         </h1>
-        <p className="text-xl text-muted-foreground max-w-xl mb-12 leading-relaxed font-medium">
+        <p className="text-sm sm:text-xl text-muted-foreground max-w-xl mb-6 sm:mb-12 leading-relaxed font-medium px-4">
           Your journey to a world-class online presence starts here. Let&apos;s craft your perfect website together.
         </p>
         
-        <div className="flex flex-col sm:flex-row items-center gap-6">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 w-full max-w-md sm:max-w-none px-4">
           <Link
             href="/onboarding"
-            className="group flex items-center gap-3 px-12 py-6 bg-primary text-primary-foreground rounded-[2rem] font-black text-xl shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
+            className="group flex items-center justify-center gap-2 px-6 py-4 sm:px-12 sm:py-6 bg-primary text-primary-foreground rounded-xl sm:rounded-[2rem] font-black text-sm sm:text-xl shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all w-full sm:w-auto"
           >
             Start Building Now
-            <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" />
           </Link>
           
-          <div className="h-12 w-px bg-border hidden sm:block" />
+          <div className="h-px w-full sm:h-12 sm:w-px bg-border my-2 sm:my-0" />
           
-          <NoProjectRedeem />
+          <div className="w-full sm:w-auto">
+            <NoProjectRedeem />
+          </div>
         </div>
 
-        <div className="mt-24 grid grid-cols-1 sm:grid-cols-3 gap-12 max-w-5xl text-left opacity-50">
-          <div className="space-y-3">
-            <div className="w-10 h-10 rounded-2xl bg-muted flex items-center justify-center font-black text-xs">01</div>
-            <h3 className="font-black text-sm uppercase tracking-widest">Select Soul</h3>
-            <p className="text-xs font-medium leading-relaxed">Choose your industry and we&apos;ll adapt our engine to your specific business needs.</p>
+        <div className="mt-10 sm:mt-24 grid grid-cols-3 gap-2 sm:gap-12 max-w-5xl text-left opacity-60 px-4">
+          <div className="space-y-1 sm:space-y-3 text-center sm:text-left">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-muted flex items-center justify-center font-black text-[10px] sm:text-xs mx-auto sm:mx-0">01</div>
+            <h3 className="font-black text-[8px] sm:text-sm uppercase tracking-widest leading-tight">Select Soul</h3>
+            <p className="text-[7px] sm:text-xs font-medium leading-relaxed line-clamp-2 sm:line-clamp-none">Choose your industry and we&apos;ll adapt our engine.</p>
           </div>
-          <div className="space-y-3">
-            <div className="w-10 h-10 rounded-2xl bg-muted flex items-center justify-center font-black text-xs">02</div>
-            <h3 className="font-black text-sm uppercase tracking-widest">Equip Arsenal</h3>
-            <p className="text-xs font-medium leading-relaxed">Select high-performance blocks like pricing, FAQs, and testimonials with one click.</p>
+          <div className="space-y-1 sm:space-y-3 text-center sm:text-left">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-muted flex items-center justify-center font-black text-[10px] sm:text-xs mx-auto sm:mx-0">02</div>
+            <h3 className="font-black text-[8px] sm:text-sm uppercase tracking-widest leading-tight">Equip Arsenal</h3>
+            <p className="text-[7px] sm:text-xs font-medium leading-relaxed line-clamp-2 sm:line-clamp-none">Select high-performance blocks with one click.</p>
           </div>
-          <div className="space-y-3">
-            <div className="w-10 h-10 rounded-2xl bg-muted flex items-center justify-center font-black text-xs">03</div>
-            <h3 className="font-black text-sm uppercase tracking-widest">Manifest</h3>
-            <p className="text-xs font-medium leading-relaxed">Watch your vision come to life as we generate your curated blueprints instantly.</p>
+          <div className="space-y-1 sm:space-y-3 text-center sm:text-left">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-muted flex items-center justify-center font-black text-[10px] sm:text-xs mx-auto sm:mx-0">03</div>
+            <h3 className="font-black text-[8px] sm:text-sm uppercase tracking-widest leading-tight">Manifest</h3>
+            <p className="text-[7px] sm:text-xs font-medium leading-relaxed line-clamp-2 sm:line-clamp-none">Watch your vision come to life as we generate blueprints instantly.</p>
           </div>
         </div>
       </main>
@@ -119,33 +121,91 @@ export default async function DashboardPage({
       <Suspense fallback={null}>
         <PaymentSuccessHandler />
       </Suspense>
-      <main className="flex-1 container mx-auto pt-24 pb-12 px-4">
-        <div className="flex items-center justify-between mb-12">
+      <main className="flex-1 container mx-auto pt-20 sm:pt-24 pb-12 px-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-12">
           <div>
-            <h1 className="text-4xl font-black tracking-tight text-foreground">My Websites</h1>
-            <p className="text-muted-foreground mt-2 font-medium">Manage and optimize your digital assets.</p>
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">My Websites</h1>
+            <p className="text-xs sm:text-base text-muted-foreground mt-0.5 sm:mt-2 font-medium">Manage and optimize your digital assets.</p>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6">
             <Link 
               href="/onboarding"
-              className="flex items-center gap-2 px-6 py-3.5 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
             >
               <Plus className="w-4 h-4" />
               Build New
             </Link>
-            <div className="h-10 w-px bg-border mx-2" />
-            <NoProjectRedeem />
+            <div className="hidden sm:block h-10 w-px bg-border mx-2" />
+            <div className="w-full sm:w-auto">
+              <NoProjectRedeem />
+            </div>
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+        {/* Mobile View: Cards */}
+        <div className="grid grid-cols-1 gap-4 sm:hidden mb-8">
+          {projects.map((project) => {
+            const siteName = (project.current_config as any)?.brand?.name || "My Website"
+            const rootDomain = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '').replace(/^dashboard\./, '') : 'estabweb.com'
+            const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.${rootDomain}` : "Not set")
+            const previewUrl = project.custom_domain
+              ? `https://${project.custom_domain}`
+              : (project.subdomain ? `https://${project.subdomain}.${rootDomain}` : "#")
+
+            return (
+              <div key={project.id} className="bg-card border border-border rounded-2xl p-4 shadow-sm space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <Globe className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-foreground truncate">{siteName}</h3>
+                    <p className="text-[10px] text-muted-foreground truncate">{domain}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground pt-2 border-t border-border">
+                  <span>Created: {new Date(project.created_at).toLocaleDateString()}</span>
+                  <div className="flex items-center gap-2">
+                    <a 
+                      href={previewUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="p-2 bg-muted rounded-lg text-foreground"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <UpgradeButton 
+                    projectId={project.id} 
+                    subscriptionStatus={project.subscription_status}
+                    variant="inline" 
+                  />
+                  <Link
+                    href={`/dashboard?projectId=${project.id}`}
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                  >
+                    Edit Site
+                    <ChevronRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden sm:block bg-card border border-border rounded-xl shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[40%]">Website</TableHead>
-                <TableHead>Domain</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-[40%] text-[11px] font-black uppercase tracking-widest">Website</TableHead>
+                <TableHead className="text-[11px] font-black uppercase tracking-widest">Domain</TableHead>
+                <TableHead className="text-[11px] font-black uppercase tracking-widest">Created</TableHead>
+                <TableHead className="text-right text-[11px] font-black uppercase tracking-widest">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -166,7 +226,7 @@ export default async function DashboardPage({
                         </div>
                         <div className="flex flex-col">
                           <span className="font-bold text-foreground group-hover:text-primary transition-colors">{siteName}</span>
-                          <span className="text-xs text-muted-foreground truncate max-w-[200px]">{project.id}</span>
+                          <span className="text-[10px] text-muted-foreground truncate max-w-[200px]">{project.id}</span>
                         </div>
                       </Link>
                     </TableCell>

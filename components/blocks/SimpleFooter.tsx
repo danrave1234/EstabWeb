@@ -49,115 +49,122 @@ export default function SimpleFooter({
 
   return (
     <footer className="w-full border-t border-border bg-background/95">
-      <div className="mx-auto flex max-w-7xl flex-col gap-10 sm:gap-12 px-4 sm:px-6 py-10 sm:py-12 md:flex-row md:items-start md:justify-between">
-        <div className="max-w-md space-y-6 flex flex-col items-center text-center md:items-start md:text-left">
-          <div className="flex items-center space-x-2">
-            {logoUrl ? (
-              logoUrl.startsWith("http") ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={logoUrl}
-                  alt={brandName}
-                  width={40}
-                  height={40}
-                  className="h-10 w-10 rounded-lg object-contain"
-                />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-8">
+          {/* Brand Section */}
+          <div className="flex flex-col items-center text-center md:col-span-4 md:items-start md:text-left space-y-6">
+            <div className="flex items-center space-x-2">
+              {logoUrl ? (
+                logoUrl.startsWith("http") ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={logoUrl}
+                    alt={brandName}
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-lg object-contain"
+                  />
+                ) : (
+                  <Image
+                    src={logoUrl}
+                    alt={brandName}
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-lg object-contain"
+                  />
+                )
               ) : (
-                <Image
-                  src={logoUrl}
-                  alt={brandName}
-                  width={40}
-                  height={40}
-                  className="h-10 w-10 rounded-lg object-contain"
-                />
-              )
-            ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <span className="text-xl font-bold text-primary-foreground">{initials}</span>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+                  <span className="text-xl font-bold text-primary-foreground">{initials}</span>
+                </div>
+              )}
+              <span className="text-xl font-bold tracking-tight text-foreground">
+                {brandName}
+              </span>
+            </div>
+            <p className="text-sm leading-relaxed text-muted-foreground max-w-xs">
+              {tagline}
+            </p>
+            <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 md:justify-start">
+              {navigation?.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {item.name}
+                </a>
+              ))}
+            </nav>
+          </div>
+
+          {/* Links Grid */}
+          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:col-span-8 md:gap-8">
+            {social.showContact !== false && (
+              <div className="flex flex-col items-center text-center sm:items-start sm:text-left space-y-4">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
+                  {contactLabel}
+                </h3>
+                <div className="space-y-3 text-sm text-muted-foreground">
+                  <a href={`tel:${phoneHref}`} className="block hover:text-foreground transition-colors">
+                    {contact.phone}
+                  </a>
+                  <a href={`mailto:${contact.email}`} className="block hover:text-foreground transition-colors">
+                    {contact.email}
+                  </a>
+                  <p className="whitespace-pre-line leading-relaxed">{contact.address}</p>
+                </div>
               </div>
             )}
-            <span className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
-              {brandName}
-            </span>
-          </div>
-          <p className="text-sm leading-relaxed text-muted-foreground max-w-sm">{tagline}</p>
-          <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-muted-foreground">
-            {navigation?.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="hover:text-foreground"
-              >
-                {item.name}
-              </a>
-            ))}
-          </div>
-        </div>
 
-        <div className="grid w-full max-w-xl gap-10 sm:grid-cols-2">
-          {social.showContact !== false && (
-            <div className="space-y-4 text-sm text-muted-foreground flex flex-col items-center text-center sm:items-start sm:text-left">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
-                {contactLabel}
-              </h3>
-              <a href={`tel:${phoneHref}`} className="block hover:text-foreground">
-                {contact.phone}
-              </a>
-              <a href={`mailto:${contact.email}`} className="block hover:text-foreground">
-                {contact.email}
-              </a>
-              <p className="whitespace-pre-line">{contact.address}</p>
-            </div>
-          )}
+            <div className="flex flex-col items-center text-center sm:items-start sm:text-left space-y-4">
+              {social.showSocial !== false && (
+                <>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
+                    {followLabel}
+                  </h3>
+                  <div className="flex flex-wrap justify-center gap-4 sm:justify-start">
+                    {social.facebook && social.facebookEnabled !== false && (
+                      <a href={social.facebook} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                        Facebook
+                      </a>
+                    )}
+                    {social.twitter && social.twitterEnabled !== false && (
+                      <a href={social.twitter} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                        Twitter
+                      </a>
+                    )}
+                    {social.linkedin && social.linkedinEnabled !== false && (
+                      <a href={social.linkedin} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                        LinkedIn
+                      </a>
+                    )}
+                    {social.instagram && social.instagramEnabled !== false && (
+                      <a href={social.instagram} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                        Instagram
+                      </a>
+                    )}
+                  </div>
+                </>
+              )}
 
-          <div className="space-y-4 text-sm text-muted-foreground flex flex-col items-center text-center sm:items-start sm:text-left">
-            {social.showSocial !== false && (
-              <>
-                <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
-                  {followLabel}
-                </h3>
-                <div className="flex flex-wrap justify-center sm:justify-start gap-4">
-                  {social.facebook && social.facebookEnabled !== false && (
-                    <a href={social.facebook} className="hover:text-foreground">
-                      Facebook
-                    </a>
-                  )}
-                  {social.twitter && social.twitterEnabled !== false && (
-                    <a href={social.twitter} className="hover:text-foreground">
-                      Twitter
-                    </a>
-                  )}
-                  {social.linkedin && social.linkedinEnabled !== false && (
-                    <a href={social.linkedin} className="hover:text-foreground">
-                      LinkedIn
-                    </a>
-                  )}
-                  {social.instagram && social.instagramEnabled !== false && (
-                    <a href={social.instagram} className="hover:text-foreground">
-                      Instagram
-                    </a>
-                  )}
-                </div>
-              </>
-            )}
-
-            <div className="mt-6 flex flex-wrap justify-center sm:justify-start gap-4 text-xs">
-              <a href={privacyUrl} className="hover:text-foreground">
-                {privacyLabel}
-              </a>
-              <a href={termsUrl} className="hover:text-foreground">
-                {termsLabel}
-              </a>
-              <a href={cookieUrl} className="hover:text-foreground">
-                {cookieLabel}
-              </a>
+              <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground sm:justify-start">
+                <a href={privacyUrl} className="hover:text-foreground transition-colors">
+                  {privacyLabel}
+                </a>
+                <a href={termsUrl} className="hover:text-foreground transition-colors">
+                  {termsLabel}
+                </a>
+                <a href={cookieUrl} className="hover:text-foreground transition-colors">
+                  {cookieLabel}
+                </a>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div className="border-t border-border bg-background px-4 sm:px-6 py-4">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 text-xs text-muted-foreground sm:flex-row">
-          <span>© {new Date().getFullYear()} {brandName}. All rights reserved.</span>
+
+        <div className="mt-12 border-t border-border/50 pt-8 text-center text-xs text-muted-foreground">
+          <p>© {new Date().getFullYear()} {brandName}. All rights reserved.</p>
         </div>
       </div>
     </footer>

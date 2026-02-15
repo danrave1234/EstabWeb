@@ -45,6 +45,7 @@ export async function POST(req: Request) {
       theme: preset.theme,
       colorTheme: preset.colorTheme,
       typographyStyle: preset.typographyStyle || 'elegant',
+      footerStyle: 'minimal',
       activeSections: preset.activeSections,
       ...preset.content
     }

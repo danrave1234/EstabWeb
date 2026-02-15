@@ -23,6 +23,7 @@ export type ThemeKey =
   | "hvac-blue"
   | "generic"
   | "personal-portfolio"
+  | "ecommerce"
   | "photobooth";
 
 export type ColorThemeKey =
@@ -120,6 +121,7 @@ export type PresetContent = {
   financing?: { title?: string; subtitle?: string; items: { title: string; description: string; icon: string; features: string[] }[] };
   developerPartners?: { title?: string; items: { name: string; logoUrl: string }[] };
   whyChooseMe?: { title?: string; subtitle?: string; agentName: string; agentRole: string; licenseNumber: string; agentBio: string; agentImageUrl: string; trustSignals: { label: string; icon: string }[] };
+  productGrid?: { title?: string; subtitle?: string; items: { name: string; price: string; description?: string; imageUrl?: string; icon?: string; stock?: number | string; tag?: string; isPopular?: boolean }[] };
 };
 
 const GENERIC_CONTENT: PresetContent = {
@@ -1014,6 +1016,28 @@ const PEST_CONTROL_CONTENT: PresetContent = {
   },
 };
 
+const ECOMMERCE_CONTENT: PresetContent = {
+  ...GENERIC_CONTENT,
+  hero: {
+    title: "The Best Gadgets, Delivered to You.",
+    subtitle: "Shop the latest tech and accessories with nationwide delivery and secure payments.",
+    primaryCTA: "Shop Now",
+    secondaryCTA: "New Arrivals",
+    backgroundImage: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1080&q=80",
+    trustSignals: ["Free Shipping", "7-Day Returns", "Secure Payments"],
+  },
+  productGrid: {
+    title: "Featured Products",
+    subtitle: "Handpicked deals just for you.",
+    items: [
+      { name: "Wireless Headphones", price: "₱2,499", description: "Noise-cancelling with 40-hour battery life.", imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80", stock: 15, tag: "Best Seller", isPopular: true },
+      { name: "Smart Watch Series X", price: "₱4,990", description: "Fitness tracking and heart rate monitoring.", imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80", stock: 8, tag: "New" },
+      { name: "Mechanical Keyboard", price: "₱3,200", description: "RGB lighting with tactile blue switches.", imageUrl: "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=500&q=80", stock: 0, tag: "Out of Stock" },
+      { name: "Portable Power Bank", price: "₱1,250", description: "20,000mAh high-capacity fast charging.", imageUrl: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=500&q=80", stock: 25 },
+    ],
+  },
+};
+
 export const GENRE_PRESETS: Record<string, GenrePreset> = {
   cleaning: {
     theme: "cleaning",
@@ -1133,6 +1157,13 @@ export const GENRE_PRESETS: Record<string, GenrePreset> = {
     activeSections: ["hero", "trust-badges-grid", "features", "before-after-gallery-grid", "pricing", "contact"],
     content: PHOTOBOOTH_CONTENT,
   },
+  ecommerce: {
+    theme: "ecommerce",
+    colorTheme: "modern",
+    typographyStyle: "modern",
+    activeSections: ["hero", "product-grid", "features", "testimonials", "contact"],
+    content: ECOMMERCE_CONTENT,
+  },
 };
 
 export const GENRE_LABELS: Record<string, string> = {
@@ -1153,4 +1184,5 @@ export const GENRE_LABELS: Record<string, string> = {
   private_school: "Private School (PH)",
   personal_portfolio: "Personal Portfolio",
   photobooth: "Photobooth",
+  ecommerce: "E-commerce Shop",
 };

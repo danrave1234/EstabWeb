@@ -130,8 +130,8 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           dbConf = data.payload;
         }
       } else {
-        console.log(`[getSiteConfig] No project found for domain: ${domain}`);
-      }
+      console.log(`[getSiteConfig] No project found for domain: ${domain}`);
+    }
     }
     
     if (dbConf && Object.keys(dbConf).length > 0) {

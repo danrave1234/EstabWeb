@@ -18,6 +18,7 @@ import {
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { User as SupabaseUser } from "@supabase/supabase-js"
+import { useAuth } from "@/components/providers/AuthProvider"
 
 interface MainHeaderProps {
   initialUser?: SupabaseUser | null
@@ -26,13 +27,11 @@ interface MainHeaderProps {
 }
 
 export default function MainHeader({ initialUser, variant, userEmail }: MainHeaderProps) {
-  const [user, setUser] = React.useState<SupabaseUser | null>(initialUser || null)
-  const [loading, setLoading] = React.useState(!initialUser)
+  const { user, loading } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = React.useState(false)
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [scrolled, setScrolled] = React.useState(false)
   const pathname = usePathname()
-  const supabase = createClient()
 
   // Use fixed appearance for dashboard variants or when scrolled
   const isDashboard = variant === "admin" || variant === "client"
@@ -42,29 +41,10 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
     const handleScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener("scroll", handleScroll)
     
-    // Only fetch user if we don't have one initially
-    if (!initialUser) {
-      supabase.auth.getUser().then(({ data: { user } }) => {
-        if (user) setUser(user)
-        setLoading(false)
-      })
-    }
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        // Double check user authenticity when session changes
-        const { data: { user } } = await supabase.auth.getUser()
-        setUser(user ?? null)
-      } else {
-        setUser(null)
-      }
-    })
-
     return () => {
       window.removeEventListener("scroll", handleScroll)
-      subscription.unsubscribe()
     }
-  }, [supabase])
+  }, [])
 
   const handleSignOut = () => {
     const form = document.createElement('form')
@@ -130,7 +110,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
         </div>
 
         {/* Desktop Navigation - Centered */}
-        <nav className="hidden md:flex items-center gap-1 bg-muted/50 p-1 rounded-full border border-border/50 backdrop-blur-sm mx-4">
+        <nav className="hidden lg:flex items-center gap-1 bg-muted/50 p-1 rounded-full border border-border/50 backdrop-blur-sm mx-4">
           {navLinks.map((link) => {
             const Icon = (link as any).icon
             return (
@@ -151,8 +131,8 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
         </nav>
 
         {/* Action Buttons Area */}
-        <div className="flex-1 flex items-center justify-end gap-4">
-          <div className="hidden md:flex items-center gap-4">
+        <div className="flex-1 flex items-center justify-end gap-2 sm:gap-4">
+          <div className="hidden md:flex items-center gap-2 lg:gap-4">
             {loading ? (
               <div className="flex items-center gap-2">
                 <div className="w-20 h-9 bg-muted animate-pulse rounded-full" />
@@ -164,7 +144,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-3 p-1 pl-3 pr-1.5 rounded-full border border-border bg-background hover:bg-muted/50 transition-all duration-200 group cursor-pointer"
                 >
-                  <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                  <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors hidden sm:inline">
                     Account
                   </span>
                   <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-xs shadow-md">
@@ -237,16 +217,16 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 lg:gap-2">
                 <Link 
                   href="/login" 
-                  className="px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-muted rounded-full transition-all"
+                  className="px-3 lg:px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-muted rounded-full transition-all"
                 >
                   Log In
                 </Link>
                 <Link 
                   href="/login?mode=signup" 
-                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-full text-sm font-bold hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 transition-all duration-300 active:translate-y-0"
+                  className="px-4 lg:px-6 py-2.5 bg-primary text-primary-foreground rounded-full text-xs lg:text-sm font-bold hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 transition-all duration-300 active:translate-y-0 whitespace-nowrap"
                 >
                   Get Started
                 </Link>
@@ -257,7 +237,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-muted/50 text-foreground transition-colors hover:bg-muted"
+            className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-muted/50 text-foreground transition-colors hover:bg-muted"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -266,7 +246,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border animate-in slide-in-from-top duration-300 overflow-hidden shadow-xl">
+        <div className="lg:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border animate-in slide-in-from-top duration-300 overflow-hidden shadow-xl">
           <nav className="flex flex-col p-4 gap-1 max-h-[80vh] overflow-y-auto">
             {navLinks.map((link) => (
               <Link

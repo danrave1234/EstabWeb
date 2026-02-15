@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import StructuredData from "@/components/shared/StructuredData";
 import { createClient } from "@/lib/supabase/server";
 import HubLayoutClient from "@/components/shared/HubLayoutClient";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://estabweb.com";
 
@@ -104,11 +105,13 @@ export default async function HubLayout({
         />
       </head>
       <body className="antialiased">
-        <HubLayoutClient initialUser={sessionUser}>
-          <ScrollReveal />
-          {children}
-        </HubLayoutClient>
-        <Toaster position="top-right" richColors />
+        <AuthProvider initialUser={sessionUser}>
+          <HubLayoutClient initialUser={sessionUser}>
+            <ScrollReveal />
+            {children}
+          </HubLayoutClient>
+          <Toaster position="top-right" richColors />
+        </AuthProvider>
       </body>
     </html>
   );

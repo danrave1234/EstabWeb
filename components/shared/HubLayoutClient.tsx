@@ -30,7 +30,7 @@ export default function HubLayoutClient({ children, initialUser }: HubLayoutClie
         {children}
       </div>
       
-      {!isAuthPage && !isDashboard && <MainFooter />}
+      {!isAuthPage && <MainFooter />}
     </div>
   );
 }

@@ -28,7 +28,8 @@ import {
   Rocket,
   Key,
   ArrowLeft,
-  X
+  X,
+  ShoppingCart
 } from "lucide-react";
 import { GENRE_PRESETS, GENRE_LABELS } from "@/config/presets";
 import { toast } from "sonner";
@@ -51,6 +52,7 @@ const BUSINESS_ICONS: Record<string, any> = {
   water_refilling: Droplets,
   salon_aesthetic: Scissors,
   private_school: GraduationCap,
+  ecommerce: ShoppingCart,
 };
 
 const ALL_SECTION_OPTIONS = [

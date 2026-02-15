@@ -31,24 +31,24 @@ export default function NoProjectRedeem() {
   }
 
   return (
-    <div className="w-full max-w-sm bg-card border border-border rounded-3xl p-6 shadow-xl shadow-foreground/5 text-left relative overflow-hidden group transition-all hover:border-primary/20">
-      <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
-        <Key className="w-3.5 h-3.5 text-primary" /> 
+    <div className="w-full sm:max-w-sm bg-card border border-border rounded-2xl p-4 sm:p-5 shadow-xl shadow-foreground/5 text-left relative overflow-hidden group transition-all hover:border-primary/20">
+      <div className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2 mb-2 sm:mb-3">
+        <Key className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-primary" /> 
         Redeem Design Code
       </div>
-      <form onSubmit={handleApply} className="flex flex-col gap-3">
+      <form onSubmit={handleApply} className="flex flex-row gap-2">
         <input
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          placeholder="PASTE-CODE-HERE"
-          className="w-full px-4 py-3.5 text-xs border border-border rounded-xl bg-muted/30 focus:ring-4 focus:ring-primary/5 focus:border-primary outline-none uppercase transition-all font-bold tracking-widest placeholder:text-muted-foreground/30"
+          placeholder="CODE"
+          className="flex-1 px-3 py-2.5 text-[10px] sm:text-xs border border-border rounded-xl bg-muted/30 focus:ring-4 focus:ring-primary/5 focus:border-primary outline-none uppercase transition-all font-bold tracking-widest placeholder:text-muted-foreground/30"
         />
         <button
           type="submit"
           disabled={loading || !code.trim()}
-          className="w-full py-3.5 bg-foreground text-background rounded-xl text-[10px] font-black uppercase tracking-[0.1em] disabled:opacity-50 hover:bg-primary hover:text-primary-foreground transition-all shadow-lg active:scale-95"
+          className="px-4 py-2.5 bg-foreground text-background rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] disabled:opacity-50 hover:bg-primary hover:text-primary-foreground transition-all shadow-lg active:scale-95 whitespace-nowrap"
         >
-          {loading ? 'Activating...' : 'Activate Now'}
+          {loading ? '...' : 'Activate'}
         </button>
       </form>
     </div>
