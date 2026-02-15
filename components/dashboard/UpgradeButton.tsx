@@ -36,10 +36,10 @@ export default function UpgradeButton({ projectId, variant = "inline" }: Upgrade
       <button
         onClick={handleUpgrade}
         disabled={loading}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg transition-colors disabled:opacity-50"
+        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 hover:bg-amber-500/20 rounded-lg transition-colors disabled:opacity-50"
       >
         <Zap className="w-3.5 h-3.5" />
-        {loading ? "Redirecting…" : "Upgrade"}
+        {loading ? "Redirecting…" : "Free"}
       </button>
     )
   }

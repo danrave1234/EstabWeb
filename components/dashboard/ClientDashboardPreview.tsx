@@ -662,11 +662,11 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   }
                 }}
                 disabled={upgradeLoading}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 text-amber-600 text-sm font-semibold transition-colors disabled:opacity-50"
               >
                 <span className="flex items-center gap-2">
                   <Zap className="w-4 h-4" />
-                  Upgrade (₱1,000/mo)
+                  Free (Upgrade)
                 </span>
                 <ChevronRight className="w-4 h-4 opacity-80" />
               </button>
