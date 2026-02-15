@@ -60,7 +60,8 @@ const SECTIONS = [
   { id: "before-after-gallery-grid", label: "Before/After Gallery Grid" },
   { id: "promo-cta-section", label: "Promo CTA Section" },
   { id: "contact", label: "Contact" },
-  { id: "contact-split", label: "Contact Split" },
+  { id: "contact-minimal", label: "Contact Minimal" },
+  { id: "contact-with-map", label: "Contact With Map" },
   { id: "free-consultation", label: "Free Consultation" },
   { id: "booking-cta", label: "Booking CTA" },
 ] as const;
@@ -184,11 +185,16 @@ export default function SiteEditorSidebar() {
 
   const toggleSection = (id: SectionId) => {
     if (!data) return;
-    const current = data.activeSections || [];
-    const next = current.includes(id)
-      ? current.filter((s: string) => s !== id)
-      : [...current, id];
-    updateData({ ...data, activeSections: next });
+    const current = [...(data.activeSections || [])];
+    
+    if (current.includes(id)) {
+      // Find the index of the first occurrence and remove it
+      const idx = current.indexOf(id);
+      current.splice(idx, 1);
+    } else {
+      current.push(id);
+    }
+    updateData({ ...data, activeSections: current });
   };
 
   if (loading || !data) return null;

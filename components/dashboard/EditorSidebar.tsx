@@ -180,7 +180,7 @@ export default function EditorSidebar({
 
             <button
               onClick={() => setSelectedSection('hero')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'hero' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'} ${searchQuery && !'hero section'.includes(searchQuery.toLowerCase()) ? 'hidden' : ''}`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'hero' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'} ${searchQuery && !'hero section'.includes(searchQuery.toLowerCase()) ? 'hidden' : ''} ${!activeSections.includes('hero') ? 'opacity-50 grayscale' : ''}`}
             >
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
                 <Zap className="w-4 h-4" />
@@ -248,42 +248,43 @@ export default function EditorSidebar({
               Section Order
             </div>
             <div className="space-y-2 bg-muted/20 p-2 rounded-2xl border border-border/50">
-              {activeSections.map((section, index) => (
-                <div
-                  key={section}
-                  draggable
-                  onDragStart={() => setDragSectionIndex(index)}
-                  onDragOver={(e) => { e.preventDefault(); setDropSectionIndex(index) }}
-                  onDragEnd={() => {
-                    if (dragSectionIndex !== null && dropSectionIndex !== null && dragSectionIndex !== dropSectionIndex) {
-                      const newSections = [...activeSections]
-                      const [moved] = newSections.splice(dragSectionIndex, 1)
-                      newSections.splice(dropSectionIndex, 0, moved)
-                      setModified((m: any) => ({ ...m, activeSections: newSections }))
-                      autoSaveSection('activeSections', newSections)
-                    }
-                    setDragSectionIndex(null)
-                    setDropSectionIndex(null)
-                  }}
-                  className={`flex items-center gap-3 p-3 bg-background border border-border rounded-xl cursor-move transition-all ${dragSectionIndex === index ? 'opacity-50 scale-95 shadow-inner' : 'hover:border-primary/30 hover:shadow-md'} ${dropSectionIndex === index ? 'border-primary border-t-4' : ''}`}
-                >
-                  <GripVertical className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-xs font-bold flex-1 truncate capitalize">
-                    {section.replace(/-/g, ' ')}
-                  </span>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      const newSections = activeSections.filter(s => s !== section)
-                      setModified((m: any) => ({ ...m, activeSections: newSections }))
-                      autoSaveSection('activeSections', newSections)
-                    }}
-                    className="p-1.5 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
+                  {activeSections.map((section, index) => (
+                    <div
+                      key={`${section}-${index}`}
+                      draggable
+                      onDragStart={() => setDragSectionIndex(index)}
+                      onDragOver={(e) => { e.preventDefault(); setDropSectionIndex(index) }}
+                      onDragEnd={() => {
+                        if (dragSectionIndex !== null && dropSectionIndex !== null && dragSectionIndex !== dropSectionIndex) {
+                          const newSections = [...activeSections]
+                          const [moved] = newSections.splice(dragSectionIndex, 1)
+                          newSections.splice(dropSectionIndex, 0, moved)
+                          setModified((m: any) => ({ ...m, activeSections: newSections }))
+                          autoSaveSection('activeSections', newSections)
+                        }
+                        setDragSectionIndex(null)
+                        setDropSectionIndex(null)
+                      }}
+                      className={`flex items-center gap-3 p-3 bg-background border border-border rounded-xl cursor-move transition-all ${dragSectionIndex === index ? 'opacity-50 scale-95 shadow-inner' : 'hover:border-primary/30 hover:shadow-md'} ${dropSectionIndex === index ? 'border-primary border-t-4' : ''}`}
+                    >
+                      <GripVertical className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-xs font-bold flex-1 truncate capitalize">
+                        {section.replace(/-/g, ' ')}
+                      </span>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          const next = [...activeSections];
+                          next.splice(index, 1);
+                          setModified((m: any) => ({ ...m, activeSections: next }))
+                          autoSaveSection('activeSections', next)
+                        }}
+                        className="p-1.5 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
               <div className="p-2">
                 <button
                   onClick={() => { setSelectedSection('global_settings'); }}

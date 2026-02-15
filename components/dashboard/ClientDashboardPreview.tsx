@@ -71,7 +71,7 @@ const SECTION_CATEGORIES: { label: string; ids: string[] }[] = [
   { label: "Services & Features", ids: ["features", "practice-areas", "feature-highlight", "ac-types-grid", "financing-section", "developer-partners", "featured-properties-grid", "features-modern", "services-grid", "project-gallery", "programs-grid", "warranty-block"] },
   { label: "Process & Info", ids: ["how-it-works", "treatment-process", "patient-faq", "faq-accordion", "faq-two-column", "blog", "delivery-coverage", "stats-section"] },
   { label: "Team & Profiles", ids: ["team-carousel", "team-grid", "attorney-profile", "faculty-grid", "why-choose-me"] },
-  { label: "Contact & Conversion", ids: ["contact", "contact-split", "contact-minimal", "contact-visual", "contact-with-map", "contact-columns", "free-consultation", "booking-cta", "messenger-sticky-cta", "pricing", "promo-cta-section", "promo-banner-strip", "payment-options-strip", "service-area-map", "coverage-radius-block", "emergency-cta-strip", "price-preview-strip", "maintenance-plans"] },
+  { label: "Contact & Conversion", ids: ["contact", "contact-minimal", "contact-visual", "contact-with-map", "contact-columns", "free-consultation", "booking-cta", "messenger-sticky-cta", "pricing", "promo-cta-section", "promo-banner-strip", "payment-options-strip", "service-area-map", "coverage-radius-block", "emergency-cta-strip", "price-preview-strip", "maintenance-plans"] },
   { label: "Visuals & Galleries", ids: ["before-after-gallery-grid", "before-after-slider", "common-pests", "safety-section", "logo-cloud"] },
 ]
 
@@ -89,6 +89,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const saveTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null)
   
   const [selectedSection, setSelectedSection] = React.useState<string | null>(null)
+  const [activePreviewSection, setActivePreviewSection] = React.useState<string | null>(null)
   const [formValues, setFormValues] = React.useState<Record<string, any>>({})
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [isQueueing, setIsQueueing] = React.useState(false)
@@ -113,6 +114,9 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const typographyRef = React.useRef<HTMLDivElement>(null)
   const colorPaletteRectRef = React.useRef<DOMRect | null>(null)
   const typographyRectRef = React.useRef<DOMRect | null>(null)
+  const manualScrollLockRef = React.useRef(false)
+  const manualScrollTargetRef = React.useRef<string | null>(null)
+  const manualScrollTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
   React.useEffect(() => {
     const close = (e: MouseEvent) => {
@@ -148,6 +152,20 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
       if (!win) return
       win.postMessage(message, '*')
     } catch {}
+  }, [])
+
+  const scrollToSection = React.useCallback((sectionId: string, sectionIndex?: number) => {
+    sendToIframe({ type: 'SCROLL_TO_SECTION', sectionId, sectionIndex })
+  }, [sendToIframe])
+
+  const lockPreviewHighlight = React.useCallback((sectionId: string | null) => {
+    manualScrollLockRef.current = true
+    manualScrollTargetRef.current = sectionId
+    if (manualScrollTimeoutRef.current) clearTimeout(manualScrollTimeoutRef.current)
+    manualScrollTimeoutRef.current = setTimeout(() => {
+      manualScrollLockRef.current = false
+      manualScrollTargetRef.current = null
+    }, 1200)
   }, [])
 
   React.useEffect(() => {
@@ -186,6 +204,28 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
   }, [baseConfig, modified, sendToIframe])
+
+  React.useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      if ((e.data as any)?.type !== 'PREVIEW_ACTIVE_SECTION') return
+      const sectionId = (e.data as any)?.sectionId as string | undefined
+      if (!sectionId) return
+      if (!activeSections.includes(sectionId)) return
+      if (manualScrollLockRef.current) {
+        const target = manualScrollTargetRef.current
+        if (target && sectionId !== target) return
+        manualScrollLockRef.current = false
+        manualScrollTargetRef.current = null
+        if (manualScrollTimeoutRef.current) {
+          clearTimeout(manualScrollTimeoutRef.current)
+          manualScrollTimeoutRef.current = null
+        }
+      }
+      setActivePreviewSection(sectionId)
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [activeSections])
 
   const refreshPreview = React.useCallback(() => {
     if (iframeRef.current) {
@@ -630,8 +670,14 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                 Page Sections
               </div>
               <button
-                onClick={() => setSelectedSection('hero')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'hero' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+                onClick={() => {
+                  setSelectedSection('hero')
+                  setActivePreviewSection('hero')
+                  lockPreviewHighlight('hero')
+                  const heroIndex = activeSections.indexOf('hero')
+                  if (heroIndex >= 0) scrollToSection('hero', heroIndex)
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${(selectedSection === 'hero' || activePreviewSection === 'hero') ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
               >
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
                   <Zap className="w-4 h-4" />
@@ -643,26 +689,37 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                 <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
 
-              {activeSections.filter((s: string) => s !== 'hero').map((section: string) => (
-                <button
-                  key={section}
-                  onClick={() => setSelectedSection(section)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === section ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
-                >
-                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground shrink-0 group-hover:scale-110 transition-transform">
-                    <Layout className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold truncate capitalize">{section.replace(/-/g, ' ')}</p>
-                    <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Block Edit</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
+              {activeSections.map((section: string, sectionIndex: number) => (
+                section === 'hero' ? null : (
+                  <button
+                    key={`${section}-${sectionIndex}`}
+                    onClick={() => {
+                      setSelectedSection(section)
+                      setActivePreviewSection(section)
+                      lockPreviewHighlight(section)
+                      scrollToSection(section, sectionIndex)
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${(selectedSection === section || activePreviewSection === section) ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground shrink-0 group-hover:scale-110 transition-transform">
+                      <Layout className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold truncate capitalize">{section.replace(/-/g, ' ')}</p>
+                      <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Block Edit</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                )
               ))}
 
               <button
-                onClick={() => setSelectedSection('footer')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'footer' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+                onClick={() => {
+                  setSelectedSection('footer')
+                  setActivePreviewSection('footer')
+                  lockPreviewHighlight('footer')
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${(selectedSection === 'footer' || activePreviewSection === 'footer') ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
               >
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
                   <Layout className="w-4 h-4 rotate-180" />
@@ -1216,7 +1273,6 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   <div className="p-5 space-y-4">
                     <div className="space-y-2">
                     {activeSections.map((section: string, idx: number) => {
-                      const isHero = section === 'hero'
                       const isDragging = dragSectionIndex === idx
                       const isDropTarget = dropSectionIndex === idx
                       const moveTo = (fromIndex: number, toIndex: number) => {
@@ -1231,56 +1287,50 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                       return (
                         <div
                           key={idx}
-                          draggable={!isHero}
-                          onDragStart={() => !isHero && setDragSectionIndex(idx)}
+                          draggable={true}
+                          onDragStart={() => setDragSectionIndex(idx)}
                           onDragEnd={() => { setDragSectionIndex(null); setDropSectionIndex(null) }}
                           onDragOver={(e) => {
                             e.preventDefault()
                             e.dataTransfer.dropEffect = 'move'
-                            if (dragSectionIndex !== null && dragSectionIndex !== idx && !(idx === 0 && isHero)) setDropSectionIndex(idx)
+                            if (dragSectionIndex !== null && dragSectionIndex !== idx) setDropSectionIndex(idx)
                           }}
                           onDragLeave={() => setDropSectionIndex(null)}
                           onDrop={(e) => {
                             e.preventDefault()
                             if (dragSectionIndex !== null && dragSectionIndex !== idx) {
-                              const dropIdx = idx === 0 && isHero ? 1 : idx
-                              moveTo(dragSectionIndex, dropIdx)
+                              moveTo(dragSectionIndex, idx)
                             }
                             setDragSectionIndex(null)
                             setDropSectionIndex(null)
                           }}
-                          className={`flex items-center gap-3 p-3 border rounded-xl group transition-all duration-200 ${isHero ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} ${isDragging ? 'opacity-60 bg-muted/50 border-primary/40 scale-[0.98]' : 'bg-background/80 border-border/80 hover:border-primary/20'} ${isDropTarget ? 'ring-2 ring-primary/40 ring-offset-2 ring-offset-background bg-primary/5 border-primary' : ''}`}
+                          className={`flex items-center gap-3 p-3 border rounded-xl group transition-all duration-200 cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-60 bg-muted/50 border-primary/40 scale-[0.98]' : 'bg-background/80 border-border/80 hover:border-primary/20'} ${isDropTarget ? 'ring-2 ring-primary/40 ring-offset-2 ring-offset-background bg-primary/5 border-primary' : ''}`}
                         >
-                          <GripVertical className={`w-4 h-4 shrink-0 aria-hidden ${isHero ? 'text-muted-foreground/20' : 'text-muted-foreground/50'}`} />
+                          <GripVertical className="w-4 h-4 shrink-0 aria-hidden text-muted-foreground/50" />
                           <span className="flex-1 text-xs font-medium capitalize select-none">{section.replace(/-/g, ' ')}</span>
                           <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                            {!isHero && (
-                              <button
-                                type="button"
-                                onClick={() => { if (idx > 0) moveTo(idx, idx - 1) }}
-                                className="p-1 hover:bg-muted rounded text-[10px]"
-                              >Up</button>
-                            )}
-                            {!isHero && (
-                              <button
-                                type="button"
-                                onClick={() => { if (idx < activeSections.length - 1) moveTo(idx, idx + 1) }}
-                                className="p-1 hover:bg-muted rounded text-[10px]"
-                              >Down</button>
-                            )}
-                            {!isHero && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const next = activeSections.filter((_: any, i: number) => i !== idx)
-                                  setModified(m => ({ ...m, activeSections: next }))
-                                  autoSaveSection('activeSections', next)
-                                }}
-                                className="p-1 text-muted-foreground hover:text-red-500 rounded transition-colors"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
+                            <button
+                              type="button"
+                              onClick={() => { if (idx > 0) moveTo(idx, idx - 1) }}
+                              className="p-1 hover:bg-muted rounded text-[10px]"
+                            >Up</button>
+                            <button
+                              type="button"
+                              onClick={() => { if (idx < activeSections.length - 1) moveTo(idx, idx + 1) }}
+                              className="p-1 hover:bg-muted rounded text-[10px]"
+                            >Down</button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = [...activeSections];
+                                next.splice(idx, 1);
+                                setModified((m: any) => ({ ...m, activeSections: next }))
+                                autoSaveSection('activeSections', next)
+                              }}
+                              className="p-1 text-muted-foreground hover:text-red-500 rounded transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         </div>
                       )
@@ -1293,11 +1343,6 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                       onChange={(e) => {
                         const value = e.target.value
                         if (!value) return
-                        const alreadyAdded = activeSections.includes(value)
-                        if (alreadyAdded) {
-                          e.target.value = ""
-                          return
-                        }
                         const next = [...activeSections, value]
                         setModified(m => ({ ...m, activeSections: next }))
                         autoSaveSection('activeSections', next)

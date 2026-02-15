@@ -30,11 +30,15 @@ export default function AwardsStrip({ title, items }: AwardsStripProps) {
               const sublabel = (item as AwardItem).sublabel
               const icon = (item as AwardItem).icon ?? "Award"
               const imageUrl = (item as AwardItem).imageUrl
+              const hasImage = Boolean(imageUrl)
+              const containerClass = hasImage
+                ? "w-16 h-16 sm:w-20 sm:h-20 rounded-xl"
+                : "w-8 h-8 sm:w-12 sm:h-12 rounded-full"
               return (
                 <div key={index} className="flex flex-col items-center text-center space-y-1 sm:space-y-2 group">
-                  <div className="w-8 h-8 sm:w-12 sm:h-12 bg-background rounded-full overflow-hidden flex items-center justify-center border border-border shadow-sm group-hover:border-primary/30 group-hover:bg-primary/5 transition-all duration-300 text-primary">
-                    {imageUrl ? (
-                      <img src={imageUrl} alt={label} className="w-full h-full object-cover" />
+                  <div className={`${containerClass} bg-background overflow-hidden flex items-center justify-center border border-border shadow-sm group-hover:border-primary/30 group-hover:bg-primary/5 transition-all duration-300 text-primary`}>
+                    {hasImage ? (
+                      <img src={imageUrl} alt={label} className="w-full h-full object-contain" />
                     ) : (
                       <DynamicIcon name={icon} className="w-4 h-4 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform" />
                     )}

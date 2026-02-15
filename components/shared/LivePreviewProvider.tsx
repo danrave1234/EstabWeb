@@ -33,6 +33,7 @@ function deepMerge(target: any, source: any): any {
 
 export default function LivePreviewProvider({ initialData, children }: LivePreviewProviderProps) {
   const [data, setData] = React.useState(initialData)
+  const lastActiveRef = React.useRef<string | null>(null)
 
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -54,6 +55,18 @@ export default function LivePreviewProvider({ initialData, children }: LivePrevi
       if (message?.type === 'LIVE_PREVIEW_FULL') {
         setData(message.data)
       }
+      if (message?.type === 'SCROLL_TO_SECTION') {
+        const sectionId = message.sectionId as string | undefined
+        const sectionIndex = message.sectionIndex as number | undefined
+        if (!sectionId || typeof document === 'undefined') return
+        const selector = typeof sectionIndex === 'number'
+          ? `[data-section-id="${sectionId}"][data-section-index="${sectionIndex}"]`
+          : `[data-section-id="${sectionId}"]`
+        const target = document.querySelector(selector)
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }
     }
 
     window.addEventListener('message', handleMessage)
@@ -65,6 +78,32 @@ export default function LivePreviewProvider({ initialData, children }: LivePrevi
 
     return () => window.removeEventListener('message', handleMessage)
   }, [])
+
+  React.useEffect(() => {
+    if (!data || typeof window === 'undefined' || typeof document === 'undefined') return
+
+    const sections = Array.from(document.querySelectorAll('[data-section-id]'))
+    if (sections.length === 0) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => (b.intersectionRatio - a.intersectionRatio))
+        const top = visible[0]
+        const nextId = (top?.target as HTMLElement | undefined)?.dataset?.sectionId || null
+        if (!nextId || nextId === lastActiveRef.current) return
+        lastActiveRef.current = nextId
+        if (window.parent !== window) {
+          window.parent.postMessage({ type: 'PREVIEW_ACTIVE_SECTION', sectionId: nextId }, '*')
+        }
+      },
+      { root: null, rootMargin: '-20% 0px -60% 0px', threshold: [0.1, 0.25, 0.5, 0.75] }
+    )
+
+    sections.forEach((section) => observer.observe(section))
+    return () => observer.disconnect()
+  }, [data])
 
   // Apply Global Site Settings (theme, colors, typography, dark mode) to the document
   // so they take effect in the iframe when the user changes them in the dashboard.

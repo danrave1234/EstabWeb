@@ -25,7 +25,6 @@ const TrustBar = dynamicWithSkeleton(() => import("@/components/blocks/TrustBar"
 const PricingTable = dynamicWithSkeleton(() => import("@/components/blocks/PricingTable"), { className: "h-[600px]" });
 const AwardsStrip = dynamicWithSkeleton(() => import("@/components/blocks/AwardsStrip"), { className: "h-32" });
 const ContactForm = dynamicWithSkeleton(() => import("@/components/blocks/ContactForm"), { className: "h-[600px]" });
-const ContactSplit = dynamicWithSkeleton(() => import("@/components/blocks/ContactSplit"), { className: "h-[600px]" });
 const ContactMinimal = dynamicWithSkeleton(() => import("@/components/blocks/ContactMinimal"), { className: "h-[500px]" });
 const ContactVisual = dynamicWithSkeleton(() => import("@/components/blocks/ContactVisual"), { className: "h-[600px]" });
 const ContactWithMap = dynamicWithSkeleton(() => import("@/components/blocks/ContactWithMap"), { className: "h-[600px]" });
@@ -267,7 +266,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     hero: null,
     "hero-emergency": { name: "Emergency", href: "#hero-emergency" },
     features: { name: "Services", href: "#services" },
+    "features-modern": { name: "Services", href: "#services" },
+    "features-grid": { name: "Services", href: "#services" },
     "feature-highlight": { name: "Highlights", href: "#highlights" },
+    "pricing-table": { name: "Pricing", href: "#pricing" },
+    "packages-pricing": { name: "Pricing", href: "#pricing" },
     "how-it-works": { name: "How It Works", href: "#how-it-works" },
     "team-carousel": { name: "Team", href: "#team" },
     "patient-faq": { name: "FAQ", href: "#faq" },
@@ -278,7 +281,6 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     testimonials: { name: "Testimonials", href: "#testimonials" },
     "review-trust-bar": { name: "Reviews", href: "#reviews" },
     contact: { name: "Contact", href: "#contact" },
-    "contact-split": { name: "Contact", href: "#contact" },
     "contact-minimal": { name: "Contact", href: "#contact" },
     "contact-visual": { name: "Contact", href: "#contact" },
     "contact-with-map": { name: "Contact", href: "#contact" },
@@ -315,29 +317,46 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
         ? builtFromSections
         : defaultNav;
 
+  const contactSections = ["contact", "contact-minimal", "contact-visual", "contact-with-map", "contact-columns"];
+  const footerSections = ["footer", "lead-magnet-footer", "simple-footer", "minimal-footer"];
+  const showHeader = activeSections.includes("header") || (activeSections.length > 0 && (activeSections.includes("hero") || activeSections.some((s: string) => s.startsWith("hero")))) || activeSections.length === 0;
+  const showFooter = activeSections.includes("footer") || (activeSections.length > 0 && activeSections.some((s: string) => contactSections.includes(s) || footerSections.includes(s))) || activeSections.length === 0;
+
+  const renderedSections = Array.isArray(activeSections) ? activeSections : [];
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {isAdmin && <SiteEditorSidebar />}
-      <Header
-        brandName={brand.name}
-        logoUrl={brand.logoUrl}
-        navigation={navigationFromSections}
-        ctaText={brand.ctaText ?? heroProps.primaryCTA}
-        ctaHref={brand.ctaHref ?? "#contact"}
-        headerStyle={headerStyle}
-      />
+      {showHeader && (
+        <Header
+          brandName={brand.name}
+          logoUrl={brand.logoUrl}
+          navigation={navigationFromSections}
+          ctaText={brand.ctaText ?? heroProps.primaryCTA}
+          ctaHref={brand.ctaHref ?? "#contact"}
+          headerStyle={headerStyle}
+        />
+      )}
       <main className="flex-1">
-        {activeSections.map((sectionId: string) => {
+        {renderedSections.length === 0 && (
+          <div className="py-24 text-center bg-muted/20">
+            <h2 className="text-2xl font-bold text-muted-foreground">Welcome to your new site</h2>
+            <p className="mt-2 text-muted-foreground">Start by adding sections from the editor.</p>
+          </div>
+        )}
+        {renderedSections.map((sectionId: any, index) => {
+          const key = `${sectionId}-${index}`;
+          let sectionContent: React.ReactNode = null;
           switch (sectionId) {
             case "hero":
-              if (theme === "chiropractor") return <HeroChiropractor key="hero" {...heroChiropractorProps} />;
-              if (theme === "dentist") return <HeroDentist key="hero" {...heroDentistProps} />;
-              if (theme === "clinic") return <HeroClinic key="hero" {...heroClinicProps} />;
-              if (theme === "pool") return <HeroPool key="hero" {...heroPoolProps} />;
-              if (theme === "cleaning") return <HeroCleaning key="hero" {...heroCleaningProps} />;
-              if (theme === "pest-control") return <HeroPestControl key="hero" {...heroPestControlProps} />;
-              if (theme === "startup") return <HeroSaas key="hero" {...heroProps} />;
-              if (theme === "generic") return <HeroBlock key="hero" {...heroProps} />;
+              if (theme === "chiropractor") sectionContent = <HeroChiropractor key={key} {...heroChiropractorProps} />;
+              else if (theme === "dentist") sectionContent = <HeroDentist key={key} {...heroDentistProps} />;
+              else if (theme === "clinic") sectionContent = <HeroClinic key={key} {...heroClinicProps} />;
+              else if (theme === "pool") sectionContent = <HeroPool key={key} {...heroPoolProps} />;
+              else if (theme === "cleaning") sectionContent = <HeroCleaning key={key} {...heroCleaningProps} />;
+              else if (theme === "pest-control") sectionContent = <HeroPestControl key={key} {...heroPestControlProps} />;
+              else if (theme === "startup") sectionContent = <HeroSaas key={key} {...heroProps} />;
+              else if (theme === "generic") sectionContent = <HeroBlock key={key} {...heroProps} />;
               if (theme === "before-after" || theme === "real-estate-modern" || theme === "before-after-split" || theme === "industrial" || theme === "clean-delivery" || theme === "luxury-soft" || theme === "academic-clean" || theme === "hvac" || theme === "personal-portfolio" || theme === "photobooth") {
                 let layout: any = undefined;
                 if (theme === "before-after") layout = "before-after";
@@ -352,13 +371,16 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 if (theme === "personal-portfolio") layout = "full-screen";
                 if (theme === "photobooth") layout = "soft-luxury";
 
-                return <HeroAuthority key="hero" {...heroProps} layout={layout} />;
+                sectionContent = <HeroAuthority key={key} {...heroProps} layout={layout} />;
               }
-              return <HeroAuthority key="hero" {...heroProps} />;
+              if (!sectionContent) {
+                sectionContent = <HeroAuthority key={key} {...heroProps} />;
+              }
+              break;
             case "hero-emergency":
-              return (
+              sectionContent = (
                 <HeroEmergency
-                  key="hero-emergency"
+                  key={key}
                   title={heroEmergency.title ?? "Need help? We're here."}
                   subtitle={heroEmergency.subtitle ?? "Fast, reliable service."}
                   primaryCTA={heroEmergency.primaryCTA ?? "Call Now"}
@@ -369,11 +391,12 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   icon={heroEmergency.icon}
                 />
               );
+              break;
             case "pricing":
             case "packages-pricing":
-              return (
+              sectionContent = (
                 <PricingTable
-                  key={sectionId}
+                  key={key}
                   title={pricingTable.title ?? "Affordable Plans"}
                   subtitle={pricingTable.subtitle}
                   plans={Array.isArray(pricingTable.plans) ? pricingTable.plans.map((p: any) => ({
@@ -385,15 +408,17 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   periodLabel={pricingTable.periodLabel}
                 />
               );
+              break;
             case "features-modern":
-              return (
+              sectionContent = (
                 <FeaturesModern
-                  key="features-modern"
+                  key={key}
                   title={features.title}
                   subtitle={features.subtitle}
                   features={features.items ?? []}
                 />
               );
+              break;
             case "awards":
             case "certifications": {
               let awardsItems = awardsStrip.items
@@ -404,13 +429,14 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   .map((k) => (awardsItems as Record<string, unknown>)[k]) as { label: string; sublabel?: string; icon?: string; imageUrl?: string }[]
               }
               if (!Array.isArray(awardsItems)) awardsItems = []
-              return (
+              sectionContent = (
                 <AwardsStrip
-                  key={sectionId}
+                  key={key}
                   title={awardsStrip.title}
                   items={awardsItems}
                 />
               );
+              break;
             }
             case "features":
             case "services-grid":
@@ -418,18 +444,19 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
             case "before-after-gallery":
             case "programs-grid":
             case "faculty-grid":
-              return (
+              sectionContent = (
                 <FeaturesGrid
-                  key={sectionId}
+                  key={key}
                   title={features.title ?? "Our Services"}
                   subtitle={features.subtitle}
                   features={features.items ?? []}
                 />
               );
+              break;
             case "featured-properties-grid":
-              return (
+              sectionContent = (
                 <FeaturedListingsGrid
-                  key="featured-listings"
+                  key={key}
                   title={featuredListings.title}
                   subtitle={featuredListings.subtitle}
                   items={featuredListings.items ?? []}
@@ -437,27 +464,30 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   sqmLabel={featuredListings.sqmLabel}
                 />
               );
+              break;
             case "financing-section":
-              return (
+              sectionContent = (
                 <FinancingSection
-                  key="financing"
+                  key={key}
                   title={financing.title}
                   subtitle={financing.subtitle}
                   items={financing.items ?? []}
                 />
               );
+              break;
             case "developer-partners":
-              return (
+              sectionContent = (
                 <DeveloperPartnersLogos
-                  key="developer-partners"
+                  key={key}
                   title={developerPartners.title}
                   items={developerPartners.items ?? []}
                 />
               );
+              break;
             case "why-choose-me":
-              return (
+              sectionContent = (
                 <WhyChooseMe
-                  key="why-choose-me"
+                  key={key}
                   title={whyChooseMe.title}
                   subtitle={whyChooseMe.subtitle}
                   agentName={whyChooseMe.agentName}
@@ -470,31 +500,34 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   inquireNowLabel={whyChooseMe.inquireNowLabel}
                 />
               );
+              break;
             case "feature-highlight":
             case "why-choose-us":
-              return (
+              sectionContent = (
                 <FeatureHighlightZigzag
-                  key={sectionId}
+                  key={key}
                   title={featureHighlight.title ?? "Highlights"}
                   subtitle={featureHighlight.subtitle}
                   items={Array.isArray(featureHighlight.items) ? featureHighlight.items : []}
                 />
               );
+              break;
             case "how-it-works":
             case "delivery-coverage":
             case "enrollment-process":
-              return (
+              sectionContent = (
                 <HowItWorksSteps
-                  key={sectionId}
+                  key={key}
                   title={howItWorks.title ?? (sectionId === "delivery-coverage" ? "Delivery Coverage" : sectionId === "enrollment-process" ? "Enrollment Process" : "How It Works")}
                   subtitle={howItWorks.subtitle}
                   steps={howItWorks.items ?? howItWorks.steps ?? (sectionId === "delivery-coverage" ? (data.deliveryCoverage?.areas?.map((a: string, i: number) => ({ number: String(i+1).padStart(2, '0'), title: a, description: "Daily delivery", icon: "MapPin" })) || []) : [])}
                 />
               );
+              break;
             case "testimonials":
-              return (
+              sectionContent = (
                 <TrustBar
-                  key="testimonials"
+                  key={key}
                   label={testimonials.label ?? "Trusted by"}
                   logos={testimonials.logos ?? []}
                   testimonial={
@@ -508,10 +541,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   }
                 />
               );
+              break;
             case "review-trust-bar":
-              return (
+              sectionContent = (
                 <ReviewTrustBar
-                  key="review-trust-bar"
+                  key={key}
                   rating={reviewTrustBar.rating ?? 5}
                   ratingLabel={reviewTrustBar.ratingLabel ?? "Rated 5.0"}
                   sourceLabel={reviewTrustBar.sourceLabel ?? "Google & Yelp"}
@@ -520,48 +554,53 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   verifiedLabel={reviewTrustBar.verifiedLabel}
                 />
               );
+              break;
             case "reviews-grid":
-              return (
+              sectionContent = (
                 <ReviewsGrid
-                  key="reviews-grid"
+                  key={key}
                   title={reviewTrustBar.title ?? "What Our Clients Say"}
                   subtitle={reviewTrustBar.subtitle}
                   testimonials={Array.isArray(reviewTrustBar.testimonials) ? reviewTrustBar.testimonials : []}
                 />
               );
+              break;
             case "team-carousel":
-              return (
+              sectionContent = (
                 <TeamCarousel
-                  key="team-carousel"
+                  key={key}
                   title={teamCarousel.title ?? "Our Team"}
                   subtitle={teamCarousel.subtitle}
-                  members={teamCarousel.members ?? []}
+                  members={normalizeToArray(teamCarousel.members)}
                   linkText={teamCarousel.linkText}
                 />
               );
+              break;
             case "team-grid":
-              return (
+              sectionContent = (
                 <TeamGrid
-                  key="team-grid"
+                  key={key}
                   title={teamCarousel.title ?? "Meet Our Team"}
                   subtitle={teamCarousel.subtitle}
-                  members={teamCarousel.members ?? []}
+                  members={normalizeToArray(teamCarousel.members)}
                   linkText={teamCarousel.linkText}
                 />
               );
+              break;
             case "practice-areas":
-              return (
+              sectionContent = (
                 <PracticeAreasGrid
-                  key="practice-areas"
+                  key={key}
                   title={practiceAreas.title ?? "Areas of Practice"}
                   subtitle={practiceAreas.subtitle}
                   items={normalizeToArray(practiceAreas.items ?? practiceAreas.areas)}
                 />
               );
+              break;
             case "attorney-profile":
-              return (
+              sectionContent = (
                 <AttorneyProfile
-                  key="attorney-profile"
+                  key={key}
                   label={attorneyProfile.label ?? "About Our Firm"}
                   name={attorneyProfile.name ?? "John Doe"}
                   bioParagraph1={attorneyProfile.bioParagraph1 ?? ""}
@@ -571,11 +610,12 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   aboutLabel={attorneyProfile.aboutLabel}
                 />
               );
+              break;
             case "free-consultation":
             case "booking-cta":
-              return (
+              sectionContent = (
                 <FreeConsultationForm
-                  key={sectionId}
+                  key={key}
                   headline={freeConsultation.title ?? freeConsultation.headline ?? (sectionId === "booking-cta" ? (data.bookingCTA?.title || "Book Now") : "Free Case Evaluation")}
                   subtitle={sectionId === "booking-cta" ? data.bookingCTA?.subtitle : undefined}
                   bullet1={freeConsultation.bullet1 ?? "Confidential Consultation"}
@@ -586,10 +626,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   buttonText={freeConsultation.buttonText ?? (sectionId === "booking-cta" ? (data.bookingCTA?.buttonText || "Schedule Now") : "Request Evaluation")}
                 />
               );
+              break;
             case "contact":
-              return (
+              sectionContent = (
                 <ContactForm
-                  key="contact"
+                  key={key}
                   email={contact.email}
                   phone={contact.phone}
                   address={contact.address}
@@ -605,29 +646,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   emailUsLabel={contact.emailUsLabel}
                 />
               );
-            case "contact-split":
-              return (
-                <ContactSplit
-                  key="contact-split"
-                  email={contact.email}
-                  phone={contact.phone}
-                  address={contact.address}
-                  formHeading={contact.formHeading ?? "Get in Touch"}
-                  tagline={contact.tagline ?? ""}
-                  formSubmitText={contact.formSubmitText ?? "Send Message"}
-                  formThankYouText={contact.formThankYouText ?? "Message sent!"}
-                  nameLabel={contact.nameLabel}
-                  emailLabel={contact.emailLabel}
-                  messageLabel={contact.messageLabel}
-                  callLabel={contact.callLabel}
-                  emailUsLabel={contact.emailUsLabel}
-                  locationLabel={contact.locationLabel}
-                />
-              );
+              break;
             case "contact-minimal":
-              return (
+              sectionContent = (
                 <ContactMinimal
-                  key="contact-minimal"
+                  key={key}
                   email={contact.email}
                   phone={contact.phone}
                   address={contact.address}
@@ -641,10 +664,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   messageLabel={contact.messageLabel}
                 />
               );
+              break;
             case "contact-visual":
-              return (
+              sectionContent = (
                 <ContactVisual
-                  key="contact-visual"
+                  key={key}
                   email={contact.email}
                   phone={contact.phone}
                   address={contact.address}
@@ -656,10 +680,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   formThankYouText={contact.formThankYouText ?? "Message Received!"}
                 />
               );
+              break;
             case "contact-with-map":
-              return (
+              sectionContent = (
                 <ContactWithMap
-                  key="contact-with-map"
+                  key={key}
                   email={contact.email}
                   phone={contact.phone}
                   address={contact.address}
@@ -672,10 +697,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   formThankYouText={contact.formThankYouText ?? "Message Sent!"}
                 />
               );
+              break;
             case "contact-columns":
-              return (
+              sectionContent = (
                 <ContactColumns
-                  key="contact-columns"
+                  key={key}
                   email={contact.email}
                   phone={contact.phone}
                   address={contact.address}
@@ -688,66 +714,73 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   formThankYouText={contact.formThankYouText ?? "Message Sent!"}
                 />
               );
+              break;
             case "patient-faq":
-              return (
+              sectionContent = (
                 <PatientFaq
-                  key="patient-faq"
+                  key={key}
                   title={patientFaq.title ?? "Common Questions"}
                   subtitle={patientFaq.subtitle}
                   items={patientFaq.items ?? []}
                 />
               );
+              break;
             case "faq-two-column":
-              return (
+              sectionContent = (
                 <FAQTwoColumn
-                  key="faq-two-column"
+                  key={key}
                   title={patientFaq.title ?? "Common Questions"}
                   subtitle={patientFaq.subtitle}
                   items={patientFaq.items ?? []}
                 />
               );
+              break;
             case "blog":
-              return (
+              sectionContent = (
                 <BlogGrid
-                  key="blog"
+                  key={key}
                   title={blog.title ?? "Latest Insights"}
                   subtitle={blog.subtitle}
-                  posts={blog.posts ?? []}
+                  posts={normalizeToArray(blog.posts)}
                   linkText={blog.linkText}
                 />
               );
+              break;
             case "common-pests":
-              return (
+              sectionContent = (
                 <CommonPestsGrid
-                  key="common-pests"
+                  key={key}
                   title={commonPests.title ?? "Common Pests We Treat"}
                   subtitle={commonPests.subtitle}
                   items={commonPests.items ?? []}
                 />
               );
+              break;
             case "treatment-process":
-              return (
+              sectionContent = (
                 <TreatmentProcessTimeline
-                  key="treatment-process"
+                  key={key}
                   title={treatmentProcess.title ?? "Our Treatment Process"}
                   subtitle={treatmentProcess.subtitle}
                   steps={treatmentProcess.steps ?? []}
                 />
               );
+              break;
             case "safety-section":
-              return (
+              sectionContent = (
                 <SafetySection
-                  key="safety-section"
+                  key={key}
                   title={safety.title}
                   subtitle={safety.subtitle}
                   items={safety.items ?? []}
                   kidPetFriendlyLabel={safety.kidPetFriendlyLabel}
                 />
               );
+              break;
             case "warranty-block":
-              return (
+              sectionContent = (
                 <WarrantyGuaranteeBlock
-                  key="warranty-block"
+                  key={key}
                   title={warranty.title}
                   subtitle={warranty.subtitle}
                   badgeText={warranty.badgeText}
@@ -755,29 +788,32 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   imageUrl={warranty.imageUrl}
                 />
               );
+              break;
             case "ac-types-grid":
-              return (
+              sectionContent = (
                 <ACTypesGrid
-                  key="ac-types-grid"
+                  key={key}
                   title={acTypes.title}
                   subtitle={acTypes.subtitle}
                   items={acTypes.items}
                 />
               );
+              break;
             case "price-preview-strip":
-              return (
+              sectionContent = (
                 <PricePreviewStrip
-                  key="price-preview-strip"
+                  key={key}
                   title={pricePreview.title}
                   items={pricePreview.items}
                   transparentPricingNote={pricePreview.transparentPricingNote}
                   bookNowLabel={pricePreview.bookNowLabel}
                 />
               );
+              break;
             case "emergency-cta-strip":
-              return (
+              sectionContent = (
                 <EmergencyCTAStrip
-                  key="emergency-cta-strip"
+                  key={key}
                   title={emergencyCTA.title}
                   subtitle={emergencyCTA.subtitle}
                   buttonText={emergencyCTA.buttonText}
@@ -786,20 +822,22 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   icon={emergencyCTA.icon}
                 />
               );
+              break;
             case "maintenance-plans":
-              return (
+              sectionContent = (
                 <MaintenancePlans
-                  key="maintenance-plans"
+                  key={key}
                   title={maintenancePlans.title}
                   subtitle={maintenancePlans.subtitle}
                   plans={maintenancePlans.plans}
                   signUpNowLabel={maintenancePlans.signUpNowLabel}
                 />
               );
+              break;
             case "before-after-gallery-grid":
-              return (
+              sectionContent = (
                 <BeforeAfterGalleryGrid
-                  key="before-after-gallery-grid"
+                  key={key}
                   title={beforeAfterGallery.title}
                   subtitle={beforeAfterGallery.subtitle}
                   items={beforeAfterGallery.items ?? []}
@@ -807,10 +845,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   afterLabel={beforeAfterGallery.afterLabel}
                 />
               );
+              break;
             case "promo-cta-section":
-              return (
+              sectionContent = (
                 <PromoCTASection
-                  key="promo-cta-section"
+                  key={key}
                   title={promoCTA.title}
                   subtitle={promoCTA.subtitle}
                   promoBadge={promoCTA.promoBadge}
@@ -825,10 +864,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   secsLabel={promoCTA.secsLabel}
                 />
               );
+              break;
             case "messenger-sticky-cta":
-              return (
+              sectionContent = (
                 <MessengerStickyCTA
-                  key="messenger-sticky-cta"
+                  key={key}
                   messengerUrl={messengerStickyCTA?.messengerUrl}
                   viberNumber={messengerStickyCTA?.viberNumber}
                   phone={contact.phone}
@@ -837,10 +877,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   callLabel={messengerStickyCTA?.callLabel}
                 />
               );
+              break;
             case "service-area-map":
-              return (
+              sectionContent = (
                 <ServiceAreaMap
-                  key="service-area-map"
+                  key={key}
                   title={serviceAreaMap?.title}
                   subtitle={serviceAreaMap?.subtitle}
                   cities={serviceAreaMap?.cities ?? []}
@@ -849,10 +890,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   cantFindCityDescription={serviceAreaMap?.cantFindCityDescription}
                 />
               );
+              break;
             case "before-after-slider":
-              return (
+              sectionContent = (
                 <BeforeAfterSlider
-                  key="before-after-slider"
+                  key={key}
                   title={beforeAfterSlider?.title}
                   subtitle={beforeAfterSlider?.subtitle}
                   beforeImage={beforeAfterSlider?.beforeImage}
@@ -861,28 +903,31 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   afterLabel={beforeAfterSlider?.afterLabel}
                 />
               );
+              break;
             case "promo-banner-strip":
-              return (
+              sectionContent = (
                 <PromoBannerStrip
-                  key="promo-banner-strip"
+                  key={key}
                   text={promoBannerStrip?.text}
                   countdownDate={promoBannerStrip?.countdownDate}
                   buttonText={promoBannerStrip?.buttonText}
                   buttonHref={promoBannerStrip?.buttonHref}
                 />
               );
+              break;
             case "payment-options-strip":
-              return (
+              sectionContent = (
                 <PaymentOptionsStrip
-                  key="payment-options-strip"
+                  key={key}
                   title={paymentOptionsStrip?.title}
                   methods={paymentOptionsStrip?.methods}
                 />
               );
+              break;
             case "facebook-review-embed":
-              return (
+              sectionContent = (
                 <FacebookReviewEmbed
-                  key="facebook-review-embed"
+                  key={key}
                   title={facebookReviewEmbed?.title}
                   subtitle={facebookReviewEmbed?.subtitle}
                   reviews={facebookReviewEmbed?.reviews}
@@ -891,10 +936,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   footerNoteLabel={facebookReviewEmbed?.footerNoteLabel}
                 />
               );
+              break;
             case "coverage-radius-block":
-              return (
+              sectionContent = (
                 <CoverageRadiusBlock
-                  key="coverage-radius-block"
+                  key={key}
                   title={coverageRadiusBlock?.title}
                   subtitle={coverageRadiusBlock?.subtitle}
                   radiusKm={coverageRadiusBlock?.radiusKm}
@@ -904,51 +950,67 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   radiusLabel={coverageRadiusBlock?.radiusLabel}
                 />
               );
+              break;
             case "stats-section":
-              return (
+              sectionContent = (
                 <StatsSection
-                  key="stats-section"
+                  key={key}
                   title={statsSection.title}
                   subtitle={statsSection.subtitle}
                   items={statsSection.items ?? []}
                   variant={statsSection.variant}
                 />
               );
+              break;
             case "faq-accordion":
-              return (
+              sectionContent = (
                 <FAQAccordion
-                  key="faq-accordion"
+                  key={key}
                   title={faqAccordion.title}
                   subtitle={faqAccordion.subtitle}
                   items={faqAccordion.items ?? []}
                 />
               );
+              break;
             case "logo-cloud":
-              return (
+              sectionContent = (
                 <LogoCloud
-                  key="logo-cloud"
+                  key={key}
                   title={logoCloud.title}
                   items={logoCloud.items ?? []}
                   variant={logoCloud.variant}
                 />
               );
+              break;
             case "trust-badges-grid":
-              return (
+              sectionContent = (
                 <TrustBadgesGrid
-                  key="trust-badges-grid"
+                  key={key}
                   title={trustBadgesGrid.title}
                   subtitle={trustBadgesGrid.subtitle}
                   items={Array.isArray(trustBadgesGrid.items) ? trustBadgesGrid.items : []}
                 />
               );
+              break;
             default:
-              return null;
+              sectionContent = null;
           }
+          if (!sectionContent) return null;
+          return (
+            <div
+              key={key}
+              id={`section-${sectionId}-${index}`}
+              data-section-id={sectionId}
+              data-section-index={index}
+            >
+              {sectionContent}
+            </div>
+          );
         })}
       </main>
 
       {/* Footer rendering */}
-      {footerStyle === "lead-magnet" && (
+      {showFooter && footerStyle === "lead-magnet" && (
         <LeadMagnetFooter
           brandName={brand.name}
           logoUrl={brand.logoUrl}
@@ -972,7 +1034,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
           cookieLabel={footer.cookieLabel}
         />
       )}
-      {footerStyle === "simple" && (
+      {showFooter && footerStyle === "simple" && (
         <SimpleFooter
           brandName={brand.name}
           logoUrl={brand.logoUrl}
@@ -994,7 +1056,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
           cookieLabel={footer.cookieLabel}
         />
       )}
-      {footerStyle === "minimal" && (
+      {showFooter && footerStyle === "minimal" && (
         <MinimalFooter 
           brandName={brand.name} 
           logoUrl={brand.logoUrl} 

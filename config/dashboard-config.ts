@@ -333,12 +333,16 @@ export function ensureStringArray(value: unknown): string[] {
 }
 
 export function deepMerge(target: any, source: any) {
+  if (Array.isArray(source)) return [...source]
+  if (!source || typeof source !== 'object') return source
+
   const result = { ...target }
   for (const key in source) {
-    if (source[key] instanceof Object && key in target) {
-      result[key] = deepMerge(target[key], source[key])
+    const next = source[key]
+    if (next && typeof next === 'object' && !Array.isArray(next) && key in target) {
+      result[key] = deepMerge(target[key], next)
     } else {
-      result[key] = source[key]
+      result[key] = next
     }
   }
   return result
@@ -364,7 +368,6 @@ export function sectionIdToKey(id: string) {
     'packages-pricing': 'pricingTable',
     'awards': 'awardsStrip',
     'certifications': 'awardsStrip',
-    'contact-split': 'contact',
     'contact-minimal': 'contact',
     'contact-visual': 'contact',
     'contact-with-map': 'contact',
@@ -444,7 +447,6 @@ export function formatSectionLabel(id: string): string {
     'packages-pricing': 'Packages & Pricing',
     'awards': 'Awards Strip',
     'certifications': 'Certifications',
-    'contact-split': 'Split Contact',
     'contact-minimal': 'Minimal Contact',
     'contact-visual': 'Visual Contact',
     'contact-with-map': 'Contact w/ Map',
