@@ -5,6 +5,7 @@ import { CreditCard, Calendar, ShieldCheck, AlertCircle, RefreshCw, XCircle } fr
 import { toggleAutoRenew, cancelSubscription } from "@/app/actions/subscription"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import UpgradeButton from "@/components/dashboard/UpgradeButton"
 
 interface SubscriptionSettingsProps {
   project: {
@@ -147,7 +148,7 @@ export default function SubscriptionSettings({ project }: SubscriptionSettingsPr
           <UpgradeButton 
             projectId={project.id} 
             subscriptionStatus={status} 
-            variant="default"
+            variant="inline"
           />
         </div>
       )}

@@ -152,7 +152,7 @@ export default function SiteEditorSidebar() {
   const [isOpen, setIsVisible] = useState(false);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"presets" | "design" | "layout" | "content">("presets");
+  const [activeTab, setActiveTab] = useState<"presets" | "design" | "layout" | "content" | "brand" | "team" | "contact">("presets");
   const [prefix, setPrefix] = useState("");
   const [maxUses, setMaxUses] = useState<number>(1);
   const [expireDays, setExpireDays] = useState<number>(7);
