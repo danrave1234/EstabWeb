@@ -21,7 +21,7 @@ export default function UpgradeButton({ projectId, variant = "inline" }: Upgrade
         body: JSON.stringify({ 
           projectId, 
           planId: "ph_monthly",
-          successUrl: window.location.href
+          successUrl: window.location.origin + "/dashboard?payment_success=true"
         }),
       })
       const json = await res.json()

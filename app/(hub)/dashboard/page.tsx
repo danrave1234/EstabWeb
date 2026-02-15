@@ -9,6 +9,8 @@ import MainHeader from '@/components/shared/MainHeader'
 import MainFooter from '@/components/shared/MainFooter'
 import NoProjectRedeem from '@/components/dashboard/NoProjectRedeem'
 import OnboardingPage from '@/components/dashboard/OnboardingPage'
+import PaymentSuccessHandler from '@/components/dashboard/PaymentSuccessHandler'
+import { Suspense } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table'
 
 export const dynamic = "force-dynamic";
@@ -42,7 +44,14 @@ export default async function DashboardPage({
   // If a specific project is selected, show the preview
   if (projectId && projects?.some(p => p.id === projectId)) {
     const selectedProject = projects.find(p => p.id === projectId)
-    return <ClientDashboardPreview project={selectedProject} user={user} />
+    return (
+      <>
+        <Suspense fallback={null}>
+          <PaymentSuccessHandler />
+        </Suspense>
+        <ClientDashboardPreview project={selectedProject} user={user} />
+      </>
+    )
   }
 
   // If no projects at all, show the redeem/empty state
@@ -107,6 +116,9 @@ export default async function DashboardPage({
   // If multiple projects exist (or just to show the list), show the selector
   return (
     <>
+      <Suspense fallback={null}>
+        <PaymentSuccessHandler />
+      </Suspense>
       <main className="flex-1 container mx-auto pt-24 pb-12 px-4">
         <div className="flex items-center justify-between mb-12">
           <div>
