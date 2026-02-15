@@ -180,10 +180,11 @@ export default async function DashboardPage({
                     </TableCell>
                     <TableCell className="py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        {((project as any).subscription_status === 'free' || 
-                          ((project as any).subscription_status === 'trial' && (project as any).trial_ends_at && new Date((project as any).trial_ends_at) < new Date())) && (
-                          <UpgradeButton projectId={project.id} variant="inline" />
-                        )}
+                        <UpgradeButton 
+                          projectId={project.id} 
+                          subscriptionStatus={project.subscription_status}
+                          variant="inline" 
+                        />
                         <a 
                           href={previewUrl} 
                           target="_blank" 

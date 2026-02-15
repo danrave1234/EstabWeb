@@ -6,13 +6,26 @@ import { toast } from "sonner"
 
 interface UpgradeButtonProps {
   projectId: string
+  subscriptionStatus?: string | null
   variant?: "sidebar" | "inline"
 }
 
-export default function UpgradeButton({ projectId, variant = "inline" }: UpgradeButtonProps) {
+const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  free: { label: "Free", color: "text-amber-600 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20" },
+  trial: { label: "Trial", color: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20" },
+  active: { label: "Pro", color: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20" },
+  admin_granted: { label: "Admin Granted", color: "text-purple-600 bg-purple-500/10 border-purple-500/20" },
+}
+
+export default function UpgradeButton({ projectId, subscriptionStatus = "free", variant = "inline" }: UpgradeButtonProps) {
   const [loading, setLoading] = useState(false)
+  const status = (subscriptionStatus || "free") as keyof typeof STATUS_LABELS
+  const currentStatus = STATUS_LABELS[status] || STATUS_LABELS.free
+
+  const isUpgradable = status === "free"
 
   const handleUpgrade = async () => {
+    if (!isUpgradable) return
     setLoading(true)
     try {
       const res = await fetch("/api/paymongo/create-link", {
@@ -39,11 +52,11 @@ export default function UpgradeButton({ projectId, variant = "inline" }: Upgrade
     return (
       <button
         onClick={handleUpgrade}
-        disabled={loading}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 hover:bg-amber-500/20 rounded-lg transition-colors disabled:opacity-50"
+        disabled={loading || !isUpgradable}
+        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors disabled:opacity-50 border ${currentStatus.color}`}
       >
         <Zap className="w-3.5 h-3.5" />
-        {loading ? "Redirecting…" : "Free"}
+        {loading ? "Redirecting…" : currentStatus.label}
       </button>
     )
   }

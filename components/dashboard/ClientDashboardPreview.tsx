@@ -713,9 +713,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               <span className="text-xs font-semibold text-foreground leading-none">Preview Mode: Viewing unsaved changes</span>
               <span className="text-[10px] text-muted-foreground mt-0.5">Changes here are local to your browser until you click "Save Draft" in the dashboard.</span>
             </div>
-            {showUpgrade && (
-              <UpgradeButton projectId={project.id} />
-            )}
+            <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} />
           </div>
           <div className="flex items-center gap-3">
             <button onClick={refreshPreview} className="flex items-center gap-2 px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-semibold hover:bg-muted transition-all duration-200 shadow-sm active:scale-95">
