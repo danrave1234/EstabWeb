@@ -5,11 +5,22 @@ import crypto from 'crypto'
 
 async function extractProjectId(body: any, supabase: ReturnType<typeof createServiceClient>): Promise<string | null> {
   const eventType = body?.data?.attributes?.type || body?.type
-  if (eventType !== 'link.payment.paid' && eventType !== 'payment.paid') return Promise.resolve(null)
+  if (eventType !== 'link.payment.paid' && eventType !== 'payment.paid' && eventType !== 'payment_intent.succeeded') {
+    return Promise.resolve(null)
+  }
 
-  const data = body?.data?.attributes?.data
-  const meta = data?.attributes?.metadata
-  if (meta?.project_id) return Promise.resolve(meta.project_id)
+  // data depends on event type
+  let data = body?.data?.attributes?.data
+  let meta = data?.attributes?.metadata
+
+  if (eventType === 'payment_intent.succeeded') {
+    data = body?.data
+    meta = data?.attributes?.metadata
+  }
+
+  if (meta?.project_id) {
+    return Promise.resolve(meta.project_id)
+  }
 
   const linkId = data?.id?.startsWith('link_') ? data.id : body?.included?.find((i: any) => i?.type === 'link')?.id
   if (linkId) {
@@ -53,7 +64,7 @@ export async function POST(req: Request) {
 
     const body = JSON.parse(raw)
     const eventType = body?.data?.attributes?.type || body?.type
-    if (eventType !== 'link.payment.paid' && eventType !== 'payment.paid') {
+    if (eventType !== 'link.payment.paid' && eventType !== 'payment.paid' && eventType !== 'payment_intent.succeeded') {
       return NextResponse.json({ received: true })
     }
 
