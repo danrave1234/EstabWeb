@@ -13,7 +13,8 @@ import {
   ChevronDown,
   Globe,
   Layout,
-  Settings
+  Settings,
+  CreditCard
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { User as SupabaseUser } from "@supabase/supabase-js"
@@ -81,6 +82,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
         ? [
             { name: "Requests", href: "/admin/dashboard", icon: LayoutDashboard },
             { name: "Clients", href: "/admin/clients", icon: Globe },
+            { name: "Transactions", href: "/admin/transactions", icon: CreditCard },
             { name: "Template", href: "/admin/template", icon: Layout },
             { name: "Codes", href: "/admin/codes", icon: Settings },
           ] 

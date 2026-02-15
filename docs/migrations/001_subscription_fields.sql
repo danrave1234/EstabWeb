@@ -16,6 +16,9 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS publish_date date;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS publish_period_start timestamptz DEFAULT now();
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS admin_granted_by uuid REFERENCES auth.users(id);
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS admin_granted_at timestamptz;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS auto_renew boolean DEFAULT true;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS subscription_plan_id text;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS has_paid_initial boolean DEFAULT false;
 
 -- Add comment for reference
 COMMENT ON COLUMN projects.subscription_status IS 'free=requires approval, trial/active/admin_granted=can publish directly with limits';

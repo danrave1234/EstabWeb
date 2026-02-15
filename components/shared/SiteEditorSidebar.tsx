@@ -152,7 +152,7 @@ export default function SiteEditorSidebar() {
   const [isOpen, setIsVisible] = useState(false);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"presets" | "style" | "sections" | "brand" | "team" | "contact" | "legal" | "navigation">("presets");
+  const [activeTab, setActiveTab] = useState<"presets" | "design" | "layout" | "content">("presets");
   const [prefix, setPrefix] = useState("");
   const [maxUses, setMaxUses] = useState<number>(1);
   const [expireDays, setExpireDays] = useState<number>(7);
@@ -242,42 +242,427 @@ export default function SiteEditorSidebar() {
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-border overflow-x-auto no-scrollbar">
-            <button
-              onClick={() => setActiveTab("presets")}
-              className={`flex-1 min-w-[80px] py-2 text-[10px] font-bold transition-colors ${activeTab === "presets" ? "bg-primary/10 text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              Presets
-            </button>
-            <button
-              onClick={() => setActiveTab("brand")}
-              className={`flex-1 min-w-[80px] py-2 text-[10px] font-bold transition-colors ${activeTab === "brand" ? "bg-primary/10 text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              Brand
-            </button>
-            <button
-              onClick={() => setActiveTab("style")}
-              className={`flex-1 min-w-[80px] py-2 text-[10px] font-bold transition-colors ${activeTab === "style" ? "bg-primary/10 text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              Style
-            </button>
-            <button
-              onClick={() => setActiveTab("sections")}
-              className={`flex-1 min-w-[80px] py-2 text-[10px] font-bold transition-colors ${activeTab === "sections" ? "bg-primary/10 text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              Layout
-            </button>
+          <div className="flex border-b border-border bg-muted/20">
+            {[
+              { id: "presets", label: "Presets", icon: Layout },
+              { id: "layout", label: "Layout", icon: Layers },
+              { id: "design", label: "Design", icon: Palette },
+              { id: "content", label: "Content", icon: Type },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-bold transition-all ${activeTab === tab.id ? "bg-background text-primary border-b-2 border-primary shadow-[0_-2px_10px_rgba(0,0,0,0.05)]" : "text-muted-foreground hover:text-foreground hover:bg-background/50"}`}
+              >
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+              </button>
+            ))}
           </div>
 
           {/* Scrollable Body */}
           <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
             
+            {activeTab === "content" && (
+              <div className="space-y-8">
+                {/* Brand & Hero */}
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-primary" /> Brand Identity
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Business Name</label>
+                        <input
+                          value={data.brand?.name || ""}
+                          onChange={(e) => {
+                            setData({ ...data, brand: { ...data.brand, name: e.target.value } });
+                          }}
+                          onBlur={() => updateData(data)}
+                          className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Logo Image</label>
+                        <ImageUpload
+                          value={data.brand?.logoUrl || ""}
+                          onChange={(url) => {
+                            updateData({ ...data, brand: { ...data.brand, logoUrl: url } });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <PanelTop className="w-4 h-4 text-primary" /> Hero Content
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Main Title</label>
+                        <input
+                          value={data.hero?.title || ""}
+                          onChange={(e) => {
+                            setData({ ...data, hero: { ...data.hero, title: e.target.value } });
+                          }}
+                          onBlur={() => updateData(data)}
+                          className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Subtitle</label>
+                        <textarea
+                          value={data.hero?.subtitle || ""}
+                          onChange={(e) => {
+                            setData({ ...data, hero: { ...data.hero, subtitle: e.target.value } });
+                          }}
+                          onBlur={() => updateData(data)}
+                          rows={2}
+                          className="w-full p-2 text-xs border rounded bg-background resize-none focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact & Location */}
+                <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-primary" /> Contact & Location
+                  </h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Email</label>
+                      <input
+                        value={data.contact?.email || ""}
+                        onChange={(e) => {
+                          setData({ ...data, contact: { ...data.contact, email: e.target.value } });
+                        }}
+                        onBlur={() => updateData(data)}
+                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Phone</label>
+                      <input
+                        value={data.contact?.phone || ""}
+                        onChange={(e) => {
+                          setData({ ...data, contact: { ...data.contact, phone: e.target.value } });
+                        }}
+                        onBlur={() => updateData(data)}
+                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Location</label>
+                      <input
+                        value={data.hero?.localCoverage || ""}
+                        onChange={(e) => {
+                          setData({ ...data, hero: { ...data.hero, localCoverage: e.target.value } });
+                        }}
+                        onBlur={() => updateData(data)}
+                        placeholder="e.g. Metro Manila"
+                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Team Management */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Layout className="w-4 h-4 text-primary" /> Team Members
+                    </h3>
+                    <button
+                      onClick={() => {
+                        const newMember = {
+                          name: "New Member",
+                          specialty: "Position / Role",
+                          imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
+                          bioUrl: "#",
+                        };
+                        const currentMembers = data.teamCarousel?.members || [];
+                        updateData({
+                          ...data,
+                          teamCarousel: {
+                            ...data.teamCarousel,
+                            members: [...currentMembers, newMember]
+                          }
+                        });
+                      }}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-bold hover:opacity-90 transition shadow-sm"
+                    >
+                      <Plus className="w-4 h-4" /> Add Member
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {(data.teamCarousel?.members || []).map((member: any, index: number) => (
+                      <div key={index} className="p-4 border border-border rounded-xl bg-muted/20 space-y-3 relative group/member shadow-sm">
+                        <button
+                          onClick={() => {
+                            const members = [...data.teamCarousel.members];
+                            members.splice(index, 1);
+                            updateData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                          }}
+                          className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover/member:opacity-100 transition shadow-md z-10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+
+                        <div className="flex gap-4">
+                          <div className="w-20 h-20 shrink-0">
+                            <ImageUpload
+                              value={member.imageUrl}
+                              onChange={(url) => {
+                                const members = [...data.teamCarousel.members];
+                                members[index] = { ...member, imageUrl: url };
+                                updateData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                              }}
+                            />
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold uppercase text-muted-foreground">Name</label>
+                              <input
+                                value={member.name}
+                                onChange={(e) => {
+                                  const members = [...data.teamCarousel.members];
+                                  members[index] = { ...member, name: e.target.value };
+                                  setData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                                }}
+                                onBlur={() => updateData(data)}
+                                className="w-full p-1.5 text-[11px] border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold uppercase text-muted-foreground">Role</label>
+                              <input
+                                value={member.specialty}
+                                onChange={(e) => {
+                                  const members = [...data.teamCarousel.members];
+                                  members[index] = { ...member, specialty: e.target.value };
+                                  setData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                                }}
+                                onBlur={() => updateData(data)}
+                                className="w-full p-1.5 text-[11px] border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "content" && (
+              <div className="space-y-8">
+                {/* Brand & Hero */}
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-primary" /> Brand Identity
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Business Name</label>
+                        <input
+                          value={data.brand?.name || ""}
+                          onChange={(e) => {
+                            setData({ ...data, brand: { ...data.brand, name: e.target.value } });
+                          }}
+                          onBlur={() => updateData(data)}
+                          className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Logo Image</label>
+                        <ImageUpload
+                          value={data.brand?.logoUrl || ""}
+                          onChange={(url) => {
+                            updateData({ ...data, brand: { ...data.brand, logoUrl: url } });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <PanelTop className="w-4 h-4 text-primary" /> Hero Content
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Main Title</label>
+                        <input
+                          value={data.hero?.title || ""}
+                          onChange={(e) => {
+                            setData({ ...data, hero: { ...data.hero, title: e.target.value } });
+                          }}
+                          onBlur={() => updateData(data)}
+                          className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Subtitle</label>
+                        <textarea
+                          value={data.hero?.subtitle || ""}
+                          onChange={(e) => {
+                            setData({ ...data, hero: { ...data.hero, subtitle: e.target.value } });
+                          }}
+                          onBlur={() => updateData(data)}
+                          rows={2}
+                          className="w-full p-2 text-xs border rounded bg-background resize-none focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact & Location */}
+                <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-primary" /> Contact & Location
+                  </h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Email</label>
+                      <input
+                        value={data.contact?.email || ""}
+                        onChange={(e) => {
+                          setData({ ...data, contact: { ...data.contact, email: e.target.value } });
+                        }}
+                        onBlur={() => updateData(data)}
+                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Phone</label>
+                      <input
+                        value={data.contact?.phone || ""}
+                        onChange={(e) => {
+                          setData({ ...data, contact: { ...data.contact, phone: e.target.value } });
+                        }}
+                        onBlur={() => updateData(data)}
+                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Location</label>
+                      <input
+                        value={data.hero?.localCoverage || ""}
+                        onChange={(e) => {
+                          setData({ ...data, hero: { ...data.hero, localCoverage: e.target.value } });
+                        }}
+                        onBlur={() => updateData(data)}
+                        placeholder="e.g. Metro Manila"
+                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Team Management */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Layout className="w-4 h-4 text-primary" /> Team Members
+                    </h3>
+                    <button
+                      onClick={() => {
+                        const newMember = {
+                          name: "New Member",
+                          specialty: "Position / Role",
+                          imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
+                          bioUrl: "#",
+                        };
+                        const currentMembers = data.teamCarousel?.members || [];
+                        updateData({
+                          ...data,
+                          teamCarousel: {
+                            ...data.teamCarousel,
+                            members: [...currentMembers, newMember]
+                          }
+                        });
+                      }}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-bold hover:opacity-90 transition shadow-sm"
+                    >
+                      <Plus className="w-4 h-4" /> Add Member
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {(data.teamCarousel?.members || []).map((member: any, index: number) => (
+                      <div key={index} className="p-4 border border-border rounded-xl bg-muted/20 space-y-3 relative group/member shadow-sm">
+                        <button
+                          onClick={() => {
+                            const members = [...data.teamCarousel.members];
+                            members.splice(index, 1);
+                            updateData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                          }}
+                          className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover/member:opacity-100 transition shadow-md z-10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+
+                        <div className="flex gap-4">
+                          <div className="w-20 h-20 shrink-0">
+                            <ImageUpload
+                              value={member.imageUrl}
+                              onChange={(url) => {
+                                const members = [...data.teamCarousel.members];
+                                members[index] = { ...member, imageUrl: url };
+                                updateData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                              }}
+                            />
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold uppercase text-muted-foreground">Name</label>
+                              <input
+                                value={member.name}
+                                onChange={(e) => {
+                                  const members = [...data.teamCarousel.members];
+                                  members[index] = { ...member, name: e.target.value };
+                                  setData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                                }}
+                                onBlur={() => updateData(data)}
+                                className="w-full p-1.5 text-[11px] border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold uppercase text-muted-foreground">Role</label>
+                              <input
+                                value={member.specialty}
+                                onChange={(e) => {
+                                  const members = [...data.teamCarousel.members];
+                                  members[index] = { ...member, specialty: e.target.value };
+                                  setData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                                }}
+                                onBlur={() => updateData(data)}
+                                className="w-full p-1.5 text-[11px] border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === "presets" && (
               <div className="space-y-6">
                 {/* Genre Presets */}
                 <div className="space-y-2">
-                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <Layout className="w-3 h-3" /> Genre Presets
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Layout className="w-4 h-4 text-primary" /> Genre Presets
                   </h3>
                   <div className="grid grid-cols-3 gap-2">
                     {Object.entries(GENRE_PRESETS).map(([key, preset]) => (
@@ -294,7 +679,7 @@ export default function SiteEditorSidebar() {
                           };
                           updateData(updated);
                         }}
-                        className={`text-center p-2.5 rounded-xl border text-[10px] font-bold transition-all flex items-center justify-center min-h-[44px] ${data.theme === preset.theme && data.colorTheme === preset.colorTheme ? "bg-primary border-primary text-primary-foreground shadow-lg scale-[1.02]" : "bg-muted/30 border-transparent hover:border-primary/50"}`}
+                        className={`text-center p-3 rounded-xl border-2 text-[10px] font-bold transition-all flex items-center justify-center min-h-[50px] ${data.theme === preset.theme && data.colorTheme === preset.colorTheme ? "bg-primary/5 border-primary text-primary shadow-sm scale-[1.02]" : "bg-muted/30 border-muted hover:border-primary/30"}`}
                       >
                         {GENRE_LABELS[key] || key}
                       </button>
@@ -302,11 +687,11 @@ export default function SiteEditorSidebar() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6 p-4 bg-muted/20 rounded-2xl border border-border">
+                <div className="grid grid-cols-2 gap-8 p-6 bg-muted/20 rounded-2xl border border-border">
                   {/* Quick Actions */}
-                  <div className="space-y-3">
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Download className="w-3 h-3" /> Quick Actions
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Download className="w-4 h-4 text-primary" /> Quick Actions
                     </h3>
                     <button
                       onClick={() => {
@@ -317,20 +702,20 @@ export default function SiteEditorSidebar() {
                         a.download = `site-data.json`;
                         a.click();
                       }}
-                      className="w-full flex items-center justify-between p-3 rounded-xl bg-primary/10 text-primary text-xs font-bold hover:bg-primary hover:text-primary-foreground transition-all shadow-sm"
+                      className="w-full flex items-center justify-between p-4 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-all shadow-md"
                     >
                       Export DNA (JSON)
-                      <ChevronRight className="w-4 h-4" />
+                      <Download className="w-4 h-4" />
                     </button>
                   </div>
 
                   {/* Share Code Generation */}
-                  <div className="space-y-3">
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Copy className="w-3 h-3" /> Share Code
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Copy className="w-4 h-4 text-primary" /> Share Code
                     </h3>
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <label className="text-[9px] font-bold uppercase text-muted-foreground block">Prefix</label>
                           <input 
@@ -352,7 +737,7 @@ export default function SiteEditorSidebar() {
                         </div>
                       </div>
                       
-                      <div className="flex items-end gap-2">
+                      <div className="flex items-end gap-3">
                         <div className="flex-1 space-y-1">
                           <label className="text-[9px] font-bold uppercase text-muted-foreground block">Expires (days)</label>
                           <input
@@ -396,7 +781,7 @@ export default function SiteEditorSidebar() {
                               setTimeout(() => setCopied(false), 1500);
                             }
                           }}
-                          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-[10px] font-bold disabled:opacity-50 shadow-md h-[34px]"
+                          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold disabled:opacity-50 shadow-md h-[38px]"
                         >
                           {isGenerating ? "..." : "Create"}
                         </button>
@@ -407,222 +792,198 @@ export default function SiteEditorSidebar() {
               </div>
             )}
 
-            {activeTab === "style" && (
-              <div className="space-y-6">
+            {activeTab === "design" && (
+              <div className="space-y-8">
                 {/* Hero Style */}
-                <div className="space-y-2">
-                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <PanelTop className="w-3 h-3" /> Hero Style
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <PanelTop className="w-4 h-4 text-primary" /> Hero Visual Style
                   </h3>
-                  <div className="grid grid-cols-5 gap-1.5">
+                  <div className="grid grid-cols-3 gap-2">
                     {HERO_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         onClick={() => updateData({ ...data, theme: opt.value })}
-                        className={`p-2 rounded-lg border text-[9px] font-bold transition-all text-center flex items-center justify-center min-h-[40px] ${data.theme === opt.value ? "bg-primary border-primary text-primary-foreground shadow-sm" : "bg-muted/30 border-transparent hover:border-primary/50"}`}
+                        className={`group relative p-3 rounded-xl border-2 transition-all text-left overflow-hidden ${data.theme === opt.value ? "border-primary bg-primary/5 shadow-md" : "border-muted bg-muted/20 hover:border-primary/30 hover:bg-muted/40"}`}
                       >
-                        {opt.label}
+                        <div className={`text-[10px] font-bold ${data.theme === opt.value ? "text-primary" : "text-foreground"}`}>
+                          {opt.label}
+                        </div>
+                        <div className="text-[8px] text-muted-foreground mt-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                          Layout Style
+                        </div>
+                        {data.theme === opt.value && (
+                          <div className="absolute top-1 right-1">
+                            <Check className="w-3 h-3 text-primary" />
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Color Theme */}
-                  <div className="space-y-2">
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Palette className="w-3 h-3" /> Color Theme
+                {/* Color Theme */}
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Palette className="w-4 h-4 text-primary" /> Color Palette
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                    {COLOR_THEMES.map((t) => (
+                      <button
+                        key={t.value}
+                        onClick={() => updateData({ ...data, colorTheme: t.value })}
+                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${data.colorTheme === t.value ? "border-primary bg-primary/5 shadow-md" : "border-muted bg-muted/20 hover:border-primary/30 hover:bg-muted/40"}`}
+                      >
+                        <div
+                          className="h-8 w-8 shrink-0 rounded-lg shadow-inner border border-black/5"
+                          style={{ background: (t as any).swatch || t.primary }}
+                        />
+                        <div className="flex flex-col min-w-0">
+                          <span className={`text-[11px] font-bold truncate ${data.colorTheme === t.value ? "text-primary" : "text-foreground"}`}>
+                            {t.label}
+                          </span>
+                          <span className="text-[9px] text-muted-foreground font-mono uppercase tracking-tighter">
+                            {t.primary}
+                          </span>
+                        </div>
+                        {data.colorTheme === t.value && (
+                          <Check className="w-4 h-4 text-primary ml-auto shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8">
+                  {/* Appearance */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Moon className="w-4 h-4 text-primary" /> Appearance
                     </h3>
-                    <div className="grid grid-cols-2 gap-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                      {COLOR_THEMES.map((t) => (
+                    <div className="flex p-1 bg-muted/30 rounded-xl border border-border">
+                      <button
+                        onClick={() => updateData({ ...data, darkMode: false })}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-bold transition-all ${!data.darkMode ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                      >
+                        <Sun className="w-4 h-4" /> Light
+                      </button>
+                      <button
+                        onClick={() => updateData({ ...data, darkMode: true })}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-bold transition-all ${data.darkMode ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                      >
+                        <Moon className="w-4 h-4" /> Dark
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Typography */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Type className="w-4 h-4 text-primary" /> Typography
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { id: "modern", label: "Modern" },
+                        { id: "elegant", label: "Elegant" },
+                        { id: "bold", label: "Bold" },
+                        { id: "clinical", label: "Clinical" },
+                        { id: "technical", label: "Technical" },
+                        { id: "playful", label: "Playful" },
+                        { id: "traditional", label: "Traditional" },
+                      ].map((t) => (
                         <button
-                          key={t.value}
-                          onClick={() => updateData({ ...data, colorTheme: t.value })}
-                          className={`flex items-center gap-2 p-2 rounded-lg border text-[9px] font-bold transition-all ${data.colorTheme === t.value ? "bg-primary/10 border-primary shadow-sm" : "bg-muted/30 border-transparent hover:border-primary/40"}`}
+                          key={t.id}
+                          onClick={() => updateData({ ...data, typographyStyle: t.id })}
+                          className={`py-2 rounded-lg border-2 text-[10px] font-bold transition-all ${data.typographyStyle === t.id ? "border-primary bg-primary/5 text-primary" : "border-muted bg-muted/20 hover:border-primary/30 text-muted-foreground hover:text-foreground"}`}
                         >
-                          <span
-                            className="h-4 w-4 shrink-0 rounded-full border border-black/10"
-                            style={{ background: (t as any).swatch || t.primary }}
-                          />
-                          <span className="truncate">{t.label}</span>
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Layout Controls */}
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <PanelTop className="w-4 h-4 text-primary" /> Header Style
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {["solid", "floating"].map((style) => (
+                        <button
+                          key={style}
+                          onClick={() => updateData({ ...data, headerStyle: style })}
+                          className={`py-2 rounded-lg border-2 text-[10px] font-bold capitalize transition-all ${data.headerStyle === style ? "border-primary bg-primary/5 text-primary" : "border-muted bg-muted/20 hover:border-primary/30 text-muted-foreground hover:text-foreground"}`}
+                        >
+                          {style}
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  <div className="space-y-6">
-                    {/* Appearance */}
-                    <div className="space-y-2">
-                      <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                        <Moon className="w-3 h-3" /> Appearance
-                      </h3>
-                      <div className="flex gap-2">
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <PanelBottom className="w-4 h-4 text-primary" /> Footer Style
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {["lead-magnet", "simple", "minimal"].map((style) => (
                         <button
-                          onClick={() => updateData({ ...data, darkMode: false })}
-                          className={`flex-1 flex items-center justify-center gap-2 p-2 rounded-lg border text-[10px] font-bold transition-all ${!data.darkMode ? "bg-primary border-primary text-primary-foreground" : "bg-muted/30 border-transparent"}`}
+                          key={style}
+                          onClick={() => updateData({ ...data, footerStyle: style })}
+                          className={`py-2 rounded-lg border-2 text-[10px] font-bold capitalize transition-all ${data.footerStyle === style ? "border-primary bg-primary/5 text-primary" : "border-muted bg-muted/20 hover:border-primary/30 text-muted-foreground hover:text-foreground"}`}
                         >
-                          <Sun className="w-4 h-4" /> Light
+                          {style.split("-")[0]}
                         </button>
-                        <button
-                          onClick={() => updateData({ ...data, darkMode: true })}
-                          className={`flex-1 flex items-center justify-center gap-2 p-2 rounded-lg border text-[10px] font-bold transition-all ${data.darkMode ? "bg-primary border-primary text-primary-foreground" : "bg-muted/30 border-transparent"}`}
-                        >
-                          <Moon className="w-4 h-4" /> Dark
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Typography */}
-                    <div className="space-y-2">
-                      <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                        <Type className="w-3 h-3" /> Typography
-                      </h3>
-                      <div className="grid grid-cols-2 gap-2">
-                        {[
-                          { id: "modern", label: "Modern" },
-                          { id: "elegant", label: "Elegant" },
-                          { id: "bold", label: "Bold" },
-                          { id: "clinical", label: "Clinical" },
-                          { id: "technical", label: "Technical" },
-                          { id: "playful", label: "Playful" },
-                          { id: "traditional", label: "Traditional" },
-                        ].map((t) => (
-                          <button
-                            key={t.id}
-                            onClick={() => updateData({ ...data, typographyStyle: t.id })}
-                            className={`p-2 rounded-lg border text-[10px] font-bold transition-all ${data.typographyStyle === t.id ? "bg-primary border-primary text-primary-foreground" : "bg-muted/30 border-transparent hover:border-primary/30"}`}
-                          >
-                            {t.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Layout Controls */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                          <PanelTop className="w-3 h-3" /> Header
-                        </h3>
-                        <div className="grid grid-cols-1 gap-2">
-                          {["solid", "floating"].map((style) => (
-                            <button
-                              key={style}
-                              onClick={() => updateData({ ...data, headerStyle: style })}
-                              className={`p-2 rounded-lg border text-[10px] font-bold capitalize transition-all ${data.headerStyle === style ? "bg-primary border-primary text-primary-foreground" : "bg-muted/30 border-transparent hover:border-primary/50"}`}
-                            >
-                              {style}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                          <PanelBottom className="w-3 h-3" /> Footer
-                        </h3>
-                        <div className="grid grid-cols-1 gap-2">
-                          {["lead-magnet", "simple", "minimal"].map((style) => (
-                            <button
-                              key={style}
-                              onClick={() => updateData({ ...data, footerStyle: style })}
-                              className={`p-2 rounded-lg border text-[10px] font-bold capitalize transition-all ${data.footerStyle === style ? "bg-primary border-primary text-primary-foreground" : "bg-muted/30 border-transparent hover:border-primary/50"}`}
-                            >
-                              {style.replace("-", " ")}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {activeTab === "sections" && (
-              <div className="space-y-4">
+            {activeTab === "layout" && (
+              <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Layers className="w-3 h-3" /> Page Sections
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-primary" /> Page Sections
                     </h3>
-                    <p className="text-[10px] text-muted-foreground">Toggle blocks on your homepage.</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">Enable or disable blocks on your landing page.</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-x-4 gap-y-6">
-                  {/* Hero & Identity */}
-                  <div className="space-y-2">
-                    <h4 className="text-[9px] font-bold uppercase text-primary/70 tracking-widest px-1 border-l-2 border-primary/30">Hero & Identity</h4>
-                    <div className="grid gap-1">
-                      {SECTIONS.filter(s => (s.id as string).includes('hero') || (s.id as string) === 'brand').map(({ id, label }) => (
-                        <SectionToggle key={id} id={id} label={label} activeSections={activeSections} onToggle={toggleSection} />
-                      ))}
-                      {/* Brand isn't in SECTIONS usually, let's just stick to the filter */}
+                <div className="grid grid-cols-2 gap-6">
+                  {[
+                    { title: "Hero & Identity", filter: (s: any) => s.id.includes('hero') || s.id === 'brand' },
+                    { title: "Trust & Social", filter: (s: any) => s.id.includes('trust') || s.id.includes('review') || s.id.includes('award') || s.id.includes('certifications') || s.id.includes('facebook') },
+                    { title: "Services & Features", filter: (s: any) => s.id.includes('feature') || s.id.includes('service') || s.id.includes('practice') || s.id.includes('program') || s.id.includes('project') || s.id.includes('package') || s.id === 'ac-types-grid' || s.id === 'financing-section' || s.id === 'developer-partners' },
+                    { title: "Process & Info", filter: (s: any) => s.id.includes('how-it-works') || s.id.includes('delivery') || s.id.includes('enrollment') || s.id.includes('faq') || s.id.includes('blog') || s.id === 'why-choose-us' || s.id === 'treatment-process' },
+                    { title: "Team & Profiles", filter: (s: any) => s.id.includes('team') || s.id.includes('attorney') || s.id.includes('faculty') || s.id === 'why-choose-me' },
+                    { title: "Conversion & Contact", filter: (s: any) => s.id.includes('contact') || s.id.includes('booking') || s.id.includes('consultation') || s.id.includes('messenger') || s.id.includes('pricing') || s.id.includes('promo') || s.id.includes('payment') || s.id.includes('area-map') || s.id.includes('coverage-radius') || s.id === 'emergency-cta-strip' || s.id === 'price-preview-strip' || s.id === 'maintenance-plans' || s.id === 'promo-cta-section' },
+                  ].map((group) => (
+                    <div key={group.title} className="space-y-3">
+                      <h4 className="text-[10px] font-bold uppercase text-primary/70 tracking-widest px-2 py-1 bg-primary/5 rounded border-l-2 border-primary">
+                        {group.title}
+                      </h4>
+                      <div className="grid gap-1.5">
+                        {SECTIONS.filter(group.filter).map(({ id, label }) => (
+                          <SectionToggle key={id} id={id} label={label} activeSections={activeSections} onToggle={toggleSection} />
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  ))}
 
-                  {/* Trust & Social */}
-                  <div className="space-y-2">
-                    <h4 className="text-[9px] font-bold uppercase text-primary/70 tracking-widest px-1 border-l-2 border-primary/30">Trust & Social</h4>
-                    <div className="grid gap-1">
-                      {SECTIONS.filter(s => (s.id as string).includes('trust') || (s.id as string).includes('review') || (s.id as string).includes('award') || (s.id as string).includes('certifications') || (s.id as string).includes('facebook')).map(({ id, label }) => (
-                        <SectionToggle key={id} id={id} label={label} activeSections={activeSections} onToggle={toggleSection} />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Services & Features */}
-                  <div className="space-y-2">
-                    <h4 className="text-[9px] font-bold uppercase text-primary/70 tracking-widest px-1 border-l-2 border-primary/30">Services & Features</h4>
-                    <div className="grid gap-1">
-                      {SECTIONS.filter(s => (s.id as string).includes('feature') || (s.id as string).includes('service') || (s.id as string).includes('practice') || (s.id as string).includes('program') || (s.id as string).includes('project') || (s.id as string).includes('package') || (s.id as string) === 'ac-types-grid' || (s.id as string) === 'financing-section' || (s.id as string) === 'developer-partners').map(({ id, label }) => (
-                        <SectionToggle key={id} id={id} label={label} activeSections={activeSections} onToggle={toggleSection} />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Process & Info */}
-                  <div className="space-y-2">
-                    <h4 className="text-[9px] font-bold uppercase text-primary/70 tracking-widest px-1 border-l-2 border-primary/30">Process & Info</h4>
-                    <div className="grid gap-1">
-                      {SECTIONS.filter(s => (s.id as string).includes('how-it-works') || (s.id as string).includes('delivery') || (s.id as string).includes('enrollment') || (s.id as string).includes('faq') || (s.id as string).includes('blog') || (s.id as string) === 'why-choose-us' || (s.id as string) === 'treatment-process').map(({ id, label }) => (
-                        <SectionToggle key={id} id={id} label={label} activeSections={activeSections} onToggle={toggleSection} />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Team & Profiles */}
-                  <div className="space-y-2">
-                    <h4 className="text-[9px] font-bold uppercase text-primary/70 tracking-widest px-1 border-l-2 border-primary/30">Team & Profiles</h4>
-                    <div className="grid gap-1">
-                      {SECTIONS.filter(s => (s.id as string).includes('team') || (s.id as string).includes('attorney') || (s.id as string).includes('faculty') || (s.id as string) === 'why-choose-me').map(({ id, label }) => (
-                        <SectionToggle key={id} id={id} label={label} activeSections={activeSections} onToggle={toggleSection} />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Conversion & Contact */}
-                  <div className="space-y-2">
-                    <h4 className="text-[9px] font-bold uppercase text-primary/70 tracking-widest px-1 border-l-2 border-primary/30">Conversion & Contact</h4>
-                    <div className="grid gap-1">
-                      {SECTIONS.filter(s => (s.id as string).includes('contact') || (s.id as string).includes('booking') || (s.id as string).includes('consultation') || (s.id as string).includes('messenger') || (s.id as string).includes('pricing') || (s.id as string).includes('promo') || (s.id as string).includes('payment') || (s.id as string).includes('area-map') || (s.id as string).includes('coverage-radius') || (s.id as string) === 'emergency-cta-strip' || (s.id as string) === 'price-preview-strip' || (s.id as string) === 'maintenance-plans' || (s.id as string) === 'promo-cta-section').map(({ id, label }) => (
-                        <SectionToggle key={id} id={id} label={label} activeSections={activeSections} onToggle={toggleSection} />
-                      ))}
-                    </div>
-                  </div>
-                  
                   {/* Gallery & Others */}
-                  <div className="space-y-2">
-                    <h4 className="text-[9px] font-bold uppercase text-primary/70 tracking-widest px-1 border-l-2 border-primary/30">Visuals & Others</h4>
-                    <div className="grid gap-1">
+                  <div className="space-y-3">
+                    <h4 className="text-[10px] font-bold uppercase text-primary/70 tracking-widest px-2 py-1 bg-primary/5 rounded border-l-2 border-primary">Visuals & Others</h4>
+                    <div className="grid gap-1.5">
                       {SECTIONS.filter(s => 
-                        (s.id as string).includes('gallery') || 
-                        (s.id as string) === 'before-after-slider' || 
-                        (s.id as string) === 'before-after-gallery-grid' ||
-                        (s.id as string) === 'ac-types-grid' ||
-                        (s.id as string) === 'common-pests' ||
-                        (s.id as string) === 'safety-section'
+                        s.id.includes('gallery') || 
+                        s.id === 'before-after-slider' || 
+                        s.id === 'before-after-gallery-grid' ||
+                        s.id === 'common-pests' ||
+                        s.id === 'safety-section'
                       ).map(({ id, label }) => (
                         <SectionToggle key={id} id={id} label={label} activeSections={activeSections} onToggle={toggleSection} />
                       ))}

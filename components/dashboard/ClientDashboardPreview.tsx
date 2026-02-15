@@ -1,11 +1,13 @@
 "use client"
 
 import * as React from "react"
+import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
-import { ChevronRight, FileText, Settings, Eye, Layout, Send, Plus, Trash2, GripVertical, Image as ImageIcon, History, RotateCcw, Zap } from "lucide-react"
+import { ChevronRight, FileText, Settings, Eye, Layout, Send, Plus, Trash2, GripVertical, Image as ImageIcon, History, RotateCcw, Zap, CreditCard, Palette } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import UpgradeButton from "@/components/dashboard/UpgradeButton"
+import SubscriptionSettings from "@/components/dashboard/SubscriptionSettings"
 import { createClient } from "@/lib/supabase/client"
 import ImageUpload from "@/components/shared/ImageUpload"
 import DynamicIcon from "@/components/shared/DynamicIcon"
@@ -140,6 +142,15 @@ const DEFAULT_FAQ_ACCORDION = {
   ],
 }
 
+const DEFAULT_BLOG = {
+  title: "Latest Insights",
+  subtitle: "Stay updated with our latest news and expert advice.",
+  linkText: "Read Article",
+  posts: [
+    { title: "Article Title", excerpt: "Short description.", date: "Jan 1, 2025", category: "News", imageUrl: "", href: "#" },
+  ],
+}
+
 const DEFAULT_BEFORE_AFTER_GALLERY = {
   title: "Before & After",
   subtitle: "See the transformation. Customize titles and images below.",
@@ -149,6 +160,160 @@ const DEFAULT_BEFORE_AFTER_GALLERY = {
     { title: "Example 1", description: "Add a short description.", beforeImage: "", afterImage: "" },
     { title: "Example 2", description: "Add a short description.", beforeImage: "", afterImage: "" },
   ],
+}
+
+const DEFAULT_HOW_IT_WORKS = {
+  title: "How It Works",
+  subtitle: "Simple and transparent.",
+  steps: [
+    { number: "01", title: "Step One", description: "Brief description.", icon: "Calendar" },
+    { number: "02", title: "Step Two", description: "Brief description.", icon: "ClipboardCheck" },
+    { number: "03", title: "Step Three", description: "Brief description.", icon: "ShieldCheck" },
+  ],
+}
+
+const DEFAULT_PRACTICE_AREAS = {
+  title: "Our Services",
+  subtitle: "Tailored to your needs.",
+  items: [
+    { title: "Service One", description: "Description of your first offering.", icon: "Scale", href: "#" },
+    { title: "Service Two", description: "Description of your second offering.", icon: "Briefcase", href: "#" },
+    { title: "Service Three", description: "Description of your third offering.", icon: "Shield", href: "#" },
+  ],
+}
+
+const DEFAULT_TREATMENT_PROCESS = {
+  title: "Our Treatment Process",
+  subtitle: "A systematic approach.",
+  steps: [
+    { title: "Inspection", description: "Thorough check of your property.", icon: "Search" },
+    { title: "Treatment", description: "Application of safe, targeted solutions.", icon: "ShieldCheck" },
+    { title: "Follow-up", description: "Monitoring to ensure long-term results.", icon: "RotateCw" },
+  ],
+}
+
+const DEFAULT_COMMON_PESTS = {
+  title: "Common Pests We Treat",
+  subtitle: "Professional solutions for every type of infestation.",
+  items: [
+    { name: "Termites", icon: "Bug" },
+    { name: "Cockroaches", icon: "Bug" },
+    { name: "Rats & Mice", icon: "Bug" },
+  ],
+}
+
+const DEFAULT_FEATURED_LISTINGS = {
+  title: "Featured Properties",
+  subtitle: "Discover the best opportunities.",
+  items: [
+    { title: "Listing One", location: "City", price: "₱0", imageUrl: "", beds: 0, baths: 0, sqm: 0, tag: "" },
+    { title: "Listing Two", location: "City", price: "₱0", imageUrl: "", beds: 0, baths: 0, sqm: 0, tag: "" },
+  ],
+}
+
+const DEFAULT_DEVELOPER_PARTNERS = {
+  title: "Our Partners",
+  items: [
+    { name: "Partner 1", logoUrl: "" },
+    { name: "Partner 2", logoUrl: "" },
+  ],
+}
+
+const DEFAULT_REVIEW_TRUST_BAR = {
+  title: "What Our Customers Say",
+  subtitle: "Real feedback from real people.",
+  testimonials: [
+    { quoteTitle: "Great service", body: "Professional and reliable.", customerName: "Customer A", verified: true },
+    { quoteTitle: "Highly recommend", body: "Very satisfied with the results.", customerName: "Customer B", verified: true },
+  ],
+}
+
+const DEFAULT_FINANCING = {
+  title: "Financing Options",
+  subtitle: "Flexible payment terms.",
+  items: [
+    { title: "Option One", description: "Brief description.", icon: "Home", features: ["Feature 1", "Feature 2"] },
+    { title: "Option Two", description: "Brief description.", icon: "Building", features: ["Feature 1"] },
+  ],
+}
+
+const DEFAULT_AC_TYPES = {
+  title: "AC Types We Service",
+  subtitle: "Expert service for all types.",
+  items: [
+    { name: "Window Type", icon: "Zap", description: "Description here." },
+    { name: "Split Type", icon: "Zap", description: "Description here." },
+  ],
+}
+
+const DEFAULT_PRICE_PREVIEW = {
+  title: "Quick Price Guide",
+  items: [
+    { service: "Service 1", price: "₱XXX", note: "" },
+    { service: "Service 2", price: "₱XXX", note: "" },
+  ],
+}
+
+const DEFAULT_PRICING_TABLE = {
+  title: "Simple Pricing",
+  subtitle: "Choose the plan that fits.",
+  plans: [
+    { name: "Basic", price: "₱0", description: "Get started for free.", features: [{ text: "Core features", included: true }, { text: "Support", included: true }], buttonText: "Get Started", isPopular: false },
+    { name: "Pro", price: "₱999", description: "For growing teams.", features: [{ text: "Everything in Basic", included: true }, { text: "Priority support", included: true }], buttonText: "Get Pro", isPopular: true },
+  ],
+}
+
+const DEFAULT_MAINTENANCE_PLANS = {
+  title: "Maintenance Plans",
+  subtitle: "Keep your systems running smoothly.",
+  plans: [
+    { name: "Basic", price: "₱2,800", period: "/year", description: "2 visits per year.", features: ["Inspection", "Cleaning"], isPopular: false },
+    { name: "Premium", price: "₱5,000", period: "/year", description: "4 visits per year.", features: ["Everything in Basic", "Priority service"], isPopular: true },
+  ],
+}
+
+const DEFAULT_FACEBOOK_REVIEW_EMBED = {
+  title: "Highly Rated on Facebook",
+  subtitle: "See why our customers love us",
+  reviews: [
+    { author: "Customer A", text: "Excellent service!", date: "2 weeks ago", rating: 5 },
+    { author: "Customer B", text: "Very satisfied.", date: "1 month ago", rating: 5 },
+  ],
+}
+
+const DEFAULT_WHY_CHOOSE_ME = {
+  title: "Why Choose Me",
+  subtitle: "Your trusted partner",
+  agentName: "",
+  agentRole: "",
+  licenseNumber: "",
+  agentBio: "",
+  agentImageUrl: "",
+  trustSignals: [
+    { label: "Licensed", icon: "Award" },
+    { label: "10+ Years", icon: "Clock" },
+  ],
+}
+
+const DEFAULT_SERVICE_AREA_MAP = {
+  title: "Our Service Areas",
+  subtitle: "We serve the following locations.",
+  cities: ["City 1", "City 2", "City 3"],
+  googleMapsEmbedUrl: "",
+}
+
+const DEFAULT_LOGO_CLOUD = {
+  title: "Trusted by",
+  items: [
+    { name: "Company 1", logoUrl: "" },
+    { name: "Company 2", logoUrl: "" },
+  ],
+}
+
+const DEFAULT_DELIVERY_COVERAGE = {
+  title: "Delivery Coverage",
+  subtitle: "We deliver to the following areas.",
+  areas: ["Area 1", "Area 2", "Area 3"],
 }
 
 const DEFAULT_LEGAL = {
@@ -214,7 +379,7 @@ function navigationToArray(nav: unknown): { name: string; href: string }[] {
   return DEFAULT_NAVIGATION
 }
 
-function AwardIconPicker({ value, onChange }: { value: string; onChange: (val: string) => void }) {
+function AwardIconPicker({ value, onChange, compact }: { value: string; onChange: (val: string) => void; compact?: boolean }) {
   const [open, setOpen] = React.useState(false)
   const ref = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
@@ -223,6 +388,24 @@ function AwardIconPicker({ value, onChange }: { value: string; onChange: (val: s
     return () => document.removeEventListener("click", close)
   }, [])
   const displayName = value || "Award"
+  if (compact) {
+    return (
+      <div ref={ref} className="relative inline-block">
+        <button type="button" onClick={() => setOpen((o) => !o)} className="w-12 h-12 rounded-full bg-background border border-border flex items-center justify-center text-primary hover:border-primary/30 focus:ring-2 focus:ring-primary/20 outline-none shrink-0" title={displayName}>
+          <DynamicIcon name={displayName} className="w-5 h-5" />
+        </button>
+        {open && (
+          <div className="absolute z-[100] mt-2 left-1/2 -translate-x-1/2 min-w-[220px] max-w-[280px] max-h-72 overflow-y-auto overflow-x-hidden scrollbar-hide bg-background border border-border rounded-xl shadow-xl p-3 grid grid-cols-5 gap-2">
+            {AWARD_ICON_NAMES.map((name) => (
+              <button key={name} type="button" onClick={() => { onChange(name); setOpen(false) }} className={`flex flex-col items-center justify-center gap-1 p-2.5 rounded-lg border text-[9px] font-medium transition-colors min-w-0 ${value === name ? "bg-primary/10 border-primary text-primary" : "border-border hover:bg-muted/50 hover:border-primary/30"}`}>
+                <DynamicIcon name={name} className="w-5 h-5 shrink-0" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
   return (
     <div ref={ref} className="relative">
       <button
@@ -237,13 +420,13 @@ function AwardIconPicker({ value, onChange }: { value: string; onChange: (val: s
         <ChevronRight className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${open ? "rotate-90" : ""}`} />
       </button>
       {open && (
-        <div className="absolute z-50 mt-1 left-0 right-0 max-h-56 overflow-y-auto bg-background border border-border rounded-lg shadow-lg p-2 grid grid-cols-4 sm:grid-cols-5 gap-1">
+        <div className="absolute z-[100] mt-2 left-0 right-0 min-w-[240px] max-h-72 overflow-y-auto overflow-x-hidden scrollbar-hide bg-background border border-border rounded-xl shadow-xl p-3 grid grid-cols-5 sm:grid-cols-6 gap-2">
           {AWARD_ICON_NAMES.map((name) => (
             <button
               key={name}
               type="button"
               onClick={() => { onChange(name); setOpen(false) }}
-              className={`flex flex-col items-center gap-1 p-2 rounded-lg border text-[10px] font-medium transition-colors hover:bg-muted/50 ${value === name ? "bg-primary/10 border-primary text-primary" : "border-transparent"}`}
+              className={`flex flex-col items-center justify-center gap-1 p-2.5 rounded-lg border text-[10px] font-medium transition-colors min-w-0 hover:bg-muted/50 ${value === name ? "bg-primary/10 border-primary text-primary" : "border-border hover:border-primary/30"}`}
               title={name}
             >
               <div className="w-8 h-8 rounded-full bg-muted/30 border border-border flex items-center justify-center text-primary">
@@ -269,6 +452,18 @@ function deepMerge(target: any, source: any) {
   }
   return result
 }
+
+const SECTION_CATEGORIES: { label: string; ids: string[] }[] = [
+  { label: "Hero & Identity", ids: ["hero"] },
+  { label: "Trust & Social Proof", ids: ["awards", "review-trust-bar", "trust-badges-grid", "facebook-review-embed", "reviews-grid", "testimonials"] },
+  { label: "Services & Features", ids: ["features", "practice-areas", "feature-highlight", "ac-types-grid", "financing-section", "developer-partners", "featured-properties-grid", "features-modern", "services-grid", "project-gallery", "programs-grid", "warranty-block"] },
+  { label: "Process & Info", ids: ["how-it-works", "treatment-process", "patient-faq", "faq-accordion", "faq-two-column", "blog", "delivery-coverage", "stats-section"] },
+  { label: "Team & Profiles", ids: ["team-carousel", "team-grid", "attorney-profile", "faculty-grid", "why-choose-me"] },
+  { label: "Contact & Conversion", ids: ["contact", "contact-split", "contact-minimal", "contact-visual", "contact-with-map", "contact-columns", "free-consultation", "booking-cta", "messenger-sticky-cta", "pricing", "promo-cta-section", "promo-banner-strip", "payment-options-strip", "service-area-map", "coverage-radius-block", "emergency-cta-strip", "price-preview-strip", "maintenance-plans"] },
+  { label: "Visuals & Galleries", ids: ["before-after-gallery-grid", "before-after-slider", "common-pests", "safety-section", "logo-cloud"] },
+]
+
+const formatSectionLabel = (id: string) => id.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
 
 interface DashboardClientProps {
   project: any
@@ -298,13 +493,20 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const [upgradeLoading, setUpgradeLoading] = React.useState(false)
   const [dragSectionIndex, setDragSectionIndex] = React.useState<number | null>(null)
   const [dropSectionIndex, setDropSectionIndex] = React.useState<number | null>(null)
+  const [activeTab, setActiveTab] = React.useState<"content" | "design" | "advanced">("content")
+  const [globalSettingsModalTab, setGlobalSettingsModalTab] = React.useState<"theme" | "sections">("theme")
   const colorPaletteRef = React.useRef<HTMLDivElement>(null)
   const typographyRef = React.useRef<HTMLDivElement>(null)
+  const colorPaletteRectRef = React.useRef<DOMRect | null>(null)
+  const typographyRectRef = React.useRef<DOMRect | null>(null)
 
   React.useEffect(() => {
     const close = (e: MouseEvent) => {
-      if (colorPaletteRef.current && !colorPaletteRef.current.contains(e.target as Node)) setColorPaletteOpen(false)
-      if (typographyRef.current && !typographyRef.current.contains(e.target as Node)) setTypographyOpen(false)
+      const target = e.target as Node
+      const inColorPalette = colorPaletteRef.current?.contains(target) || (e.target as Element)?.closest?.("[data-dropdown=color-palette]")
+      const inTypography = typographyRef.current?.contains(target) || (e.target as Element)?.closest?.("[data-dropdown=typography]")
+      if (!inColorPalette) setColorPaletteOpen(false)
+      if (!inTypography) setTypographyOpen(false)
     }
     document.addEventListener("click", close)
     return () => document.removeEventListener("click", close)
@@ -557,6 +759,236 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
           items,
         }
         setFormValues(merged)
+      } else if (sectionKey === 'blog') {
+        const baseBlog = (base || {}) as Record<string, any>
+        let posts = baseBlog.posts
+        if (!Array.isArray(posts) && posts && typeof posts === 'object') {
+          posts = Object.keys(posts)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (posts as Record<string, any>)[k])
+        }
+        if (!Array.isArray(posts) || posts.length === 0) posts = DEFAULT_BLOG.posts
+        const merged = {
+          ...DEFAULT_BLOG,
+          ...baseBlog,
+          posts,
+        }
+        setFormValues(merged)
+      } else if (sectionKey === 'howItWorks') {
+        const baseH = (base || {}) as Record<string, any>
+        let arr = baseH.steps ?? baseH.items
+        if (!Array.isArray(arr) && arr && typeof arr === 'object') {
+          arr = Object.keys(arr)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (arr as Record<string, any>)[k])
+        }
+        if (!Array.isArray(arr) || arr.length === 0) arr = DEFAULT_HOW_IT_WORKS.steps
+        const merged = { ...DEFAULT_HOW_IT_WORKS, ...baseH, steps: arr }
+        setFormValues(merged)
+      } else if (sectionKey === 'practiceAreas') {
+        const baseP = (base || {}) as Record<string, any>
+        let items = baseP.items ?? baseP.areas
+        if (!Array.isArray(items) && items && typeof items === 'object') {
+          items = Object.keys(items)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (items as Record<string, any>)[k])
+        }
+        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_PRACTICE_AREAS.items
+        const merged = { ...DEFAULT_PRACTICE_AREAS, ...baseP, items }
+        setFormValues(merged)
+      } else if (sectionKey === 'treatmentProcess') {
+        const baseT = (base || {}) as Record<string, any>
+        let steps = baseT.steps
+        if (!Array.isArray(steps) && steps && typeof steps === 'object') {
+          steps = Object.keys(steps)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (steps as Record<string, any>)[k])
+        }
+        if (!Array.isArray(steps) || steps.length === 0) steps = DEFAULT_TREATMENT_PROCESS.steps
+        const merged = { ...DEFAULT_TREATMENT_PROCESS, ...baseT, steps }
+        setFormValues(merged)
+      } else if (sectionKey === 'commonPests') {
+        const baseC = (base || {}) as Record<string, any>
+        let items = baseC.items
+        if (!Array.isArray(items) && items && typeof items === 'object') {
+          items = Object.keys(items)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (items as Record<string, any>)[k])
+        }
+        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_COMMON_PESTS.items
+        const merged = { ...DEFAULT_COMMON_PESTS, ...baseC, items }
+        setFormValues(merged)
+      } else if (sectionKey === 'featuredListings') {
+        const baseF = (base || {}) as Record<string, any>
+        let items = baseF.items
+        if (!Array.isArray(items) && items && typeof items === 'object') {
+          items = Object.keys(items)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (items as Record<string, any>)[k])
+        }
+        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_FEATURED_LISTINGS.items
+        const merged = { ...DEFAULT_FEATURED_LISTINGS, ...baseF, items }
+        setFormValues(merged)
+      } else if (sectionKey === 'developerPartners') {
+        const baseD = (base || {}) as Record<string, any>
+        let items = baseD.items
+        if (!Array.isArray(items) && items && typeof items === 'object') {
+          items = Object.keys(items)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (items as Record<string, any>)[k])
+        }
+        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_DEVELOPER_PARTNERS.items
+        const merged = { ...DEFAULT_DEVELOPER_PARTNERS, ...baseD, items }
+        setFormValues(merged)
+      } else if (sectionKey === 'reviewTrustBar') {
+        const baseR = (base || {}) as Record<string, any>
+        let testimonials = baseR.testimonials
+        if (!Array.isArray(testimonials) && testimonials && typeof testimonials === 'object') {
+          testimonials = Object.keys(testimonials)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (testimonials as Record<string, any>)[k])
+        }
+        if (!Array.isArray(testimonials) || testimonials.length === 0) testimonials = DEFAULT_REVIEW_TRUST_BAR.testimonials
+        const merged = { ...DEFAULT_REVIEW_TRUST_BAR, ...baseR, testimonials }
+        setFormValues(merged)
+      } else if (sectionKey === 'financing') {
+        const baseFi = (base || {}) as Record<string, any>
+        let items = baseFi.items
+        if (!Array.isArray(items) && items && typeof items === 'object') {
+          items = Object.keys(items)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (items as Record<string, any>)[k])
+        }
+        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_FINANCING.items
+        const merged = { ...DEFAULT_FINANCING, ...baseFi, items }
+        setFormValues(merged)
+      } else if (sectionKey === 'acTypes') {
+        const baseA = (base || {}) as Record<string, any>
+        let items = baseA.items
+        if (!Array.isArray(items) && items && typeof items === 'object') {
+          items = Object.keys(items)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (items as Record<string, any>)[k])
+        }
+        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_AC_TYPES.items
+        const merged = { ...DEFAULT_AC_TYPES, ...baseA, items }
+        setFormValues(merged)
+      } else if (sectionKey === 'pricePreview') {
+        const baseP = (base || {}) as Record<string, any>
+        let items = baseP.items
+        if (!Array.isArray(items) && items && typeof items === 'object') {
+          items = Object.keys(items)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (items as Record<string, any>)[k])
+        }
+        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_PRICE_PREVIEW.items
+        const merged = { ...DEFAULT_PRICE_PREVIEW, ...baseP, items }
+        setFormValues(merged)
+      } else if (sectionKey === 'safety') {
+        const baseS = (base || {}) as Record<string, any>
+        let items = baseS.items
+        if (!Array.isArray(items) && items && typeof items === 'object') {
+          items = Object.keys(items)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (items as Record<string, any>)[k])
+        }
+        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_PRACTICE_AREAS.items
+        const merged = { ...DEFAULT_PRACTICE_AREAS, ...baseS, items }
+        setFormValues(merged)
+      } else if (sectionKey === 'featureHighlight') {
+        const baseFh = (base || {}) as Record<string, any>
+        let items = baseFh.items
+        if (!Array.isArray(items) && items && typeof items === 'object') {
+          items = Object.keys(items)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (items as Record<string, any>)[k])
+        }
+        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_PRACTICE_AREAS.items
+        const merged = { ...DEFAULT_PRACTICE_AREAS, ...baseFh, items }
+        setFormValues(merged)
+      } else if (sectionKey === 'pricingTable') {
+        const baseP = (base || {}) as Record<string, any>
+        let plans = baseP.plans
+        if (!Array.isArray(plans) && plans && typeof plans === 'object') {
+          plans = Object.keys(plans)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (plans as Record<string, any>)[k])
+        }
+        if (!Array.isArray(plans) || plans.length === 0) plans = DEFAULT_PRICING_TABLE.plans
+        const merged = { ...DEFAULT_PRICING_TABLE, ...baseP, plans }
+        setFormValues(merged)
+      } else if (sectionKey === 'maintenancePlans') {
+        const baseM = (base || {}) as Record<string, any>
+        let plans = baseM.plans
+        if (!Array.isArray(plans) && plans && typeof plans === 'object') {
+          plans = Object.keys(plans)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (plans as Record<string, any>)[k])
+        }
+        if (!Array.isArray(plans) || plans.length === 0) plans = DEFAULT_MAINTENANCE_PLANS.plans
+        const merged = { ...DEFAULT_MAINTENANCE_PLANS, ...baseM, plans }
+        setFormValues(merged)
+      } else if (sectionKey === 'facebookReviewEmbed') {
+        const baseFb = (base || {}) as Record<string, any>
+        let reviews = baseFb.reviews
+        if (!Array.isArray(reviews) && reviews && typeof reviews === 'object') {
+          reviews = Object.keys(reviews)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (reviews as Record<string, any>)[k])
+        }
+        if (!Array.isArray(reviews) || reviews.length === 0) reviews = DEFAULT_FACEBOOK_REVIEW_EMBED.reviews
+        const merged = { ...DEFAULT_FACEBOOK_REVIEW_EMBED, ...baseFb, reviews }
+        setFormValues(merged)
+      } else if (sectionKey === 'whyChooseMe') {
+        const baseW = (base || {}) as Record<string, any>
+        let trustSignals = baseW.trustSignals
+        if (!Array.isArray(trustSignals) && trustSignals && typeof trustSignals === 'object') {
+          trustSignals = Object.keys(trustSignals)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (trustSignals as Record<string, any>)[k])
+        }
+        if (!Array.isArray(trustSignals) || trustSignals.length === 0) trustSignals = DEFAULT_WHY_CHOOSE_ME.trustSignals
+        const merged = { ...DEFAULT_WHY_CHOOSE_ME, ...baseW, trustSignals }
+        setFormValues(merged)
+      } else if (sectionKey === 'serviceAreaMap') {
+        const baseS = (base || {}) as Record<string, any>
+        let cities = Array.isArray(baseS.cities) ? baseS.cities : (Array.isArray(baseS.areas) ? baseS.areas : DEFAULT_SERVICE_AREA_MAP.cities)
+        const merged = { ...DEFAULT_SERVICE_AREA_MAP, ...baseS, cities }
+        setFormValues(merged)
+      } else if (sectionKey === 'logoCloud') {
+        const baseL = (base || {}) as Record<string, any>
+        let items = baseL.items
+        if (!Array.isArray(items) && items && typeof items === 'object') {
+          items = Object.keys(items)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (items as Record<string, any>)[k])
+        }
+        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_LOGO_CLOUD.items
+        const merged = { ...DEFAULT_LOGO_CLOUD, ...baseL, items }
+        setFormValues(merged)
+      } else if (sectionKey === 'deliveryCoverage') {
+        const baseD = (base || {}) as Record<string, any>
+        let areas = Array.isArray(baseD.areas) ? baseD.areas : DEFAULT_DELIVERY_COVERAGE.areas
+        const merged = { ...DEFAULT_DELIVERY_COVERAGE, ...baseD, areas }
+        setFormValues(merged)
       } else {
         setFormValues(base as Record<string, any>)
       }
@@ -569,130 +1001,216 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
 
       <div className="flex flex-1 overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-muted/30 flex flex-col shrink-0">
-        <div className="p-4 border-b border-border space-y-3">
+      <aside className="w-[320px] border-r border-border bg-background flex flex-col shrink-0 shadow-xl z-20">
+        <div className="p-6 border-b border-border space-y-4 bg-muted/20">
           <Link 
             href="/dashboard"
-            className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-primary transition-colors mb-2 group"
+            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors group"
           >
             <ChevronRight className="w-3 h-3 rotate-180 group-hover:-translate-x-0.5 transition-transform" />
-            Back to My Websites
+            Back to Dashboard
           </Link>
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold flex items-center gap-2">
-              <Layout className="w-5 h-5 text-primary" />
+          <div>
+            <h2 className="text-xl font-black flex items-center gap-2 tracking-tight">
+              <Layout className="w-6 h-6 text-primary" />
               Site Editor
             </h2>
+            <p className="text-[11px] text-muted-foreground font-medium mt-1 uppercase tracking-widest opacity-70">
+              Personalize your presence
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Preview and request changes
-          </p>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-8">
-          <div className="space-y-1">
-            <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Site Configuration
-            </div>
+        {/* Tabs */}
+        <div className="flex border-b border-border bg-muted/10">
+          {[
+            { id: "content", label: "Content", icon: FileText },
+            { id: "design", label: "Design", icon: Palette },
+            { id: "advanced", label: "Advanced", icon: Settings },
+          ].map((tab) => (
             <button
-              onClick={() => setSelectedSection('global_settings')}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex-1 flex flex-col items-center gap-1.5 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab.id ? "bg-background text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground hover:bg-background/50"}`}
             >
-              <span>Theme & Sections</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? "text-primary" : "text-muted-foreground"}`} />
+              {tab.label}
             </button>
-            <button
-              onClick={() => setSelectedSection('brand')}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
-            >
-              <span>Brand & Identity</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-            <button
-              onClick={() => setSelectedSection('navigation')}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
-            >
-              <span>Navigation Menu</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-            <button
-              onClick={() => setSelectedSection('legal')}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
-            >
-              <span>Legal Pages (Privacy/Terms)</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-            <button
-              onClick={() => {
-                setHistoryOpen(true)
-                setVersionsLoading(true)
-                fetch(`/api/versions?projectId=${project.id}`)
-                  .then((r) => r.json())
-                  .then((data) => {
-                    setVersions(data.versions ?? [])
-                  })
-                  .catch(() => toast.error('Failed to load history'))
-                  .finally(() => setVersionsLoading(false))
-              }}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
-            >
-              <span className="flex items-center gap-2">
-                <History className="w-4 h-4 text-primary" />
-                Version History
-              </span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-            <button
-              onClick={() => setSelectedSection('hero')}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
-            >
-              <span>Hero Section</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-            <button
-              onClick={() => setSelectedSection('footer')}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
-            >
-              <span>Footer & Socials</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-
-            <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Site Sections
-            </div>
-            {activeSections.length > 0 ? (
-              activeSections
-                .filter((s: string) => s !== 'hero')
-                .map((section: string) => {
-                // If it's team-grid, we show it but use team-carousel logic for now if needed
-                // actually we just show the name from activeSections
-                return (
-                  <button
-                    key={section}
-                    onClick={() => setSelectedSection(section)}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
-                  >
-                    <span className="capitalize">{section.replace(/-/g, ' ')}</span>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </button>
-                )
-              })
-            ) : (
-              <p className="px-3 py-2 text-sm text-muted-foreground italic">No sections defined</p>
-            )}
-          </div>
-
+          ))}
         </div>
 
-        <div className="p-4 border-t border-border mt-auto">
-          <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+          {activeTab === "content" && (
+            <div className="space-y-4">
+              <div className="px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
+                Core Identity
+              </div>
+              <button
+                onClick={() => setSelectedSection('brand')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'brand' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                  <ImageIcon className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate">Brand & Logo</p>
+                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Identity & Name</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+              
+              <button
+                onClick={() => setSelectedSection('navigation')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'navigation' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                  <Layout className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate">Navigation</p>
+                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Menu Links</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+
+              <div className="pt-4 px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
+                Page Sections
+              </div>
+              <button
+                onClick={() => setSelectedSection('hero')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'hero' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                  <Zap className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate">Hero Section</p>
+                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Main Banner</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+
+              {activeSections.filter((s: string) => s !== 'hero').map((section: string) => (
+                <button
+                  key={section}
+                  onClick={() => setSelectedSection(section)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === section ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground shrink-0 group-hover:scale-110 transition-transform">
+                    <Layout className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold truncate capitalize">{section.replace(/-/g, ' ')}</p>
+                    <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Block Edit</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              ))}
+
+              <button
+                onClick={() => setSelectedSection('footer')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'footer' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                  <Layout className="w-4 h-4 rotate-180" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate">Footer</p>
+                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Social & Legal</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            </div>
+          )}
+
+          {activeTab === "design" && (
+            <div className="space-y-4">
+              <div className="px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
+                Visual Style
+              </div>
+              <button
+                onClick={() => setSelectedSection('global_settings')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'global_settings' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                  <Palette className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate">Appearance</p>
+                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Theme & Sections</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            </div>
+          )}
+
+          {activeTab === "advanced" && (
+            <div className="space-y-4">
+              <div className="px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
+                Management
+              </div>
+              <button
+                onClick={() => {
+                  setHistoryOpen(true)
+                  setVersionsLoading(true)
+                  fetch(`/api/versions?projectId=${project.id}`)
+                    .then((r) => r.json())
+                    .then((data) => setVersions(data.versions ?? []))
+                    .catch(() => toast.error('Failed to load history'))
+                    .finally(() => setVersionsLoading(false))
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-all text-left group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                  <History className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate">Version History</p>
+                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Rollback changes</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+
+              <button
+                onClick={() => setSelectedSection('subscription')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'subscription' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                  <CreditCard className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate">Subscription</p>
+                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Plan & Billing</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+
+              <button
+                onClick={() => setSelectedSection('legal')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'legal' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground shrink-0 group-hover:scale-110 transition-transform">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate">Legal Pages</p>
+                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Privacy & Terms</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 border-t border-border bg-muted/20">
+          <div className="flex items-center gap-3 px-3 py-2 bg-background rounded-xl border border-border/50 shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-sm border-2 border-primary/30">
               {user.email?.[0].toUpperCase()}
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium truncate">{user.email}</p>
+              <p className="text-xs font-black truncate tracking-tight">{user.email}</p>
               <form action="/auth/signout" method="post">
-                <button className="text-xs text-muted-foreground hover:text-foreground">
+                <button className="text-[10px] font-bold text-muted-foreground hover:text-destructive uppercase tracking-widest transition-colors">
                   Sign out
                 </button>
               </form>
@@ -887,35 +1405,90 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
         </div>
       </main>
 
-      {/* Edit Modal */}
-      <Dialog open={!!selectedSection} onOpenChange={(open) => !open && setSelectedSection(null)}>
-        <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden flex flex-col max-h-[90vh]">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle className="capitalize flex items-center gap-2">
-              {selectedSection === 'global_settings' ? (
-                <><Settings className="w-5 h-5 text-primary" /> Global Site Settings</>
-              ) : (
-                <><Layout className="w-5 h-5 text-primary" /> Edit {selectedSection?.replace(/-/g, ' ')}</>
-              )}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedSection === 'global_settings' 
-                ? "Manage your site's theme, colors, and which sections are visible."
-                : "Customize the content and images for this section."}
-            </DialogDescription>
-          </DialogHeader>
+      {/* Edit Modal - Redesigned for better UI/UX. modal={false} allows portaled dropdowns (color palette, typography) to receive scroll/click. */}
+      <Dialog open={!!selectedSection} onOpenChange={(open) => { if (!open) { setSelectedSection(null); setGlobalSettingsModalTab("theme"); } }} modal={false}>
+        <DialogContent className={`p-0 overflow-hidden flex flex-col max-h-[90vh] min-h-0 border-0 shadow-2xl w-[95vw] ${selectedSection === 'global_settings' ? 'sm:max-w-[880px]' : 'sm:max-w-[840px]'}`}>
+          {/* Polished header - shrink-0 keeps it always visible */}
+          <div className="relative overflow-hidden shrink-0">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-primary/4 to-transparent" aria-hidden />
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" aria-hidden />
+            <DialogHeader className="relative p-6 pb-4">
+              <div className="flex items-start gap-4">
+                <div className="shrink-0 w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  {selectedSection === 'global_settings' ? (
+                    <Settings className="w-6 h-6 text-primary" />
+                  ) : selectedSection === 'subscription' ? (
+                    <CreditCard className="w-6 h-6 text-primary" />
+                  ) : (
+                    <Layout className="w-6 h-6 text-primary" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <DialogTitle className="capitalize flex items-center gap-2 text-lg font-bold tracking-tight">
+                    {selectedSection === 'global_settings' ? (
+                      <>Global Site Settings</>
+                    ) : selectedSection === 'subscription' ? (
+                      <>Subscription & Plan</>
+                    ) : (
+                      <>Edit {selectedSection?.replace(/-/g, ' ')}</>
+                    )}
+                  </DialogTitle>
+                  <DialogDescription className="mt-1 text-sm leading-relaxed">
+                    {selectedSection === 'global_settings' 
+                      ? "Manage your site's theme, colors, typography, and page sections."
+                      : selectedSection === 'subscription'
+                      ? "View your current plan and manage auto-renewal settings."
+                      : "Customize the content and images for this section."}
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-6 pt-2 space-y-8">
-            {selectedSection === 'global_settings' ? (
-              <div className="space-y-8">
-                {/* Theme & Appearance */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/20 border border-border rounded-xl">
+            {/* Tabs for global_settings */}
+            {selectedSection === 'global_settings' && (
+              <div className="relative flex border-t border-border/60 px-6">
+                <button
+                  type="button"
+                  onClick={() => setGlobalSettingsModalTab("theme")}
+                  className={`px-4 py-3 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 -mb-px ${globalSettingsModalTab === "theme" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                >
+                  Theme & Colors
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGlobalSettingsModalTab("sections")}
+                  className={`px-4 py-3 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 -mb-px ${globalSettingsModalTab === "sections" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                >
+                  Page Sections
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div
+            className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6 space-y-6"
+            onScroll={() => { setColorPaletteOpen(false); setTypographyOpen(false) }}
+          >
+            {selectedSection === 'subscription' ? (
+              <SubscriptionSettings project={project as any} />
+            ) : selectedSection === 'global_settings' ? (
+              <div className="space-y-6">
+                {globalSettingsModalTab === "theme" && (
+                <>
+                {/* Theme & Appearance - Card with clear hierarchy */}
+                <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/30 to-muted/10 overflow-hidden">
+                  <div className="px-5 py-3 border-b border-border/60 bg-muted/20">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Layout className="w-4 h-4 text-primary" /> Theme & Appearance
+                    </h3>
+                  </div>
+                  <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                       <Layout className="w-3 h-3" /> Layout Theme
                     </label>
                     <select 
-                      className="w-full p-2.5 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20"
+                      className="w-full p-2.5 bg-background border border-border/80 rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-colors"
                       value={globalConfig.theme || 'lawyer'}
                       onChange={(e) => {
                         const val = e.target.value
@@ -936,8 +1509,13 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                     <div className="relative">
                       <button
                         type="button"
-                        onClick={() => { setColorPaletteOpen((o) => !o); setTypographyOpen(false) }}
-                        className="w-full p-2.5 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 flex items-center gap-3 text-left"
+                        onClick={() => {
+                          setTypographyOpen(false)
+                          const rect = colorPaletteRef.current?.getBoundingClientRect()
+                          if (rect) colorPaletteRectRef.current = rect
+                          setColorPaletteOpen((o) => !o)
+                        }}
+                        className="w-full p-2.5 bg-background border border-border/80 rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 flex items-center gap-3 text-left transition-colors"
                       >
                         <div className="flex gap-0.5 shrink-0">
                           {(COLOR_THEME_SWATCHES[globalConfig.colorTheme || "partner"] ?? ["#94a3b8", "#cbd5e1", "#f1f5f9"]).map((hex, i) => (
@@ -949,8 +1527,23 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                         </span>
                         <ChevronRight className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${colorPaletteOpen ? "rotate-90" : ""}`} />
                       </button>
-                      {colorPaletteOpen && (
-                        <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-background border border-border rounded-lg shadow-lg py-1">
+                      {colorPaletteOpen && typeof document !== "undefined" && colorPaletteRectRef.current && createPortal(
+                        (() => {
+                          const rect = colorPaletteRectRef.current!
+                          const spaceBelow = typeof window !== "undefined" ? window.innerHeight - rect.bottom - 24 : 280
+                          const maxHeight = Math.min(280, Math.max(160, spaceBelow))
+                          return (
+                        <div
+                          data-dropdown="color-palette"
+                          className="fixed z-[300] overflow-y-auto bg-background border border-border rounded-lg shadow-lg py-1 pointer-events-auto"
+                          style={{
+                            top: rect.bottom + 4,
+                            left: rect.left,
+                            width: Math.max(rect.width, 200),
+                            minWidth: 200,
+                            maxHeight,
+                          }}
+                        >
                           {[
                             "partner", "justice", "modern", "frost-fire", "reliable", "eco-clean",
                             "surgeon", "wellness", "holistic", "clinical-gold", "red-crimson", "cyan-ocean", "orange-amber",
@@ -985,6 +1578,9 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                             )
                           })}
                         </div>
+                          )
+                        })(),
+                        document.body
                       )}
                     </div>
                   </div>
@@ -996,8 +1592,13 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                     <div className="relative">
                       <button
                         type="button"
-                        onClick={() => { setTypographyOpen((o) => !o); setColorPaletteOpen(false) }}
-                        className="w-full p-2.5 bg-background border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 flex items-center justify-between text-left"
+                        onClick={() => {
+                          setColorPaletteOpen(false)
+                          const rect = typographyRef.current?.getBoundingClientRect()
+                          if (rect) typographyRectRef.current = rect
+                          setTypographyOpen((o) => !o)
+                        }}
+                        className="w-full p-2.5 bg-background border border-border/80 rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 flex items-center justify-between text-left transition-colors"
                       >
                         <span
                           className="truncate"
@@ -1007,8 +1608,17 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                         </span>
                         <ChevronRight className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${typographyOpen ? "rotate-90" : ""}`} />
                       </button>
-                      {typographyOpen && (
-                        <div className="absolute z-50 mt-1 w-full bg-background border border-border rounded-lg shadow-lg py-1">
+                      {typographyOpen && typeof document !== "undefined" && typographyRectRef.current && createPortal(
+                        <div
+                          data-dropdown="typography"
+                          className="fixed z-[300] bg-background border border-border rounded-lg shadow-lg py-1"
+                          style={{
+                            top: typographyRectRef.current.bottom + 4,
+                            left: typographyRectRef.current.left,
+                            width: typographyRectRef.current.width,
+                            minWidth: 200,
+                          }}
+                        >
                           {TYPOGRAPHY_OPTIONS.map((opt) => {
                             const isSelected = (globalConfig.typographyStyle || "elegant") === opt.value
                             return (
@@ -1027,7 +1637,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               </button>
                             )
                           })}
-                        </div>
+                        </div>,
+                        document.body
                       )}
                     </div>
                   </div>
@@ -1036,7 +1647,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                     <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                       <Eye className="w-3 h-3" /> Appearance
                     </label>
-                    <div className="flex items-center gap-3 p-2 bg-background border border-border rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-background/80 border border-border/80 rounded-xl">
                       <input
                         type="checkbox"
                         checked={!!globalConfig.darkMode}
@@ -1051,13 +1662,20 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                     </div>
                   </div>
                 </div>
+                  </div>
+                </>
+                )}
 
-                {/* Section Manager */}
-                <div className="space-y-4">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <Plus className="w-3 h-3" /> Active Sections (Drag to Reorder)
-                  </label>
-                  <div className="space-y-2">
+                {globalSettingsModalTab === "sections" && (
+                <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/30 to-muted/10 overflow-hidden">
+                  <div className="px-5 py-3 border-b border-border/60 bg-muted/20">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Plus className="w-4 h-4 text-primary" /> Active Sections (Drag to Reorder)
+                    </h3>
+                    <p className="text-[10px] text-muted-foreground/80 mt-1">Reorder or remove sections. Hero is always first.</p>
+                  </div>
+                  <div className="p-5 space-y-4">
+                    <div className="space-y-2">
                     {activeSections.map((section: string, idx: number) => {
                       const isHero = section === 'hero'
                       const isDragging = dragSectionIndex === idx
@@ -1092,7 +1710,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                             setDragSectionIndex(null)
                             setDropSectionIndex(null)
                           }}
-                          className={`flex items-center gap-2 p-2 border rounded-lg group transition-colors ${isHero ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} ${isDragging ? 'opacity-50 bg-muted/40 border-primary/30' : 'bg-muted/20 border-border'} ${isDropTarget ? 'ring-2 ring-primary/50 bg-primary/5 border-primary/40' : ''}`}
+                          className={`flex items-center gap-3 p-3 border rounded-xl group transition-all duration-200 ${isHero ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} ${isDragging ? 'opacity-60 bg-muted/50 border-primary/40 scale-[0.98]' : 'bg-background/80 border-border/80 hover:border-primary/20'} ${isDropTarget ? 'ring-2 ring-primary/40 ring-offset-2 ring-offset-background bg-primary/5 border-primary' : ''}`}
                         >
                           <GripVertical className={`w-4 h-4 shrink-0 aria-hidden ${isHero ? 'text-muted-foreground/20' : 'text-muted-foreground/50'}`} />
                           <span className="flex-1 text-xs font-medium capitalize select-none">{section.replace(/-/g, ' ')}</span>
@@ -1132,7 +1750,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   
                   <div className="pt-2">
                     <select 
-                      className="w-full p-2.5 text-xs bg-background text-foreground border border-border rounded-lg outline-none focus:ring-2 focus:ring-primary/20"
+                      className="w-full p-2.5 text-xs bg-background text-foreground border border-border/80 rounded-xl outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-colors"
                       onChange={(e) => {
                         const value = e.target.value
                         if (!value) return
@@ -1151,32 +1769,28 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                       <option value="">+ Add a New Section</option>
                       {(() => {
                         const activeSet = new Set(activeSections)
-                        return [
-                          'hero', 'features', 'testimonials', 'contact', 'contact-split', 'contact-minimal', 'contact-visual', 'contact-with-map', 'contact-columns', 'practice-areas', 'attorney-profile', 
-                          'free-consultation', 'how-it-works', 'review-trust-bar', 'feature-highlight', 
-                          'team-carousel', 'patient-faq', 'pricing', 'awards', 'blog', 'common-pests', 
-                          'treatment-process', 'safety-section', 'warranty-block', 'ac-types-grid', 
-                          'price-preview-strip', 'emergency-cta-strip', 'maintenance-plans', 
-                          'before-after-gallery-grid', 'promo-cta-section', 'messenger-sticky-cta', 
-                          'service-area-map', 'before-after-slider', 'promo-banner-strip', 
-                          'payment-options-strip', 'facebook-review-embed', 'coverage-radius-block', 
-                          'stats-section', 'faq-accordion', 'logo-cloud',
-                          'trust-badges-grid', 'featured-properties-grid', 'financing-section', 
-                          'developer-partners', 'why-choose-me', 'reviews-grid', 'faq-two-column',
-                          'team-grid', 'features-modern', 'services-grid', 'project-gallery',
-                          'programs-grid', 'faculty-grid', 'delivery-coverage', 'booking-cta'
-                        ].filter(s => !activeSet.has(s)).sort().map(s => (
-                          <option key={s} value={s}>{s.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</option>
-                        ))
+                        return SECTION_CATEGORIES.map((cat) => {
+                          const available = cat.ids.filter((id) => !activeSet.has(id))
+                          if (available.length === 0) return null
+                          return (
+                            <optgroup key={cat.label} label={cat.label}>
+                              {available.sort().map((id) => (
+                                <option key={id} value={id}>{formatSectionLabel(id)}</option>
+                              ))}
+                            </optgroup>
+                          )
+                        })
                       })()}
                     </select>
                   </div>
+                    </div>
                 </div>
+                )}
               </div>
             ) : (
-              <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
-                {/* 1) Text, Boolean, and Nested Object fields detection */}
-                <div className="space-y-6">
+              <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+                {/* 1) Text, Boolean, and Nested Object fields - use grid for horizontal layout */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {Object.entries(formValues)
                     .map(([key, value]) => {
                       const isPageLinkUrl = ['privacyurl', 'termsurl', 'cookieurl'].includes(key.toLowerCase());
@@ -1187,9 +1801,11 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
 
                       if (isObject) {
                         return (
-                          <div key={key} className="p-4 rounded-xl bg-muted/20 border border-border space-y-4">
-                            <label className="text-xs font-bold uppercase tracking-wider text-primary">{fieldLabel(key)}</label>
-                            <div className="grid grid-cols-1 gap-4">
+                          <div key={key} className="col-span-2 rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden">
+                            <div className="px-4 py-3 border-b border-border/60 bg-muted/10">
+                              <label className="text-xs font-bold uppercase tracking-widest text-primary">{fieldLabel(key)}</label>
+                            </div>
+                            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                               {Object.entries(value as object).map(([subKey, subVal]) => {
                                 const isSubPageLinkUrl = ['privacyurl', 'termsurl', 'cookieurl'].includes(subKey.toLowerCase());
                                 const isSubImage = !isSubPageLinkUrl && (subKey.toLowerCase().includes('url') || subKey.toLowerCase().includes('image') || subKey.toLowerCase().includes('logo'));
@@ -1402,37 +2018,457 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                     }
 
                     return (
-                      <div key={key} className="space-y-4 pt-4 border-t border-border">
-                        <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
-                          {key.replace(/([A-Z])/g, ' $1').toLowerCase()} ({typedItems.length})
-                        </label>
-                        
-                        <div className="space-y-4">
+                      <div key={key} className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden pt-0">
+                        <div className="px-4 py-3 border-b border-border/60 bg-muted/10 flex items-center justify-between">
+                          <span className="text-xs font-bold uppercase tracking-widest text-primary">
+                            {key.replace(/([A-Z])/g, ' $1').trim()} 
+                          </span>
+                          <span className="text-[10px] font-medium text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">
+                            {typedItems.length} {typedItems.length === 1 ? 'item' : 'items'}
+                          </span>
+                        </div>
+                        <div className="p-4 space-y-4">
+                        <div className={(() => {
+                          const first = firstItem !== null && firstItem !== undefined && typeof firstItem === 'object' && !Array.isArray(firstItem) ? (firstItem as Record<string, unknown>) : null
+                          const has = (o: Record<string, unknown> | null, p: string) => o !== null && p in o
+                          if (key === 'steps' && first && (has(first, 'number') || has(first, 'title'))) return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                          if (key === 'items' && first && (has(first, 'beforeImage') || has(first, 'afterImage'))) return 'grid grid-cols-1 md:grid-cols-2 gap-6'
+                          if (key === 'items' && first && (has(first, 'location') || has(first, 'price')) && (has(first, 'title') || has(first, 'imageUrl'))) return 'grid grid-cols-1 md:grid-cols-2 gap-6'
+                          if (key === 'items' && first && has(first, 'name') && (has(first, 'logoUrl') || has(first, 'icon')) && !has(first, 'label') && !has(first, 'title')) return 'grid grid-cols-2 sm:grid-cols-3 gap-6'
+                          if (key === 'items' && first && has(first, 'name') && has(first, 'description') && !has(first, 'title')) return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                          if (key === 'items' && first && Array.isArray(first.features) && has(first, 'title') && has(first, 'description')) return 'grid grid-cols-1 sm:grid-cols-2 gap-6'
+                          if (key === 'items' && first && has(first, 'title') && has(first, 'description') && !has(first, 'question') && !has(first, 'beforeImage')) return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                          if (key === 'items' && first && (has(first, 'icon') || has(first, 'label') || has(first, 'imageUrl') || has(first, 'name'))) return 'grid grid-cols-2 sm:grid-cols-4 gap-6'
+                          if (key === 'items' && first && (has(first, 'service') || has(first, 'price'))) return 'grid grid-cols-1 sm:grid-cols-2 gap-6'
+                          if (key === 'posts' && first && has(first, 'title') && has(first, 'excerpt')) return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+                          if (key === 'members' && first && (has(first, 'name') || has(first, 'imageUrl'))) return 'grid grid-cols-2 sm:grid-cols-3 gap-6'
+                          if (key === 'testimonials' && first && (has(first, 'quoteTitle') || has(first, 'body') || has(first, 'customerName'))) return 'grid grid-cols-1 md:grid-cols-2 gap-6'
+                          if (key === 'reviews' && first && (has(first, 'author') || has(first, 'text'))) return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+                          if (key === 'plans' && first && (has(first, 'name') || has(first, 'price'))) return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+                          if (key === 'trustSignals' && first && (has(first, 'label') || has(first, 'icon'))) return 'grid grid-cols-2 sm:grid-cols-4 gap-6'
+                          if (key === 'cities' || key === 'areas') return 'space-y-2'
+                          return 'space-y-4'
+                        })()}>
                           {typedItems.map((item, idx) => {
                             const isObject = item !== null && typeof item === 'object' && !Array.isArray(item);
-                            const itemObj = isObject ? (item as Record<string, unknown>) : {}
+                            const itemObj: Record<string, unknown> = isObject ? (item as Record<string, unknown>) : {}
+                            const hasProp = (o: unknown, p: string) => o !== null && typeof o === 'object' && p in (o as object)
                             const hasImageUrl = typeof itemObj.imageUrl === 'string' && (itemObj.imageUrl as string).length > 0
-                            const iconName = typeof itemObj.icon === 'string' ? (itemObj.icon as string) : 'Award'
-                            const showPreview = key === 'items' && isObject && (hasImageUrl || iconName)
-                            const previewTitle = (itemObj.label ?? itemObj.title ?? '') as string
-                            const previewSub = (itemObj.sublabel ?? itemObj.description ?? '') as string
-                            return (
-                              <div key={idx} className="p-4 rounded-xl bg-muted/20 border border-border space-y-4 relative group">
-                                {showPreview && (
-                                  <div className="flex items-center gap-3 pb-3 border-b border-border">
-                                    <div className="w-10 h-10 rounded-full bg-background border border-border overflow-hidden flex items-center justify-center shrink-0 text-primary">
-                                      {hasImageUrl ? (
-                                        <img src={itemObj.imageUrl as string} alt="" className="w-full h-full object-cover" />
-                                      ) : (
-                                        <DynamicIcon name={iconName} className="w-5 h-5" />
-                                      )}
+                            const iconName = (typeof itemObj.icon === 'string' ? (itemObj.icon as string) : null) || 'Award'
+                            const hasAwardsStructure = (hasProp(itemObj, 'icon') || hasProp(itemObj, 'imageUrl')) && (hasProp(itemObj, 'label') || hasProp(itemObj, 'title') || hasProp(itemObj, 'name'))
+                            const hasBlogStructure = key === 'posts' && isObject && (hasProp(itemObj, 'title') || hasProp(itemObj, 'excerpt'))
+                            const hasFaqStructure = key === 'items' && isObject && (hasProp(itemObj, 'question') || hasProp(itemObj, 'answer'))
+                            const hasTeamStructure = key === 'members' && isObject && (hasProp(itemObj, 'name') || hasProp(itemObj, 'specialty') || hasProp(itemObj, 'imageUrl'))
+                            const hasBeforeAfterStructure = key === 'items' && isObject && (hasProp(itemObj, 'beforeImage') || hasProp(itemObj, 'afterImage'))
+                            const hasStepsStructure = isObject && (key === 'steps' || hasProp(itemObj, 'number')) && (hasProp(itemObj, 'title') || hasProp(itemObj, 'number') || hasProp(itemObj, 'description'))
+                            const hasFeaturedListingsStructure = key === 'items' && isObject && (hasProp(itemObj, 'location') || hasProp(itemObj, 'price')) && (hasProp(itemObj, 'title') || hasProp(itemObj, 'imageUrl'))
+                            const hasDeveloperPartnersStructure = key === 'items' && isObject && hasProp(itemObj, 'name') && (hasProp(itemObj, 'logoUrl') || hasProp(itemObj, 'icon')) && !hasProp(itemObj, 'label') && !hasProp(itemObj, 'title') && !hasProp(itemObj, 'location')
+                            const hasTestimonialsStructure = key === 'testimonials' && isObject && (hasProp(itemObj, 'quoteTitle') || hasProp(itemObj, 'body') || hasProp(itemObj, 'customerName'))
+                            const hasFinancingStructure = key === 'items' && isObject && Array.isArray(itemObj.features) && hasProp(itemObj, 'title') && hasProp(itemObj, 'description')
+                            const hasPricePreviewStructure = key === 'items' && isObject && (hasProp(itemObj, 'service') || hasProp(itemObj, 'price'))
+                            const hasAcTypesStructure = key === 'items' && isObject && hasProp(itemObj, 'name') && hasProp(itemObj, 'description') && !hasProp(itemObj, 'title') && !hasProp(itemObj, 'question')
+                            const hasPlanStructure = key === 'plans' && isObject && (hasProp(itemObj, 'name') || hasProp(itemObj, 'price'))
+                            const hasFacebookReviewsStructure = key === 'reviews' && isObject && (hasProp(itemObj, 'author') || hasProp(itemObj, 'text') || hasProp(itemObj, 'rating'))
+                            const hasTrustSignalsStructure = key === 'trustSignals' && isObject && (hasProp(itemObj, 'label') || hasProp(itemObj, 'icon'))
+                            const hasPracticeAreasStructure = key === 'items' && isObject && !hasStepsStructure && !hasFinancingStructure && !hasAcTypesStructure && hasProp(itemObj, 'title') && hasProp(itemObj, 'description') && !hasProp(itemObj, 'question') && !hasProp(itemObj, 'beforeImage')
+                            const hasPageStyle = key === 'items' && isObject && hasAwardsStructure && !hasPracticeAreasStructure && !hasBeforeAfterStructure && !hasFeaturedListingsStructure && !hasDeveloperPartnersStructure && !hasAcTypesStructure && !hasPricePreviewStructure
+
+                            if (hasBlogStructure) {
+                              return (
+                                <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <div className="rounded-t-xl">
+                                    <ImageUpload value={(itemObj.imageUrl as string) || ''} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, imageUrl: url }; updateItems(next) }} />
+                                  </div>
+                                  <div className="p-4 flex flex-col gap-2 shrink-0">
+                                    <input value={(itemObj.date as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, date: e.target.value }; updateItems(next) }} placeholder="Date" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
+                                    <input value={(itemObj.category as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, category: e.target.value }; updateItems(next) }} placeholder="Category" className="w-full px-2 py-1 text-[10px] font-bold uppercase text-primary bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
+                                    <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                    <textarea value={(itemObj.excerpt as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, excerpt: e.target.value }; updateItems(next) }} placeholder="Excerpt" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                    <input value={(itemObj.href as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, href: e.target.value }; updateItems(next) }} placeholder="Link URL" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                  </div>
+                                </div>
+                              )
+                            }
+                            if (hasFaqStructure) {
+                              return (
+                                <div key={idx} className="p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-3 relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <input value={(itemObj.question as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, question: e.target.value }; updateItems(next) }} placeholder="Question" className="w-full px-3 py-2 text-xs font-medium bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                  <textarea value={(itemObj.answer as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, answer: e.target.value }; updateItems(next) }} placeholder="Answer" rows={2} className="w-full px-3 py-2 text-[10px] text-muted-foreground bg-background border border-border rounded-lg resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                </div>
+                              )
+                            }
+                            if (hasTeamStructure) {
+                              const memberImg = typeof itemObj.imageUrl === 'string' && (itemObj.imageUrl as string).length > 0
+                              return (
+                                <div key={idx} className="flex flex-col items-center text-center p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-3 relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <div className="w-16 h-16 rounded-full bg-background border border-border overflow-hidden flex items-center justify-center shrink-0">
+                                    {memberImg ? <img src={itemObj.imageUrl as string} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-muted/30" />}
+                                  </div>
+                                  <div className="w-full">
+                                    <ImageUpload value={(itemObj.imageUrl as string) || ''} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, imageUrl: url }; updateItems(next) }} />
+                                  </div>
+                                  <input value={(itemObj.name as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, name: e.target.value }; updateItems(next) }} placeholder="Name" className="w-full px-2 py-1.5 text-center text-xs font-bold bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                  <input value={(itemObj.specialty as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, specialty: e.target.value }; updateItems(next) }} placeholder="Role / Specialty" className="w-full px-2 py-1.5 text-center text-[10px] text-muted-foreground bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                </div>
+                              )
+                            }
+                            if (hasStepsStructure) {
+                              return (
+                                <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <div className="p-4 space-y-3">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center shrink-0 text-primary text-[10px] font-black">
+                                        {((itemObj.number as string) || String(idx + 1).padStart(2, '0'))}
+                                      </div>
+                                      <div className="w-10 h-10 rounded-full bg-background border border-border overflow-visible flex items-center justify-center shrink-0 text-primary relative z-10">
+                                        <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
+                                      </div>
                                     </div>
-                                    <div className="min-w-0 flex-1">
-                                      <p className="text-xs font-bold text-foreground truncate">{previewTitle || '—'}</p>
-                                      {previewSub && <p className="text-[10px] text-muted-foreground truncate line-clamp-1">{previewSub}</p>}
+                                    <input value={(itemObj.number as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, number: e.target.value }; updateItems(next) }} placeholder="Step # (e.g. 01)" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                    <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                    <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                  </div>
+                                </div>
+                              )
+                            }
+                            if (hasBeforeAfterStructure) {
+                              return (
+                                <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <div className="p-4 space-y-3">
+                                    <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                    <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                    <div className="grid grid-cols-2 gap-3">
+                                      <div>
+                                        <span className="text-[9px] font-bold text-muted-foreground uppercase block mb-1">Before</span>
+                                        <ImageUpload value={(itemObj.beforeImage as string) || ''} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, beforeImage: url }; updateItems(next) }} />
+                                      </div>
+                                      <div>
+                                        <span className="text-[9px] font-bold text-muted-foreground uppercase block mb-1">After</span>
+                                        <ImageUpload value={(itemObj.afterImage as string) || ''} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, afterImage: url }; updateItems(next) }} />
+                                      </div>
                                     </div>
                                   </div>
-                                )}
+                                </div>
+                              )
+                            }
+                            if (hasPracticeAreasStructure) {
+                              return (
+                                <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <div className="p-4 space-y-3">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-10 h-10 rounded-full bg-background border border-border overflow-visible flex items-center justify-center shrink-0 text-primary relative z-10">
+                                        {hasImageUrl ? (
+                                          <img src={itemObj.imageUrl as string} alt="" className="w-full h-full rounded-full object-cover" />
+                                        ) : (
+                                          <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
+                                        )}
+                                      </div>
+                                      {hasImageUrl && (
+                                        <div className="flex-1">
+                                          <ImageUpload value={itemObj.imageUrl as string} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, imageUrl: url }; updateItems(next) }} />
+                                        </div>
+                                      )}
+                                    </div>
+                                    <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                    <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                    <input value={(itemObj.href as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, href: e.target.value }; updateItems(next) }} placeholder="Link URL (optional)" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                  </div>
+                                </div>
+                              )
+                            }
+                            if (hasFeaturedListingsStructure) {
+                              return (
+                                <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <div className="relative aspect-[4/3] min-h-[120px] bg-muted/30 overflow-visible">
+                                    <ImageUpload value={(itemObj.imageUrl as string) || ''} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, imageUrl: url }; updateItems(next) }} />
+                                  </div>
+                                  <div className="p-4 space-y-2">
+                                    <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                    <input value={(itemObj.location as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, location: e.target.value }; updateItems(next) }} placeholder="Location" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                    <input value={(itemObj.price as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, price: e.target.value }; updateItems(next) }} placeholder="Price" className="w-full px-2 py-1 text-[10px] font-medium text-primary bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                    <div className="flex gap-2 flex-wrap">
+                                      <input type="number" value={Number(itemObj.beds) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, beds: parseInt(e.target.value) || 0 }; updateItems(next) }} placeholder="Beds" className="w-14 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
+                                      <input type="number" value={Number(itemObj.baths) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, baths: parseInt(e.target.value) || 0 }; updateItems(next) }} placeholder="Baths" className="w-14 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
+                                      <input type="number" value={Number(itemObj.sqm) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, sqm: parseInt(e.target.value) || 0 }; updateItems(next) }} placeholder="Sqm" className="w-14 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
+                                      <input value={(itemObj.tag as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, tag: e.target.value }; updateItems(next) }} placeholder="Tag" className="flex-1 min-w-0 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            }
+                            if (hasDeveloperPartnersStructure) {
+                              const hasLogo = typeof itemObj.logoUrl === 'string' && (itemObj.logoUrl as string).length > 0
+                              return (
+                                <div key={idx} className="flex flex-col items-center p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <div className="w-full aspect-[2/1] max-h-16 bg-muted/30 rounded-lg overflow-visible flex items-center justify-center mb-2 relative z-10">
+                                    {hasLogo ? (
+                                      <ImageUpload value={itemObj.logoUrl as string} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, logoUrl: url }; updateItems(next) }} />
+                                    ) : (
+                                      <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
+                                    )}
+                                  </div>
+                                  <input value={(itemObj.name as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, name: e.target.value }; updateItems(next) }} placeholder="Partner name" className="w-full px-2 py-1.5 text-center text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                </div>
+                              )
+                            }
+                            if (hasTestimonialsStructure) {
+                              return (
+                                <div key={idx} className="p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-3 relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <input value={(itemObj.quoteTitle as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, quoteTitle: e.target.value }; updateItems(next) }} placeholder="Quote title" className="w-full px-3 py-2 text-xs font-bold bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                  <textarea value={(itemObj.body as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, body: e.target.value }; updateItems(next) }} placeholder="Testimonial body" rows={3} className="w-full px-3 py-2 text-[10px] text-muted-foreground bg-background border border-border rounded-lg resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                  <input value={(itemObj.customerName as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, customerName: e.target.value }; updateItems(next) }} placeholder="Customer name" className="w-full px-3 py-2 text-[10px] bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                  <label className="flex items-center gap-2 text-[10px]">
+                                    <input type="checkbox" checked={(itemObj.verified as boolean) ?? false} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, verified: e.target.checked }; updateItems(next) }} className="h-3 w-3 rounded border-border text-primary" />
+                                    Verified
+                                  </label>
+                                </div>
+                              )
+                            }
+                            if (hasFinancingStructure) {
+                              const featuresArr = Array.isArray(itemObj.features) ? itemObj.features as string[] : []
+                              return (
+                                <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <div className="p-4 space-y-3">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-10 h-10 rounded-full bg-background border border-border overflow-visible flex items-center justify-center shrink-0 text-primary relative z-10">
+                                        <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
+                                      </div>
+                                      <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="flex-1 px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                    </div>
+                                    <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                    <div>
+                                      <span className="text-[9px] font-bold text-muted-foreground uppercase block mb-1">Features</span>
+                                      {featuresArr.map((f, fi) => (
+                                        <div key={fi} className="flex gap-2 mb-1">
+                                          <input value={f} onChange={(e) => { const nextF = [...featuresArr]; nextF[fi] = e.target.value; const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="flex-1 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" placeholder="Feature" />
+                                          <button type="button" onClick={() => { const nextF = featuresArr.filter((_, i) => i !== fi); const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="p-1 text-red-500 hover:bg-red-500/10 rounded"><Trash2 className="w-3 h-3" /></button>
+                                        </div>
+                                      ))}
+                                      <button type="button" onClick={() => { const nextF = [...featuresArr, '']; const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="text-[10px] text-primary font-bold hover:underline">+ Add feature</button>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            }
+                            if (hasPricePreviewStructure) {
+                              return (
+                                <div key={idx} className="p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-2 relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <input value={(itemObj.service as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, service: e.target.value }; updateItems(next) }} placeholder="Service" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                  <input value={(itemObj.price as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, price: e.target.value }; updateItems(next) }} placeholder="Price" className="w-full px-2 py-1 text-[10px] font-medium text-primary bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                  <input value={(itemObj.note as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, note: e.target.value }; updateItems(next) }} placeholder="Note (optional)" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                </div>
+                              )
+                            }
+                            if (hasAcTypesStructure) {
+                              return (
+                                <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <div className="p-4 space-y-3">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-10 h-10 rounded-full bg-background border border-border overflow-visible flex items-center justify-center shrink-0 text-primary relative z-10">
+                                        <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
+                                      </div>
+                                      <input value={(itemObj.name as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, name: e.target.value }; updateItems(next) }} placeholder="Name" className="flex-1 px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                    </div>
+                                    <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                  </div>
+                                </div>
+                              )
+                            }
+                            if (hasPlanStructure) {
+                              const planFeatures = Array.isArray(itemObj.features) ? itemObj.features : []
+                              const f0 = planFeatures[0]
+                              const isPricingStyle = planFeatures.length > 0 && (hasProp(f0, 'text') || hasProp(f0, 'included'))
+                              return (
+                                <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <div className="p-4 space-y-3">
+                                    <label className="flex items-center gap-2 text-[10px]">
+                                      <input type="checkbox" checked={(itemObj.isPopular as boolean) ?? false} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, isPopular: e.target.checked }; updateItems(next) }} className="h-3 w-3 rounded border-border text-primary" />
+                                      Most Popular
+                                    </label>
+                                    <input value={(itemObj.name as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, name: e.target.value }; updateItems(next) }} placeholder="Plan name" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                    <div className="flex gap-2">
+                                      <input value={(itemObj.price as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, price: e.target.value }; updateItems(next) }} placeholder="Price" className="flex-1 px-2 py-1.5 text-sm font-bold text-primary bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
+                                      {hasProp(itemObj, 'period') && <input value={(itemObj.period as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, period: e.target.value }; updateItems(next) }} placeholder="/year" className="w-20 px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />}
+                                    </div>
+                                    <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                    {hasProp(itemObj, 'buttonText') && <input value={(itemObj.buttonText as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, buttonText: e.target.value }; updateItems(next) }} placeholder="Button text" className="w-full px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />}
+                                    <div>
+                                      <span className="text-[9px] font-bold text-muted-foreground uppercase block mb-1">Features</span>
+                                      {isPricingStyle ? (
+                                        (planFeatures as { text?: string; included?: boolean }[]).map((f, fi) => (
+                                          <div key={fi} className="flex gap-2 items-center mb-1">
+                                            <input value={f.text || ''} onChange={(e) => { const nextF = [...(planFeatures as any[])]; nextF[fi] = { ...f, text: e.target.value }; const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="flex-1 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" placeholder="Feature" />
+                                            <label className="flex items-center gap-1 shrink-0">
+                                              <input type="checkbox" checked={f.included !== false} onChange={(e) => { const nextF = [...(planFeatures as any[])]; nextF[fi] = { ...f, included: e.target.checked }; const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="h-3 w-3 rounded border-border text-primary" />
+                                              <span className="text-[9px]">incl.</span>
+                                            </label>
+                                            <button type="button" onClick={() => { const nextF = (planFeatures as any[]).filter((_, i) => i !== fi); const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="p-1 text-red-500 hover:bg-red-500/10 rounded"><Trash2 className="w-3 h-3" /></button>
+                                          </div>
+                                        ))
+                                      ) : (
+                                        (planFeatures as string[]).map((f, fi) => (
+                                          <div key={fi} className="flex gap-2 mb-1">
+                                            <input value={f} onChange={(e) => { const nextF = [...(planFeatures as string[])]; nextF[fi] = e.target.value; const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="flex-1 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" placeholder="Feature" />
+                                            <button type="button" onClick={() => { const nextF = (planFeatures as string[]).filter((_, i) => i !== fi); const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="p-1 text-red-500 hover:bg-red-500/10 rounded"><Trash2 className="w-3 h-3" /></button>
+                                          </div>
+                                        ))
+                                      )}
+                                      <button type="button" onClick={() => {
+                                        const newF = isPricingStyle ? { text: '', included: true } : ''
+                                        const nextF = [...(planFeatures as any[]), newF]
+                                        const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next)
+                                      }} className="text-[10px] text-primary font-bold hover:underline">+ Add feature</button>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            }
+                            if (hasFacebookReviewsStructure) {
+                              return (
+                                <div key={idx} className="p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-3 relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <textarea value={(itemObj.text as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, text: e.target.value }; updateItems(next) }} placeholder="Review text" rows={3} className="w-full px-3 py-2 text-[10px] text-muted-foreground bg-background border border-border rounded-lg resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                  <input value={(itemObj.author as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, author: e.target.value }; updateItems(next) }} placeholder="Author name" className="w-full px-3 py-2 text-[10px] bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                  <input value={(itemObj.date as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, date: e.target.value }; updateItems(next) }} placeholder="Date (e.g. 2 weeks ago)" className="w-full px-3 py-2 text-[10px] bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                  <input type="number" min={1} max={5} value={Number(itemObj.rating) || 5} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, rating: Math.min(5, Math.max(1, parseInt(e.target.value) || 5)) }; updateItems(next) }} className="w-16 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
+                                </div>
+                              )
+                            }
+                            if (hasTrustSignalsStructure) {
+                              return (
+                                <div key={idx} className="flex flex-col items-center text-center p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-3 relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <div className="w-12 h-12 rounded-full bg-background border border-border overflow-visible flex items-center justify-center shrink-0 text-primary relative z-10">
+                                    <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
+                                  </div>
+                                  <input value={(itemObj.label as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, label: e.target.value }; updateItems(next) }} placeholder="Label" className="w-full min-h-[36px] px-2 py-1.5 text-center text-xs font-bold bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                </div>
+                              )
+                            }
+                            if (hasPageStyle) {
+                              return (
+                                <div key={idx} className="flex flex-col items-center text-center p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-3 relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <div className="w-12 h-12 rounded-full bg-background border border-border overflow-visible flex items-center justify-center shrink-0 text-primary relative z-10">
+                                    {hasImageUrl ? (
+                                      <img src={itemObj.imageUrl as string} alt="" className="w-full h-full rounded-full object-cover" />
+                                    ) : (
+                                      <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
+                                    )}
+                                  </div>
+                                  <div className="w-full space-y-1">
+                                    <ImageUpload value={(itemObj.imageUrl as string) || ''} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, imageUrl: url }; updateItems(next) }} />
+                                    {hasImageUrl && (
+                                      <button type="button" onClick={() => { const next = [...typedItems]; next[idx] = { ...item, imageUrl: '' }; updateItems(next) }} className="text-[10px] text-primary hover:underline">Use icon instead</button>
+                                    )}
+                                  </div>
+                                  <input
+                                    value={(itemObj.label ?? itemObj.title ?? itemObj.name ?? '') as string}
+                                    onChange={(e) => {
+                                      const val = e.target.value
+                                      const next = [...typedItems]
+                                      if (hasProp(itemObj, 'name')) next[idx] = { ...item, name: val }
+                                      else if (hasProp(itemObj, 'label')) next[idx] = { ...item, label: val }
+                                      else next[idx] = { ...item, title: val }
+                                      updateItems(next)
+                                    }}
+                                    placeholder="Enter label..."
+                                    className="w-full min-h-[36px] px-2 py-1.5 text-center text-xs font-bold bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60"
+                                  />
+                                  <input
+                                    value={(itemObj.sublabel ?? itemObj.description ?? '') as string}
+                                    onChange={(e) => {
+                                      const val = e.target.value
+                                      const next = [...typedItems]
+                                      next[idx] = hasProp(itemObj, 'description') ? { ...item, description: val } : { ...item, sublabel: val }
+                                      updateItems(next)
+                                    }}
+                                    placeholder="Enter sublabel..."
+                                    className="w-full min-h-[36px] px-2 py-1.5 text-center text-[10px] text-muted-foreground bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50"
+                                  />
+                                </div>
+                              )
+                            }
+
+                            return (
+                              <div key={idx} className="p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-4 relative group hover:border-primary/15 transition-colors">
                                 <div className="flex justify-between items-start">
                                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Item #{idx + 1}</span>
                                   <div className="flex gap-2">
@@ -1442,7 +2478,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                                   </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                   {isObject ? (
                                     Object.entries(item).map(([iKey, iVal]) => {
                                       const isIArray = Array.isArray(iVal);
@@ -1452,8 +2488,9 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                                       const isITextarea = typeof iVal === 'string' && iVal.length > 50;
                                       const fieldLabelStr = fieldLabel(iKey);
 
+                                      const spanClass = (isIArray || isIImage || isITextarea) ? "col-span-2 sm:col-span-3" : ""
                                       return (
-                                        <div key={iKey} className="space-y-1.5">
+                                        <div key={iKey} className={`space-y-1.5 ${spanClass}`}>
                                           <label className="text-[10px] font-bold text-muted-foreground/70 uppercase">{fieldLabelStr}</label>
                                           
                                           {isIArray ? (
@@ -1522,19 +2559,21 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                                             />
                                           ) : isITextarea ? (
                                             <textarea
-                                              className="w-full px-3 py-2 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-primary/30 min-h-[60px]"
+                                              className="w-full px-3 py-2 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-primary/30 min-h-[60px] placeholder:text-muted-foreground/50"
                                               value={iVal as string}
                                               onChange={(e) => {
                                                 const next = [...typedItems]; next[idx] = { ...item, [iKey]: e.target.value }; updateItems(next)
                                               }}
+                                              placeholder={`Enter ${fieldLabelStr.toLowerCase()}...`}
                                             />
                                           ) : (
                                             <input
-                                              className="w-full px-3 py-2 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-primary/30"
+                                              className="w-full px-3 py-2 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50"
                                               value={iVal as string}
                                               onChange={(e) => {
                                                 const next = [...typedItems]; next[idx] = { ...item, [iKey]: e.target.value }; updateItems(next)
                                               }}
+                                              placeholder={`Enter ${fieldLabelStr.toLowerCase()}...`}
                                             />
                                           )}
                                         </div>
@@ -1574,10 +2613,11 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                             }
                             updateItems([...typedItems, newItem]);
                           }}
-                          className="w-full py-3 border-2 border-dashed border-border rounded-xl text-sm font-bold text-muted-foreground hover:text-primary hover:border-primary/50 transition-all flex items-center justify-center gap-2"
+                          className="w-full py-3.5 border-2 border-dashed border-border/80 rounded-xl text-sm font-bold text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
                         >
                           <Plus className="w-4 h-4" /> Add New Item
                         </button>
+                        </div>
                       </div>
                     )
                   })}
@@ -1585,14 +2625,17 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
             )}
           </div>
 
-          <div className="p-4 bg-muted/30 border-t border-border flex items-center justify-between">
-            <div className="text-[10px] text-muted-foreground font-medium flex items-center gap-2">
-              <span className={`w-1.5 h-1.5 rounded-full ${isSaving ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
-              {isSaving ? 'Syncing changes...' : 'All changes saved locally'}
+          {/* Polished footer - shrink-0 keeps it always visible */}
+          <div className="shrink-0 px-6 py-4 bg-muted/20 border-t border-border/80 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className={`shrink-0 w-2 h-2 rounded-full ${isSaving ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+              <span className="text-xs font-medium text-muted-foreground truncate">
+                {isSaving ? 'Syncing changes…' : 'All changes saved'}
+              </span>
             </div>
             <button
               onClick={() => setSelectedSection(null)}
-              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95"
+              className="shrink-0 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-bold shadow-lg shadow-primary/25 hover:opacity-90 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 active:scale-[0.98]"
             >
               Done
             </button>
@@ -1677,6 +2720,18 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
           © 2026 EstabWeb. All rights reserved.
         </div>
       </footer>
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(0,0,0,0.1);
+          border-radius: 10px;
+        }
+      `}</style>
     </div>
   )
 }

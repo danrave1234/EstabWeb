@@ -35,7 +35,7 @@ export default async function DashboardPage({
   // Fetch ALL projects for this client
   const { data: projects, error } = await supabase
     .from('projects')
-    .select('id, subdomain, custom_domain, current_config, draft_config, created_at, subscription_status, trial_ends_at, subscription_ends_at, publish_limit, publish_limit_daily, publish_count, publish_count_today, publish_date, publish_period_start')
+    .select('id, subdomain, custom_domain, current_config, draft_config, created_at, subscription_status, trial_ends_at, subscription_ends_at, auto_renew, has_paid_initial, publish_limit, publish_limit_daily, publish_count, publish_count_today, publish_date, publish_period_start')
     .eq('client_id', user.id)
     .order('created_at', { ascending: false })
 

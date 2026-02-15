@@ -22,7 +22,7 @@ export default function UpgradeButton({ projectId, subscriptionStatus = "free", 
   const status = (subscriptionStatus || "free") as keyof typeof STATUS_LABELS
   const currentStatus = STATUS_LABELS[status] || STATUS_LABELS.free
 
-  const isUpgradable = status === "free"
+  const isUpgradable = status !== "active"
 
   const handleUpgrade = async () => {
     if (!isUpgradable) return
@@ -34,7 +34,7 @@ export default function UpgradeButton({ projectId, subscriptionStatus = "free", 
         body: JSON.stringify({ 
           projectId, 
           planId: "ph_monthly",
-          successUrl: window.location.origin + "/dashboard?payment_success=true"
+          successUrl: window.location.origin + `/dashboard?projectId=${projectId}&payment_success=true`
         }),
       })
       const json = await res.json()
@@ -69,7 +69,7 @@ export default function UpgradeButton({ projectId, subscriptionStatus = "free", 
     >
       <span className="flex items-center gap-2">
         <Zap className="w-4 h-4" />
-        Upgrade (₱1,000/mo)
+        Upgrade (₱500/mo)
       </span>
     </button>
   )

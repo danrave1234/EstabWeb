@@ -36,10 +36,10 @@ export default async function PricingPage() {
     {
       id: "ph",
       name: "Philippines (PHP)",
-      setupPrice: "Starts at ₱5,000",
-      monthlyPrice: "₱1,000",
-      monthlyNote: "/month (Starts after 1st month)",
-      description: "High-performance sites for local businesses. Base price covers setup; add-ons like dashboards available.",
+      setupPrice: "₱5,000",
+      monthlyPrice: "₱500",
+      monthlyNote: "/month maintenance",
+      description: "Professional managed websites with initial setup and monthly maintenance.",
       features: ["Starting setup fee (Add-ons extra)", "Admin Dashboard available", "E-commerce & editable data", "Maintenance & Hosting", "Technical Support", "Mobile Responsive"],
       cta: "Send Quote",
       highlight: isPH

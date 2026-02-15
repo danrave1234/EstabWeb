@@ -5,8 +5,12 @@ import { DEFAULT_PUBLISH_LIMIT, DEFAULT_PUBLISH_LIMIT_DAILY } from '@/lib/subscr
 const PAYMONGO_API = 'https://api.paymongo.com/v1'
 
 const PLANS = {
-  ph_monthly: { amount: 100000, currency: 'PHP' as const, label: '1 month direct publish' },  // ₱1,000
-  ph_3months: { amount: 270000, currency: 'PHP' as const, label: '3 months direct publish' }, // ₱2,700 (10% off)
+  ph_monthly: { 
+    initialAmount: 500000,   // ₱5,000 (Setup/Initial)
+    recurringAmount: 50000,  // ₱500 (Monthly)
+    currency: 'PHP' as const, 
+    label: 'Direct Publish' 
+  },
 }
 
 export async function POST(req: Request) {
@@ -25,7 +29,7 @@ export async function POST(req: Request) {
 
     const { data: proj } = await supabase
       .from('projects')
-      .select('id, client_id, subscription_status')
+      .select('id, client_id, subscription_status, has_paid_initial')
       .eq('id', projectId)
       .single()
 
@@ -37,6 +41,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Project already has an active subscription' }, { status: 400 })
     }
 
+    // Determine price based on whether they've paid the initial fee
+    const amount = proj.has_paid_initial ? plan.recurringAmount : plan.initialAmount
+    const description = `EstabWeb: ${plan.label} - ${proj.has_paid_initial ? 'Monthly Renewal' : 'Initial Setup'}`
+
     const auth = Buffer.from(`${secret}:`).toString('base64')
     const res = await fetch(`${PAYMONGO_API}/links`, {
       method: 'POST',
@@ -47,14 +55,15 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         data: {
           attributes: {
-            amount: plan.amount,
+            amount: amount,
             currency: plan.currency,
-            description: `EstabWeb: ${plan.label} - ${proj.subscription_status === 'free' ? 'Upgrade' : 'Renew'}`,
+            description: description,
             success_url: successUrl || undefined,
             metadata: {
               project_id: projectId,
               plan_id: planId,
               user_id: user.id,
+              is_initial: !proj.has_paid_initial,
             },
           },
         },

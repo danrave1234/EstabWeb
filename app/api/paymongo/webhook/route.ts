@@ -130,12 +130,41 @@ export async function POST(req: Request) {
         publish_date: null,
         publish_period_start: now.toISOString(),
         trial_ends_at: null,
+        auto_renew: true, // Reset auto-renew on successful payment
+        subscription_plan_id: body?.data?.attributes?.data?.attributes?.metadata?.plan_id || body?.data?.attributes?.metadata?.plan_id,
+        has_paid_initial: true // Mark as initial paid regardless of which link was used
       })
       .eq('id', projectId)
 
     if (error) {
       console.error('[paymongo webhook] Update failed:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    // Log the payment in the transactions table
+    try {
+      const data = body?.data?.attributes?.data || body?.data
+      const amount = data?.attributes?.amount ? data.attributes.amount / 100 : 0
+      const currency = data?.attributes?.currency || 'PHP'
+      const paymentId = data?.id
+      const linkId = data?.attributes?.reference_number || data?.attributes?.external_reference_number
+
+      await supabase.from('payments').insert({
+        project_id: projectId,
+        amount,
+        currency,
+        status: 'paid',
+        paymongo_payment_id: paymentId,
+        paymongo_link_id: linkId,
+        metadata: {
+          event_id: body.id,
+          type: eventType,
+          raw_amount: data?.attributes?.amount
+        }
+      })
+    } catch (logErr) {
+      console.error('[paymongo webhook] Failed to log payment:', logErr)
+      // Don't fail the webhook if logging fails, as subscription was already updated
     }
 
     return NextResponse.json({ received: true })
