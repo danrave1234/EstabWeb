@@ -71,13 +71,15 @@ export default function HeroAuthority({
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
-            <a href={primaryCTAHref} className="w-full sm:w-auto min-w-[240px] px-10 py-5 bg-white text-black font-black rounded-none hover:bg-white/90 transition-all shadow-2xl uppercase tracking-[0.2em] text-xs">
-              {primaryCTA}
-            </a>
-            <a href={secondaryCTAHref} className="w-full sm:w-auto min-w-[240px] px-10 py-5 bg-transparent backdrop-blur-md text-white font-black rounded-none border-2 border-white hover:bg-white hover:text-black transition-all uppercase tracking-[0.2em] text-xs">
-              {secondaryCTA}
-            </a>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 pt-4">
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 w-full sm:w-auto">
+              <a href={primaryCTAHref} className="col-span-1 px-10 py-5 bg-white text-black font-black rounded-none hover:bg-white/90 transition-all shadow-2xl uppercase tracking-[0.2em] text-xs flex items-center justify-center text-center">
+                {primaryCTA}
+              </a>
+              <a href={secondaryCTAHref} className="col-span-1 px-10 py-5 bg-transparent backdrop-blur-md text-white font-black rounded-none border-2 border-white hover:bg-white hover:text-black transition-all uppercase tracking-[0.2em] text-xs flex items-center justify-center text-center">
+                {secondaryCTA}
+              </a>
+            </div>
           </div>
 
           {localCoverage && (
@@ -111,11 +113,11 @@ export default function HeroAuthority({
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <a href={primaryCTAHref} className="inline-flex items-center justify-center px-8 py-5 bg-primary text-primary-foreground font-black rounded-none hover:translate-x-1 hover:-translate-y-1 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] uppercase tracking-tighter text-sm">
+              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 pt-4">
+                <a href={primaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-8 py-5 bg-primary text-primary-foreground font-black rounded-none hover:translate-x-1 hover:-translate-y-1 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] uppercase tracking-tighter text-[10px] sm:text-sm text-center">
                   {primaryCTA}
                 </a>
-                <a href={secondaryCTAHref} className="inline-flex items-center justify-center px-8 py-5 bg-muted text-foreground font-bold rounded-none border-2 border-primary/20 hover:bg-primary/5 transition-all uppercase tracking-tighter text-sm">
+                <a href={secondaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-8 py-5 bg-muted text-foreground font-bold rounded-none border-2 border-primary/20 hover:bg-primary/5 transition-all uppercase tracking-tighter text-[10px] sm:text-sm text-center">
                   {secondaryCTA}
                 </a>
               </div>
@@ -187,12 +189,12 @@ export default function HeroAuthority({
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                <a href={primaryCTAHref} className="w-full sm:w-auto px-10 py-5 bg-cyan-500 text-white font-black rounded-full hover:bg-cyan-600 hover:scale-105 transition-all shadow-[0_20px_40px_-10px_rgba(6,182,212,0.3)] uppercase tracking-widest text-xs">
+              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 justify-center lg:justify-start">
+                <a href={primaryCTAHref} className="px-4 sm:px-10 py-5 bg-cyan-500 text-white font-black rounded-full hover:bg-cyan-600 hover:scale-105 transition-all shadow-[0_20px_40px_-10px_rgba(6,182,212,0.3)] uppercase tracking-widest text-[10px] sm:text-xs flex items-center justify-center text-center">
                   {primaryCTA}
                 </a>
                 {secondaryCTA && (
-                  <a href={secondaryCTAHref} className="w-full sm:w-auto px-10 py-5 bg-background text-cyan-900 font-bold rounded-full border-2 border-cyan-100 hover:border-cyan-200 transition-all uppercase tracking-widest text-xs">
+                  <a href={secondaryCTAHref} className="px-4 sm:px-10 py-5 bg-background text-cyan-900 font-bold rounded-full border-2 border-cyan-100 hover:border-cyan-200 transition-all uppercase tracking-widest text-[10px] sm:text-xs flex items-center justify-center text-center">
                     {secondaryCTA}
                   </a>
                 )}
@@ -280,11 +282,11 @@ export default function HeroAuthority({
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
-              <a href={primaryCTAHref} className="w-full sm:w-auto px-12 py-5 bg-primary text-primary-foreground font-light rounded-none hover:bg-primary/90 hover:tracking-[0.4em] transition-all duration-500 uppercase tracking-[0.3em] text-[10px]">
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 pt-4">
+              <a href={primaryCTAHref} className="px-4 sm:px-12 py-5 bg-primary text-primary-foreground font-light rounded-none hover:bg-primary/90 hover:tracking-[0.4em] transition-all duration-500 uppercase tracking-[0.3em] text-[10px] flex items-center justify-center text-center">
                 {primaryCTA}
               </a>
-              <a href={secondaryCTAHref} className="w-full sm:w-auto px-12 py-5 bg-background/50 backdrop-blur-md text-foreground border border-border font-light rounded-none hover:bg-background transition-all uppercase tracking-[0.3em] text-[10px]">
+              <a href={secondaryCTAHref} className="px-4 sm:px-12 py-5 bg-background/50 backdrop-blur-md text-foreground border border-border font-light rounded-none hover:bg-background transition-all uppercase tracking-[0.3em] text-[10px] flex items-center justify-center text-center">
                 {secondaryCTA}
               </a>
             </div>
@@ -330,11 +332,11 @@ export default function HeroAuthority({
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <a href={primaryCTAHref} className="inline-flex items-center justify-center px-10 py-5 bg-primary text-primary-foreground font-black rounded-sm hover:translate-y-[-2px] hover:shadow-xl transition-all shadow-lg text-xs uppercase tracking-widest">
+              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4">
+                <a href={primaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-10 py-5 bg-primary text-primary-foreground font-black rounded-sm hover:translate-y-[-2px] hover:shadow-xl transition-all shadow-lg text-[10px] sm:text-xs uppercase tracking-widest text-center">
                   {primaryCTA}
                 </a>
-                <a href={secondaryCTAHref} className="inline-flex items-center justify-center px-10 py-5 bg-background text-foreground font-bold rounded-sm border-2 border-border hover:border-primary/20 transition-all text-xs uppercase tracking-widest">
+                <a href={secondaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-10 py-5 bg-background text-foreground font-bold rounded-sm border-2 border-border hover:border-primary/20 transition-all text-[10px] sm:text-xs uppercase tracking-widest text-center">
                   {secondaryCTA}
                 </a>
               </div>
@@ -414,13 +416,13 @@ export default function HeroAuthority({
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                <a href={primaryCTAHref} className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-black rounded-lg hover:scale-105 transition-all shadow-xl text-sm uppercase tracking-tight">
-                  <DynamicIcon name="Phone" className="w-4 h-4" />
-                  {primaryCTA}
+              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 pt-2">
+                <a href={primaryCTAHref} className="inline-flex items-center justify-center gap-2 px-4 sm:px-8 py-4 bg-primary text-primary-foreground font-black rounded-lg hover:scale-105 transition-all shadow-xl text-[10px] sm:text-sm uppercase tracking-tight text-center">
+                  <DynamicIcon name="Phone" className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{primaryCTA}</span>
                 </a>
-                <a href={secondaryCTAHref} className="inline-flex items-center justify-center px-8 py-4 bg-muted text-foreground font-bold rounded-lg border-2 border-primary/10 hover:bg-primary/5 transition-all text-sm uppercase tracking-tight">
-                  {secondaryCTA}
+                <a href={secondaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-8 py-4 bg-muted text-foreground font-bold rounded-lg border-2 border-primary/10 hover:bg-primary/5 transition-all text-[10px] sm:text-sm uppercase tracking-tight text-center">
+                  <span className="truncate">{secondaryCTA}</span>
                 </a>
               </div>
 
@@ -492,11 +494,11 @@ export default function HeroAuthority({
                 )}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <a href={primaryCTAHref} className="inline-flex items-center justify-center px-10 py-5 bg-primary text-primary-foreground font-black rounded-sm hover:scale-105 transition-all shadow-2xl text-sm uppercase tracking-widest">
+              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4">
+                <a href={primaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-10 py-5 bg-primary text-primary-foreground font-black rounded-sm hover:scale-105 transition-all shadow-2xl text-[10px] sm:text-sm uppercase tracking-widest text-center">
                   {primaryCTA}
                 </a>
-                <a href={secondaryCTAHref} className="inline-flex items-center justify-center px-10 py-5 bg-background text-foreground font-bold rounded-sm border-2 border-border hover:bg-muted transition-all text-sm uppercase tracking-widest">
+                <a href={secondaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-10 py-5 bg-background text-foreground font-bold rounded-sm border-2 border-border hover:bg-muted transition-all text-[10px] sm:text-sm uppercase tracking-widest text-center">
                   {secondaryCTA}
                 </a>
               </div>
@@ -570,11 +572,11 @@ export default function HeroAuthority({
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <a href={primaryCTAHref} className="inline-flex items-center justify-center px-10 py-5 bg-primary text-primary-foreground font-black rounded-full hover:scale-105 transition-all shadow-xl uppercase tracking-widest text-xs">
+              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4">
+                <a href={primaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-10 py-5 bg-primary text-primary-foreground font-black rounded-full hover:scale-105 transition-all shadow-xl uppercase tracking-widest text-[10px] sm:text-xs text-center">
                   {primaryCTA}
                 </a>
-                <a href={secondaryCTAHref} className="inline-flex items-center justify-center px-10 py-5 bg-background text-foreground font-bold rounded-full border-2 border-border hover:border-primary/20 transition-all uppercase tracking-widest text-xs">
+                <a href={secondaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-10 py-5 bg-background text-foreground font-bold rounded-full border-2 border-border hover:border-primary/20 transition-all uppercase tracking-widest text-[10px] sm:text-xs text-center">
                   {secondaryCTA}
                 </a>
               </div>

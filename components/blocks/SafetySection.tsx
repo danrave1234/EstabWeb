@@ -39,18 +39,18 @@ export default function SafetySection({
               </p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6">
               {items.map((item, index) => (
-                <div key={index} className="p-6 bg-background rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl overflow-hidden flex items-center justify-center mb-4 text-primary">
+                <div key={index} className="p-3 sm:p-6 bg-background rounded-xl sm:rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-8 h-8 sm:w-12 sm:h-12 bg-primary/10 rounded-lg sm:rounded-xl overflow-hidden flex items-center justify-center mb-3 sm:mb-4 text-primary">
                     {item.imageUrl ? (
                       <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
                     ) : (
-                      <DynamicIcon name={item.icon} className="w-6 h-6" />
+                      <DynamicIcon name={item.icon} className="w-4 h-4 sm:w-6 sm:h-6" />
                     )}
                   </div>
-                  <h3 className="font-bold text-foreground mb-2">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  <h3 className="text-xs sm:text-base font-bold text-foreground mb-1 sm:mb-2">{item.title}</h3>
+                  <p className="text-[10px] sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-none">{item.description}</p>
                 </div>
               ))}
             </div>

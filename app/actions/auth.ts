@@ -47,7 +47,17 @@ export async function signup(formData: FormData) {
   if (error) return { error: error.message }
 
   if (user) {
-    await supabase.from('profiles').insert({ id: user.id, email: user.email, role: 'client' })
+    // We attempt to create the profile here as a backup to the DB trigger.
+    // If the trigger worked, this upsert will just update the same data.
+    // If the trigger failed or isn't set up, this will create the profile.
+    const { error: profileError } = await supabase.from('profiles').upsert({ 
+      id: user.id, 
+      email: user.email, 
+      role: 'client' 
+    })
+    if (profileError) {
+      console.error('Error creating/updating profile:', profileError)
+    }
   }
 
   return { success: 'Check your email for the confirmation link.' }

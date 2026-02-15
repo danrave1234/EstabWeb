@@ -46,22 +46,22 @@ export default function HeroCleaning({
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-md px-4 sm:px-0">
-            <a
-              href={primaryCTAHref}
-              className="inline-flex items-center justify-center min-h-[48px] sm:min-h-[56px] px-4 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground font-bold rounded-full hover:scale-105 transition-transform shadow-xl text-sm sm:text-base touch-manipulation"
-            >
-              {primaryCTA}
-            </a>
-            {secondaryCTA && (
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 w-full max-w-md px-4 sm:px-0">
               <a
-                href={secondaryCTAHref}
-                className="inline-flex items-center justify-center min-h-[48px] sm:min-h-[56px] px-4 sm:px-8 py-3 sm:py-4 bg-background text-primary font-bold rounded-full border-2 border-primary/10 hover:bg-primary/5 transition-colors text-sm sm:text-base touch-manipulation"
+                href={primaryCTAHref}
+                className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[56px] px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-full hover:scale-105 transition-transform shadow-xl text-[10px] sm:text-base touch-manipulation text-center"
               >
-                {secondaryCTA}
+                {primaryCTA}
               </a>
-            )}
-          </div>
+              {secondaryCTA && (
+                <a
+                  href={secondaryCTAHref}
+                  className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[56px] px-4 sm:px-8 py-2 sm:py-4 bg-background text-primary font-bold rounded-full border-2 border-primary/10 hover:bg-primary/5 transition-colors text-[10px] sm:text-base touch-manipulation text-center"
+                >
+                  {secondaryCTA}
+                </a>
+              )}
+            </div>
 
           <div className="w-full relative pt-10">
             <div className="absolute inset-0 bg-primary/5 rounded-[3rem] rotate-2 scale-105" />

@@ -49,44 +49,44 @@ export default function ContactColumns({
           <p className="text-lg text-muted-foreground">{subtitle}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-          <div className="bg-background p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-              <PhoneIcon weight="duotone" className="w-6 h-6 text-primary" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 mb-16">
+          <div className="bg-background p-4 sm:p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
+            <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 sm:mb-6">
+              <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
             </div>
-            <h3 className="font-bold mb-2">Call Us</h3>
-            <p className="text-sm text-muted-foreground mb-4">Mon-Fri from 8am to 5pm.</p>
-            <a href={`tel:${phone}`} className="text-primary font-bold hover:underline">{phone}</a>
+            <h3 className="font-bold mb-1 sm:mb-2 text-[10px] sm:text-base">Call Us</h3>
+            <p className="hidden sm:block text-xs text-muted-foreground mb-4">Mon-Fri from 8am to 5pm.</p>
+            <a href={`tel:${phone}`} className="text-primary font-bold hover:underline text-[10px] sm:text-sm">{phone}</a>
           </div>
 
-          <div className="bg-background p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-              <EnvelopeIcon weight="duotone" className="w-6 h-6 text-primary" />
+          <div className="bg-background p-4 sm:p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
+            <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 sm:mb-6">
+              <EnvelopeIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
             </div>
-            <h3 className="font-bold mb-2">Email Us</h3>
-            <p className="text-sm text-muted-foreground mb-4">Our team is here to help.</p>
-            <a href={`mailto:${email}`} className="text-primary font-bold hover:underline">{email}</a>
+            <h3 className="font-bold mb-1 sm:mb-2 text-[10px] sm:text-base">Email Us</h3>
+            <p className="hidden sm:block text-xs text-muted-foreground mb-4">Our team is here to help.</p>
+            <a href={`mailto:${email}`} className="text-primary font-bold hover:underline text-[10px] sm:text-sm break-all">{email}</a>
           </div>
 
-          <div className="bg-background p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-              <MapPinIcon weight="duotone" className="w-6 h-6 text-primary" />
+          <div className="bg-background p-4 sm:p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
+            <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 sm:mb-6">
+              <MapPinIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
             </div>
-            <h3 className="font-bold mb-2">Visit Us</h3>
-            <p className="text-sm text-muted-foreground mb-4">Come say hello at our office.</p>
-            <p className="text-sm font-medium leading-relaxed">{address}</p>
+            <h3 className="font-bold mb-1 sm:mb-2 text-[10px] sm:text-base">Visit Us</h3>
+            <p className="hidden sm:block text-xs text-muted-foreground mb-4">Come say hello at our office.</p>
+            <p className="text-[10px] sm:text-sm font-medium leading-relaxed">{address}</p>
           </div>
 
-          <div className="bg-background p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-              <ChatCircleDotsIcon weight="duotone" className="w-6 h-6 text-primary" />
+          <div className="bg-background p-4 sm:p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
+            <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 sm:mb-6">
+              <ChatCircleDotsIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
             </div>
-            <h3 className="font-bold mb-2">Chat with Us</h3>
-            <p className="text-sm text-muted-foreground mb-4">Available on Messenger/Viber.</p>
-            <div className="flex gap-4">
-               {messenger && <a href={messenger} target="_blank" className="text-primary font-bold hover:underline">Messenger</a>}
-               {whatsapp && <a href={`https://wa.me/${whatsapp.replace(/\+/g, '')}`} target="_blank" className="text-primary font-bold hover:underline">WhatsApp</a>}
-               {!messenger && !whatsapp && <span className="text-muted-foreground text-sm">Online Support</span>}
+            <h3 className="font-bold mb-1 sm:mb-2 text-[10px] sm:text-base">Chat</h3>
+            <p className="hidden sm:block text-xs text-muted-foreground mb-4">Available on Messenger/Viber.</p>
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
+               {messenger && <a href={messenger} target="_blank" className="text-primary font-bold hover:underline text-[10px] sm:text-sm">Messenger</a>}
+               {whatsapp && <a href={`https://wa.me/${whatsapp.replace(/\+/g, '')}`} target="_blank" className="text-primary font-bold hover:underline text-[10px] sm:text-sm">WhatsApp</a>}
+               {!messenger && !whatsapp && <span className="text-muted-foreground text-[10px] sm:text-sm">Online</span>}
             </div>
           </div>
         </div>

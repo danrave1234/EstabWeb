@@ -63,14 +63,14 @@ export default function HeroDentist({
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <a
                   href={primaryCTAHref}
-                  className="inline-flex items-center justify-center min-h-[48px] sm:min-h-[56px] px-4 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground font-bold rounded-xl sm:rounded-2xl hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/20 text-sm sm:text-base touch-manipulation"
+                  className="inline-flex items-center justify-center min-h-[48px] sm:min-h-[56px] px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-xl sm:rounded-2xl hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/20 text-[10px] sm:text-base touch-manipulation text-center"
                 >
                   {primaryCTA}
                 </a>
                 {secondaryCTA && (
                   <a
                     href={secondaryCTAHref}
-                    className="inline-flex items-center justify-center min-h-[48px] sm:min-h-[56px] px-4 sm:px-8 py-3 sm:py-4 bg-transparent text-foreground font-semibold rounded-xl sm:rounded-2xl border-2 border-border hover:bg-muted/50 transition-colors text-sm sm:text-base touch-manipulation"
+                    className="inline-flex items-center justify-center min-h-[48px] sm:min-h-[56px] px-4 sm:px-8 py-2 sm:py-4 bg-transparent text-foreground font-semibold rounded-xl sm:rounded-2xl border-2 border-border hover:bg-muted/50 transition-colors text-[10px] sm:text-base touch-manipulation text-center"
                   >
                     {secondaryCTA}
                   </a>

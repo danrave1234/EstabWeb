@@ -54,35 +54,35 @@ export default function PracticeAreasGrid({
             )}
           </div>
         )}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-8">
           {items.map((item, index) => {
             const href = item.href ?? "#";
             return (
               <article
                 key={index}
-                className="bg-background border border-border rounded-lg p-4 sm:p-8 flex flex-col shadow-sm"
+                className="bg-background border border-border rounded-lg p-3 sm:p-8 flex flex-col shadow-sm"
               >
                 <div className="mb-3 sm:mb-6">
-                  <div className="w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center text-primary border border-primary/20 rounded overflow-hidden bg-primary/5">
+                  <div className="w-8 h-8 sm:w-14 sm:h-14 flex items-center justify-center text-primary border border-primary/20 rounded overflow-hidden bg-primary/5">
                     {item.imageUrl ? (
                       <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
                     ) : (
-                      <DynamicIcon name={item.icon} className="w-5 h-5 sm:w-7 sm:h-7 shrink-0" strokeWidth={2} />
+                      <DynamicIcon name={item.icon} className="w-4 h-4 sm:w-7 sm:h-7 shrink-0" strokeWidth={2} />
                     )}
                   </div>
                 </div>
-                <h3 className="font-serif text-base sm:text-xl font-bold text-foreground mb-2 sm:mb-4 leading-tight">
+                <h3 className="font-serif text-[13px] sm:text-xl font-bold text-foreground mb-1 sm:mb-4 leading-tight">
                   {item.title}
                 </h3>
-                <p className="text-muted-foreground text-[11px] sm:text-[15px] leading-relaxed flex-grow line-clamp-3 mb-3 sm:mb-6">
+                <p className="text-muted-foreground text-[10px] sm:text-[15px] leading-relaxed flex-grow line-clamp-3 mb-2 sm:mb-6">
                   {item.description}
                 </p>
                 <a
                   href={href}
-                  className="text-primary font-medium inline-flex items-center gap-1.5 text-[10px] sm:text-sm hover:gap-2 transition-all group"
+                  className="text-primary font-medium inline-flex items-center gap-1 text-[9px] sm:text-sm hover:gap-2 transition-all group"
                 >
                   {linkText}
-                  <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-0.5" />
+                  <ChevronRight className="w-2.5 h-2.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5" />
                 </a>
               </article>
             );

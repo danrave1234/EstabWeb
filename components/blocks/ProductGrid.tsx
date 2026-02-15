@@ -48,7 +48,7 @@ export default function ProductGrid({
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
           {items.map((product, index) => {
             const hasStock = product.stock === undefined || 
                            (typeof product.stock === "number" && product.stock > 0) ||
@@ -63,14 +63,14 @@ export default function ProductGrid({
                     : "border-border shadow-sm hover:shadow-md hover:border-primary/30"
                 }`}
               >
-                <div className="relative h-56 w-full bg-muted flex items-center justify-center overflow-hidden rounded-t-2xl">
+                <div className="relative h-40 sm:h-56 w-full bg-muted flex items-center justify-center overflow-hidden rounded-t-2xl">
                   {product.imageUrl ? (
                     <Image
                       src={product.imageUrl}
                       alt={product.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1200px) 50vw, 25vw"
                     />
                   ) : product.icon ? (
                     <div className="w-16 h-16 text-primary opacity-20">

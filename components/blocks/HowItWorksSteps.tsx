@@ -60,12 +60,12 @@ export default function HowItWorksSteps({
             )}
           </div>
         )}
-        <div className="grid grid-cols-3 gap-4 sm:gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-12">
           {stepList.map((step, index) => {
             return (
               <div
                 key={index}
-                className="flex flex-col items-center text-center group"
+                className={`flex flex-col items-center text-center group ${index === 2 && stepList.length === 3 ? "col-span-2 lg:col-span-1" : "col-span-1"}`}
               >
                 <div className="w-10 h-10 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-5 shadow-lg shadow-primary/20">
                   {step.number}
@@ -82,7 +82,7 @@ export default function HowItWorksSteps({
                 <h3 className="text-xs sm:text-base lg:text-xl font-bold text-foreground mb-1 sm:mb-2 leading-tight">
                   {step.title}
                 </h3>
-                <p className="text-muted-foreground text-[10px] sm:text-sm leading-relaxed max-w-[120px] sm:max-w-xs">
+                <p className="text-muted-foreground text-[10px] sm:text-sm leading-relaxed max-w-[140px] sm:max-w-xs">
                   {step.description}
                 </p>
               </div>

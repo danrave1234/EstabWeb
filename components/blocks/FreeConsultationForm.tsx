@@ -76,8 +76,8 @@ export default function FreeConsultationForm({
               </li>
             </ul>
           </div>
-          <div className="bg-background border border-border text-foreground rounded-xl p-5 sm:p-8 shadow-xl">
-            <h3 className="text-lg sm:text-xl font-semibold mb-6">{formTitle}</h3>
+          <div className="bg-background border border-border text-foreground rounded-xl p-4 sm:p-8 shadow-xl">
+            <h3 className="text-base sm:text-xl font-semibold mb-4 sm:mb-6">{formTitle}</h3>
             <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-5">
               <div>
                 <label htmlFor="consult-name" className="sr-only">
@@ -92,7 +92,7 @@ export default function FreeConsultationForm({
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, name: e.target.value }))
                   }
-                  className="w-full min-h-[40px] sm:min-h-[44px] px-3.5 sm:px-4 py-2 sm:py-3 rounded-lg bg-muted/30 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-xs sm:text-base"
+                  className="w-full min-h-[36px] sm:min-h-[44px] px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-muted/30 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-[10px] sm:text-base"
                 />
               </div>
               <div>
@@ -108,7 +108,7 @@ export default function FreeConsultationForm({
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, email: e.target.value }))
                   }
-                  className="w-full min-h-[40px] sm:min-h-[44px] px-3.5 sm:px-4 py-2 sm:py-3 rounded-lg bg-muted/30 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-xs sm:text-base"
+                  className="w-full min-h-[36px] sm:min-h-[44px] px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-muted/30 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-[10px] sm:text-base"
                 />
               </div>
               <div>
@@ -121,7 +121,7 @@ export default function FreeConsultationForm({
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, issue: e.target.value }))
                   }
-                  className="w-full min-h-[40px] sm:min-h-[44px] px-3.5 sm:px-4 py-2 sm:py-3 rounded-lg bg-muted/30 border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 appearance-none cursor-pointer text-xs sm:text-base"
+                  className="w-full min-h-[36px] sm:min-h-[44px] px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-muted/30 border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 appearance-none cursor-pointer text-[10px] sm:text-base"
                   style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
                     backgroundRepeat: "no-repeat",
@@ -139,7 +139,7 @@ export default function FreeConsultationForm({
               <button
                 type="submit"
                 disabled={submitted}
-                className="w-full min-h-[40px] sm:min-h-[44px] py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 disabled:opacity-70 transition-opacity text-sm sm:text-lg touch-manipulation"
+                className="w-full min-h-[40px] sm:min-h-[44px] py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 disabled:opacity-70 transition-opacity text-xs sm:text-lg touch-manipulation"
               >
                 {submitted ? buttonThankYou : buttonText}
               </button>

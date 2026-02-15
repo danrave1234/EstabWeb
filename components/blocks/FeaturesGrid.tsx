@@ -32,34 +32,34 @@ export default function FeaturesGrid({
             </p>
           )}
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
           {features.map((item, index) => {
             return (
               <div
                 key={index}
-                className="bg-background rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col"
+                className="bg-background rounded-xl p-3 sm:p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col border border-border/50"
               >
-                <div className="mb-3 sm:mb-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg overflow-hidden flex items-center justify-center text-primary">
+                <div className="mb-2 sm:mb-4">
+                  <div className="w-8 h-8 sm:w-12 sm:h-12 bg-primary/10 rounded-lg overflow-hidden flex items-center justify-center text-primary">
                     {item.imageUrl ? (
                       <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
                     ) : (
-                      <DynamicIcon name={item.icon} className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" strokeWidth={2} />
+                      <DynamicIcon name={item.icon} className="w-4 h-4 sm:w-6 sm:h-6 shrink-0" strokeWidth={2} />
                     )}
                   </div>
                 </div>
-                <h3 className="font-serif font-bold text-lg sm:text-xl text-foreground mb-1.5 sm:mb-2 leading-tight">
+                <h3 className="font-serif font-bold text-sm sm:text-xl text-foreground mb-1 sm:mb-2 leading-tight">
                   {item.title}
                 </h3>
-                <p className="text-muted-foreground text-xs sm:text-sm flex-grow line-clamp-2 leading-relaxed">
+                <p className="text-muted-foreground text-[10px] sm:text-sm flex-grow line-clamp-2 leading-relaxed">
                   {item.description}
                 </p>
                 <a
                   href="#contact"
-                  className="mt-3 sm:mt-4 text-primary text-xs sm:text-sm font-medium inline-flex items-center gap-1.5 hover:gap-2 transition-all duration-200 group"
+                  className="mt-2 sm:mt-4 text-primary text-[10px] sm:text-sm font-medium inline-flex items-center gap-1 hover:gap-2 transition-all duration-200 group"
                 >
                   Learn more
-                  <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform shrink-0" strokeWidth={2} />
+                  <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 transition-transform shrink-0" strokeWidth={2} />
                 </a>
               </div>
             );

@@ -33,19 +33,19 @@ export default function HeroEmergency({
             <p className="text-sm sm:text-xl text-muted-foreground font-medium order-2 lg:order-none lg:mb-0">
               {subtitle}
             </p>
-            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 order-4 lg:order-none">
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 w-full sm:w-auto">
               <a
                 href={primaryCTAHref}
-                className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] gap-2 px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 transition-opacity text-sm sm:text-lg shadow-lg touch-manipulation"
+                className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] gap-2 px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 transition-opacity text-[10px] sm:text-lg shadow-lg touch-manipulation text-center"
               >
                 <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                {primaryCTA}
+                <span className="truncate">{primaryCTA}</span>
               </a>
               <a
                 href={secondaryCTAHref}
-                className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] px-4 sm:px-8 py-2 sm:py-4 bg-background text-foreground font-bold rounded-lg border border-primary hover:bg-muted/50 transition-colors text-sm sm:text-lg touch-manipulation"
+                className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] px-4 sm:px-8 py-2 sm:py-4 bg-background text-foreground font-bold rounded-lg border border-primary hover:bg-muted/50 transition-colors text-[10px] sm:text-lg touch-manipulation text-center"
               >
-                {secondaryCTA}
+                <span className="truncate">{secondaryCTA}</span>
               </a>
             </div>
           </div>

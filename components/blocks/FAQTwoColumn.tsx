@@ -44,13 +44,13 @@ export default function FAQTwoColumn({
             </div>
           </div>
 
-          <div className="lg:col-span-7 grid grid-cols-1 gap-y-12 reveal">
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6 sm:gap-x-12 sm:gap-y-16 reveal">
             {items.map((item, index) => (
-              <div key={index} className="space-y-4">
-                <h3 className="text-lg font-bold text-foreground leading-tight">
+              <div key={index} className="space-y-2 sm:space-y-4">
+                <h3 className="text-sm sm:text-lg font-bold text-foreground leading-tight">
                   {item.question}
                 </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+                <p className="text-[10px] sm:text-sm text-muted-foreground leading-relaxed">
                   {item.answer}
                 </p>
               </div>

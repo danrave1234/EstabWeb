@@ -112,22 +112,26 @@ export default function PromoCTASection({
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <a 
-              href={buttonHref}
-              className="w-full sm:w-auto px-10 py-5 bg-primary text-primary-foreground font-black rounded-full hover:scale-105 transition-all shadow-2xl uppercase tracking-widest text-sm"
-            >
-              {buttonText}
-            </a>
-            {phone && (
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+            <div className="grid grid-cols-2 gap-3 w-full sm:w-auto">
               <a 
-                href={`tel:${phone.replace(/\s/g, '')}`}
-                className="w-full sm:w-auto px-10 py-5 bg-white/10 backdrop-blur-md text-white font-black rounded-full border border-white/30 hover:bg-white/20 transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-2"
+                href={buttonHref}
+                className="col-span-1 px-4 sm:px-10 py-3 sm:py-5 bg-primary text-primary-foreground font-black rounded-full hover:scale-105 transition-all shadow-2xl uppercase tracking-widest text-[9px] sm:text-sm flex items-center justify-center text-center"
               >
-                <DynamicIcon name="Phone" className="w-4 h-4" />
-                <span>Call Us: {phone}</span>
+                {buttonText}
               </a>
-            )}
+              {phone ? (
+                <a 
+                  href={`tel:${phone.replace(/\s/g, '')}`}
+                  className="col-span-1 px-4 sm:px-10 py-3 sm:py-5 bg-white/10 backdrop-blur-md text-white font-black rounded-full border border-white/30 hover:bg-white/20 transition-all uppercase tracking-widest text-[9px] sm:text-sm flex items-center justify-center gap-2 text-center"
+                >
+                  <DynamicIcon name="Phone" className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+                  <span className="truncate">Call Now</span>
+                </a>
+              ) : (
+                <div className="hidden sm:block" />
+              )}
+            </div>
           </div>
         </div>
       </div>

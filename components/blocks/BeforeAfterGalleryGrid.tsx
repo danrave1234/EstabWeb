@@ -48,11 +48,11 @@ export default function BeforeAfterGalleryGrid({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
           {items.map((item, index) => (
             <div 
               key={index} 
-              className="group relative bg-muted/20 rounded-2xl overflow-hidden border border-border shadow-sm hover:shadow-xl transition-all duration-500"
+              className="group relative bg-muted/20 rounded-xl sm:rounded-2xl overflow-hidden border border-border shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col"
             >
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Image 
@@ -65,19 +65,19 @@ export default function BeforeAfterGalleryGrid({
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                    <button 
                     onClick={() => setSelectedItem(item)}
-                    className="p-3 bg-white text-black rounded-full shadow-2xl hover:scale-110 transition-transform"
+                    className="p-2 sm:p-3 bg-white text-black rounded-full shadow-2xl hover:scale-110 transition-transform"
                    >
-                     <ArrowsOutIcon weight="duotone" className="w-6 h-6" />
+                     <ArrowsOutIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6" />
                    </button>
                 </div>
-                <div className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest shadow-lg">
+                <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-primary text-primary-foreground px-2 py-0.5 sm:px-3 sm:py-1 rounded text-[8px] sm:text-[10px] font-bold uppercase tracking-widest shadow-lg">
                   {afterLabel}
                 </div>
               </div>
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-foreground mb-2 uppercase tracking-tight">{item.title}</h3>
+              <div className="p-3 sm:p-6 flex-grow">
+                <h3 className="text-xs sm:text-lg font-bold text-foreground mb-1 sm:mb-2 uppercase tracking-tight line-clamp-1 sm:line-clamp-none">{item.title}</h3>
                 {item.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2 italic font-medium">
+                  <p className="text-[10px] sm:text-sm text-muted-foreground line-clamp-2 italic font-medium">
                     {item.description}
                   </p>
                 )}

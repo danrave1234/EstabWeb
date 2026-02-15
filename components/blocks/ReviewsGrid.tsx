@@ -34,33 +34,33 @@ export default function ReviewsGrid({
           </p>
         </div>
 
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+        <div className="columns-2 lg:columns-3 gap-4 sm:gap-6 space-y-4 sm:space-y-6">
           {testimonials.map((t, index) => (
             <div
               key={index}
-              className="break-inside-avoid p-8 rounded-3xl bg-background border border-border shadow-sm hover:shadow-xl transition-all duration-300 group reveal"
+              className="break-inside-avoid p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-background border border-border shadow-sm hover:shadow-xl transition-all duration-300 group reveal mb-4 sm:mb-6"
             >
-              <div className="flex gap-1 mb-6">
+              <div className="flex gap-0.5 sm:gap-1 mb-4 sm:mb-6">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-primary text-primary" />
+                  <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 fill-primary text-primary" />
                 ))}
               </div>
-              <Quote className="w-8 h-8 text-primary/10 mb-4 group-hover:text-primary/20 transition-colors" />
-              <h3 className="text-lg font-bold text-foreground mb-3 leading-tight italic">
+              <Quote className="hidden sm:block w-8 h-8 text-primary/10 mb-4 group-hover:text-primary/20 transition-colors" />
+              <h3 className="text-sm sm:text-lg font-bold text-foreground mb-2 sm:mb-3 leading-tight italic">
                 "{t.quoteTitle}"
               </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+              <p className="text-muted-foreground text-[10px] sm:text-sm leading-relaxed mb-4 sm:mb-6 line-clamp-4 sm:line-clamp-none">
                 {t.body}
               </p>
-              <div className="flex items-center gap-3 pt-6 border-t border-border">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+              <div className="flex items-center gap-2 sm:gap-3 pt-3 sm:pt-6 border-t border-border">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs sm:text-sm">
                   {t.customerName.charAt(0)}
                 </div>
                 <div>
-                  <p className="font-bold text-foreground text-sm">{t.customerName}</p>
+                  <p className="font-bold text-foreground text-[10px] sm:text-sm">{t.customerName}</p>
                   {t.verified && (
-                    <p className="text-[10px] text-primary font-bold uppercase tracking-widest">
-                      Verified Client
+                    <p className="text-[8px] sm:text-[10px] text-primary font-bold uppercase tracking-widest">
+                      Verified
                     </p>
                   )}
                 </div>

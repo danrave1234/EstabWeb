@@ -46,17 +46,18 @@ export default function FeaturesModern({
             </div>
           </div>
 
-          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4 reveal">
+          <div className="lg:col-span-5 grid grid-cols-2 gap-3 sm:gap-6 reveal">
             {features.map((feature, index) => {
+              const isLarge = index === 0 || index === 3;
               return (
                 <div
                   key={index}
-                  className={`p-8 rounded-3xl border border-border transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
-                    index === 1 ? "bg-primary text-primary-foreground sm:mt-8" : "bg-muted/30"
-                  }`}
+                  className={`p-3 sm:p-8 rounded-2xl sm:rounded-3xl border border-border transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
+                    index === 1 ? "bg-primary text-primary-foreground" : "bg-muted/30"
+                  } ${isLarge ? "col-span-2 lg:col-span-1 lg:row-span-2 flex flex-col justify-center" : "col-span-1"}`}
                 >
-                  <div className="mb-6">
-                    <div className="w-10 h-10 overflow-hidden flex items-center justify-center">
+                  <div className="mb-3 sm:mb-6">
+                    <div className="w-6 h-6 sm:w-10 sm:h-10 overflow-hidden flex items-center justify-center">
                       {feature.imageUrl ? (
                         <img src={feature.imageUrl} alt={feature.title} className="w-full h-full object-contain" />
                       ) : (
@@ -64,8 +65,8 @@ export default function FeaturesModern({
                       )}
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                  <p className={`text-sm leading-relaxed ${index === 1 ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                  <h3 className="text-xs sm:text-xl font-bold mb-1 sm:mb-3 leading-tight">{feature.title}</h3>
+                  <p className={`text-[9px] sm:text-sm leading-relaxed line-clamp-3 sm:line-clamp-none ${index === 1 ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
                     {feature.description}
                   </p>
                 </div>

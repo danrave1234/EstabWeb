@@ -67,34 +67,34 @@ export default function ContactVisual({
               </p>
             </div>
 
-            <div className="space-y-6 pt-4">
-              <div className="flex items-center gap-6 group">
-                <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
-                  <PhoneIcon weight="duotone" className="w-6 h-6 text-white" />
+            <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-6 pt-4">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-6 group">
+                <div className="w-8 h-8 sm:w-14 sm:h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
+                  <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">Call Us Now</p>
-                  <p className="text-xl font-bold">{phone}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6 group">
-                <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
-                  <EnvelopeIcon weight="duotone" className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">Email Inquiry</p>
-                  <p className="text-xl font-bold">{email}</p>
+                <div className="text-center sm:text-left">
+                  <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-0.5 sm:mb-1">Call Us Now</p>
+                  <p className="text-[10px] sm:text-xl font-bold">{phone}</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 group">
-                <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
-                  <MapPinIcon weight="duotone" className="w-6 h-6 text-white" />
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-6 group">
+                <div className="w-8 h-8 sm:w-14 sm:h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
+                  <EnvelopeIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">Our Location</p>
-                  <p className="text-xl font-bold leading-tight">{address}</p>
+                <div className="text-center sm:text-left overflow-hidden w-full">
+                  <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-0.5 sm:mb-1">Email Inquiry</p>
+                  <p className="text-[10px] sm:text-xl font-bold truncate">{email}</p>
+                </div>
+              </div>
+
+              <div className="col-span-2 lg:col-span-1 flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-6 group">
+                <div className="w-8 h-8 sm:w-14 sm:h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
+                  <MapPinIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <div className="text-center sm:text-left">
+                  <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-0.5 sm:mb-1">Our Location</p>
+                  <p className="text-[10px] sm:text-xl font-bold leading-tight">{address}</p>
                 </div>
               </div>
             </div>

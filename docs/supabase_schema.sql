@@ -138,6 +138,9 @@ alter table if exists change_requests enable row level security;
 drop policy if exists profiles_select_self on profiles;
 create policy profiles_select_self on profiles for select to authenticated using (auth.uid() = id);
 
+drop policy if exists profiles_insert_self on profiles;
+create policy profiles_insert_self on profiles for insert to authenticated with check (auth.uid() = id);
+
 drop policy if exists profiles_admin_select on profiles;
 create policy profiles_admin_select on profiles for select to authenticated using (is_admin());
 

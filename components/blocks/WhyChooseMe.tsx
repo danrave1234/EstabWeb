@@ -83,8 +83,8 @@ export default function WhyChooseMe({
               ))}
             </div>
 
-            <div className="pt-6">
-              <button className="px-10 py-4 bg-primary text-primary-foreground font-black rounded-lg hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-widest text-xs">
+            <div className="pt-6 flex justify-center lg:justify-start">
+              <button className="w-full sm:w-auto px-10 py-4 bg-primary text-primary-foreground font-black rounded-lg hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-widest text-xs">
                 {inquireNowLabel}
               </button>
             </div>

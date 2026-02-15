@@ -54,13 +54,13 @@ export default function HeroPestControl({
             <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 w-full justify-center lg:justify-start reveal">
               <a
                 href={primaryCTAHref}
-                className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[52px] px-4 sm:px-10 py-3 sm:py-4 bg-primary text-primary-foreground font-black rounded-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] text-sm sm:text-base uppercase tracking-tight"
+                className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[52px] px-4 sm:px-10 py-2 sm:py-4 bg-primary text-primary-foreground font-black rounded-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] text-[10px] sm:text-base uppercase tracking-tight text-center"
               >
                 {primaryCTA}
               </a>
               <a
                 href={secondaryCTAHref}
-                className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[52px] px-4 sm:px-10 py-3 sm:py-4 bg-background text-foreground font-bold rounded-sm border border-border hover:bg-muted/50 transition-all text-sm sm:text-base uppercase tracking-tight"
+                className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[52px] px-4 sm:px-10 py-2 sm:py-4 bg-background text-foreground font-bold rounded-sm border border-border hover:bg-muted/50 transition-all text-[10px] sm:text-base uppercase tracking-tight text-center"
               >
                 {secondaryCTA}
               </a>

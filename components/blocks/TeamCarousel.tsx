@@ -47,7 +47,7 @@ export default function TeamCarousel({
                 key={index}
                 className="bg-background rounded-xl p-4 sm:p-6 shadow-sm border border-border/50 hover:shadow-md transition-shadow flex flex-col items-center text-center"
               >
-                <div className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-full overflow-hidden mb-3 sm:mb-4 bg-muted shadow-inner">
+                <div className="relative w-12 h-12 sm:w-24 sm:h-24 rounded-full overflow-hidden mb-2 sm:mb-4 bg-muted shadow-inner">
                   {member.imageUrl ? (
                     isExternal ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -62,24 +62,24 @@ export default function TeamCarousel({
                         alt={member.name}
                         fill
                         className="object-cover"
-                        sizes="(max-width: 640px) 64px, 96px"
+                        sizes="(max-width: 640px) 48px, 96px"
                       />
                     )
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[10px]">
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[8px] sm:text-[10px]">
                       Photo
                     </div>
                   )}
                 </div>
-                <h3 className="font-bold text-sm sm:text-lg text-foreground mb-0.5 sm:mb-1 leading-tight">
+                <h3 className="font-bold text-[11px] sm:text-lg text-foreground mb-0.5 sm:mb-1 leading-tight line-clamp-1">
                   {member.name}
                 </h3>
-                <p className="text-[10px] sm:text-sm text-muted-foreground mb-3 sm:mb-4 flex-grow">
+                <p className="text-[9px] sm:text-sm text-muted-foreground mb-2 sm:mb-4 flex-grow line-clamp-1">
                   {member.specialty}
                 </p>
                 <a
                   href={member.bioUrl ?? "#"}
-                  className="w-full py-2 text-[10px] sm:text-sm font-semibold text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors"
+                  className="w-full py-1.5 sm:py-2 text-[9px] sm:text-sm font-semibold text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors"
                 >
                   {linkText}
                 </a>

@@ -58,37 +58,37 @@ export default function ContactMinimal({
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
-              <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/50 border border-border/50">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <PhoneIcon weight="duotone" className="w-5 h-5 text-primary" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 sm:gap-6">
+                <div className="flex items-center sm:items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-muted/50 border border-border/50">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 sm:mb-1">Call Us</p>
+                    <p className="text-sm sm:text-base font-bold text-foreground">{phone}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Call Us</p>
-                  <p className="font-bold text-foreground">{phone}</p>
-                </div>
-              </div>
 
-              <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/50 border border-border/50">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <EnvelopeIcon weight="duotone" className="w-5 h-5 text-primary" />
+                <div className="flex items-center sm:items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-muted/50 border border-border/50">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <EnvelopeIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 sm:mb-1">Email Us</p>
+                    <p className="text-sm sm:text-base font-bold text-foreground break-all">{email}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Email Us</p>
-                  <p className="font-bold text-foreground">{email}</p>
-                </div>
-              </div>
 
-              <div className="sm:col-span-2 lg:col-span-1 flex items-start gap-4 p-4 rounded-xl bg-muted/50 border border-border/50">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <MapPinIcon weight="duotone" className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Visit Us</p>
-                  <p className="font-medium text-foreground leading-tight">{address}</p>
+                <div className="col-span-2 lg:col-span-1 flex items-center sm:items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-muted/50 border border-border/50">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <MapPinIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 sm:mb-1">Visit Us</p>
+                    <p className="text-xs sm:text-base font-medium text-foreground leading-tight">{address}</p>
+                  </div>
                 </div>
               </div>
-            </div>
           </div>
 
           {/* Form */}
