@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     const secret = process.env.PAYMONGO_SECRET_KEY
     if (!secret) return NextResponse.json({ error: 'PayMongo not configured' }, { status: 503 })
 
-    const { projectId, planId = 'ph_monthly' } = await req.json()
+    const { projectId, planId = 'ph_monthly', successUrl } = await req.json()
     if (!projectId) return NextResponse.json({ error: 'Missing projectId' }, { status: 400 })
 
     const plan = PLANS[planId as keyof typeof PLANS] ?? PLANS.ph_monthly
@@ -50,6 +50,7 @@ export async function POST(req: Request) {
             amount: plan.amount,
             currency: plan.currency,
             description: `EstabWeb: ${plan.label} - ${proj.subscription_status === 'free' ? 'Upgrade' : 'Renew'}`,
+            success_url: successUrl || undefined,
             metadata: {
               project_id: projectId,
               plan_id: planId,

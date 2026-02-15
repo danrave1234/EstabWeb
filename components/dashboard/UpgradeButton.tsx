@@ -18,7 +18,11 @@ export default function UpgradeButton({ projectId, variant = "inline" }: Upgrade
       const res = await fetch("/api/paymongo/create-link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, planId: "ph_monthly" }),
+        body: JSON.stringify({ 
+          projectId, 
+          planId: "ph_monthly",
+          successUrl: window.location.href
+        }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || "Failed to create payment link")

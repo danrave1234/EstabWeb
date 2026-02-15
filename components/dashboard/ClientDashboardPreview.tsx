@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { ChevronRight, FileText, Settings, Eye, Layout, Send, Plus, Trash2, GripVertical, Image as ImageIcon, History, RotateCcw, Zap } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
+import UpgradeButton from "@/components/dashboard/UpgradeButton"
 import { createClient } from "@/lib/supabase/client"
 import ImageUpload from "@/components/shared/ImageUpload"
 import DynamicIcon from "@/components/shared/DynamicIcon"
@@ -641,36 +642,6 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               </span>
               <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
-            {showUpgrade && (
-              <button
-                onClick={async () => {
-                  setUpgradeLoading(true)
-                  try {
-                    const res = await fetch('/api/paymongo/create-link', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ projectId: project.id, planId: 'ph_monthly' }),
-                    })
-                    const json = await res.json()
-                    if (!res.ok) throw new Error(json.error || 'Failed to create payment link')
-                    if (json.checkoutUrl) window.location.href = json.checkoutUrl
-                    else toast.error('No checkout URL received')
-                  } catch (e: any) {
-                    toast.error(e?.message || 'Upgrade failed')
-                  } finally {
-                    setUpgradeLoading(false)
-                  }
-                }}
-                disabled={upgradeLoading}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 text-amber-600 text-sm font-semibold transition-colors disabled:opacity-50"
-              >
-                <span className="flex items-center gap-2">
-                  <Zap className="w-4 h-4" />
-                  Free (Upgrade)
-                </span>
-                <ChevronRight className="w-4 h-4 opacity-80" />
-              </button>
-            )}
             <button
               onClick={() => setSelectedSection('hero')}
               className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
@@ -742,6 +713,9 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               <span className="text-xs font-semibold text-foreground leading-none">Preview Mode: Viewing unsaved changes</span>
               <span className="text-[10px] text-muted-foreground mt-0.5">Changes here are local to your browser until you click "Save Draft" in the dashboard.</span>
             </div>
+            {showUpgrade && (
+              <UpgradeButton projectId={project.id} />
+            )}
           </div>
           <div className="flex items-center gap-3">
             <button onClick={refreshPreview} className="flex items-center gap-2 px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-semibold hover:bg-muted transition-all duration-200 shadow-sm active:scale-95">
