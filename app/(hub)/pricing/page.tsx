@@ -26,7 +26,6 @@ export default async function PricingPage() {
       monthlyNote: "/month maintenance",
       description: "Professional managed websites for global clients. High performance and managed updates included.",
       features: ["One-time setup fee", "Managed hosting included", "Monthly maintenance & updates", "SSL Certificate", "Industry-specific templates", "SEO optimized"],
-      cta: "Send Quote",
       highlight: !isPH
     },
     {
@@ -37,7 +36,6 @@ export default async function PricingPage() {
       monthlyNote: "/month maintenance",
       description: "Professional managed websites with initial setup and monthly maintenance.",
       features: ["Starting setup fee (Add-ons extra)", "Admin Dashboard available", "E-commerce & editable data", "Maintenance & Hosting", "Technical Support", "Mobile Responsive"],
-      cta: "Send Quote",
       highlight: isPH
     }
   ];
@@ -59,7 +57,7 @@ export default async function PricingPage() {
                 Simple Plans for <span className="text-primary">Local Growth.</span>
               </h1>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
-                No hidden fees. A professional, high-performance website managed by experts so you can focus on your business.
+                Simply create a project and apply a subscription to it. No hidden fees. A professional, high-performance website managed by experts so you can focus on your business.
               </p>
             </div>
 
@@ -116,25 +114,28 @@ export default async function PricingPage() {
                     </ul>
                   </div>
 
-                  <div className="mt-6 p-3 bg-muted/50 rounded-xl border border-border flex gap-3">
-                    <InfoIcon weight="duotone" className="w-4 h-4 text-primary shrink-0" />
-                    <p className="text-[10px] text-muted-foreground leading-tight">
-                      {plan.id === "ph" 
-                        ? "Add-on charges occur for features like Admin Dashboards, E-commerce, and Dynamic Data management."
-                        : "International plans may incur additional charges for advanced integrations, custom dashboards, or e-commerce features."}
-                    </p>
+                  <div className="mt-6 p-3 bg-muted/50 rounded-xl border border-border flex flex-col gap-2">
+                    <div className="flex gap-3">
+                      <InfoIcon weight="duotone" className="w-4 h-4 text-primary shrink-0" />
+                      <p className="text-[10px] text-muted-foreground leading-tight">
+                        {plan.id === "ph" 
+                          ? "Add-on charges occur for features like Admin Dashboards, E-commerce, and Dynamic Data management."
+                          : "International plans may incur additional charges for advanced integrations, custom dashboards, or e-commerce features."}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3 pt-2 border-t border-border">
+                      <CheckCircleIcon weight="duotone" className="w-4 h-4 text-primary shrink-0" />
+                      <p className="text-[10px] font-bold text-primary leading-tight uppercase tracking-wider">
+                        How it works: Create a project and apply a subscription to it.
+                      </p>
+                    </div>
                   </div>
 
                   <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
                     <Link 
-                      href="/contact" 
-                      className="px-5 py-2.5 bg-primary text-primary-foreground rounded-full font-bold text-xs hover:shadow-xl hover:shadow-primary/20 transition-all w-auto text-center"
-                    >
-                      {plan.cta}
-                    </Link>
-                    <Link 
                       href="/login" 
-                      className="px-5 py-2.5 bg-background border border-border rounded-full font-bold text-xs hover:bg-muted transition-all w-auto text-center"
+                      className="px-8 py-3 bg-primary text-primary-foreground rounded-full font-bold text-sm hover:shadow-xl hover:shadow-primary/20 transition-all w-full sm:w-auto text-center"
                     >
                       Get Started
                     </Link>

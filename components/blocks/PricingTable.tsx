@@ -24,7 +24,7 @@ export type PricingTableProps = {
 
 export default function PricingTable({
   title = "Simple, Transparent Pricing",
-  subtitle = "Choose the plan that's right for your business.",
+  subtitle = "Simply create a project and apply a subscription to it.",
   plans,
   mostPopularLabel = "Most Popular",
   startingAtLabel = "Starting at",

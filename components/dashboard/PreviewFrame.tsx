@@ -5,13 +5,14 @@ import * as React from "react"
 interface PreviewFrameProps {
   previewPath: string
   iframeRef: React.RefObject<HTMLIFrameElement | null>
+  className?: string
 }
 
-export default function PreviewFrame({ previewPath, iframeRef }: PreviewFrameProps) {
+export default function PreviewFrame({ previewPath, iframeRef, className }: PreviewFrameProps) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   
   return (
-    <div className="flex-1 relative bg-muted/10 p-4 lg:p-8">
+    <div className={`flex-1 relative bg-muted/10 p-4 lg:p-8 ${className || ''}`}>
       <div className="w-full h-full rounded-xl border border-border shadow-2xl bg-background overflow-hidden flex flex-col">
         <div className="h-8 bg-muted/50 border-b border-border flex items-center px-4 gap-2">
           <div className="flex gap-1.5">

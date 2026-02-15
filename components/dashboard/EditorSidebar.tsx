@@ -45,6 +45,8 @@ interface EditorSidebarProps {
   autoSaveSection: (id: string, val: any) => void
 }
 
+import { Search, X } from "lucide-react"
+
 export default function EditorSidebar({
   activeTab,
   setActiveTab,
@@ -68,6 +70,12 @@ export default function EditorSidebar({
   ensureStringArray,
   autoSaveSection
 }: EditorSidebarProps) {
+  const [searchQuery, setSearchQuery] = React.useState("")
+
+  const filteredSections = activeSections
+    .filter((s: string) => s !== 'hero')
+    .filter((s: string) => s.replace(/-/g, ' ').toLowerCase().includes(searchQuery.toLowerCase()))
+
   return (
     <aside className="w-[320px] border-r border-border bg-background flex flex-col shrink-0 shadow-xl z-20">
       <div className="p-6 border-b border-border space-y-4 bg-muted/20">
@@ -141,12 +149,38 @@ export default function EditorSidebar({
               <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
 
-            <div className="pt-4 px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
+            <div className="pt-4 px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50 flex items-center justify-between">
               Page Sections
+              {activeSections.length > 5 && (
+                <span className="text-[8px] opacity-60 font-medium tracking-normal">{activeSections.length} blocks</span>
+              )}
             </div>
+
+            {/* Search Bar */}
+            <div className="px-1 mb-2">
+              <div className="relative group">
+                <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 transition-colors ${searchQuery ? 'text-primary' : 'text-muted-foreground/50'}`} />
+                <input
+                  type="text"
+                  placeholder="Filter sections..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2 bg-muted/40 border border-border/50 rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all placeholder:text-muted-foreground/40"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
+                  >
+                    <X className="w-3 h-3 text-muted-foreground" />
+                  </button>
+                )}
+              </div>
+            </div>
+
             <button
               onClick={() => setSelectedSection('hero')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'hero' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'hero' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'} ${searchQuery && !'hero section'.includes(searchQuery.toLowerCase()) ? 'hidden' : ''}`}
             >
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
                 <Zap className="w-4 h-4" />
@@ -158,7 +192,7 @@ export default function EditorSidebar({
               <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
 
-            {activeSections.filter((s: string) => s !== 'hero').map((section: string) => (
+            {filteredSections.map((section: string) => (
               <button
                 key={section}
                 onClick={() => setSelectedSection(section)}

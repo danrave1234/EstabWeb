@@ -106,6 +106,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const [dragSectionIndex, setDragSectionIndex] = React.useState<number | null>(null)
   const [dropSectionIndex, setDropSectionIndex] = React.useState<number | null>(null)
   const [activeTab, setActiveTab] = React.useState<"content" | "design" | "advanced">("content")
+  const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>({})
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false)
   const [globalSettingsModalTab, setGlobalSettingsModalTab] = React.useState<"theme" | "sections">("theme")
   const colorPaletteRef = React.useRef<HTMLDivElement>(null)
@@ -542,18 +543,18 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   }, [selectedSection, baseConfig, modified, sectionIdToKey])
 
   return (
-    <div className="flex flex-col min-h-screen bg-background pt-16 sm:pt-20 lg:pt-0">
+    <div className="flex flex-col min-h-screen bg-background pt-16 lg:pt-16">
       {/* Sidebar Overlay */}
       {mobileSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[45] lg:hidden"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[47] lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
       <div className="flex flex-1 overflow-hidden">
       {/* Sidebar */}
-      <aside className={`fixed top-16 sm:top-20 lg:top-0 left-0 w-[280px] sm:w-[320px] bottom-0 border-r border-border bg-background flex flex-col shrink-0 shadow-xl z-50 transition-transform duration-300 lg:translate-x-0 lg:static lg:z-20 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed top-16 left-0 w-[280px] sm:w-[320px] bottom-0 border-r border-border bg-background flex flex-col shrink-0 shadow-xl z-[48] transition-transform duration-300 lg:translate-x-0 lg:static lg:z-20 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 border-b border-border space-y-4 bg-muted/20">
           <Link 
             href="/dashboard"
@@ -754,52 +755,37 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
           )}
         </div>
 
-        <div className="p-4 border-t border-border bg-muted/20">
-          <div className="flex items-center gap-3 px-3 py-2 bg-background rounded-xl border border-border/50 shadow-sm">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-sm border-2 border-primary/30">
-              {user.email?.[0].toUpperCase()}
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-xs font-black truncate tracking-tight">{user.email}</p>
-              <form action="/auth/signout" method="post">
-                <button className="text-[10px] font-bold text-muted-foreground hover:text-destructive uppercase tracking-widest transition-colors">
-                  Sign out
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
       </aside>
 
       {/* Main Content (Stage) */}
-      <main className="flex-1 flex flex-col min-w-0 bg-background relative pt-14 lg:pt-0">
-        <header className="fixed lg:absolute top-16 sm:top-20 lg:top-0 left-0 lg:left-0 right-0 h-14 border-b border-border flex items-center justify-between px-4 sm:px-6 bg-muted/20 backdrop-blur-md z-10">
-          <div className="flex items-center gap-2 sm:gap-4">
+      <main className="flex-1 flex flex-col min-w-0 bg-background relative">
+        <header className="fixed lg:absolute top-16 lg:top-0 left-0 lg:left-0 right-0 h-14 border-b border-border flex items-center justify-between px-4 sm:px-6 bg-muted/20 backdrop-blur-md z-[46] gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
+              className="lg:hidden p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors shrink-0"
             >
               <Layout className="w-5 h-5" />
             </button>
-            <div className="hidden xs:flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-600 text-[10px] font-bold uppercase tracking-wider rounded-full border border-emerald-500/20">
+            <div className="hidden xs:flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-600 text-[10px] font-bold uppercase tracking-wider rounded-full border border-emerald-500/20 shrink-0">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
               Live
             </div>
-            <div className="hidden md:flex flex-col">
-              <span className="text-xs font-semibold text-foreground leading-none">Preview Mode: Viewing unsaved changes</span>
-              <span className="text-[10px] text-muted-foreground mt-0.5">Changes here are local to your browser until you click "Save Draft" in the dashboard.</span>
+            <div className="hidden sm:flex flex-col min-w-0">
+              <span className="text-xs font-semibold text-foreground leading-none truncate">Preview Mode: Viewing unsaved changes</span>
+              <span className="text-[10px] text-muted-foreground mt-0.5 truncate">Changes here are local to your browser until you click "Save Draft" in the dashboard.</span>
             </div>
-            <div className="sm:hidden">
+            <div className="sm:hidden shrink-0">
                <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} />
             </div>
-            <div className="hidden sm:block">
+            <div className="hidden sm:block shrink-0">
                <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} />
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button onClick={refreshPreview} className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-semibold hover:bg-muted transition-all duration-200 shadow-sm active:scale-95">
-              <Eye className="w-3.5 h-3.5" />
-              <span className="hidden xs:inline">{isSaving ? 'Saving…' : 'Refresh'}</span>
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
+            <button onClick={refreshPreview} className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-semibold hover:bg-muted transition-all duration-200 shadow-sm active:scale-95 shrink-0">
+              <Eye className="w-3.5 h-3.5 shrink-0" />
+              <span className="shrink-0">{isSaving ? 'Saving…' : 'Refresh'}</span>
             </button>
             <button
               onClick={async () => {
@@ -830,10 +816,10 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                 }
               }}
               disabled={isSubmitting || Object.keys(modified).length === 0}
-              className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all"
+              className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
             >
-              <FileText className="w-3.5 h-3.5 sm:hidden" />
-              <span className="hidden xs:inline">{isSubmitting ? 'Saving…' : 'Save'}</span>
+              <FileText className="w-3.5 h-3.5 shrink-0" />
+              <span className="shrink-0">{isSubmitting ? 'Saving…' : 'Save'}</span>
             </button>
             <button
               onClick={() => {
@@ -850,10 +836,10 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                 sendToIframe({ type: 'LIVE_PREVIEW_FULL', data: baseConfig })
                 toast.success('Local changes discarded')
               }}
-              className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-semibold hover:bg-muted transition-all duration-200 shadow-sm"
+              className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-semibold hover:bg-muted transition-all duration-200 shadow-sm shrink-0"
             >
-              <RotateCcw className="w-3.5 h-3.5 sm:hidden" />
-              <span className="hidden xs:inline">Discard</span>
+              <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+              <span className="shrink-0">Discard</span>
             </button>
             {canPublish ? (
               <button
@@ -895,10 +881,10 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   }
                 }}
                 disabled={isPublishing || !canPublishNow(project) || (!hasDraft && Object.keys(modified).length === 0)}
-                className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all"
+                className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
               >
-                <Send className="w-3.5 h-3.5 sm:hidden" />
-                <span className="hidden xs:inline">{isPublishing ? 'Publishing…' : 'Publish'}</span>
+                <Send className="w-3.5 h-3.5 shrink-0" />
+                <span className="shrink-0">{isPublishing ? 'Publishing…' : 'Publish'}</span>
               </button>
             ) : (
               <button
@@ -939,10 +925,10 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   }
                 }}
                 disabled={isQueueing || hasPendingRequest}
-                className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all"
+                className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
               >
-                <Send className="w-3.5 h-3.5 sm:hidden" />
-                <span className="hidden xs:inline">{isQueueing ? 'Submitting…' : hasPendingRequest ? 'Pending Review' : 'Submit'}</span>
+                <Send className="w-3.5 h-3.5 shrink-0" />
+                <span className="shrink-0">{isQueueing ? 'Submitting…' : hasPendingRequest ? 'Pending Review' : 'Submit'}</span>
               </button>
             )}
           </div>
@@ -951,6 +937,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
         <PreviewFrame 
           previewPath={previewPath}
           iframeRef={iframeRef}
+          className="pt-14 lg:pt-14"
         />
       </main>
 
@@ -979,7 +966,10 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                     ) : selectedSection === 'subscription' ? (
                       <>Subscription & Plan</>
                     ) : (
-                      <>Edit {selectedSection?.replace(/-/g, ' ')}</>
+                      <div className="flex items-center gap-2">
+                        <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] uppercase tracking-tighter">Editor</span>
+                        <span>{selectedSection?.replace(/-/g, ' ')}</span>
+                      </div>
                     )}
                   </DialogTitle>
                   <DialogDescription className="mt-0.5 sm:mt-1 text-xs sm:text-sm leading-relaxed line-clamp-1 sm:line-clamp-none">
@@ -1338,6 +1328,38 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               </div>
             ) : (
               <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-primary" />
+                    {formatSectionLabel(selectedSection || "")} Settings
+                  </h3>
+                  <div className="flex gap-2">
+                    <button 
+                      type="button" 
+                      onClick={() => setCollapsedGroups({})} 
+                      className="text-[10px] font-bold text-primary hover:underline"
+                    >
+                      Expand All
+                    </button>
+                    <span className="text-muted-foreground opacity-30">|</span>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        const allKeys: Record<string, boolean> = {};
+                        Object.entries(formValues).forEach(([key, value]) => {
+                          if (typeof value === 'object' && value !== null) {
+                            allKeys[`${selectedSection}-${key}`] = true;
+                          }
+                        });
+                        setCollapsedGroups(allKeys);
+                      }} 
+                      className="text-[10px] font-bold text-primary hover:underline"
+                    >
+                      Collapse All
+                    </button>
+                  </div>
+                </div>
+
                 {/* 1) Text, Boolean, and Nested Object fields - use grid for horizontal layout */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {Object.entries(formValues)
@@ -1349,13 +1371,28 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                       const isObject = typeof value === 'object' && value !== null && !Array.isArray(value);
 
                       if (isObject) {
+                        const isCollapsed = collapsedGroups[`${selectedSection}-${key}`]
                         return (
-                          <div key={key} className="col-span-2 rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden">
-                            <div className="px-4 py-3 border-b border-border/60 bg-muted/10">
-                              <label className="text-xs font-bold uppercase tracking-widest text-primary">{fieldLabel(key)}</label>
-                            </div>
-                            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              {Object.entries(value as object).map(([subKey, subVal]) => {
+                          <div key={key} className="col-span-2 rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden transition-all duration-300">
+                            <button 
+                              type="button"
+                              onClick={() => setCollapsedGroups(prev => ({ ...prev, [`${selectedSection}-${key}`]: !isCollapsed }))}
+                              className="w-full px-4 py-3 border-b border-border/60 bg-muted/10 flex items-center justify-between hover:bg-muted/20 transition-colors"
+                            >
+                              <label className="text-xs font-bold uppercase tracking-widest text-primary cursor-pointer">{fieldLabel(key)}</label>
+                              <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${isCollapsed ? "" : "rotate-90"}`} />
+                            </button>
+                            <div className={`p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 ${isCollapsed ? "hidden" : "animate-in fade-in slide-in-from-top-2 duration-300"}`}>
+                              {Object.entries(value as object)
+                                .sort(([ka], [kb]) => {
+                                  // Images last
+                                  const isImgA = ka.toLowerCase().includes('url') || ka.toLowerCase().includes('image');
+                                  const isImgB = kb.toLowerCase().includes('url') || kb.toLowerCase().includes('image');
+                                  if (isImgA && !isImgB) return 1;
+                                  if (!isImgA && isImgB) return -1;
+                                  return 0;
+                                })
+                                .map(([subKey, subVal]) => {
                                 const isSubPageLinkUrl = ['privacyurl', 'termsurl', 'cookieurl'].includes(subKey.toLowerCase());
                                 const isSubImage = !isSubPageLinkUrl && (subKey.toLowerCase().includes('url') || subKey.toLowerCase().includes('image') || subKey.toLowerCase().includes('logo'));
                                 const isSubTextarea = typeof subVal === 'string' && subVal.length > 80;
@@ -1567,16 +1604,23 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                     }
 
                     return (
-                      <div key={key} className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden pt-0">
-                        <div className="px-4 py-3 border-b border-border/60 bg-muted/10 flex items-center justify-between">
-                          <span className="text-xs font-bold uppercase tracking-widest text-primary">
-                            {key.replace(/([A-Z])/g, ' $1').trim()} 
-                          </span>
-                          <span className="text-[10px] font-medium text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">
-                            {typedItems.length} {typedItems.length === 1 ? 'item' : 'items'}
-                          </span>
-                        </div>
-                        <div className="p-4 space-y-4">
+                      <div key={key} className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden pt-0 transition-all duration-300">
+                        <button 
+                          type="button"
+                          onClick={() => setCollapsedGroups(prev => ({ ...prev, [`${selectedSection}-${key}`]: !collapsedGroups[`${selectedSection}-${key}`] }))}
+                          className="w-full px-4 py-3 border-b border-border/60 bg-muted/10 flex items-center justify-between hover:bg-muted/20 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-bold uppercase tracking-widest text-primary">
+                              {key.replace(/([A-Z])/g, ' $1').trim()} 
+                            </span>
+                            <span className="text-[10px] font-medium text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">
+                              {typedItems.length} {typedItems.length === 1 ? 'item' : 'items'}
+                            </span>
+                          </div>
+                          <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${collapsedGroups[`${selectedSection}-${key}`] ? "" : "rotate-90"}`} />
+                        </button>
+                        <div className={`p-4 space-y-4 ${collapsedGroups[`${selectedSection}-${key}`] ? "hidden" : "animate-in fade-in slide-in-from-top-2 duration-300"}`}>
                         <div className={(() => {
                           const first = firstItem !== null && firstItem !== undefined && typeof firstItem === 'object' && !Array.isArray(firstItem) ? (firstItem as Record<string, unknown>) : null
                           const has = (o: Record<string, unknown> | null, p: string) => o !== null && p in o
