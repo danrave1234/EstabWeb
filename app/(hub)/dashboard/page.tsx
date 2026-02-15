@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Layout, Globe, ChevronRight, ExternalLink, Sparkles, Plus } from 'lucide-react'
+import UpgradeButton from '@/components/dashboard/UpgradeButton'
 import ClientDashboardPreview from '@/components/dashboard/ClientDashboardPreview'
 import MainHeader from '@/components/shared/MainHeader'
 import MainFooter from '@/components/shared/MainFooter'
@@ -32,7 +33,7 @@ export default async function DashboardPage({
   // Fetch ALL projects for this client
   const { data: projects, error } = await supabase
     .from('projects')
-    .select('id, subdomain, custom_domain, current_config, draft_config, created_at')
+    .select('id, subdomain, custom_domain, current_config, draft_config, created_at, subscription_status, trial_ends_at, subscription_ends_at, publish_limit, publish_limit_daily, publish_count, publish_count_today, publish_date, publish_period_start')
     .eq('client_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -140,7 +141,9 @@ export default async function DashboardPage({
                 const siteName = (project.current_config as any)?.brand?.name || "My Website"
                 const rootDomain = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '').replace(/^dashboard\./, '') : 'estabweb.com'
                 const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.${rootDomain}` : "Not set")
-                const previewUrl = project.custom_domain ? `https://${project.custom_domain}` : (project.subdomain ? `/${project.subdomain}` : "#")
+                const previewUrl = project.custom_domain
+                  ? `https://${project.custom_domain}`
+                  : (project.subdomain ? `https://${project.subdomain}.${rootDomain}` : "#")
 
                 return (
                   <TableRow key={project.id} className="group transition-colors">
@@ -165,6 +168,10 @@ export default async function DashboardPage({
                     </TableCell>
                     <TableCell className="py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {((project as any).subscription_status === 'free' || 
+                          ((project as any).subscription_status === 'trial' && (project as any).trial_ends_at && new Date((project as any).trial_ends_at) < new Date())) && (
+                          <UpgradeButton projectId={project.id} variant="inline" />
+                        )}
                         <a 
                           href={previewUrl} 
                           target="_blank" 

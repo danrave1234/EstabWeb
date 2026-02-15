@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { MapPin, BedDouble, Bath, Square } from "lucide-react";
+import { MapPinIcon, BedIcon, BathtubIcon, SquareIcon } from "@phosphor-icons/react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
 
 export type PropertyListing = {
@@ -75,7 +75,7 @@ export default function FeaturedListingsGrid({
               <div className="p-6 space-y-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-1 text-muted-foreground">
-                    <MapPin className="w-3 h-3" />
+                    <MapPinIcon weight="duotone" className="w-3 h-3" />
                     <span className="text-xs font-medium uppercase tracking-wider">{property.location}</span>
                   </div>
                   <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
@@ -83,24 +83,26 @@ export default function FeaturedListingsGrid({
                   </h3>
                 </div>
 
-                <div className="flex items-center justify-between py-4 border-y border-border/50">
-                  <div className="flex items-center gap-1.5">
-                    <BedDouble className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-bold">{property.beds}</span>
+                {(property.beds !== 0 || property.baths !== 0 || property.sqm !== 0) && (
+                  <div className="flex items-center justify-between py-4 border-y border-border/50">
+                    <div className="flex items-center gap-1.5">
+                      <BedIcon weight="duotone" className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-bold">{property.beds}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <BathtubIcon weight="duotone" className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-bold">{property.baths}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <SquareIcon weight="duotone" className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-bold">{property.sqm} {sqmLabel}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <Bath className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-bold">{property.baths}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Square className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-bold">{property.sqm} {sqmLabel}</span>
-                  </div>
-                </div>
+                )}
 
                 <div className="flex items-center justify-between pt-2">
                   <p className="text-2xl font-black text-primary">
-                    {property.price.includes("₱") ? property.price : `₱${property.price}`}
+                    {property.price.includes("₱") ? property.price : /^[\d,.\s]+$/.test(property.price.replace(/\s/g, "")) ? `₱${property.price}` : property.price}
                   </p>
                   <button className="text-xs font-bold uppercase tracking-widest text-foreground hover:text-primary transition-colors underline underline-offset-4">
                     {viewDetailsLabel}

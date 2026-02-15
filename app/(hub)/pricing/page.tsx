@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Check, Info } from 'lucide-react';
+import { CheckCircleIcon, InfoIcon } from "@phosphor-icons/react/ssr";
 
 export const metadata: Metadata = {
   title: "Pricing Plans",
@@ -80,14 +80,14 @@ export default async function PricingPage() {
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mb-6">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex gap-3 items-center text-sm">
-                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    <CheckCircleIcon weight="duotone" className="w-4 h-4 text-primary shrink-0" />
                     <span className="truncate">{feature}</span>
                   </li>
                 ))}
               </ul>
 
               <div className="mb-6 p-4 bg-background/50 rounded-xl border border-border flex gap-3">
-                <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <InfoIcon weight="duotone" className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {plan.id === "ph" 
                     ? "Add-on charges occur for features like Admin Dashboards, E-commerce, and Dynamic Data management."

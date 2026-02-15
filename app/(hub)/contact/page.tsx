@@ -5,7 +5,7 @@ import MainFooter from '@/components/shared/MainFooter';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { EnvelopeIcon, PhoneIcon, MapPinIcon } from "@phosphor-icons/react/ssr";
 
 export const metadata: Metadata = {
   title: "Contact Us",
@@ -28,7 +28,7 @@ export default async function ContactPage() {
           <div className="space-y-8">
             <div className="flex gap-4 items-start">
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0">
-                <Mail className="w-6 h-6" />
+                <EnvelopeIcon weight="duotone" className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="text-xl font-bold mb-1">Email Us</h3>
@@ -38,7 +38,7 @@ export default async function ContactPage() {
 
             <div className="flex gap-4 items-start">
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0">
-                <Phone className="w-6 h-6" />
+                <PhoneIcon weight="duotone" className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="text-xl font-bold mb-1">Call Us</h3>
@@ -48,7 +48,7 @@ export default async function ContactPage() {
 
             <div className="flex gap-4 items-start">
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0">
-                <MapPin className="w-6 h-6" />
+                <MapPinIcon weight="duotone" className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="text-xl font-bold mb-1">Location</h3>

@@ -1,7 +1,8 @@
 import * as React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Zap, Smartphone, Shield, Layout, Globe, CheckCircle2, ChevronDown } from 'lucide-react'
+import { ArrowRightIcon, LightningIcon, DeviceMobileIcon, ShieldCheckIcon, LayoutIcon, GlobeIcon, CheckCircleIcon } from "@phosphor-icons/react/ssr"
+import { ChevronDown } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import MainHeader from '@/components/shared/MainHeader'
 import MainFooter from '@/components/shared/MainFooter'
@@ -71,7 +72,7 @@ export default async function EstabWebLanding() {
                   className="w-full sm:w-auto px-8 py-4 bg-primary text-primary-foreground rounded-full text-lg font-bold hover:scale-105 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2"
                 >
                   Start Building Now
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRightIcon weight="duotone" className="w-5 h-5" />
                 </Link>
                 <Link 
                   href="/pricing" 
@@ -113,32 +114,32 @@ export default async function EstabWebLanding() {
             <div className="grid md:grid-cols-3 gap-8">
               {[
                 {
-                  icon: <Zap className="w-6 h-6" />,
+                  icon: <LightningIcon weight="duotone" className="w-6 h-6" />,
                   title: 'Lightning Fast',
                   desc: 'Next.js 15 powered sites that load instantly, boosting your SEO and user experience.'
                 },
                 {
-                  icon: <Smartphone className="w-6 h-6" />,
+                  icon: <DeviceMobileIcon weight="duotone" className="w-6 h-6" />,
                   title: 'Mobile First',
                   desc: 'Perfectly responsive designs that look incredible on every device, from phones to desktops.'
                 },
                 {
-                  icon: <Shield className="w-6 h-6" />,
+                  icon: <ShieldCheckIcon weight="duotone" className="w-6 h-6" />,
                   title: 'Secure & Managed',
                   desc: 'No plugins to update or databases to hack. We handle the hosting and security for you.'
                 },
                 {
-                  icon: <Layout className="w-6 h-6" />,
+                  icon: <LayoutIcon weight="duotone" className="w-6 h-6" />,
                   title: 'Proven Presets',
                   desc: 'Start with layouts engineered for conversions in your specific industry.'
                 },
                 {
-                  icon: <Globe className="w-6 h-6" />,
+                  icon: <GlobeIcon weight="duotone" className="w-6 h-6" />,
                   title: 'Global Delivery',
                   desc: 'Your site is deployed to the edge, ensuring sub-second load times anywhere in the world.'
                 },
                 {
-                  icon: <CheckCircle2 className="w-6 h-6" />,
+                  icon: <CheckCircleIcon weight="duotone" className="w-6 h-6" />,
                   title: 'SEO Optimized',
                   desc: 'Automatic sitemaps, meta tags, and structured data to help you rank higher on Google.'
                 }

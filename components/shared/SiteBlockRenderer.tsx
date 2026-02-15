@@ -338,7 +338,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
               if (theme === "pest-control") return <HeroPestControl key="hero" {...heroPestControlProps} />;
               if (theme === "startup") return <HeroSaas key="hero" {...heroProps} />;
               if (theme === "generic") return <HeroBlock key="hero" {...heroProps} />;
-              if (theme === "before-after" || theme === "real-estate-modern" || theme === "before-after-split" || theme === "industrial" || theme === "clean-delivery" || theme === "luxury-soft" || theme === "academic-clean" || theme === "hvac") {
+              if (theme === "before-after" || theme === "real-estate-modern" || theme === "before-after-split" || theme === "industrial" || theme === "clean-delivery" || theme === "luxury-soft" || theme === "academic-clean" || theme === "hvac" || theme === "personal-portfolio" || theme === "photobooth") {
                 let layout: any = undefined;
                 if (theme === "before-after") layout = "before-after";
                 if (theme === "real-estate-modern") layout = "full-screen";
@@ -349,6 +349,8 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 if (theme === "hvac") layout = "hvac-urgent";
                 if (theme === "hvac-blue") layout = "hvac-blue";
                 if (theme === "cleaning") layout = "cleaning-fresh";
+                if (theme === "personal-portfolio") layout = "full-screen";
+                if (theme === "photobooth") layout = "soft-luxury";
 
                 return <HeroAuthority key="hero" {...heroProps} layout={layout} />;
               }
@@ -393,14 +395,23 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
             case "awards":
-            case "certifications":
+            case "certifications": {
+              let awardsItems = awardsStrip.items
+              if (!Array.isArray(awardsItems) && awardsItems && typeof awardsItems === "object") {
+                awardsItems = Object.keys(awardsItems)
+                  .filter((k) => /^\d+$/.test(k))
+                  .sort((a, b) => Number(a) - Number(b))
+                  .map((k) => (awardsItems as Record<string, unknown>)[k]) as { label: string; sublabel?: string; icon?: string; imageUrl?: string }[]
+              }
+              if (!Array.isArray(awardsItems)) awardsItems = []
               return (
                 <AwardsStrip
                   key={sectionId}
                   title={awardsStrip.title}
-                  items={awardsStrip.items ?? []}
+                  items={awardsItems}
                 />
               );
+            }
             case "features":
             case "services-grid":
             case "project-gallery":

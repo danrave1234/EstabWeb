@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, Phone, MapPin, Clock } from "lucide-react";
+import { EnvelopeIcon, PhoneIcon, MapPinIcon, ClockIcon } from "@phosphor-icons/react";
 
 export type ContactWithMapProps = {
   title?: string;
@@ -101,15 +101,15 @@ export default function ContactWithMap({
                 <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Contact Details</h4>
                 <div className="space-y-3">
                   <a href={`tel:${phone}`} className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
-                    <Phone className="w-4 h-4" />
+                    <PhoneIcon weight="duotone" className="w-4 h-4" />
                     <span className="text-sm font-medium">{phone}</span>
                   </a>
                   <a href={`mailto:${email}`} className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
-                    <Mail className="w-4 h-4" />
+                    <EnvelopeIcon weight="duotone" className="w-4 h-4" />
                     <span className="text-sm font-medium">{email}</span>
                   </a>
                   <div className="flex items-start gap-3 text-muted-foreground">
-                    <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+                    <MapPinIcon weight="duotone" className="w-4 h-4 shrink-0 mt-0.5" />
                     <span className="text-sm font-medium leading-tight">{address}</span>
                   </div>
                 </div>

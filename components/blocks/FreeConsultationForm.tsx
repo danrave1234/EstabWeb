@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, Clock, Lock } from "lucide-react";
+import { ShieldCheckIcon, ClockIcon, LockIcon } from "@phosphor-icons/react";
 
 export type FreeConsultationFormProps = {
   headline: string;
@@ -63,15 +63,15 @@ export default function FreeConsultationForm({
             )}
             <ul className="space-y-4">
               <li className="flex gap-3">
-                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0 mt-0.5" />
+                <ShieldCheckIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0 mt-0.5" />
                 <span className="text-sm sm:text-base text-muted-foreground">{bullet1}</span>
               </li>
               <li className="flex gap-3">
-                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0 mt-0.5" />
+                <ClockIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0 mt-0.5" />
                 <span className="text-sm sm:text-base text-muted-foreground">{bullet2}</span>
               </li>
               <li className="flex gap-3">
-                <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0 mt-0.5" />
+                <LockIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0 mt-0.5" />
                 <span className="text-sm sm:text-base text-muted-foreground">{bullet3}</span>
               </li>
             </ul>

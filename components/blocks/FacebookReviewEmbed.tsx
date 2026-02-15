@@ -1,6 +1,7 @@
 "use client";
 
-import { Facebook, Star, Quote } from "lucide-react";
+import { StarIcon, QuotesIcon } from "@phosphor-icons/react";
+import { SocialIcon } from "@/components/shared/SocialIcon";
 
 export type FacebookReviewEmbedProps = {
   title?: string;
@@ -42,7 +43,7 @@ export default function FacebookReviewEmbed({
             </p>
           </div>
           <div className="flex items-center gap-4 bg-[#1877F2] text-white px-6 py-3 rounded-2xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
-            <Facebook className="w-6 h-6 fill-white" />
+            <SocialIcon brand="facebook" className="w-6 h-6 text-white" />
             <div className="text-left">
               <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">{followUsLabel}</p>
               <p className="text-sm font-bold">{facebookReviewsLabel}</p>
@@ -57,14 +58,15 @@ export default function FacebookReviewEmbed({
               className="bg-background p-8 rounded-3xl border border-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group"
             >
               <div className="absolute top-6 right-8 opacity-[0.05] group-hover:opacity-10 transition-opacity">
-                <Quote className="w-12 h-12 text-primary" />
+                <QuotesIcon weight="duotone" className="w-12 h-12 text-primary" />
               </div>
 
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
-                    className={`w-4 h-4 ${i < review.rating ? "fill-accent text-accent" : "text-muted opacity-30"}`} 
+<StarIcon
+                    key={i}
+                    weight={i < review.rating ? "fill" : "regular"}
+                    className={`w-4 h-4 ${i < review.rating ? "text-accent" : "text-muted opacity-30"}`}
                   />
                 ))}
               </div>
@@ -92,7 +94,7 @@ export default function FacebookReviewEmbed({
 
         <div className="mt-12 text-center">
           <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-            <Facebook className="w-4 h-4 opacity-50" />
+            <SocialIcon brand="facebook" className="w-4 h-4 opacity-50" />
             {footerNoteLabel}
           </p>
         </div>

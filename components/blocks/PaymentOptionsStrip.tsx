@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, Wallet, Banknote, ShieldCheck, Landmark } from "lucide-react";
+import { CreditCardIcon, WalletIcon, MoneyIcon, ShieldCheckIcon, BuildingsIcon } from "@phosphor-icons/react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
 
 export type PaymentOptionsStripProps = {
@@ -8,11 +8,12 @@ export type PaymentOptionsStripProps = {
   methods?: Array<{ name: string; icon?: string; imageUrl?: string }>;
 };
 
-const DEFAULT_METHODS: Record<string, any> = {
-  gcash: { label: "GCash", icon: Wallet, color: "text-[#007DFE]" },
-  maya: { label: "Maya", icon: Landmark, color: "text-[#10b981]" },
-  bank: { label: "Bank Transfer", icon: CreditCard, color: "text-primary" },
-  cod: { label: "Cash on Delivery", icon: Banknote, color: "text-accent" },
+type PhosphorIconProps = { className?: string; weight?: "duotone" | "fill" | "regular" };
+const DEFAULT_METHODS: Record<string, { label: string; Icon: React.ComponentType<PhosphorIconProps>; color: string }> = {
+  gcash: { label: "GCash", Icon: WalletIcon, color: "text-[#007DFE]" },
+  maya: { label: "Maya", Icon: BuildingsIcon, color: "text-[#10b981]" },
+  bank: { label: "Bank Transfer", Icon: CreditCardIcon, color: "text-primary" },
+  cod: { label: "Cash on Delivery", Icon: MoneyIcon, color: "text-accent" },
 };
 
 export default function PaymentOptionsStrip({
@@ -24,7 +25,7 @@ export default function PaymentOptionsStrip({
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16">
           <div className="flex items-center gap-3">
-            <ShieldCheck className="w-6 h-6 text-muted-foreground opacity-50" />
+            <ShieldCheckIcon weight="duotone" className="w-6 h-6 text-muted-foreground opacity-50" />
             <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">
               {title}
             </h3>
@@ -45,7 +46,7 @@ export default function PaymentOptionsStrip({
                     ) : icon ? (
                       <DynamicIcon name={icon} className="w-5 h-5 sm:w-6 sm:h-6" />
                     ) : info ? (
-                      <info.icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                      <info.Icon weight="duotone" className="w-5 h-5 sm:w-6 sm:h-6" />
                     ) : null}
                   </div>
                   <span className="text-xs sm:text-sm font-bold text-foreground opacity-80 group-hover:opacity-100">

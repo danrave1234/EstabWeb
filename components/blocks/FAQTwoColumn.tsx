@@ -1,6 +1,6 @@
 "use client";
 
-import { HelpCircle } from "lucide-react";
+import { QuestionIcon } from "@phosphor-icons/react";
 
 export type FAQItem = {
   question: string;
@@ -27,7 +27,7 @@ export default function FAQTwoColumn({
           <div className="lg:col-span-5 reveal">
             <div className="sticky top-24">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest mb-6">
-                <HelpCircle className="w-3 h-3" /> Support
+                <QuestionIcon weight="duotone" className="w-3 h-3" /> Support
               </div>
               <h2 className="text-3xl sm:text-5xl font-bold text-foreground mb-6 tracking-tight leading-[1.1]">
                 {title || "Frequently Asked Questions"}

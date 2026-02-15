@@ -1,7 +1,7 @@
 "use client";
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
-import { Check } from "lucide-react";
+import { CheckCircleIcon } from "@phosphor-icons/react";
 
 export type FeatureItem = {
   title: string;
@@ -38,7 +38,7 @@ export default function FeaturesModern({
               {features.slice(0, 3).map((f, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-primary" />
+                    <CheckCircleIcon weight="duotone" className="w-4 h-4 text-primary" />
                   </div>
                   <span className="font-semibold text-foreground">{f.title}</span>
                 </div>

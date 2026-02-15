@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { PhoneIcon, EnvelopeIcon, MapPinIcon } from "@phosphor-icons/react";
 
 export type ContactFormProps = {
   tagline: string;
@@ -113,7 +113,7 @@ export default function ContactForm({
                   className="group flex items-center gap-4 p-4 bg-background border border-border rounded-xl hover:border-primary transition-all duration-200 shadow-sm"
                 >
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    <Phone className="w-6 h-6" />
+                    <PhoneIcon weight="duotone" className="w-6 h-6" />
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{callLabel}</p>
@@ -123,7 +123,7 @@ export default function ContactForm({
 
                 <div className="flex items-start gap-4 p-4 bg-background/50 border border-border/50 rounded-xl">
                   <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shrink-0 mt-0.5">
-                    <MapPin className="w-5 h-5" />
+                    <MapPinIcon weight="duotone" className="w-5 h-5" />
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">{locationLabel}</p>
@@ -138,7 +138,7 @@ export default function ContactForm({
                   className="group flex items-center gap-4 p-4 bg-background/50 border border-border/50 rounded-xl hover:border-primary transition-all duration-200"
                 >
                   <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary shrink-0 transition-colors">
-                    <Mail className="w-5 h-5" />
+                    <EnvelopeIcon weight="duotone" className="w-5 h-5" />
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">{emailUsLabel}</p>

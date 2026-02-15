@@ -65,10 +65,11 @@ export const siteConfig = {
   ],
 
   // Trust Bar (social proof) + featured testimonial
+  // Note: Stripe is not available in Philippines. Use PayMongo for PH payments.
   trustBar: {
     label: "Trusted by industry leaders",
     logos: [
-      { name: "Stripe", width: 120, logoUrl: "https://logo.clearbit.com/stripe.com" },
+      { name: "PayMongo", width: 120, logoUrl: "https://logo.clearbit.com/paymongo.com" },
       { name: "Spotify", width: 100, logoUrl: "https://logo.clearbit.com/spotify.com" },
       { name: "Slack", width: 140, logoUrl: "https://logo.clearbit.com/slack.com" },
       { name: "Zoom", width: 110, logoUrl: "https://logo.clearbit.com/zoom.us" },

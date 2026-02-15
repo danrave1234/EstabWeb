@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import { EnvelopeIcon, PhoneIcon, MapPinIcon, PaperPlaneRightIcon } from "@phosphor-icons/react";
 import Image from "next/image";
 
 export type ContactVisualProps = {
@@ -70,7 +70,7 @@ export default function ContactVisual({
             <div className="space-y-6 pt-4">
               <div className="flex items-center gap-6 group">
                 <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
-                  <Phone className="w-6 h-6 text-white" />
+                  <PhoneIcon weight="duotone" className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">Call Us Now</p>
@@ -80,7 +80,7 @@ export default function ContactVisual({
 
               <div className="flex items-center gap-6 group">
                 <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
-                  <Mail className="w-6 h-6 text-white" />
+                  <EnvelopeIcon weight="duotone" className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">Email Inquiry</p>
@@ -90,7 +90,7 @@ export default function ContactVisual({
 
               <div className="flex items-center gap-6 group">
                 <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
-                  <MapPin className="w-6 h-6 text-white" />
+                  <MapPinIcon weight="duotone" className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">Our Location</p>
@@ -143,7 +143,7 @@ export default function ContactVisual({
                   disabled={isSubmitted}
                   className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-xl py-4 font-bold text-lg hover:shadow-xl hover:shadow-primary/20 active:scale-95 transition-all disabled:opacity-50"
                 >
-                  <Send className={`w-5 h-5 ${isSubmitted ? 'hidden' : ''}`} />
+                  <PaperPlaneRightIcon weight="duotone" className={`w-5 h-5 ${isSubmitted ? 'hidden' : ''}`} />
                   {isSubmitted ? formThankYouText : formSubmitText}
                 </button>
               </form>

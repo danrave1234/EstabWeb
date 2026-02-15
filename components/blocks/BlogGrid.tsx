@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRightIcon } from "@phosphor-icons/react";
 
 export type BlogPost = {
   title: string;
@@ -78,7 +78,7 @@ export default function BlogGrid({
                   className="inline-flex items-center gap-2 text-sm font-bold text-primary group/link"
                 >
                   {linkText}
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
+                  <ArrowRightIcon weight="duotone" className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
                 </a>
               </div>
             </article>

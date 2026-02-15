@@ -3,7 +3,8 @@
 import * as React from "react"
 import { login, signup } from "@/app/actions/auth"
 import { toast } from "sonner"
-import { LogIn, UserPlus, ArrowRight, Loader2, Zap, Shield, Globe, CheckCircle2, ArrowLeft } from "lucide-react"
+import { LightningIcon, ShieldCheckIcon, GlobeIcon, CheckCircleIcon } from "@phosphor-icons/react"
+import { LogIn, UserPlus, ArrowRight, Loader2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import Image from "next/image"
@@ -82,10 +83,10 @@ function LoginContent() {
 
           <div className="grid grid-cols-2 gap-6 pt-4">
             {[
-              { icon: <Zap className="w-5 h-5" />, text: "Instant Launch" },
-              { icon: <Shield className="w-5 h-5" />, text: "Managed Security" },
-              { icon: <Globe className="w-5 h-5" />, text: "Global Edge" },
-              { icon: <CheckCircle2 className="w-5 h-5" />, text: "SEO Optimized" },
+              { icon: <LightningIcon weight="duotone" className="w-5 h-5" />, text: "Instant Launch" },
+              { icon: <ShieldCheckIcon weight="duotone" className="w-5 h-5" />, text: "Managed Security" },
+              { icon: <GlobeIcon weight="duotone" className="w-5 h-5" />, text: "Global Edge" },
+              { icon: <CheckCircleIcon weight="duotone" className="w-5 h-5" />, text: "SEO Optimized" },
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-3 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10 hover:bg-white/15 transition-colors">
                 <div className="text-white">{feature.icon}</div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, BadgeCheck } from "lucide-react";
+import { StarIcon, SealCheckIcon } from "@phosphor-icons/react";
 
 export type ReviewItem = {
   quoteTitle: string;
@@ -32,9 +32,10 @@ export default function ReviewTrustBar({
         <div className="flex flex-col items-center mb-12">
           <div className="flex gap-0.5 mb-2">
             {[...Array(rating)].map((_, i) => (
-              <Star
+              <StarIcon
                 key={i}
-                className="w-5 h-5 sm:w-10 sm:h-10 fill-primary text-primary"
+                weight="fill"
+                className="w-5 h-5 sm:w-10 sm:h-10 text-primary"
                 aria-hidden
               />
             ))}
@@ -74,7 +75,7 @@ export default function ReviewTrustBar({
                 </span>
                 {review.verified !== false && (
                   <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-primary font-medium">
-                    <BadgeCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    <SealCheckIcon weight="duotone" className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     {verifiedLabel}
                   </span>
                 )}

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table'
 import { Globe } from 'lucide-react'
+import SubscriptionManage from '@/components/admin/SubscriptionManage'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +18,10 @@ interface ProjectRow {
   client_id: string | null
   subdomain: string | null
   created_at?: string | null
+  subscription_status?: string | null
+  trial_ends_at?: string | null
+  publish_limit?: number | null
+  publish_count?: number | null
 }
 
 export default async function AdminClientsPage() {
@@ -41,7 +46,7 @@ export default async function AdminClientsPage() {
 
   const { data: projects, error: projectsErr } = await supabase
     .from('projects')
-    .select('id,client_id,subdomain,created_at')
+    .select('id,client_id,subdomain,created_at,subscription_status,trial_ends_at,publish_limit,publish_limit_daily,publish_count,publish_count_today,publish_date')
     .order('created_at', { ascending: false })
 
   // Group projects by owner
@@ -80,13 +85,14 @@ export default async function AdminClientsPage() {
                 <TableHead>Role</TableHead>
                 <TableHead>Websites</TableHead>
                 <TableHead>Sites</TableHead>
+                <TableHead>Subscription</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
                     No clients found.
                   </TableCell>
                 </TableRow>
@@ -105,11 +111,14 @@ export default async function AdminClientsPage() {
                       <div className="flex flex-wrap gap-2">
                         {projects.map((proj) => {
                           const domain = proj.subdomain || 'no-subdomain'
-                          const href = proj.subdomain ? `/${proj.subdomain}` : '#'
+                          const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com'
+                          const href = proj.subdomain ? `https://${proj.subdomain}.${rootDomain}` : '#'
                           return (
                             <Link
                               key={proj.id}
                               href={href}
+                              target={href.startsWith('http') ? '_blank' : undefined}
+                              rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                               className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs border ${proj.subdomain ? 'hover:bg-muted' : 'opacity-50 pointer-events-none'}`}
                               title={proj.id}
                             >
@@ -118,6 +127,13 @@ export default async function AdminClientsPage() {
                             </Link>
                           )
                         })}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-3">
+                        {projects.map((proj) => (
+                          <SubscriptionManage key={proj.id} project={proj as any} />
+                        ))}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">

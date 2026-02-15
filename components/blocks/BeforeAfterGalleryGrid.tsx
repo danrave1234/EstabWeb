@@ -3,7 +3,8 @@
 import Image from "next/image";
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/Dialog";
-import { X, Maximize2 } from "lucide-react";
+import { ArrowsOutIcon } from "@phosphor-icons/react";
+import { X } from "lucide-react";
 
 export type BeforeAfterGalleryItem = {
   title: string;
@@ -66,7 +67,7 @@ export default function BeforeAfterGalleryGrid({
                     onClick={() => setSelectedItem(item)}
                     className="p-3 bg-white text-black rounded-full shadow-2xl hover:scale-110 transition-transform"
                    >
-                     <Maximize2 className="w-6 h-6" />
+                     <ArrowsOutIcon weight="duotone" className="w-6 h-6" />
                    </button>
                 </div>
                 <div className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest shadow-lg">

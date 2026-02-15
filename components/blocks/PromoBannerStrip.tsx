@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Timer, X, Sparkles } from "lucide-react";
+import { TimerIcon, SparkleIcon } from "@phosphor-icons/react";
+import { X } from "lucide-react";
 
 export type PromoBannerStripProps = {
   text?: string;
@@ -47,7 +48,7 @@ export default function PromoBannerStrip({
   return (
     <div className="relative bg-primary text-primary-foreground py-2 px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 text-center z-[60] shadow-md border-b border-white/10">
       <div className="flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-accent animate-pulse" />
+        <SparkleIcon weight="duotone" className="w-4 h-4 text-accent animate-pulse" />
         <p className="text-xs sm:text-sm font-bold uppercase tracking-wide">
           {text}
         </p>
@@ -55,7 +56,7 @@ export default function PromoBannerStrip({
 
       {timeLeft && (
         <div className="flex items-center gap-2 bg-black/20 px-3 py-1 rounded-full border border-white/10">
-          <Timer className="w-3.5 h-3.5 opacity-80" />
+          <TimerIcon weight="duotone" className="w-3.5 h-3.5 opacity-80" />
           <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-mono font-bold">
             <span>{timeLeft.hours}</span>
             <span className="opacity-40">:</span>

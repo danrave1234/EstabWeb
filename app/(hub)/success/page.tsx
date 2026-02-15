@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle, ArrowLeft, Instagram, Twitter, Linkedin, Facebook } from "lucide-react";
+import { CheckCircleIcon } from "@phosphor-icons/react";
+import { ArrowLeft } from "lucide-react";
+import { SocialIcon } from "@/components/shared/SocialIcon";
 
 export default function SuccessPage() {
   return (
@@ -9,7 +11,7 @@ export default function SuccessPage() {
       <div className="max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in duration-500">
         <div className="flex justify-center">
           <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
-            <CheckCircle className="h-10 w-10 text-primary" />
+            <CheckCircleIcon weight="duotone" className="h-10 w-10 text-primary" />
           </div>
         </div>
         
@@ -28,16 +30,16 @@ export default function SuccessPage() {
           </p>
           <div className="flex justify-center gap-6">
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-              <Instagram className="h-6 w-6" />
+              <SocialIcon brand="instagram" className="h-6 w-6" />
             </a>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-              <Twitter className="h-6 w-6" />
+              <SocialIcon brand="twitter" className="h-6 w-6" />
             </a>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-              <Linkedin className="h-6 w-6" />
+              <SocialIcon brand="linkedin" className="h-6 w-6" />
             </a>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-              <Facebook className="h-6 w-6" />
+              <SocialIcon brand="facebook" className="h-6 w-6" />
             </a>
           </div>
         </div>

@@ -149,3 +149,66 @@ export async function processChangeRequest(
 
   return { success: true }
 }
+
+const setSubscriptionSchema = z.object({
+  projectId: z.string().uuid(),
+  subscriptionStatus: z.enum(['free', 'trial', 'active', 'admin_granted']),
+  trialDays: z.number().int().min(0).optional(),
+  publishLimit: z.number().int().min(1).optional(),
+  publishLimitDaily: z.number().int().min(1).optional(),
+})
+
+export async function setProjectSubscription(
+  projectId: string,
+  subscriptionStatus: 'free' | 'trial' | 'active' | 'admin_granted',
+  options?: { trialDays?: number; publishLimit?: number; publishLimitDaily?: number }
+) {
+  const validated = setSubscriptionSchema.safeParse({
+    projectId,
+    subscriptionStatus,
+    trialDays: options?.trialDays,
+    publishLimit: options?.publishLimit,
+    publishLimitDaily: options?.publishLimitDaily,
+  })
+  if (!validated.success) return { error: 'Invalid input' }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') return { error: 'Forbidden' }
+
+  const payload: Record<string, unknown> = {
+    subscription_status: subscriptionStatus,
+  }
+
+  if (subscriptionStatus === 'trial' && options?.trialDays != null) {
+    const ends = new Date()
+    ends.setDate(ends.getDate() + options.trialDays)
+    payload.trial_ends_at = ends.toISOString()
+  }
+  if (subscriptionStatus === 'admin_granted') {
+    payload.admin_granted_by = user.id
+    payload.admin_granted_at = new Date().toISOString()
+  }
+  if (subscriptionStatus !== 'free') {
+    if (options?.publishLimit != null) payload.publish_limit = options.publishLimit
+    if (options?.publishLimitDaily != null) payload.publish_limit_daily = options.publishLimitDaily
+    payload.publish_count = 0
+    payload.publish_count_today = 0
+    payload.publish_date = null
+    payload.publish_period_start = new Date().toISOString()
+  }
+  if (subscriptionStatus === 'free') {
+    payload.trial_ends_at = null
+    payload.admin_granted_by = null
+    payload.admin_granted_at = null
+  }
+
+  const { error } = await supabase.from('projects').update(payload).eq('id', projectId)
+  if (error) return { error: error.message }
+  revalidatePath('/admin/clients')
+  revalidatePath('/dashboard')
+  return { success: true }
+}

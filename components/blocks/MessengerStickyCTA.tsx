@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Phone, MessageSquare } from "lucide-react";
+import { ChatCircleIcon, PhoneIcon, ChatCircleDotsIcon } from "@phosphor-icons/react";
 
 export type MessengerStickyCTAProps = {
   messengerUrl?: string;
@@ -29,7 +29,7 @@ export default function MessengerStickyCTA({
           className="pointer-events-auto flex items-center gap-3 bg-[#7360f2] text-white px-5 py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group"
         >
           <span className="text-sm font-bold hidden sm:inline">{viberLabel}</span>
-          <MessageSquare className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+          <ChatCircleDotsIcon weight="duotone" className="w-5 h-5 group-hover:rotate-12 transition-transform" />
         </a>
       )}
       
@@ -41,7 +41,7 @@ export default function MessengerStickyCTA({
           className="pointer-events-auto flex items-center gap-3 bg-[#0084FF] text-white px-5 py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group"
         >
           <span className="text-sm font-bold hidden sm:inline">{messengerLabel}</span>
-          <MessageCircle className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+          <ChatCircleIcon weight="duotone" className="w-5 h-5 group-hover:rotate-12 transition-transform" />
         </a>
       )}
 
@@ -51,7 +51,7 @@ export default function MessengerStickyCTA({
           className="pointer-events-auto flex items-center gap-3 bg-primary text-primary-foreground px-5 py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group border-2 border-white/20"
         >
           <span className="text-sm font-bold hidden sm:inline">{callLabel}</span>
-          <Phone className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+          <PhoneIcon weight="duotone" className="w-5 h-5 group-hover:rotate-12 transition-transform" />
         </a>
       )}
     </div>

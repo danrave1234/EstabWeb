@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { EnvelopeIcon, PhoneIcon, MapPinIcon } from "@phosphor-icons/react";
 
 export type ContactMinimalProps = {
   title?: string;
@@ -61,7 +61,7 @@ export default function ContactMinimal({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
               <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/50 border border-border/50">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <Phone className="w-5 h-5 text-primary" />
+                  <PhoneIcon weight="duotone" className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Call Us</p>
@@ -71,7 +71,7 @@ export default function ContactMinimal({
 
               <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/50 border border-border/50">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <Mail className="w-5 h-5 text-primary" />
+                  <EnvelopeIcon weight="duotone" className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Email Us</p>
@@ -81,7 +81,7 @@ export default function ContactMinimal({
 
               <div className="sm:col-span-2 lg:col-span-1 flex items-start gap-4 p-4 rounded-xl bg-muted/50 border border-border/50">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <MapPin className="w-5 h-5 text-primary" />
+                  <MapPinIcon weight="duotone" className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Visit Us</p>
@@ -94,7 +94,7 @@ export default function ContactMinimal({
           {/* Form */}
           <div className="lg:col-span-7 bg-card rounded-2xl p-6 sm:p-10 shadow-xl shadow-foreground/5 border border-border relative">
             <div className="absolute top-0 right-0 p-8 opacity-5">
-               <Mail className="w-32 h-32" />
+               <EnvelopeIcon weight="duotone" className="w-32 h-32" />
             </div>
             
             <h3 className="text-xl font-bold text-foreground mb-8">{formHeading}</h3>

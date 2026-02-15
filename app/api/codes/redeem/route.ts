@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateSubdomain } from '@/lib/codes'
 import { deepMerge } from '@/lib/utils'
+import { TRIAL_DAYS, DEFAULT_PUBLISH_LIMIT, DEFAULT_PUBLISH_LIMIT_DAILY } from '@/lib/subscription'
 
 export async function POST(req: Request) {
   try {
@@ -87,10 +88,23 @@ export async function POST(req: Request) {
     const existing = (project.current_config ?? {}) as Record<string, unknown>
     const next = deepMerge(existing, (c.payload ?? {}) as Record<string, unknown>)
 
-    // Ensure project has a subdomain
+    const isNewProject = !projectId
+    const trialEnds = new Date()
+    trialEnds.setDate(trialEnds.getDate() + TRIAL_DAYS)
+
+    // Ensure project has a subdomain; new projects get free trial
     const updatePayload: any = {
       current_config: next,
       draft_config: next
+    }
+    if (isNewProject) {
+      updatePayload.subscription_status = 'trial'
+      updatePayload.trial_ends_at = trialEnds.toISOString()
+      updatePayload.publish_limit = DEFAULT_PUBLISH_LIMIT
+      updatePayload.publish_limit_daily = DEFAULT_PUBLISH_LIMIT_DAILY
+      updatePayload.publish_count = 0
+      updatePayload.publish_count_today = 0
+      updatePayload.publish_period_start = new Date().toISOString()
     }
     
     // Reset any pending change requests if applying a full template (optional, but cleaner)
@@ -109,11 +123,21 @@ export async function POST(req: Request) {
       updatePayload.subdomain = generateSubdomain(brandName || user.email || 'user')
     }
 
+    const { data: projBefore } = await supabase.from('projects').select('config_version').eq('id', project.id).single()
+    const nextVersion = (projBefore?.config_version ?? 0) + 1
+    ;(updatePayload as any).config_version = nextVersion
+
     const { error: upErr } = await supabase
       .from('projects')
       .update(updatePayload)
       .eq('id', project.id)
     if (upErr) return NextResponse.json({ error: upErr.message }, { status: 400 })
+
+    await supabase.from('project_versions').insert({
+      project_id: project.id,
+      version: nextVersion,
+      snapshot: next,
+    })
 
     // 4) Audit + increment usage (fallback if RPC missing)
     await supabase.from('code_redemptions').insert({

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Facebook, Twitter, Linkedin, Instagram, Phone, MapPin, Mail } from "lucide-react";
+import { PhoneIcon, MapPinIcon, EnvelopeIcon } from "@phosphor-icons/react";
+import { SocialIcon } from "@/components/shared/SocialIcon";
 
 export type FooterSocial = {
   facebook?: string;
@@ -129,7 +130,7 @@ export default function LeadMagnetFooter({
                     className="w-10 h-10 bg-muted hover:bg-primary hover:text-primary-foreground text-muted-foreground rounded-lg flex items-center justify-center transition-all duration-200"
                     aria-label="Facebook"
                   >
-                    <Facebook className="w-5 h-5" aria-hidden />
+                    <SocialIcon brand="facebook" className="w-5 h-5" aria-hidden />
                   </a>
                 )}
                 {social.twitter && social.twitterEnabled !== false && (
@@ -138,7 +139,7 @@ export default function LeadMagnetFooter({
                     className="w-10 h-10 bg-muted hover:bg-primary hover:text-primary-foreground text-muted-foreground rounded-lg flex items-center justify-center transition-all duration-200"
                     aria-label="Twitter"
                   >
-                    <Twitter className="w-5 h-5" aria-hidden />
+                    <SocialIcon brand="twitter" className="w-5 h-5" aria-hidden />
                   </a>
                 )}
                 {social.linkedin && social.linkedinEnabled !== false && (
@@ -147,7 +148,7 @@ export default function LeadMagnetFooter({
                     className="w-10 h-10 bg-muted hover:bg-primary hover:text-primary-foreground text-muted-foreground rounded-lg flex items-center justify-center transition-all duration-200"
                     aria-label="LinkedIn"
                   >
-                    <Linkedin className="w-5 h-5" aria-hidden />
+                    <SocialIcon brand="linkedin" className="w-5 h-5" aria-hidden />
                   </a>
                 )}
                 {social.instagram && social.instagramEnabled !== false && (
@@ -156,7 +157,7 @@ export default function LeadMagnetFooter({
                     className="w-10 h-10 bg-muted hover:bg-primary hover:text-primary-foreground text-muted-foreground rounded-lg flex items-center justify-center transition-all duration-200"
                     aria-label="Instagram"
                   >
-                    <Instagram className="w-5 h-5" aria-hidden />
+                    <SocialIcon brand="instagram" className="w-5 h-5" aria-hidden />
                   </a>
                 )}
               </div>
@@ -210,7 +211,7 @@ export default function LeadMagnetFooter({
               <a href={`tel:${phoneHref}`} className="group block w-full max-w-[280px] sm:max-w-sm mx-auto lg:mx-0">
                 <div className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-primary/5 border border-primary/20 rounded-xl hover:border-primary/40 transition-all duration-200">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20">
-                    <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" aria-hidden />
+                    <PhoneIcon weight="duotone" className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" aria-hidden />
                   </div>
                   <div className="flex-1">
                     <p className="text-muted-foreground text-[10px] sm:text-xs uppercase tracking-wider font-semibold">{callUsNowLabel}</p>
@@ -224,7 +225,7 @@ export default function LeadMagnetFooter({
               <div className="space-y-4 max-w-sm mx-auto lg:mx-0">
                 <div className="flex items-start space-x-3">
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <MapPin className="w-4 h-4 text-muted-foreground" aria-hidden />
+                    <MapPinIcon weight="duotone" className="w-4 h-4 text-muted-foreground" aria-hidden />
                   </div>
                   <div className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line pt-1">
                     {contact.address}
@@ -233,7 +234,7 @@ export default function LeadMagnetFooter({
 
                 <div className="flex items-start space-x-3">
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-4 h-4 text-muted-foreground" aria-hidden />
+                    <EnvelopeIcon weight="duotone" className="w-4 h-4 text-muted-foreground" aria-hidden />
                   </div>
                   <a
                     href={`mailto:${contact.email}`}

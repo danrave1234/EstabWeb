@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin } from "lucide-react";
+import { MapPinIcon } from "@phosphor-icons/react";
 
 export type ServiceAreaMapProps = {
   title?: string;
@@ -39,7 +39,7 @@ export default function ServiceAreaMap({
                   key={index} 
                   className="flex items-center gap-2 p-3 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-colors"
                 >
-                  <MapPin className="w-4 h-4 text-primary shrink-0" />
+                  <MapPinIcon weight="duotone" className="w-4 h-4 text-primary shrink-0" />
                   <span className="text-sm font-medium text-foreground">{city}</span>
                 </div>
               ))}
@@ -63,7 +63,7 @@ export default function ServiceAreaMap({
               />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground bg-muted/50 p-8 text-center">
-                <MapPin className="w-12 h-12 mb-4 opacity-20" />
+                <MapPinIcon weight="duotone" className="w-12 h-12 mb-4 opacity-20" />
                 <p className="text-sm font-medium">Interactive map will be displayed here.</p>
                 <p className="text-xs opacity-60 mt-1">Configure Google Maps Embed URL in settings.</p>
               </div>

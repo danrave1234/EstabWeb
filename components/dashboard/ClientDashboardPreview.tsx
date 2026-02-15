@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { ChevronRight, FileText, Settings, Eye, Layout, Send, Plus, Trash2, GripVertical, Image as ImageIcon } from "lucide-react"
+import { ChevronRight, FileText, Settings, Eye, Layout, Send, Plus, Trash2, GripVertical, Image as ImageIcon, History, RotateCcw, Zap } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/Dialog"
 import MainHeader from "@/components/shared/MainHeader"
 import { GENRE_LABELS } from "@/config/presets"
+import { canPublishDirectly, canPublishNow, getPublishStats, isTrialExpired } from "@/lib/subscription"
 
 // Light-mode primary/accent/background for color palette swatches (from globals.css)
 const COLOR_THEME_SWATCHES: Record<string, [string, string, string]> = {
@@ -116,6 +117,16 @@ const DEFAULT_EMERGENCY_CTA = {
   phone: "",
   imageUrl: "",
   icon: "Phone",
+}
+
+const DEFAULT_AWARDS_STRIP = {
+  title: "Trusted & Recognized By",
+  items: [
+    { label: "Top Rated 2024", sublabel: "Industry Award", icon: "Award" },
+    { label: "Verified Business", sublabel: "Trust Seal", icon: "ShieldCheck" },
+    { label: "5-Star Service", sublabel: "Customer Choice", icon: "Star" },
+    { label: "10k+ Clients", sublabel: "Community", icon: "Users" },
+  ],
 }
 
 const DEFAULT_FAQ_ACCORDION = {
@@ -273,11 +284,17 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const [formValues, setFormValues] = React.useState<Record<string, any>>({})
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [isQueueing, setIsQueueing] = React.useState(false)
+  const [isPublishing, setIsPublishing] = React.useState(false)
   const [isSaving, setIsSaving] = React.useState(false)
   const [modified, setModified] = React.useState<Record<string, any>>({})
   const [hasPendingRequest, setHasPendingRequest] = React.useState(false)
   const [colorPaletteOpen, setColorPaletteOpen] = React.useState(false)
   const [typographyOpen, setTypographyOpen] = React.useState(false)
+  const [historyOpen, setHistoryOpen] = React.useState(false)
+  const [versions, setVersions] = React.useState<{ id: string; version: number; createdAt: string; isCurrent: boolean }[]>([])
+  const [versionsLoading, setVersionsLoading] = React.useState(false)
+  const [rollbackLoading, setRollbackLoading] = React.useState<number | null>(null)
+  const [upgradeLoading, setUpgradeLoading] = React.useState(false)
   const [dragSectionIndex, setDragSectionIndex] = React.useState<number | null>(null)
   const [dropSectionIndex, setDropSectionIndex] = React.useState<number | null>(null)
   const colorPaletteRef = React.useRef<HTMLDivElement>(null)
@@ -330,6 +347,9 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
 
   const hasDraft = project.draft_config && Object.keys(project.draft_config).length > 0
   const baseConfig = hasDraft ? project.draft_config : (project.current_config || {})
+  const canPublish = canPublishDirectly(project)
+  const publishStats = getPublishStats(project)
+  const showUpgrade = (project.subscription_status || 'free') === 'free' || isTrialExpired(project)
   const globalConfig = deepMerge(baseConfig, modified)
   const activeSections = ensureStringArray(globalConfig.activeSections)
   // Use the project's subdomain for preview; always include projectId so the page can fetch by ID when subdomain/custom domain isn't set.
@@ -488,6 +508,22 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
       } else if (sectionKey === 'emergencyCTA') {
         const merged = { ...DEFAULT_EMERGENCY_CTA, ...(base as Record<string, any>) }
         setFormValues(merged)
+      } else if (sectionKey === 'awardsStrip') {
+        const baseAwards = (base || {}) as Record<string, any>
+        let items = baseAwards.items
+        if (!Array.isArray(items) && items && typeof items === 'object') {
+          items = Object.keys(items)
+            .filter((k) => /^\d+$/.test(k))
+            .sort((a, b) => Number(a) - Number(b))
+            .map((k) => (items as Record<string, any>)[k])
+        }
+        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_AWARDS_STRIP.items
+        const merged = {
+          ...DEFAULT_AWARDS_STRIP,
+          ...baseAwards,
+          items,
+        }
+        setFormValues(merged)
       } else if (sectionKey === 'faqAccordion') {
         const baseFaq = (base || {}) as Record<string, any>
         let items = baseFaq.items
@@ -585,6 +621,56 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               <span>Legal Pages (Privacy/Terms)</span>
               <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
+            <button
+              onClick={() => {
+                setHistoryOpen(true)
+                setVersionsLoading(true)
+                fetch(`/api/versions?projectId=${project.id}`)
+                  .then((r) => r.json())
+                  .then((data) => {
+                    setVersions(data.versions ?? [])
+                  })
+                  .catch(() => toast.error('Failed to load history'))
+                  .finally(() => setVersionsLoading(false))
+              }}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
+            >
+              <span className="flex items-center gap-2">
+                <History className="w-4 h-4 text-primary" />
+                Version History
+              </span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+            {showUpgrade && (
+              <button
+                onClick={async () => {
+                  setUpgradeLoading(true)
+                  try {
+                    const res = await fetch('/api/paymongo/create-link', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ projectId: project.id, planId: 'ph_monthly' }),
+                    })
+                    const json = await res.json()
+                    if (!res.ok) throw new Error(json.error || 'Failed to create payment link')
+                    if (json.checkoutUrl) window.location.href = json.checkoutUrl
+                    else toast.error('No checkout URL received')
+                  } catch (e: any) {
+                    toast.error(e?.message || 'Upgrade failed')
+                  } finally {
+                    setUpgradeLoading(false)
+                  }
+                }}
+                disabled={upgradeLoading}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+              >
+                <span className="flex items-center gap-2">
+                  <Zap className="w-4 h-4" />
+                  Upgrade (₱1,000/mo)
+                </span>
+                <ChevronRight className="w-4 h-4 opacity-80" />
+              </button>
+            )}
             <button
               onClick={() => setSelectedSection('hero')}
               className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted text-sm text-foreground group transition-colors text-left"
@@ -714,57 +800,94 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
             >
               Discard Local
             </button>
-            <button
-              onClick={async () => {
-                if (hasPendingRequest) {
-                  toast.error('A change request is already pending. Please wait for it to be reviewed.')
-                  return
-                }
-                
-                setIsQueueing(true)
-                try {
-                  // If there are local changes, save them first
-                  if (Object.keys(modified).length > 0) {
-                    const saveRes = await fetch('/api/project-config', {
+            {canPublish ? (
+              <button
+                onClick={async () => {
+                  if (!canPublishNow(project)) {
+                    toast.error(`Publish limit reached (${publishStats.used}/${publishStats.limit} this period).`)
+                    return
+                  }
+                  setIsPublishing(true)
+                  try {
+                    if (Object.keys(modified).length > 0) {
+                      const saveRes = await fetch('/api/project-config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ projectId: project.id, patch: modified })
+                      })
+                      const saveJson = await saveRes.json()
+                      if (!saveRes.ok) throw new Error(saveJson.error || 'Failed to save draft')
+                      setModified({})
+                      if (typeof window !== 'undefined') localStorage.removeItem(LOCAL_KEY)
+                      router.refresh()
+                    }
+                    const res = await fetch('/api/publish', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ projectId: project.id, patch: modified })
+                      body: JSON.stringify({ projectId: project.id })
                     })
-                    const saveJson = await saveRes.json()
-                    if (!saveRes.ok) throw new Error(saveJson.error || 'Failed to auto-save draft before submission')
-                    
-                    // Clear local changes after successful auto-save
-                    setModified({})
-                    if (typeof window !== 'undefined') {
-                      localStorage.removeItem(LOCAL_KEY)
-                    }
+                    const json = await res.json()
+                    if (!res.ok) throw new Error(json.error || 'Failed to publish')
+                    const remaining = (json as { remaining?: number; remainingToday?: number })?.remaining ?? publishStats.remaining - 1
+                    const remainingToday = (json as { remainingToday?: number })?.remainingToday ?? publishStats.remainingToday - 1
+                    toast.success(`Published! ${remaining} left this period, ${remainingToday} today.`)
                     router.refresh()
+                    setTimeout(() => refreshPreview(), 100)
+                  } catch (e: any) {
+                    toast.error(e?.message || 'Failed to publish')
+                  } finally {
+                    setIsPublishing(false)
                   }
-
-                  // Now submit the change request (which snapshots the draft from DB)
-                  const res = await fetch('/api/change-requests', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ projectId: project.id })
-                  })
-                  const json = await res.json()
-                  if (!res.ok) throw new Error(json.error || 'Failed to submit for approval')
-                  
-                  toast.success('Draft saved and submitted for approval')
-                  setHasPendingRequest(true)
-                  router.refresh()
-                  setTimeout(() => refreshPreview(), 100)
-                } catch (e: any) {
-                  toast.error(e?.message || 'Failed to submit for approval')
-                } finally {
-                  setIsQueueing(false)
-                }
-              }}
-              disabled={isQueueing || hasPendingRequest}
-              className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all"
-            >
-              {isQueueing ? 'Submitting…' : hasPendingRequest ? 'Pending Review' : 'Submit for Approval'}
-            </button>
+                }}
+                disabled={isPublishing || !canPublishNow(project) || (!hasDraft && Object.keys(modified).length === 0)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all"
+              >
+                {isPublishing ? 'Publishing…' : `Publish${publishStats.remaining > 0 && publishStats.remainingToday > 0 ? ` (${publishStats.remainingToday} today, ${publishStats.remaining} period)` : ''}`}
+              </button>
+            ) : (
+              <button
+                onClick={async () => {
+                  if (hasPendingRequest) {
+                    toast.error('A change request is already pending. Please wait for it to be reviewed.')
+                    return
+                  }
+                  setIsQueueing(true)
+                  try {
+                    if (Object.keys(modified).length > 0) {
+                      const saveRes = await fetch('/api/project-config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ projectId: project.id, patch: modified })
+                      })
+                      const saveJson = await saveRes.json()
+                      if (!saveRes.ok) throw new Error(saveJson.error || 'Failed to auto-save draft before submission')
+                      setModified({})
+                      if (typeof window !== 'undefined') localStorage.removeItem(LOCAL_KEY)
+                      router.refresh()
+                    }
+                    const res = await fetch('/api/change-requests', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ projectId: project.id })
+                    })
+                    const json = await res.json()
+                    if (!res.ok) throw new Error(json.error || 'Failed to submit for approval')
+                    toast.success('Draft saved and submitted for approval')
+                    setHasPendingRequest(true)
+                    router.refresh()
+                    setTimeout(() => refreshPreview(), 100)
+                  } catch (e: any) {
+                    toast.error(e?.message || 'Failed to submit for approval')
+                  } finally {
+                    setIsQueueing(false)
+                  }
+                }}
+                disabled={isQueueing || hasPendingRequest}
+                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all"
+              >
+                {isQueueing ? 'Submitting…' : hasPendingRequest ? 'Pending Review' : 'Submit for Approval'}
+              </button>
+            )}
           </div>
         </header>
 
@@ -1501,6 +1624,76 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
             >
               Done
             </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Version History / Rollback Modal */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="w-5 h-5 text-primary" />
+              Version History
+            </DialogTitle>
+            <DialogDescription>
+              Restore your site to a previous working state if something went wrong.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto">
+            {versionsLoading ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">Loading history…</p>
+            ) : versions.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">No version history yet. Publish changes to create restore points.</p>
+            ) : (
+              <ul className="space-y-2">
+                {versions.map((v) => (
+                  <li
+                    key={v.id}
+                    className="flex items-center justify-between gap-4 py-2 px-3 rounded-lg border border-border bg-muted/20"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium">Version {v.version}</span>
+                      <span className="text-xs text-muted-foreground ml-2">
+                        {new Date(v.createdAt).toLocaleString()}
+                      </span>
+                      {v.isCurrent && (
+                        <span className="ml-2 text-[10px] font-bold text-emerald-600 uppercase">Current</span>
+                      )}
+                    </div>
+                    {!v.isCurrent && (
+                      <button
+                        onClick={async () => {
+                          setRollbackLoading(v.version)
+                          try {
+                            const res = await fetch('/api/rollback', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ projectId: project.id, version: v.version }),
+                            })
+                            const json = await res.json()
+                            if (!res.ok) throw new Error(json.error || 'Rollback failed')
+                            toast.success(`Restored to version ${v.version}`)
+                            setHistoryOpen(false)
+                            router.refresh()
+                            setTimeout(() => refreshPreview(), 100)
+                          } catch (e: any) {
+                            toast.error(e?.message || 'Rollback failed')
+                          } finally {
+                            setRollbackLoading(null)
+                          }
+                        }}
+                        disabled={rollbackLoading !== null}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        {rollbackLoading === v.version ? 'Restoring…' : 'Restore'}
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </DialogContent>
       </Dialog>

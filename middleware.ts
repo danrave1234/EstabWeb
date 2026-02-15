@@ -28,6 +28,19 @@ export async function middleware(request: NextRequest) {
   const isRoot = hostname === ROOT_DOMAIN || hostname === `www.${ROOT_DOMAIN}` || isDevHost
   const isAdmin = hostname === `admin.${ROOT_DOMAIN}` || hostname.startsWith('admin.')
 
+  // On production root domain: redirect /subdomain to subdomain.estabweb.com so project sites use subdomains
+  const RESERVED_ROOT_PATHS = ['api', 'admin', 'login', 'dashboard', 'onboarding', 'auth', 'preview', 'pricing', 'terms', 'privacy', 'cookies', 'contact', 'success']
+  if (!isDevHost && isRoot && url.pathname !== '/') {
+    const segment = url.pathname.replace(/^\/|\/$/g, '').split('/')[0]?.toLowerCase()
+    if (segment && !RESERVED_ROOT_PATHS.includes(segment)) {
+      const protocol = request.headers.get('x-forwarded-proto') === 'https' ? 'https' : (request.url.startsWith('https') ? 'https' : 'http')
+      const redirectUrl = `${protocol}://${segment}.${ROOT_DOMAIN}${url.pathname.slice(segment.length + 1) || '/'}${url.search}`
+      const redirect = NextResponse.redirect(redirectUrl, 301)
+      copyCookies(sessionRes, redirect)
+      return redirect
+    }
+  }
+
   // Pass preview and projectId to layouts via headers since layouts don't get searchParams
   const requestHeaders = new Headers(request.headers)
   if (url.searchParams.has('preview')) {

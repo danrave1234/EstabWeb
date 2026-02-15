@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, X } from "lucide-react";
+import { CheckCircleIcon } from "@phosphor-icons/react";
+import { X } from "lucide-react";
 
 export type PricingPlan = {
   name: string;
@@ -81,7 +82,7 @@ export default function PricingTable({
                 {plan.features.map((feature, fIndex) => (
                   <li key={fIndex} className="flex items-start gap-3">
                     {feature.included ? (
-                      <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <CheckCircleIcon weight="duotone" className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                     ) : (
                       <X className="w-5 h-5 text-muted-foreground/40 shrink-0 mt-0.5" />
                     )}

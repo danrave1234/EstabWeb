@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { PhoneIcon, EnvelopeIcon, MapPinIcon, ClockIcon } from "@phosphor-icons/react";
 
 export type ContactSplitProps = {
   tagline: string;
@@ -63,7 +63,7 @@ export default function ContactSplit({
             <div className="space-y-8">
               <div className="flex gap-6">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-6 h-6" />
+                  <PhoneIcon weight="duotone" className="w-6 h-6" />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">{callLabel}</p>
@@ -73,7 +73,7 @@ export default function ContactSplit({
 
               <div className="flex gap-6">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-6 h-6" />
+                  <EnvelopeIcon weight="duotone" className="w-6 h-6" />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">{emailUsLabel}</p>
@@ -83,7 +83,7 @@ export default function ContactSplit({
 
               <div className="flex gap-6">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                  <MapPin className="w-6 h-6" />
+                  <MapPinIcon weight="duotone" className="w-6 h-6" />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">{locationLabel}</p>

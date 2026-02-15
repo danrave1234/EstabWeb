@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Phone } from "lucide-react";
+import { PhoneIcon } from "@phosphor-icons/react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
 
 export type HeroEmergencyProps = {
@@ -38,7 +38,7 @@ export default function HeroEmergency({
                 href={primaryCTAHref}
                 className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] gap-2 px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 transition-opacity text-sm sm:text-lg shadow-lg touch-manipulation"
               >
-                <Phone className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                 {primaryCTA}
               </a>
               <a

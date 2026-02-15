@@ -21,7 +21,9 @@ export type ThemeKey =
   | "hvac"
   | "before-after"
   | "hvac-blue"
-  | "generic";
+  | "generic"
+  | "personal-portfolio"
+  | "photobooth";
 
 export type ColorThemeKey =
   | "partner"
@@ -114,7 +116,7 @@ export type PresetContent = {
   maintenancePlans?: { title?: string; subtitle?: string; plans: { name: string; price: string; period: string; description: string; features: string[]; isPopular?: boolean }[] };
   beforeAfterGallery?: { title?: string; subtitle?: string; items: { title: string; beforeImage: string; afterImage: string; description?: string }[] };
   promoCTA?: { title?: string; subtitle?: string; promoBadge?: string; buttonText?: string; buttonHref?: string; phone?: string; countdownEndDate?: string; backgroundImage?: string };
-  featuredListings?: { title?: string; subtitle?: string; items: { title: string; location: string; price: string; imageUrl: string; beds: number; baths: number; sqm: number; tag?: string }[] };
+  featuredListings?: { title?: string; subtitle?: string; viewDetailsLabel?: string; sqmLabel?: string; items: { title: string; location: string; price: string; imageUrl: string; beds: number; baths: number; sqm: number; tag?: string }[] };
   financing?: { title?: string; subtitle?: string; items: { title: string; description: string; icon: string; features: string[] }[] };
   developerPartners?: { title?: string; items: { name: string; logoUrl: string }[] };
   whyChooseMe?: { title?: string; subtitle?: string; agentName: string; agentRole: string; licenseNumber: string; agentBio: string; agentImageUrl: string; trustSignals: { label: string; icon: string }[] };
@@ -883,6 +885,107 @@ const HVAC_CONTENT: PresetContent = {
   },
 };
 
+const PERSONAL_PORTFOLIO_CONTENT: PresetContent = {
+  ...GENERIC_CONTENT,
+  brand: { name: "Your Name", logoUrl: "https://placehold.co/80x80/1a2b3c/ffffff?text=YN" },
+  hero: {
+    layout: "full-screen",
+    title: "Designer & Developer",
+    subtitle: "I craft digital experiences and build products that people love.",
+    primaryCTA: "View My Work",
+    secondaryCTA: "Get in Touch",
+    backgroundImage: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1080&q=80",
+    trustSignals: ["Available for Hire", "Remote-Friendly", "10+ Projects"],
+  },
+  features: {
+    title: "What I Do",
+    subtitle: "Services and skills I bring to the table.",
+    items: [
+      { title: "Web Design", description: "Clean, modern interfaces and user-centered design.", icon: "Layout" },
+      { title: "Development", description: "Fast, responsive sites and web applications.", icon: "Code" },
+      { title: "Consulting", description: "Strategy and technical guidance for your product.", icon: "Lightbulb" },
+    ],
+  },
+  featuredListings: {
+    title: "Projects",
+    subtitle: "A selection of work I've shipped. Design, code, and collaboration.",
+    viewDetailsLabel: "View Project",
+    sqmLabel: "stack",
+    items: [
+      { title: "E‑commerce Platform", location: "React, Node, PayMongo", price: "Web App", imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80", beds: 0, baths: 0, sqm: 0, tag: "Featured" },
+      { title: "SaaS Dashboard", location: "Next.js, Tailwind", price: "Product", imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80", beds: 0, baths: 0, sqm: 0 },
+      { title: "Mobile App Redesign", location: "Figma, Design System", price: "UI/UX", imageUrl: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&q=80", beds: 0, baths: 0, sqm: 0 },
+    ],
+  },
+  contact: {
+    tagline: "Let's work together.",
+    formHeading: "Say Hello",
+    formSubmitText: "Send",
+    formThankYouText: "Thanks! I'll get back soon.",
+    email: "hello@yourname.com",
+    phone: "",
+    address: "",
+  },
+};
+
+const PHOTOBOOTH_CONTENT: PresetContent = {
+  ...GENERIC_CONTENT,
+  brand: { name: "Your Photobooth", logoUrl: "https://placehold.co/80x80/ec4899/ffffff?text=PB" },
+  hero: {
+    layout: "soft-luxury",
+    title: "Capture the Moment",
+    subtitle: "Premium photobooth rentals for weddings, parties, and corporate events.",
+    promoText: "Book Early – Save 10%",
+    primaryCTA: "Book Now",
+    secondaryCTA: "View Packages",
+    backgroundImage: "https://images.unsplash.com/photo-1519741497674-611481863552?w=1080&q=80",
+    trustSignals: ["Same-Day Setup", "Unlimited Prints", "Props Included"],
+  },
+  trustBadgesGrid: {
+    items: [
+      { label: "500+ Events", sublabel: "Happy Clients", icon: "Camera" },
+      { label: "5-Star Rated", sublabel: "Google & Facebook", icon: "Star" },
+      { label: "Same-Day Setup", sublabel: "Professional Crew", icon: "Clock" },
+      { label: "Unlimited Prints", sublabel: "No Hidden Fees", icon: "Image" },
+    ],
+  },
+  features: {
+    title: "Why Choose Us",
+    subtitle: "Everything you need for a memorable photobooth experience.",
+    items: [
+      { title: "Custom Backdrops", description: "Match your theme with our range of backdrops and props.", icon: "Image" },
+      { title: "Instant Prints", description: "Guests take home prints on the spot.", icon: "Printer" },
+      { title: "Social Sharing", description: "Digital copies and hashtag printing available.", icon: "Share2" },
+    ],
+  },
+  beforeAfterGallery: {
+    title: "Gallery",
+    subtitle: "See our setups from real events.",
+    items: [
+      { title: "Wedding", description: "Elegant setup", beforeImage: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80", afterImage: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=600&q=80" },
+      { title: "Corporate", description: "Professional look", beforeImage: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80", afterImage: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=600&q=80" },
+    ],
+  },
+  pricingTable: {
+    title: "Packages",
+    subtitle: "Transparent pricing for every event size.",
+    plans: [
+      { name: "Starter", price: "₱5,000", description: "2 hours, 100 prints.", features: [{ text: "Setup & teardown", included: true }, { text: "Props included", included: true }, { text: "Digital copies", included: false }], buttonText: "Book" },
+      { name: "Popular", price: "₱8,000", description: "4 hours, unlimited prints.", isPopular: true, features: [{ text: "Setup & teardown", included: true }, { text: "Props + backdrop", included: true }, { text: "Digital copies", included: true }], buttonText: "Book" },
+      { name: "Premium", price: "₱12,000", description: "6 hours, full package.", features: [{ text: "Everything in Popular", included: true }, { text: "Dedicated attendant", included: true }, { text: "Custom branding", included: true }], buttonText: "Inquire" },
+    ],
+  },
+  contact: {
+    tagline: "Reserve your date.",
+    formHeading: "Book a Photobooth",
+    formSubmitText: "Send Inquiry",
+    formThankYouText: "We'll confirm within 24 hours.",
+    email: "book@yourphotobooth.com",
+    phone: "+63 912 345 6789",
+    address: "Metro Manila",
+  },
+};
+
 const PEST_CONTROL_CONTENT: PresetContent = {
   ...GENERIC_CONTENT,
   hero: {
@@ -992,7 +1095,7 @@ export const GENRE_PRESETS: Record<string, GenrePreset> = {
     theme: "industrial",
     colorTheme: "reliable",
     typographyStyle: "technical",
-    activeSections: ["hero", "trust-badges-grid", "services-grid", "project-gallery", "certifications", "testimonials", "free-consultation", "contact"],
+    activeSections: ["hero", "trust-badges-grid", "services-grid", "certifications", "testimonials", "free-consultation", "contact"],
     content: CONSTRUCTION_CONTENT,
   },
   water_refilling: {
@@ -1016,6 +1119,20 @@ export const GENRE_PRESETS: Record<string, GenrePreset> = {
     activeSections: ["hero", "trust-badges-grid", "programs-grid", "awards", "faculty-grid", "enrollment-process", "faq", "contact"],
     content: SCHOOL_CONTENT,
   },
+  personal_portfolio: {
+    theme: "personal-portfolio",
+    colorTheme: "navy-electric",
+    typographyStyle: "modern",
+    activeSections: ["hero", "features", "featured-properties-grid", "team-carousel", "reviews-grid", "contact"],
+    content: PERSONAL_PORTFOLIO_CONTENT,
+  },
+  photobooth: {
+    theme: "photobooth",
+    colorTheme: "dark-pink-white",
+    typographyStyle: "elegant",
+    activeSections: ["hero", "trust-badges-grid", "features", "before-after-gallery-grid", "pricing", "contact"],
+    content: PHOTOBOOTH_CONTENT,
+  },
 };
 
 export const GENRE_LABELS: Record<string, string> = {
@@ -1034,4 +1151,6 @@ export const GENRE_LABELS: Record<string, string> = {
   water_refilling: "Water Refilling (PH)",
   salon_aesthetic: "Salon / Aesthetic",
   private_school: "Private School (PH)",
+  personal_portfolio: "Personal Portfolio",
+  photobooth: "Photobooth",
 };

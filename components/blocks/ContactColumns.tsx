@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, Phone, MapPin, MessageSquare, Globe, Clock } from "lucide-react";
+import { EnvelopeIcon, PhoneIcon, MapPinIcon, ChatCircleDotsIcon, GlobeIcon, ClockIcon } from "@phosphor-icons/react";
 
 export type ContactColumnsProps = {
   title?: string;
@@ -52,7 +52,7 @@ export default function ContactColumns({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           <div className="bg-background p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-              <Phone className="w-6 h-6 text-primary" />
+              <PhoneIcon weight="duotone" className="w-6 h-6 text-primary" />
             </div>
             <h3 className="font-bold mb-2">Call Us</h3>
             <p className="text-sm text-muted-foreground mb-4">Mon-Fri from 8am to 5pm.</p>
@@ -61,7 +61,7 @@ export default function ContactColumns({
 
           <div className="bg-background p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-              <Mail className="w-6 h-6 text-primary" />
+              <EnvelopeIcon weight="duotone" className="w-6 h-6 text-primary" />
             </div>
             <h3 className="font-bold mb-2">Email Us</h3>
             <p className="text-sm text-muted-foreground mb-4">Our team is here to help.</p>
@@ -70,7 +70,7 @@ export default function ContactColumns({
 
           <div className="bg-background p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-              <MapPin className="w-6 h-6 text-primary" />
+              <MapPinIcon weight="duotone" className="w-6 h-6 text-primary" />
             </div>
             <h3 className="font-bold mb-2">Visit Us</h3>
             <p className="text-sm text-muted-foreground mb-4">Come say hello at our office.</p>
@@ -79,7 +79,7 @@ export default function ContactColumns({
 
           <div className="bg-background p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-              <MessageSquare className="w-6 h-6 text-primary" />
+              <ChatCircleDotsIcon weight="duotone" className="w-6 h-6 text-primary" />
             </div>
             <h3 className="font-bold mb-2">Chat with Us</h3>
             <p className="text-sm text-muted-foreground mb-4">Available on Messenger/Viber.</p>

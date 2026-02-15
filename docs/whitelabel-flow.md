@@ -41,7 +41,9 @@ This document summarizes the current multi‑tenant website flow, routing, data 
   - Edit sections → autosaved LOCALLY to browser storage (no DB writes until saved).
   - Save Draft → persists local changes to `projects.draft_config` via `POST /api/project-config`.
   - Preview draft with an iframe that loads `/{subdomain}?preview=true` (shows last saved draft from DB).
-  - Submit for Approval → `POST /api/change-requests` which snapshots the current `draft_config` from DB into `change_requests.requested_changes` with status `pending`. Clear local changes on success.
+  - **Subscription-based publish flow:**
+    - **Free** clients: Submit for Approval → `POST /api/change-requests` (admin must approve).
+    - **Trial / Paid / Admin granted** clients: Publish → `POST /api/publish` (direct publish, subject to per-period limit).
   - Discard Local → clears local (unsaved) changes and reverts the editor back to the last saved draft.
 
 ## Admin Approval Center
@@ -55,11 +57,12 @@ This document summarizes the current multi‑tenant website flow, routing, data 
     - Result: Site preview falls back to `current_config` (Live) until new edits are made.
 
 ## Data Model (Supabase)
-- `projects`: `{ id, owner_id, subdomain, custom_domain, current_config jsonb, draft_config jsonb, ... }`
+- `projects`: `{ id, client_id, subdomain, custom_domain, current_config, draft_config, subscription_status, trial_ends_at, publish_limit, publish_count, publish_period_start, ... }`
+  - `subscription_status`: `free` | `trial` | `active` | `admin_granted` — controls whether client needs approval or can publish directly.
 - `template_codes`: `{ code, payload jsonb, max_uses, usage_count, expires_at, status, ... }`
 - `code_redemptions`: redemption audit.
 - `change_requests`: `{ project_id, user_id, requested_changes jsonb, status, created_at, decided_at }`
-- `project_versions`: table scaffolded for versioning, currently not wired in the UI.
+- `project_versions`: stores snapshots on each publish/approve. Clients can view history and rollback from the dashboard.
 
 ## Operational Notes
 - Vercel: add wildcard domain `*.estabweb.com` and per‑client custom domains to the same project.

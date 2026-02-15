@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { CheckCircleIcon } from "@phosphor-icons/react";
 
 export type MaintenancePlan = {
   name: string;
@@ -70,7 +70,7 @@ export default function MaintenancePlans({
               <ul className="space-y-3 mb-8 flex-grow">
                 {plan.features.map((feature, fIndex) => (
                   <li key={fIndex} className="flex items-start gap-2 text-sm">
-                    <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    <CheckCircleIcon weight="duotone" className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                     <span>{feature}</span>
                   </li>
                 ))}
