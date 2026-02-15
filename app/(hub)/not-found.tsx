@@ -9,7 +9,7 @@ import MainFooter from '@/components/shared/MainFooter'
 export default function HubNotFound() {
   return (
     <>
-      <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
+      <main className="flex-1 flex flex-col items-center justify-center p-4 pt-24 pb-12 text-center">
         <div className="space-y-6 max-w-md mx-auto reveal">
           <div className="relative mb-8">
             <h1 className="text-[120px] font-black text-primary/5 leading-none select-none">404</h1>

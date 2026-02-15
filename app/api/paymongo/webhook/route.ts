@@ -16,6 +16,15 @@ async function extractProjectId(body: any, supabase: ReturnType<typeof createSer
   if (eventType === 'payment_intent.succeeded') {
     data = body?.data
     meta = data?.attributes?.metadata
+    console.log('[paymongo webhook] payment_intent.succeeded meta:', meta)
+
+    // NEW: Search for project_id in related objects if not in metadata directly
+    if (!meta?.project_id) {
+       const pmRef = data?.attributes?.metadata?.pm_reference_number
+       if (pmRef) {
+         console.log('[paymongo webhook] Found pm_reference_number in PI metadata:', pmRef)
+       }
+    }
   }
 
   if (meta?.project_id) {
@@ -24,20 +33,32 @@ async function extractProjectId(body: any, supabase: ReturnType<typeof createSer
 
   const linkId = data?.id?.startsWith('link_') ? data.id : body?.included?.find((i: any) => i?.type === 'link')?.id
   if (linkId) {
+    console.log('[paymongo webhook] Searching for linkId in database:', linkId)
     const { data: row } = await supabase.from('paymongo_links').select('project_id').eq('link_id', linkId).single()
-    return row?.project_id ?? null
+    if (row?.project_id) {
+      console.log('[paymongo webhook] Found project_id from linkId in DB:', row.project_id)
+      return row.project_id
+    }
   }
 
+  // Fallback: Check external payment source if it's a direct payment from a link
   const paymentId = data?.id?.startsWith('pay_') ? data.id : null
-  if (paymentId && data?.attributes?.origin === 'links') {
+  const isFromLink = data?.attributes?.origin === 'links' || eventType === 'link.payment.paid'
+  
+  if (paymentId && !meta?.project_id) {
     try {
+      console.log('[paymongo webhook] Fetching payment details for ID:', paymentId)
       const r = await fetch(`https://api.paymongo.com/v1/payments/${paymentId}`, {
         headers: { Authorization: `Basic ${Buffer.from(`${process.env.PAYMONGO_SECRET_KEY}:`).toString('base64')}` },
       })
       const j = await r.json()
-      return j?.data?.attributes?.metadata?.project_id ?? null
-    } catch {
-      return null
+      const fetchedMeta = j?.data?.attributes?.metadata
+      if (fetchedMeta?.project_id) {
+        console.log('[paymongo webhook] Found project_id in fetched payment metadata:', fetchedMeta.project_id)
+        return fetchedMeta.project_id
+      }
+    } catch (e) {
+      console.error('[paymongo webhook] Error fetching payment:', e)
     }
   }
   return Promise.resolve(null)
@@ -70,7 +91,10 @@ export async function POST(req: Request) {
 
     const supabase = createServiceClient()
     const projectId = await extractProjectId(body, supabase)
+    console.log('[paymongo webhook] Extracted projectId:', projectId, 'from event:', eventType)
+    
     if (!projectId) {
+      console.warn('[paymongo webhook] No projectId found in payload:', JSON.stringify(body, null, 2))
       return NextResponse.json({ received: true })
     }
     const { data: proj } = await supabase

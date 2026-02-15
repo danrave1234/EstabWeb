@@ -21,7 +21,7 @@ export default function HubError({
 
   return (
     <>
-      <main className="flex-1 flex flex-col items-center justify-center p-4 text-center">
+      <main className="flex-1 flex flex-col items-center justify-center p-4 pt-24 pb-12 text-center">
         <div className="space-y-6 max-w-md mx-auto reveal">
           <div className="w-20 h-20 bg-red-100 dark:bg-red-900/20 rounded-3xl flex items-center justify-center mx-auto mb-2 shadow-sm border border-red-200 dark:border-red-800">
             <AlertTriangle className="w-10 h-10 text-red-600 dark:text-red-500" />

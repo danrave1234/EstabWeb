@@ -26,7 +26,7 @@ export default function UpgradeButton({ projectId, variant = "inline" }: Upgrade
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || "Failed to create payment link")
-      if (json.checkoutUrl) window.location.href = json.checkoutUrl
+      if (json.checkoutUrl) window.open(json.checkoutUrl, '_blank')
       else toast.error("No checkout URL received")
     } catch (e: any) {
       toast.error(e?.message || "Upgrade failed")
