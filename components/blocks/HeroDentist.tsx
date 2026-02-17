@@ -76,11 +76,6 @@ export default function HeroDentist({
                   </a>
                 )}
               </div>
-              {trustSignals && trustSignals.length > 0 && (
-                <div className="pt-10 border-t border-border mt-10">
-                  <TrustSignals signals={trustSignals} />
-                </div>
-              )}
             </div>
           </div>
           <div className="lg:col-span-5 order-1 lg:order-2 lg:-ml-20">

@@ -23,11 +23,14 @@ export default function BeforeAfterSlider({
   const [isResizing, setIsResizing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Avoid divide-by-zero in the reveal math and keep the handle usable.
+  const clampPosition = (pos: number) => Math.max(1, Math.min(pos, 99));
+
   const handleMove = (clientX: number) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-    setSliderPosition((x / rect.width) * 100);
+    setSliderPosition(clampPosition((x / rect.width) * 100));
   };
 
   const handleMouseMove = (e: MouseEvent) => {
@@ -83,12 +86,16 @@ export default function BeforeAfterSlider({
             className="absolute inset-0 w-full h-full overflow-hidden"
             style={{ width: `${sliderPosition}%` }}
           >
-            <img 
-              src={beforeImage || "https://images.unsplash.com/photo-1507133353243-30912e777745?w=1200&q=80"} 
-              alt="Before" 
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ width: `${100 / (sliderPosition / 100)}%` }}
-            />
+            <div 
+              className="absolute inset-0 h-full"
+              style={{ width: `${100 * (100 / sliderPosition)}%` }}
+            >
+              <img 
+                src={beforeImage || "https://images.unsplash.com/photo-1507133353243-30912e777745?w=1200&q=80"} 
+                alt="Before" 
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
 
           {/* Labels */}

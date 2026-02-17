@@ -39,7 +39,7 @@ export default function HeroPestControl({
           <div className="lg:col-span-6 space-y-6 sm:space-y-8 flex flex-col items-center lg:items-start text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-widest border border-primary/20 reveal">
               {benefitImageUrl ? (
-                <div className="w-4 h-4 rounded-full overflow-hidden shrink-0">
+                <div className="w-8 h-8 rounded-full overflow-hidden shrink-0">
                   <img src={benefitImageUrl} alt="" className="w-full h-full object-cover" />
                 </div>
               ) : null}
@@ -65,11 +65,6 @@ export default function HeroPestControl({
                 {secondaryCTA}
               </a>
             </div>
-            {trustSignals && trustSignals.length > 0 && (
-              <div className="pt-4 border-t border-border w-full reveal">
-                <TrustSignals signals={trustSignals} variant="light" className="justify-center lg:justify-start" />
-              </div>
-            )}
           </div>
           
           {backgroundImage && backgroundImage.startsWith("http") && (

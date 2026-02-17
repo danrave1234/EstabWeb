@@ -166,7 +166,6 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     localCoverageIcon: hero.localCoverageIcon,
     localCoverageImageUrl: hero.localCoverageImageUrl,
     layout: hero.layout,
-    trustBadges: hero.trustBadges,
     promoText: hero.promoText,
     icon: hero.icon,
   };
@@ -188,7 +187,6 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     benefitImageUrl: hero.benefitImageUrl,
     secondaryCTAIcon: hero.secondaryCTAIcon,
     secondaryCTAImageUrl: hero.secondaryCTAImageUrl,
-    trustSignals,
   };
 
   const heroDentistProps = {
@@ -203,7 +201,6 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     benefitText: hero.benefitText ?? hero.badgeText ?? "Accepting New Patients",
     benefitIcon: hero.benefitIcon,
     benefitImageUrl: hero.benefitImageUrl,
-    trustSignals,
   };
 
   const heroClinicProps = {
@@ -217,7 +214,6 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     benefitText: hero.benefitText ?? hero.badgeText ?? "Professional Healthcare",
     benefitIcon: hero.benefitIcon,
     benefitImageUrl: hero.benefitImageUrl,
-    trustSignals,
   };
 
   const heroCleaningProps = {
@@ -231,7 +227,6 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     benefitText: hero.benefitText ?? hero.badgeText ?? "Professional Cleaning",
     benefitIcon: hero.benefitIcon,
     benefitImageUrl: hero.benefitImageUrl,
-    trustSignals,
   };
 
   const heroPoolProps = {
@@ -245,7 +240,6 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     benefitText: hero.benefitText ?? hero.badgeText ?? "Pool & Spa Services",
     benefitIcon: hero.benefitIcon,
     benefitImageUrl: hero.benefitImageUrl,
-    trustSignals,
   };
 
   const heroPestControlProps = {
@@ -259,7 +253,6 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     benefitText: hero.benefitText ?? hero.badgeText ?? "Rapid Response Team",
     benefitIcon: hero.benefitIcon,
     benefitImageUrl: hero.benefitImageUrl,
-    trustSignals,
   };
 
   const sectionNavMap: Record<string, { name: string; href: string } | null> = {
@@ -1002,6 +995,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
               id={`section-${sectionId}-${index}`}
               data-section-id={sectionId}
               data-section-index={index}
+              className="scroll-mt-24"
             >
               {sectionContent}
             </div>
@@ -1011,66 +1005,72 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
 
       {/* Footer rendering */}
       {showFooter && footerStyle === "lead-magnet" && (
-        <LeadMagnetFooter
-          brandName={brand.name}
-          logoUrl={brand.logoUrl}
-          tagline={footer.tagline ?? hero.subtitle ?? ""}
-          contact={{
-            email: footer.email ?? contact.email ?? "info@example.com",
-            phone: footer.phone ?? contact.phone ?? "1-800-000-0000",
-            address: footer.address ?? contact.address ?? "123 Street Name, City, Country",
-          }}
-          formHeading={footer.formHeading ?? "Contact Us"}
-          formSubmitText={footer.formSubmitText ?? "Send Message"}
-          formThankYouText={footer.formThankYouText ?? "Message sent!"}
-          social={footer.social ?? {}}
-          privacyUrl={footer.privacyUrl ?? "/privacy"}
-          termsUrl={footer.termsUrl ?? "/terms"}
-          cookieUrl={footer.cookieUrl ?? "/cookies"}
-          contactUsLabel={footer.contactUsLabel}
-          callUsNowLabel={footer.callUsNowLabel}
-          privacyLabel={footer.privacyLabel}
-          termsLabel={footer.termsLabel}
-          cookieLabel={footer.cookieLabel}
-        />
+        <div data-section-id="footer">
+          <LeadMagnetFooter
+            brandName={brand.name}
+            logoUrl={brand.logoUrl}
+            tagline={footer.tagline ?? hero.subtitle ?? ""}
+            contact={{
+              email: footer.email ?? contact.email ?? "info@example.com",
+              phone: footer.phone ?? contact.phone ?? "1-800-000-0000",
+              address: footer.address ?? contact.address ?? "123 Street Name, City, Country",
+            }}
+            formHeading={footer.formHeading ?? "Contact Us"}
+            formSubmitText={footer.formSubmitText ?? "Send Message"}
+            formThankYouText={footer.formThankYouText ?? "Message sent!"}
+            social={footer.social ?? {}}
+            privacyUrl={footer.privacyUrl ?? "/privacy"}
+            termsUrl={footer.termsUrl ?? "/terms"}
+            cookieUrl={footer.cookieUrl ?? "/cookies"}
+            contactUsLabel={footer.contactUsLabel}
+            callUsNowLabel={footer.callUsNowLabel}
+            privacyLabel={footer.privacyLabel}
+            termsLabel={footer.termsLabel}
+            cookieLabel={footer.cookieLabel}
+          />
+        </div>
       )}
       {showFooter && footerStyle === "simple" && (
-        <SimpleFooter
-          brandName={brand.name}
-          logoUrl={brand.logoUrl}
-          tagline={footer.tagline ?? hero.subtitle ?? ""}
-          navigation={navigationFromSections}
-          contact={{
-            email: footer.email ?? contact.email ?? "info@example.com",
-            phone: footer.phone ?? contact.phone ?? "1-800-000-0000",
-            address: footer.address ?? contact.address ?? "123 Street Name, City, Country",
-          }}
-          social={footer.social ?? {}}
-          privacyUrl={footer.privacyUrl ?? "/privacy"}
-          termsUrl={footer.termsUrl ?? "/terms"}
-          cookieUrl={footer.cookieUrl ?? "/cookies"}
-          contactLabel={footer.contactLabel}
-          followLabel={footer.followLabel}
-          privacyLabel={footer.privacyLabel}
-          termsLabel={footer.termsLabel}
-          cookieLabel={footer.cookieLabel}
-        />
+        <div data-section-id="footer">
+          <SimpleFooter
+            brandName={brand.name}
+            logoUrl={brand.logoUrl}
+            tagline={footer.tagline ?? hero.subtitle ?? ""}
+            navigation={navigationFromSections}
+            contact={{
+              email: footer.email ?? contact.email ?? "info@example.com",
+              phone: footer.phone ?? contact.phone ?? "1-800-000-0000",
+              address: footer.address ?? contact.address ?? "123 Street Name, City, Country",
+            }}
+            social={footer.social ?? {}}
+            privacyUrl={footer.privacyUrl ?? "/privacy"}
+            termsUrl={footer.termsUrl ?? "/terms"}
+            cookieUrl={footer.cookieUrl ?? "/cookies"}
+            contactLabel={footer.contactLabel}
+            followLabel={footer.followLabel}
+            privacyLabel={footer.privacyLabel}
+            termsLabel={footer.termsLabel}
+            cookieLabel={footer.cookieLabel}
+          />
+        </div>
       )}
       {showFooter && footerStyle === "minimal" && (
-        <MinimalFooter 
-          brandName={brand.name} 
-          logoUrl={brand.logoUrl} 
-          tagline={footer.tagline ?? hero.subtitle ?? ""}
-          contact={{
-            email: footer.email ?? contact.email ?? "info@example.com",
-            phone: footer.phone ?? contact.phone ?? "1-800-000-0000",
-            address: footer.address ?? contact.address ?? "123 Street Name, City, Country",
-          }}
-          social={footer.social ?? {}}
-          privacyUrl={footer.privacyUrl ?? "/privacy"}
-          termsUrl={footer.termsUrl ?? "/terms"}
-          cookieUrl={footer.cookieUrl ?? "/cookies"}
-        />
+        <div data-section-id="footer">
+          <MinimalFooter 
+            brandName={brand.name} 
+            logoUrl={brand.logoUrl} 
+            tagline={footer.tagline ?? hero.subtitle ?? ""}
+            contact={{
+              email: footer.email ?? contact.email ?? "info@example.com",
+              phone: footer.phone ?? contact.phone ?? "1-800-000-0000",
+              address: footer.address ?? contact.address ?? "123 Street Name, City, Country",
+            }}
+            social={footer.social ?? {}}
+            privacyUrl={footer.privacyUrl ?? "/privacy"}
+            termsUrl={footer.termsUrl ?? "/terms"}
+            cookieUrl={footer.cookieUrl ?? "/cookies"}
+          />
+        </div>
       )}
       
       <FloatingCTA 

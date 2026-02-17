@@ -30,6 +30,9 @@ export default function BeforeAfterGalleryGrid({
 }: BeforeAfterGalleryGridProps) {
   const [selectedItem, setSelectedItem] = useState<BeforeAfterGalleryItem | null>(null);
 
+  const FALLBACK_AFTER = "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=1200&q=80";
+  const FALLBACK_BEFORE = "https://images.unsplash.com/photo-1507133353243-30912e777745?w=1200&q=80";
+
   return (
     <section className="py-16 sm:py-24 bg-background reveal">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -56,19 +59,20 @@ export default function BeforeAfterGalleryGrid({
             >
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Image 
-                  src={item.afterImage} 
+                  src={item.afterImage || FALLBACK_AFTER} 
                   alt={item.title}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                   <button 
+                  <button 
+                    type="button"
                     onClick={() => setSelectedItem(item)}
                     className="p-2 sm:p-3 bg-white text-black rounded-full shadow-2xl hover:scale-110 transition-transform"
-                   >
-                     <ArrowsOutIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6" />
-                   </button>
+                  >
+                    <ArrowsOutIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6" />
+                  </button>
                 </div>
                 <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-primary text-primary-foreground px-2 py-0.5 sm:px-3 sm:py-1 rounded text-[8px] sm:text-[10px] font-bold uppercase tracking-widest shadow-lg">
                   {afterLabel}
@@ -117,29 +121,36 @@ export default function BeforeAfterGalleryGrid({
 }
 
 function BeforeAfterCompare({ beforeImage, afterImage, beforeLabel, afterLabel }: { beforeImage: string; afterImage: string; beforeLabel: string; afterLabel: string }) {
+  const FALLBACK_AFTER = "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=1200&q=80";
+  const FALLBACK_BEFORE = "https://images.unsplash.com/photo-1507133353243-30912e777745?w=1200&q=80";
   const [position, setPosition] = useState(50);
+
+  const clampPosition = (pos: number) => Math.max(1, Math.min(pos, 99));
 
   return (
     <div className="relative w-full h-full cursor-ew-resize select-none overflow-hidden" 
          onMouseMove={(e) => {
            const rect = e.currentTarget.getBoundingClientRect();
            const x = ((e.clientX - rect.left) / rect.width) * 100;
-           setPosition(Math.max(0, Math.min(x, 100)));
+           setPosition(clampPosition(x));
          }}
          onTouchMove={(e) => {
            const rect = e.currentTarget.getBoundingClientRect();
            const x = ((e.touches[0].clientX - rect.left) / rect.width) * 100;
-           setPosition(Math.max(0, Math.min(x, 100)));
+           setPosition(clampPosition(x));
          }}
     >
-      <Image src={afterImage} alt="After" fill className="object-cover" sizes="100vw" />
+      <Image src={afterImage || FALLBACK_AFTER} alt="After" fill className="object-cover" sizes="100vw" />
       <div 
         className="absolute inset-0 w-full h-full overflow-hidden"
         style={{ width: `${position}%` }}
       >
-        <div className="relative w-full h-full" style={{ width: `${100 / (position / 100)}%` }}>
+        <div 
+          className="absolute inset-0 h-full"
+          style={{ width: `${100 * (100 / position)}%` }}
+        >
           <Image 
-            src={beforeImage} 
+            src={beforeImage || FALLBACK_BEFORE} 
             alt="Before" 
             fill
             className="object-cover"

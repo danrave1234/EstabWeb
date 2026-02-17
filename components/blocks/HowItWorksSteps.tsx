@@ -71,7 +71,7 @@ export default function HowItWorksSteps({
                   {step.number}
                 </div>
                 <div className="mb-2 sm:mb-3">
-                  <div className="w-8 h-8 sm:w-12 sm:h-12 overflow-hidden mx-auto flex items-center justify-center">
+                  <div className={`${step.imageUrl ? "w-12 h-12 sm:w-20 sm:h-20" : "w-8 h-8 sm:w-12 sm:h-12"} overflow-hidden mx-auto flex items-center justify-center`}>
                     {step.imageUrl ? (
                       <img src={step.imageUrl} alt={step.title} className="w-full h-full object-contain" />
                     ) : (

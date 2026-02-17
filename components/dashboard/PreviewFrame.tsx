@@ -12,8 +12,8 @@ export default function PreviewFrame({ previewPath, iframeRef, className }: Prev
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   
   return (
-    <div className={`flex-1 relative bg-muted/10 p-4 lg:p-8 ${className || ''}`}>
-      <div className="w-full h-full rounded-xl border border-border shadow-2xl bg-background overflow-hidden flex flex-col">
+    <div className={`flex-1 min-h-0 relative bg-muted/10 p-2 lg:p-4 ${className || ''}`}>
+      <div className="w-full h-full min-h-0 rounded-xl border border-border shadow-2xl bg-background overflow-hidden flex flex-col">
         <div className="h-8 bg-muted/50 border-b border-border flex items-center px-4 gap-2">
           <div className="flex gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-red-400/20" />
@@ -29,7 +29,7 @@ export default function PreviewFrame({ previewPath, iframeRef, className }: Prev
         <iframe 
           ref={iframeRef}
           src={previewPath} 
-          className="flex-1 w-full h-full border-none"
+          className="flex-1 min-h-0 w-full border-none"
           title="Project Preview"
         />
       </div>

@@ -3,7 +3,8 @@
 import * as React from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
-import { ChevronRight, FileText, Settings, Eye, Layout, Send, Plus, Trash2, GripVertical, Image as ImageIcon, History, RotateCcw, Zap, CreditCard, Palette } from "lucide-react"
+import dynamic from "next/dynamic"
+import { ChevronRight, FileText, Settings, Eye, Layout, Send, Plus, Trash2, GripVertical, Image as ImageIcon, History, RotateCcw, Zap, CreditCard, Palette, X } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import UpgradeButton from "@/components/dashboard/UpgradeButton"
@@ -77,6 +78,801 @@ const SECTION_CATEGORIES: { label: string; ids: string[] }[] = [
 
 const formatSectionLabel = (id: string) => id.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
 
+const LivePreviewFeaturesGrid = dynamic(() => import("@/components/blocks/FeaturesGrid"), { ssr: false })
+const LivePreviewFeaturesModern = dynamic(() => import("@/components/blocks/FeaturesModern"), { ssr: false })
+const LivePreviewPracticeAreas = dynamic(() => import("@/components/blocks/PracticeAreasGrid"), { ssr: false })
+const LivePreviewHowItWorks = dynamic(() => import("@/components/blocks/HowItWorksSteps"), { ssr: false })
+const LivePreviewTreatmentProcess = dynamic(() => import("@/components/blocks/TreatmentProcessTimeline"), { ssr: false })
+const LivePreviewAwardsStrip = dynamic(() => import("@/components/blocks/AwardsStrip"), { ssr: false })
+const LivePreviewBeforeAfterSlider = dynamic(() => import("@/components/blocks/BeforeAfterSlider"), { ssr: false })
+const LivePreviewBeforeAfterGallery = dynamic(() => import("@/components/blocks/BeforeAfterGalleryGrid"), { ssr: false })
+const LivePreviewTrustBadges = dynamic(() => import("@/components/blocks/TrustBadgesGrid"), { ssr: false })
+const LivePreviewSafetySection = dynamic(() => import("@/components/blocks/SafetySection"), { ssr: false })
+const LivePreviewLogoCloud = dynamic(() => import("@/components/blocks/LogoCloud"), { ssr: false })
+const LivePreviewACTypes = dynamic(() => import("@/components/blocks/ACTypesGrid"), { ssr: false })
+const LivePreviewPricingTable = dynamic(() => import("@/components/blocks/PricingTable"), { ssr: false })
+const LivePreviewFeaturedListings = dynamic(() => import("@/components/blocks/FeaturedListingsGrid"), { ssr: false })
+const LivePreviewFinancingSection = dynamic(() => import("@/components/blocks/FinancingSection"), { ssr: false })
+const LivePreviewDeveloperPartners = dynamic(() => import("@/components/blocks/DeveloperPartnersLogos"), { ssr: false })
+const LivePreviewWhyChooseMe = dynamic(() => import("@/components/blocks/WhyChooseMe"), { ssr: false })
+const LivePreviewServiceAreaMap = dynamic(() => import("@/components/blocks/ServiceAreaMap"), { ssr: false })
+const LivePreviewPricePreviewStrip = dynamic(() => import("@/components/blocks/PricePreviewStrip"), { ssr: false })
+const LivePreviewEmergencyCTAStrip = dynamic(() => import("@/components/blocks/EmergencyCTAStrip"), { ssr: false })
+const LivePreviewMaintenancePlans = dynamic(() => import("@/components/blocks/MaintenancePlans"), { ssr: false })
+const LivePreviewPromoCTASection = dynamic(() => import("@/components/blocks/PromoCTASection"), { ssr: false })
+const LivePreviewPromoBannerStrip = dynamic(() => import("@/components/blocks/PromoBannerStrip"), { ssr: false })
+const LivePreviewPaymentOptionsStrip = dynamic(() => import("@/components/blocks/PaymentOptionsStrip"), { ssr: false })
+const LivePreviewStatsSection = dynamic(() => import("@/components/blocks/StatsSection"), { ssr: false })
+const LivePreviewFAQAccordion = dynamic(() => import("@/components/blocks/FAQAccordion"), { ssr: false })
+const LivePreviewCommonPests = dynamic(() => import("@/components/blocks/CommonPestsGrid"), { ssr: false })
+const LivePreviewWarrantyBlock = dynamic(() => import("@/components/blocks/WarrantyGuaranteeBlock"), { ssr: false })
+const LivePreviewFacebookReviewEmbed = dynamic(() => import("@/components/blocks/FacebookReviewEmbed"), { ssr: false })
+
+function prefetchSectionPreview(id: string) {
+  // Next/dynamic with `ssr: false` renders `null` until the chunk is loaded.
+  // Prefetch on hover so the preview doesn't look empty.
+  switch (id) {
+    case "features":
+    case "services-grid":
+    case "project-gallery":
+    case "programs-grid":
+    case "faculty-grid":
+      void import("@/components/blocks/FeaturesGrid")
+      return
+    case "features-modern":
+      void import("@/components/blocks/FeaturesModern")
+      return
+    case "practice-areas":
+      void import("@/components/blocks/PracticeAreasGrid")
+      return
+    case "how-it-works":
+      void import("@/components/blocks/HowItWorksSteps")
+      return
+    case "treatment-process":
+      void import("@/components/blocks/TreatmentProcessTimeline")
+      return
+    case "awards":
+    case "certifications":
+      void import("@/components/blocks/AwardsStrip")
+      return
+    case "before-after-slider":
+      void import("@/components/blocks/BeforeAfterSlider")
+      return
+    case "before-after-gallery-grid":
+      void import("@/components/blocks/BeforeAfterGalleryGrid")
+      return
+    case "trust-badges-grid":
+      void import("@/components/blocks/TrustBadgesGrid")
+      return
+    case "safety-section":
+      void import("@/components/blocks/SafetySection")
+      return
+    case "logo-cloud":
+      void import("@/components/blocks/LogoCloud")
+      return
+    case "ac-types-grid":
+      void import("@/components/blocks/ACTypesGrid")
+      return
+    case "pricing":
+      void import("@/components/blocks/PricingTable")
+      return
+    case "featured-properties-grid":
+      void import("@/components/blocks/FeaturedListingsGrid")
+      return
+    case "financing-section":
+      void import("@/components/blocks/FinancingSection")
+      return
+    case "developer-partners":
+      void import("@/components/blocks/DeveloperPartnersLogos")
+      return
+    case "why-choose-me":
+      void import("@/components/blocks/WhyChooseMe")
+      return
+    case "service-area-map":
+      void import("@/components/blocks/ServiceAreaMap")
+      return
+    case "price-preview-strip":
+      void import("@/components/blocks/PricePreviewStrip")
+      return
+    case "emergency-cta-strip":
+      void import("@/components/blocks/EmergencyCTAStrip")
+      return
+    case "maintenance-plans":
+      void import("@/components/blocks/MaintenancePlans")
+      return
+    case "promo-cta-section":
+      void import("@/components/blocks/PromoCTASection")
+      return
+    case "promo-banner-strip":
+      void import("@/components/blocks/PromoBannerStrip")
+      return
+    case "payment-options-strip":
+      void import("@/components/blocks/PaymentOptionsStrip")
+      return
+    case "stats-section":
+      void import("@/components/blocks/StatsSection")
+      return
+    case "faq-accordion":
+      void import("@/components/blocks/FAQAccordion")
+      return
+    case "common-pests":
+      void import("@/components/blocks/CommonPestsGrid")
+      return
+    case "warranty-block":
+      void import("@/components/blocks/WarrantyGuaranteeBlock")
+      return
+    case "facebook-review-embed":
+      void import("@/components/blocks/FacebookReviewEmbed")
+      return
+    default:
+      return
+  }
+}
+
+type MinimalPreviewKind =
+  | "cards-3"
+  | "cards-4"
+  | "timeline"
+  | "strip"
+  | "logos"
+  | "pricing"
+  | "faq"
+  | "gallery"
+  | "map"
+  | "cta"
+  | "stats"
+  | "generic"
+
+function minimalPreviewKindForSection(id: string): MinimalPreviewKind {
+  // Keep these lightweight and visually distinct. No text/images, just layout hints.
+  switch (id) {
+    // Trust/social
+    case "awards":
+    case "certifications":
+    case "review-trust-bar":
+    case "payment-options-strip":
+    case "promo-banner-strip":
+      return "strip"
+    case "trust-badges-grid":
+      return "cards-4"
+    case "logo-cloud":
+    case "developer-partners":
+      return "logos"
+
+    // Services/features
+    case "features":
+    case "features-modern":
+    case "services-grid":
+    case "project-gallery":
+    case "programs-grid":
+    case "faculty-grid":
+    case "practice-areas":
+    case "ac-types-grid":
+    case "common-pests":
+    case "safety-section":
+    case "reviews-grid":
+    case "testimonials":
+      return "cards-3"
+
+    // Process/info
+    case "how-it-works":
+    case "treatment-process":
+      return "timeline"
+    case "faq-accordion":
+    case "faq-two-column":
+    case "patient-faq":
+      return "faq"
+
+    // Visuals
+    case "before-after-slider":
+      return "gallery"
+    case "before-after-gallery-grid":
+      return "gallery"
+
+    // Conversion/contact
+    case "pricing":
+      return "pricing"
+    case "maintenance-plans":
+      return "pricing"
+    case "price-preview-strip":
+      return "cta"
+    case "promo-cta-section":
+    case "emergency-cta-strip":
+    case "booking-cta":
+    case "free-consultation":
+      return "cta"
+    case "service-area-map":
+    case "coverage-radius-block":
+      return "map"
+    case "stats-section":
+    case "delivery-coverage":
+      return "stats"
+
+    default:
+      return "generic"
+  }
+}
+
+function MinimalSectionPreview({ kind }: { kind: MinimalPreviewKind }) {
+  // Minimal layout only: no text, no real content.
+  return (
+    <div className="w-full aspect-video rounded-lg border border-border/60 bg-muted/20 overflow-hidden">
+      <div className="w-full h-full p-3 animate-pulse">
+        {kind === "strip" && (
+          <>
+            <div className="h-3 w-2/3 rounded bg-muted" />
+            <div className="mt-4 grid grid-cols-4 gap-2">
+              <div className="h-10 rounded bg-muted" />
+              <div className="h-10 rounded bg-muted" />
+              <div className="h-10 rounded bg-muted" />
+              <div className="h-10 rounded bg-muted" />
+            </div>
+            <div className="mt-3 h-16 rounded bg-muted" />
+          </>
+        )}
+
+        {kind === "logos" && (
+          <>
+            <div className="h-3 w-1/2 rounded bg-muted" />
+            <div className="mt-4 grid grid-cols-6 gap-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-10 rounded bg-muted" />
+              ))}
+            </div>
+            <div className="mt-3 grid grid-cols-6 gap-2 opacity-70">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-8 rounded bg-muted" />
+              ))}
+            </div>
+          </>
+        )}
+
+        {kind === "timeline" && (
+          <>
+            <div className="h-3 w-2/3 rounded bg-muted" />
+            <div className="mt-5 h-1 rounded bg-muted" />
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-lg border border-border/40 bg-background/40 p-3">
+                  <div className="h-8 w-8 rounded-full bg-muted" />
+                  <div className="mt-3 h-3 w-3/4 rounded bg-muted" />
+                  <div className="mt-2 h-10 rounded bg-muted" />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {(kind === "cards-3" || kind === "cards-4") && (
+          <>
+            <div className="h-3 w-2/3 rounded bg-muted" />
+            <div className={`mt-4 grid ${kind === "cards-4" ? "grid-cols-4" : "grid-cols-3"} gap-2`}>
+              {Array.from({ length: kind === "cards-4" ? 4 : 3 }).map((_, i) => (
+                <div key={i} className="h-14 rounded bg-muted" />
+              ))}
+            </div>
+            <div className="mt-3 h-20 rounded bg-muted" />
+            <div className="mt-2 flex gap-2">
+              <div className="h-3 w-16 rounded bg-muted" />
+              <div className="h-3 w-20 rounded bg-muted" />
+              <div className="h-3 w-12 rounded bg-muted" />
+            </div>
+          </>
+        )}
+
+        {kind === "pricing" && (
+          <>
+            <div className="h-3 w-1/2 rounded bg-muted" />
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-lg border border-border/40 bg-background/40 p-3">
+                  <div className="h-3 w-2/3 rounded bg-muted" />
+                  <div className="mt-3 h-6 w-1/2 rounded bg-muted" />
+                  <div className="mt-3 space-y-2">
+                    <div className="h-2 w-full rounded bg-muted" />
+                    <div className="h-2 w-5/6 rounded bg-muted" />
+                    <div className="h-2 w-4/6 rounded bg-muted" />
+                  </div>
+                  <div className="mt-4 h-8 rounded bg-muted" />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {kind === "faq" && (
+          <>
+            <div className="h-3 w-1/2 rounded bg-muted" />
+            <div className="mt-4 space-y-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-10 rounded bg-muted" />
+              ))}
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="h-16 rounded bg-muted" />
+              <div className="h-16 rounded bg-muted" />
+            </div>
+          </>
+        )}
+
+        {kind === "gallery" && (
+          <>
+            <div className="h-3 w-2/3 rounded bg-muted" />
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <div className="aspect-[4/3] rounded bg-muted" />
+              <div className="aspect-[4/3] rounded bg-muted" />
+            </div>
+            <div className="mt-3 h-10 rounded bg-muted" />
+          </>
+        )}
+
+        {kind === "map" && (
+          <>
+            <div className="h-3 w-1/2 rounded bg-muted" />
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <div className="col-span-2 aspect-video rounded bg-muted" />
+              <div className="space-y-2">
+                <div className="h-10 rounded bg-muted" />
+                <div className="h-10 rounded bg-muted" />
+                <div className="h-10 rounded bg-muted" />
+              </div>
+            </div>
+          </>
+        )}
+
+        {kind === "cta" && (
+          <>
+            <div className="h-3 w-2/3 rounded bg-muted" />
+            <div className="mt-4 h-24 rounded bg-muted" />
+            <div className="mt-3 flex gap-2">
+              <div className="h-10 w-28 rounded bg-muted" />
+              <div className="h-10 w-28 rounded bg-muted" />
+            </div>
+          </>
+        )}
+
+        {kind === "stats" && (
+          <>
+            <div className="h-3 w-1/2 rounded bg-muted" />
+            <div className="mt-4 grid grid-cols-4 gap-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="rounded-lg border border-border/40 bg-background/40 p-3">
+                  <div className="h-6 w-1/2 rounded bg-muted" />
+                  <div className="mt-2 h-2 w-3/4 rounded bg-muted" />
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 h-16 rounded bg-muted" />
+          </>
+        )}
+
+        {kind === "generic" && (
+          <>
+            <div className="h-3 w-2/3 rounded bg-muted" />
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <div className="h-12 rounded bg-muted" />
+              <div className="h-12 rounded bg-muted" />
+              <div className="h-12 rounded bg-muted" />
+            </div>
+            <div className="mt-3 h-20 rounded bg-muted" />
+            <div className="mt-2 flex gap-2">
+              <div className="h-3 w-16 rounded bg-muted" />
+              <div className="h-3 w-20 rounded bg-muted" />
+              <div className="h-3 w-12 rounded bg-muted" />
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function SectionLivePreview({ id }: { id: string }) {
+  // Change of plan: keep the list fast by default (minimal preview only).
+  // Only render the real block when the user hovers the preview.
+  const [hovered, setHovered] = React.useState(false)
+  const prefetchedRef = React.useRef(false)
+
+  const STAGE_W = 1920
+  const STAGE_H = 1080
+
+  const viewportRef = React.useRef<HTMLDivElement | null>(null)
+  const [scale, setScale] = React.useState(0.18)
+
+  React.useLayoutEffect(() => {
+    if (!hovered) return
+    const el = viewportRef.current
+    if (!el) return
+
+    const update = () => {
+      const rect = el.getBoundingClientRect()
+      const w = rect.width || 0
+      const h = rect.height || 0
+      if (w <= 0 || h <= 0) return
+      const next = Math.min(w / STAGE_W, h / STAGE_H)
+      setScale(next)
+    }
+
+    update()
+    const ro = new ResizeObserver(() => update())
+    ro.observe(el)
+    window.addEventListener("resize", update)
+    return () => {
+      window.removeEventListener("resize", update)
+      ro.disconnect()
+    }
+  }, [hovered])
+
+  const content = React.useMemo(() => {
+    if (!hovered) return null
+    switch (id) {
+      case "features":
+      case "services-grid":
+      case "project-gallery":
+      case "programs-grid":
+      case "faculty-grid": {
+        const fallbackFeatures = (DEFAULT_PRACTICE_AREAS.items || []).map((it: any) => ({
+          title: it.title,
+          description: it.description,
+          icon: it.icon,
+        }))
+        return (
+          <LivePreviewFeaturesGrid
+            title="Our Services"
+            subtitle="What we can do for you"
+            features={fallbackFeatures}
+          />
+        )
+      }
+      case "features-modern": {
+        const items = (DEFAULT_PRACTICE_AREAS.items || []).map((it: any) => ({
+          title: it.title,
+          description: it.description,
+          icon: it.icon,
+        }))
+        return (
+          <LivePreviewFeaturesModern
+            title="Our Services"
+            subtitle="Fast, friendly, reliable"
+            features={items}
+          />
+        )
+      }
+      case "practice-areas":
+        return (
+          <LivePreviewPracticeAreas
+            title={DEFAULT_PRACTICE_AREAS.title}
+            subtitle={DEFAULT_PRACTICE_AREAS.subtitle}
+            items={DEFAULT_PRACTICE_AREAS.items as any}
+            linkText="Learn More"
+          />
+        )
+      case "how-it-works":
+        return (
+          <LivePreviewHowItWorks
+            title={DEFAULT_HOW_IT_WORKS.title}
+            subtitle={DEFAULT_HOW_IT_WORKS.subtitle}
+            steps={DEFAULT_HOW_IT_WORKS.steps as any}
+          />
+        )
+      case "treatment-process":
+        return (
+          <LivePreviewTreatmentProcess
+            title={DEFAULT_TREATMENT_PROCESS.title}
+            subtitle={DEFAULT_TREATMENT_PROCESS.subtitle}
+            steps={DEFAULT_TREATMENT_PROCESS.steps as any}
+          />
+        )
+      case "awards":
+      case "certifications": {
+        return <LivePreviewAwardsStrip title={DEFAULT_AWARDS_STRIP.title} items={DEFAULT_AWARDS_STRIP.items as any} />
+      }
+      case "trust-badges-grid": {
+        const items = (DEFAULT_AWARDS_STRIP.items || []).map((it: any) => ({
+          label: it.label,
+          sublabel: it.sublabel,
+          icon: it.icon || "Award",
+          imageUrl: it.imageUrl,
+        }))
+        return <LivePreviewTrustBadges title="Trusted By" subtitle="Social proof" items={items as any} />
+      }
+      case "before-after-slider":
+        return (
+          <LivePreviewBeforeAfterSlider
+            title="Before & After"
+            subtitle="Real transformations"
+            beforeImage={(DEFAULT_BEFORE_AFTER_GALLERY.items?.[0] as any)?.beforeImage || ""}
+            afterImage={(DEFAULT_BEFORE_AFTER_GALLERY.items?.[0] as any)?.afterImage || ""}
+            beforeLabel={DEFAULT_BEFORE_AFTER_GALLERY.beforeLabel}
+            afterLabel={DEFAULT_BEFORE_AFTER_GALLERY.afterLabel}
+          />
+        )
+      case "before-after-gallery-grid":
+        return (
+          <LivePreviewBeforeAfterGallery
+            title={DEFAULT_BEFORE_AFTER_GALLERY.title}
+            subtitle={DEFAULT_BEFORE_AFTER_GALLERY.subtitle}
+            items={DEFAULT_BEFORE_AFTER_GALLERY.items as any}
+            beforeLabel={DEFAULT_BEFORE_AFTER_GALLERY.beforeLabel}
+            afterLabel={DEFAULT_BEFORE_AFTER_GALLERY.afterLabel}
+          />
+        )
+      case "safety-section": {
+        const items = (DEFAULT_PRACTICE_AREAS.items || []).map((it: any) => ({
+          title: it.title,
+          description: it.description,
+          icon: it.icon,
+        }))
+        return <LivePreviewSafetySection title="Safety First" subtitle="Low-tox, family-friendly" items={items as any} />
+      }
+      case "logo-cloud": {
+        return <LivePreviewLogoCloud title={DEFAULT_LOGO_CLOUD.title} items={DEFAULT_LOGO_CLOUD.items as any} />
+      }
+      case "ac-types-grid": {
+        return (
+          <LivePreviewACTypes
+            title={DEFAULT_AC_TYPES.title}
+            subtitle={DEFAULT_AC_TYPES.subtitle}
+            items={DEFAULT_AC_TYPES.items as any}
+          />
+        )
+      }
+      case "pricing": {
+        const plans = (DEFAULT_PRICING_TABLE as any)?.plans
+        return (
+          <LivePreviewPricingTable
+            title={(DEFAULT_PRICING_TABLE as any)?.title ?? "Affordable Plans"}
+            subtitle={(DEFAULT_PRICING_TABLE as any)?.subtitle}
+            plans={(Array.isArray(plans) ? plans : []) as any}
+            mostPopularLabel={(DEFAULT_PRICING_TABLE as any)?.mostPopularLabel}
+            startingAtLabel={(DEFAULT_PRICING_TABLE as any)?.startingAtLabel}
+            periodLabel={(DEFAULT_PRICING_TABLE as any)?.periodLabel}
+          />
+        )
+      }
+      case "featured-properties-grid": {
+        return (
+          <LivePreviewFeaturedListings
+            title={DEFAULT_FEATURED_LISTINGS.title}
+            subtitle={DEFAULT_FEATURED_LISTINGS.subtitle}
+            items={DEFAULT_FEATURED_LISTINGS.items as any}
+            viewDetailsLabel={(DEFAULT_FEATURED_LISTINGS as any)?.viewDetailsLabel}
+            sqmLabel={(DEFAULT_FEATURED_LISTINGS as any)?.sqmLabel}
+          />
+        )
+      }
+      case "financing-section": {
+        return (
+          <LivePreviewFinancingSection
+            title={DEFAULT_FINANCING.title}
+            subtitle={DEFAULT_FINANCING.subtitle}
+            items={DEFAULT_FINANCING.items as any}
+          />
+        )
+      }
+      case "developer-partners": {
+        return (
+          <LivePreviewDeveloperPartners
+            title={DEFAULT_DEVELOPER_PARTNERS.title}
+            items={DEFAULT_DEVELOPER_PARTNERS.items as any}
+          />
+        )
+      }
+      case "why-choose-me": {
+        const w = DEFAULT_WHY_CHOOSE_ME as any
+        return (
+          <LivePreviewWhyChooseMe
+            title={w.title}
+            subtitle={w.subtitle}
+            agentName={w.agentName ?? "Juan Dela Cruz"}
+            agentRole={w.agentRole ?? "Licensed Professional"}
+            licenseNumber={w.licenseNumber ?? "#12345"}
+            agentBio={w.agentBio ?? "Add your bio"}
+            agentImageUrl={w.agentImageUrl || "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&q=80"}
+            trustSignals={(Array.isArray(w.trustSignals) ? w.trustSignals : []) as any}
+            licensedBrokerLabel={w.licensedBrokerLabel}
+            inquireNowLabel={w.inquireNowLabel}
+          />
+        )
+      }
+      case "service-area-map": {
+        const s = DEFAULT_SERVICE_AREA_MAP as any
+        return (
+          <LivePreviewServiceAreaMap
+            title={s.title}
+            subtitle={s.subtitle}
+            cities={(Array.isArray(s.cities) ? s.cities : []) as any}
+            googleMapsEmbedUrl={s.googleMapsEmbedUrl}
+            cantFindCityTitle={s.cantFindCityTitle}
+            cantFindCityDescription={s.cantFindCityDescription}
+          />
+        )
+      }
+      case "price-preview-strip": {
+        const p = DEFAULT_PRICE_PREVIEW as any
+        return (
+          <LivePreviewPricePreviewStrip
+            title={p.title}
+            items={(Array.isArray(p.items) ? p.items : []) as any}
+            transparentPricingNote={p.transparentPricingNote}
+            bookNowLabel={p.bookNowLabel}
+          />
+        )
+      }
+      case "emergency-cta-strip": {
+        const e = DEFAULT_EMERGENCY_CTA as any
+        return (
+          <LivePreviewEmergencyCTAStrip
+            title={e.title}
+            subtitle={e.subtitle}
+            buttonText={e.buttonText}
+            phone={e.phone}
+            imageUrl={e.imageUrl || "https://images.unsplash.com/photo-1520975958225-41d8f94b07d2?w=1200&q=80"}
+            icon={e.icon}
+          />
+        )
+      }
+      case "maintenance-plans": {
+        const m = DEFAULT_MAINTENANCE_PLANS as any
+        return (
+          <LivePreviewMaintenancePlans
+            title={m.title}
+            subtitle={m.subtitle}
+            plans={(Array.isArray(m.plans) ? m.plans : []) as any}
+            signUpNowLabel={m.signUpNowLabel}
+          />
+        )
+      }
+      case "promo-cta-section": {
+        const p = (DEFAULT_FINANCING as any)
+        // Fall back to safe, simple promo CTA props without needing another default constant.
+        return (
+          <LivePreviewPromoCTASection
+            title={"Limited Time Offer"}
+            subtitle={"Add urgency with a promo CTA"}
+            promoBadge={"PROMO"}
+            buttonText={"Book Now"}
+            buttonHref={"#contact"}
+            phone={""}
+            countdownEndDate={undefined}
+            backgroundImage={"https://images.unsplash.com/photo-1520975958225-41d8f94b07d2?w=1200&q=80"}
+            daysLabel={"Days"}
+            hoursLabel={"Hours"}
+            minsLabel={"Mins"}
+            secsLabel={"Secs"}
+          />
+        )
+      }
+      case "promo-banner-strip": {
+        return (
+          <LivePreviewPromoBannerStrip
+            text={"Promo banner strip"}
+            countdownDate={undefined}
+            buttonText={"Learn More"}
+            buttonHref={"#"}
+          />
+        )
+      }
+      case "payment-options-strip": {
+        return (
+          <LivePreviewPaymentOptionsStrip
+            title={"Payment Options"}
+            methods={["Visa", "GCash", "Bank Transfer"] as any}
+          />
+        )
+      }
+      case "stats-section": {
+        return (
+          <LivePreviewStatsSection
+            title={"Results"}
+            subtitle={"A quick stats section"}
+            items={[
+              { label: "Clients", value: "1,200+" },
+              { label: "Years", value: "10" },
+              { label: "Rating", value: "4.9" },
+              { label: "Projects", value: "350" },
+            ] as any}
+            variant={"cards"}
+          />
+        )
+      }
+      case "faq-accordion": {
+        return (
+          <LivePreviewFAQAccordion
+            title={DEFAULT_FAQ_ACCORDION.title}
+            subtitle={DEFAULT_FAQ_ACCORDION.subtitle}
+            items={DEFAULT_FAQ_ACCORDION.items as any}
+          />
+        )
+      }
+      case "common-pests": {
+        return (
+          <LivePreviewCommonPests
+            title={DEFAULT_COMMON_PESTS.title}
+            subtitle={DEFAULT_COMMON_PESTS.subtitle}
+            items={DEFAULT_COMMON_PESTS.items as any}
+          />
+        )
+      }
+      case "warranty-block": {
+        return (
+          <LivePreviewWarrantyBlock
+            title={"Warranty"}
+            subtitle={"Show your guarantee"}
+            badgeText={"Guaranteed"}
+            icon={"ShieldCheck"}
+            imageUrl={""}
+          />
+        )
+      }
+      case "facebook-review-embed": {
+        const f = DEFAULT_FACEBOOK_REVIEW_EMBED as any
+        return (
+          <LivePreviewFacebookReviewEmbed
+            title={f.title}
+            subtitle={f.subtitle}
+            reviews={(Array.isArray(f.reviews) ? f.reviews : []) as any}
+            followUsLabel={f.followUsLabel}
+            facebookReviewsLabel={f.facebookReviewsLabel}
+            footerNoteLabel={f.footerNoteLabel}
+          />
+        )
+      }
+      default:
+        return null
+    }
+  }, [hovered, id])
+
+  return (
+    <div
+      className="mt-3 relative"
+      onMouseEnter={() => {
+        if (!prefetchedRef.current) {
+          prefetchedRef.current = true
+          prefetchSectionPreview(id)
+        }
+        setHovered(true)
+      }}
+      onMouseLeave={() => setHovered(false)}
+      onFocus={() => {
+        if (!prefetchedRef.current) {
+          prefetchedRef.current = true
+          prefetchSectionPreview(id)
+        }
+        setHovered(true)
+      }}
+      onBlur={() => setHovered(false)}
+    >
+      <MinimalSectionPreview kind={minimalPreviewKindForSection(id)} />
+
+      {hovered && (
+        <div className="absolute inset-0 z-20 rounded-lg border border-primary/25 bg-background shadow-2xl overflow-hidden">
+          <div ref={viewportRef} className="w-full h-full overflow-hidden bg-background">
+            <div className="pointer-events-none">
+              <div
+                className="origin-top-left"
+                style={{
+                  width: STAGE_W,
+                  height: STAGE_H,
+                  transform: `scale(${scale})`,
+                }}
+              >
+                {content ?? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="w-[70%] h-[60%] bg-muted/20 border border-border rounded-xl flex items-center justify-center">
+                      <div className="text-xs font-semibold text-muted-foreground">Loading preview…</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface DashboardClientProps {
   project: any
   user: any
@@ -99,6 +895,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const [hasPendingRequest, setHasPendingRequest] = React.useState(false)
   const [colorPaletteOpen, setColorPaletteOpen] = React.useState(false)
   const [typographyOpen, setTypographyOpen] = React.useState(false)
+  const [colorPaletteQuery, setColorPaletteQuery] = React.useState("")
   const [historyOpen, setHistoryOpen] = React.useState(false)
   const [versions, setVersions] = React.useState<{ id: string; version: number; createdAt: string; isCurrent: boolean }[]>([])
   const [versionsLoading, setVersionsLoading] = React.useState(false)
@@ -106,24 +903,88 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const [upgradeLoading, setUpgradeLoading] = React.useState(false)
   const [dragSectionIndex, setDragSectionIndex] = React.useState<number | null>(null)
   const [dropSectionIndex, setDropSectionIndex] = React.useState<number | null>(null)
+  const [addSectionOpen, setAddSectionOpen] = React.useState(false)
+  const [sectionSearchQuery, setSectionSearchQuery] = React.useState("")
   const [activeTab, setActiveTab] = React.useState<"content" | "design" | "advanced">("content")
   const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>({})
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false)
   const [globalSettingsModalTab, setGlobalSettingsModalTab] = React.useState<"theme" | "sections">("theme")
-  const colorPaletteRef = React.useRef<HTMLDivElement>(null)
-  const typographyRef = React.useRef<HTMLDivElement>(null)
+  const colorPaletteRef = React.useRef<HTMLButtonElement>(null)
+  const typographyRef = React.useRef<HTMLButtonElement>(null)
   const colorPaletteRectRef = React.useRef<DOMRect | null>(null)
   const typographyRectRef = React.useRef<DOMRect | null>(null)
   const manualScrollLockRef = React.useRef(false)
   const manualScrollTargetRef = React.useRef<string | null>(null)
   const manualScrollTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const paletteEntries = React.useMemo(() => {
+    const hexToRgb = (hex: string) => {
+      const h = hex.replace('#', '').trim()
+      if (h.length !== 6) return null
+      const r = parseInt(h.slice(0, 2), 16)
+      const g = parseInt(h.slice(2, 4), 16)
+      const b = parseInt(h.slice(4, 6), 16)
+      if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return null
+      return { r, g, b }
+    }
+
+    const rgbToHsl = (r: number, g: number, b: number) => {
+      const rn = r / 255
+      const gn = g / 255
+      const bn = b / 255
+      const max = Math.max(rn, gn, bn)
+      const min = Math.min(rn, gn, bn)
+      const d = max - min
+      const l = (max + min) / 2
+      if (d === 0) return { h: 0, s: 0, l }
+      const s = d / (1 - Math.abs(2 * l - 1))
+      let h = 0
+      if (max === rn) h = ((gn - bn) / d) % 6
+      else if (max === gn) h = (bn - rn) / d + 2
+      else h = (rn - gn) / d + 4
+      h *= 60
+      if (h < 0) h += 360
+      return { h, s, l }
+    }
+
+    const tagForHex = (hex: string) => {
+      const rgb = hexToRgb(hex)
+      if (!rgb) return [] as string[]
+      const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b)
+      const tags: string[] = []
+      if (s < 0.12) tags.push('neutral')
+      if (l < 0.18) tags.push('dark')
+      if (l > 0.85) tags.push('light')
+      if (s >= 0.12) {
+        if (h >= 200 && h < 260) tags.push('blue')
+        else if (h >= 260 && h < 315) tags.push('purple')
+        else if (h >= 315 || h < 15) tags.push('red')
+        else if (h >= 15 && h < 45) tags.push('orange')
+        else if (h >= 45 && h < 75) tags.push('yellow')
+        else if (h >= 75 && h < 160) tags.push('green')
+        else if (h >= 160 && h < 200) tags.push('teal')
+      }
+      return tags
+    }
+
+    return Object.keys(COLOR_THEME_SWATCHES).map((key) => {
+      const swatches = COLOR_THEME_SWATCHES[key] || COLOR_THEME_SWATCHES.partner
+      const nameTags = key.split(/[-_\s]+/g).filter(Boolean).map((t) => t.toLowerCase())
+      const colorTags = Array.from(new Set(swatches.flatMap((hex) => tagForHex(hex))))
+      const tags = Array.from(new Set([...nameTags, ...colorTags]))
+      return { key, swatches, tags }
+    })
+  }, [])
+
   React.useEffect(() => {
     const close = (e: MouseEvent) => {
       const target = e.target as Node
       const inColorPalette = colorPaletteRef.current?.contains(target) || (e.target as Element)?.closest?.("[data-dropdown=color-palette]")
       const inTypography = typographyRef.current?.contains(target) || (e.target as Element)?.closest?.("[data-dropdown=typography]")
-      if (!inColorPalette) setColorPaletteOpen(false)
+      if (!inColorPalette) {
+        setColorPaletteOpen(false)
+        setColorPaletteQuery("")
+      }
       if (!inTypography) setTypographyOpen(false)
     }
     document.addEventListener("click", close)
@@ -210,7 +1071,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
       if ((e.data as any)?.type !== 'PREVIEW_ACTIVE_SECTION') return
       const sectionId = (e.data as any)?.sectionId as string | undefined
       if (!sectionId) return
-      if (!activeSections.includes(sectionId)) return
+      if (!activeSections.includes(sectionId) && sectionId !== 'footer') return
       if (manualScrollLockRef.current) {
         const target = manualScrollTargetRef.current
         if (target && sectionId !== target) return
@@ -252,6 +1113,68 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
     // Small delay to show saving state
     saveTimer.current = setTimeout(() => setIsSaving(false), 300)
   }, [sectionIdToKey, LOCAL_KEY])
+
+  const moveToSectionIndex = React.useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return
+    const next = [...activeSections]
+    const [removed] = next.splice(fromIndex, 1)
+    next.splice(toIndex, 0, removed)
+    autoSaveSection('activeSections', next)
+  }, [activeSections, autoSaveSection])
+
+  const removeSectionAtIndex = React.useCallback((idx: number) => {
+    const next = [...activeSections]
+    const removed = next[idx]
+    next.splice(idx, 1)
+    autoSaveSection('activeSections', next)
+    if (removed && selectedSection === removed) {
+      setSelectedSection('hero')
+      setActivePreviewSection('hero')
+      lockPreviewHighlight('hero')
+      const heroIndex = next.indexOf('hero')
+      if (heroIndex >= 0) scrollToSection('hero', heroIndex)
+    }
+  }, [activeSections, autoSaveSection, selectedSection, lockPreviewHighlight, scrollToSection])
+
+  const addSection = React.useCallback((id: string) => {
+    if (activeSections.includes(id)) return
+    const next = [...activeSections, id]
+
+    // Default data mapping
+    const defaultDataMap: Record<string, any> = {
+      'awards': DEFAULT_AWARDS_STRIP,
+      'certifications': DEFAULT_AWARDS_STRIP,
+      'faq-accordion': DEFAULT_FAQ_ACCORDION,
+      'blog': DEFAULT_BLOG,
+      'before-after-gallery-grid': DEFAULT_BEFORE_AFTER_GALLERY,
+      'how-it-works': DEFAULT_HOW_IT_WORKS,
+      'practice-areas': DEFAULT_PRACTICE_AREAS,
+      'treatment-process': DEFAULT_TREATMENT_PROCESS,
+      'common-pests': DEFAULT_COMMON_PESTS,
+      'featured-properties-grid': DEFAULT_FEATURED_LISTINGS,
+      'developer-partners': DEFAULT_DEVELOPER_PARTNERS,
+      'review-trust-bar': DEFAULT_REVIEW_TRUST_BAR,
+      'financing-section': DEFAULT_FINANCING,
+      'ac-types-grid': DEFAULT_AC_TYPES,
+      'price-preview-strip': DEFAULT_PRICE_PREVIEW,
+      'pricing': DEFAULT_PRICING_TABLE,
+      'maintenance-plans': DEFAULT_MAINTENANCE_PLANS,
+      'facebook-review-embed': DEFAULT_FACEBOOK_REVIEW_EMBED,
+      'why-choose-me': DEFAULT_WHY_CHOOSE_ME,
+      'service-area-map': DEFAULT_SERVICE_AREA_MAP,
+      'logo-cloud': DEFAULT_LOGO_CLOUD,
+      'delivery-coverage': DEFAULT_DELIVERY_COVERAGE,
+    }
+    const defaultData = defaultDataMap[id] || {}
+
+    autoSaveSection('activeSections', next)
+    autoSaveSection(id, defaultData)
+    setAddSectionOpen(false)
+    setSelectedSection(id)
+    setActivePreviewSection(id)
+    lockPreviewHighlight(id)
+    scrollToSection(id, next.length - 1)
+  }, [activeSections, autoSaveSection, lockPreviewHighlight, scrollToSection])
 
   // Efficiently sync changes to the iframe with a short debounce
   React.useEffect(() => {
@@ -583,7 +1506,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   }, [selectedSection, baseConfig, modified, sectionIdToKey])
 
   return (
-    <div className="flex flex-col min-h-screen bg-background pt-16 lg:pt-16">
+    <div className="flex flex-col h-screen overflow-hidden bg-background pt-16 lg:pt-16">
       {/* Sidebar Overlay */}
       {mobileSidebarOpen && (
         <div 
@@ -592,7 +1515,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
         />
       )}
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
       {/* Sidebar */}
       <aside className={`fixed top-16 left-0 w-[280px] sm:w-[320px] bottom-0 border-r border-border bg-background flex flex-col shrink-0 shadow-xl z-[48] transition-transform duration-300 lg:translate-x-0 lg:static lg:z-20 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 border-b border-border space-y-4 bg-muted/20">
@@ -666,8 +1589,16 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                 <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
 
-              <div className="pt-4 px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
+              <div className="pt-4 px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50 flex items-center justify-between">
                 Page Sections
+                <button
+                  type="button"
+                  onClick={() => setAddSectionOpen(true)}
+                  className="p-1 hover:bg-primary/10 text-primary rounded transition-colors"
+                  title="Add Section"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
               </div>
               <button
                 onClick={() => {
@@ -677,7 +1608,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   const heroIndex = activeSections.indexOf('hero')
                   if (heroIndex >= 0) scrollToSection('hero', heroIndex)
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${(selectedSection === 'hero' || activePreviewSection === 'hero') ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group border border-transparent ${(selectedSection === 'hero' || activePreviewSection === 'hero') ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
               >
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
                   <Zap className="w-4 h-4" />
@@ -689,29 +1620,100 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                 <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
 
-              {activeSections.map((section: string, sectionIndex: number) => (
-                section === 'hero' ? null : (
-                  <button
+              <div className="px-1">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={sectionSearchQuery}
+                    onChange={(e) => setSectionSearchQuery(e.target.value)}
+                    placeholder="Filter sections..."
+                    className="w-full px-3 pr-8 py-2 bg-muted/40 border border-border/50 rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all placeholder:text-muted-foreground/40"
+                  />
+                  {sectionSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSectionSearchQuery("")}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
+                      title="Clear"
+                    >
+                      <X className="w-3 h-3 text-muted-foreground" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {activeSections.map((section: string, sectionIndex: number) => {
+                if (section === 'hero') return null
+                if (sectionSearchQuery && !section.replace(/-/g, ' ').toLowerCase().includes(sectionSearchQuery.toLowerCase())) return null
+
+                const isDragging = dragSectionIndex === sectionIndex
+                const isDropTarget = dropSectionIndex === sectionIndex
+
+                return (
+                  <div
                     key={`${section}-${sectionIndex}`}
-                    onClick={() => {
-                      setSelectedSection(section)
-                      setActivePreviewSection(section)
-                      lockPreviewHighlight(section)
-                      scrollToSection(section, sectionIndex)
+                    draggable
+                    onDragStart={() => setDragSectionIndex(sectionIndex)}
+                    onDragEnd={() => { setDragSectionIndex(null); setDropSectionIndex(null) }}
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      if (dragSectionIndex !== null && dragSectionIndex !== sectionIndex) setDropSectionIndex(sectionIndex)
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${(selectedSection === section || activePreviewSection === section) ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+                    onDragLeave={() => setDropSectionIndex(null)}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      if (dragSectionIndex !== null && dragSectionIndex !== sectionIndex) {
+                        moveToSectionIndex(dragSectionIndex, sectionIndex)
+                      }
+                      setDragSectionIndex(null)
+                      setDropSectionIndex(null)
+                    }}
+                    className={`relative group w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left border ${isDragging ? 'opacity-40 bg-muted border-dashed' : (selectedSection === section || activePreviewSection === section) ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted border-transparent'} ${isDropTarget ? 'border-t-primary border-t-2' : ''}`}
                   >
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground shrink-0 group-hover:scale-110 transition-transform">
-                      <Layout className="w-4 h-4" />
+                    <div
+                      className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground shrink-0 group-hover:scale-110 transition-transform cursor-grab active:cursor-grabbing hover:bg-primary/10 hover:text-primary z-10"
+                      title="Drag to reorder"
+                    >
+                      <GripVertical className="w-4 h-4" />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedSection(section)
+                        setActivePreviewSection(section)
+                        lockPreviewHighlight(section)
+                        scrollToSection(section, sectionIndex)
+                      }}
+                      className="flex-1 min-w-0 text-left py-1"
+                    >
                       <p className="text-sm font-bold truncate capitalize">{section.replace(/-/g, ' ')}</p>
                       <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Block Edit</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </button>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        removeSectionAtIndex(sectionIndex)
+                      }}
+                      className="p-1.5 opacity-40 group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-all"
+                      title="Remove Section"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 )
-              ))}
+              })}
+
+              <div className="mt-3 px-1">
+                <button
+                  type="button"
+                  onClick={() => setAddSectionOpen(true)}
+                  className="w-full py-3 flex items-center justify-center gap-2 border-2 border-dashed border-border hover:border-primary/30 hover:bg-primary/5 rounded-xl text-xs font-bold text-muted-foreground hover:text-primary transition-all group"
+                >
+                  <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+                  Add New Block
+                </button>
+              </div>
 
               <button
                 onClick={() => {
@@ -719,7 +1721,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   setActivePreviewSection('footer')
                   lockPreviewHighlight('footer')
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${(selectedSection === 'footer' || activePreviewSection === 'footer') ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group border border-transparent ${(selectedSection === 'footer' || activePreviewSection === 'footer') ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
               >
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
                   <Layout className="w-4 h-4 rotate-180" />
@@ -738,19 +1740,283 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               <div className="px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
                 Visual Style
               </div>
-              <button
-                onClick={() => setSelectedSection('global_settings')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'global_settings' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
-              >
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
-                  <Palette className="w-4 h-4" />
+              {/* Palette */}
+              <div className="px-4 py-3 rounded-xl hover:bg-muted/40 transition-colors border border-transparent">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-2">
+                  Color Palette
+                </label>
+                <div className="relative" data-dropdown="color-palette">
+                  <button
+                    type="button"
+                    ref={colorPaletteRef}
+                    onClick={() => {
+                      try {
+                        colorPaletteRectRef.current = colorPaletteRef.current?.getBoundingClientRect() || null
+                      } catch {
+                        colorPaletteRectRef.current = null
+                      }
+                      setColorPaletteOpen((o) => !o)
+                      setTypographyOpen(false)
+                    }}
+                    className="w-full p-2.5 bg-background border border-border/80 rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-colors flex items-center justify-between gap-3"
+                  >
+                    <span className="truncate">
+                      {(globalConfig.colorTheme || "partner").replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                    </span>
+                    <span className="flex items-center gap-1 shrink-0">
+                      {(COLOR_THEME_SWATCHES[globalConfig.colorTheme || "partner"] || COLOR_THEME_SWATCHES.partner).map((hex, i) => (
+                        <span
+                          key={`${hex}-${i}`}
+                          className="w-3.5 h-3.5 rounded-full border border-border/70"
+                          style={{ backgroundColor: hex }}
+                          title={hex}
+                        />
+                      ))}
+                    </span>
+                  </button>
+
+                  {colorPaletteOpen && (
+                    <div className="absolute z-[60] mt-2 w-full max-h-[320px] overflow-auto rounded-xl border border-border bg-background shadow-xl">
+                      <div className="p-2 border-b border-border bg-muted/10">
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={colorPaletteQuery}
+                            onChange={(e) => setColorPaletteQuery(e.target.value)}
+                            placeholder="Search palettes (e.g. blue, gold, eco)…"
+                            className="w-full px-3 pr-8 py-2 bg-background border border-border/70 rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all placeholder:text-muted-foreground/50"
+                            autoFocus
+                          />
+                          {colorPaletteQuery && (
+                            <button
+                              type="button"
+                              onClick={() => setColorPaletteQuery("")}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
+                              title="Clear"
+                            >
+                              <X className="w-3 h-3 text-muted-foreground" />
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {[
+                            { label: "Blue", q: "blue" },
+                            { label: "Green", q: "green" },
+                            { label: "Red", q: "red" },
+                            { label: "Purple", q: "purple" },
+                            { label: "Orange", q: "orange" },
+                            { label: "Teal", q: "teal" },
+                            { label: "Dark", q: "dark" },
+                            { label: "Light", q: "light" },
+                            { label: "Neutral", q: "neutral" },
+                          ].map((chip) => {
+                            const active = colorPaletteQuery.trim().toLowerCase() === chip.q
+                            return (
+                              <button
+                                key={chip.q}
+                                type="button"
+                                onClick={() => setColorPaletteQuery(active ? "" : chip.q)}
+                                className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors ${
+                                  active
+                                    ? "bg-primary/10 text-primary border-primary/30"
+                                    : "bg-background text-muted-foreground border-border/60 hover:border-primary/20 hover:text-foreground"
+                                }`}
+                              >
+                                {chip.label}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {paletteEntries
+                        .slice()
+                        .sort((a, b) => {
+                          const q = colorPaletteQuery.trim().toLowerCase()
+                          const labelA = a.key
+                          const labelB = b.key
+
+                          if (!q) return labelA.localeCompare(labelB)
+
+                          const aStarts = labelA.toLowerCase().startsWith(q)
+                          const bStarts = labelB.toLowerCase().startsWith(q)
+                          if (aStarts !== bStarts) return aStarts ? -1 : 1
+
+                          const aMatch = a.tags.some((t) => t.includes(q)) || labelA.toLowerCase().includes(q)
+                          const bMatch = b.tags.some((t) => t.includes(q)) || labelB.toLowerCase().includes(q)
+                          if (aMatch !== bMatch) return aMatch ? -1 : 1
+
+                          return labelA.localeCompare(labelB)
+                        })
+                        .map((p) => {
+                        const c = p.key
+                        const swatches = p.swatches
+                        const selected = (globalConfig.colorTheme || "partner") === c
+                        return (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => {
+                              setModified((m) => ({ ...m, colorTheme: c }))
+                              autoSaveSection("colorTheme", c)
+                              setColorPaletteOpen(false)
+                              setColorPaletteQuery("")
+                            }}
+                            className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between gap-3 hover:bg-muted/50 transition-colors ${selected ? "bg-primary/5" : ""}`}
+                          >
+                            <span className="truncate font-semibold">
+                              {c.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                            </span>
+                            <span className="flex items-center gap-1 shrink-0">
+                              {swatches.map((hex, i) => (
+                                <span
+                                  key={`${c}-${hex}-${i}`}
+                                  className={`w-4 h-4 rounded-full border ${selected ? "border-primary/40" : "border-border/70"}`}
+                                  style={{ backgroundColor: hex }}
+                                  title={hex}
+                                />
+                              ))}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate">Appearance</p>
-                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Theme & Sections</p>
+                <div className="mt-3 flex items-center gap-2">
+                  {(COLOR_THEME_SWATCHES[globalConfig.colorTheme || "partner"] || COLOR_THEME_SWATCHES.partner).map((hex, i) => (
+                    <div
+                      key={`${hex}-${i}`}
+                      className="w-7 h-7 rounded-full border border-border shadow-sm"
+                      style={{ backgroundColor: hex }}
+                      title={hex}
+                    />
+                  ))}
+                  <span className="ml-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
+                    Example
+                  </span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
+              </div>
+
+              {/* Typography */}
+              <div className="px-4 py-3 rounded-xl hover:bg-muted/40 transition-colors border border-transparent">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-2">
+                  Typography
+                </label>
+                <div className="relative" data-dropdown="typography">
+                  <button
+                    type="button"
+                    ref={typographyRef}
+                    onClick={() => {
+                      try {
+                        typographyRectRef.current = typographyRef.current?.getBoundingClientRect() || null
+                      } catch {
+                        typographyRectRef.current = null
+                      }
+                      setTypographyOpen((o) => !o)
+                      setColorPaletteOpen(false)
+                    }}
+                    className="w-full p-2.5 bg-background border border-border/80 rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-colors flex items-center justify-between gap-3"
+                  >
+                    {(() => {
+                      const selected = TYPOGRAPHY_OPTIONS.find((o) => o.value === (globalConfig.typographyStyle || "elegant"))
+                      const label = selected?.label || "Typography"
+                      const fontFamily = selected?.fontFamily
+                      return (
+                        <>
+                          <span className="truncate font-semibold">{label}</span>
+                          <span
+                            className="text-[10px] text-muted-foreground truncate max-w-[140px]"
+                            style={fontFamily ? { fontFamily } : undefined}
+                          >
+                            Aa Bb Cc
+                          </span>
+                        </>
+                      )
+                    })()}
+                  </button>
+
+                  {typographyOpen && (
+                    <div className="absolute z-[60] mt-2 w-full max-h-[320px] overflow-auto rounded-xl border border-border bg-background shadow-xl">
+                      {TYPOGRAPHY_OPTIONS.map((opt) => {
+                        const selected = (globalConfig.typographyStyle || "elegant") === opt.value
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => {
+                              setModified((m) => ({ ...m, typographyStyle: opt.value }))
+                              autoSaveSection("typographyStyle", opt.value)
+                              setTypographyOpen(false)
+                            }}
+                            className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between gap-3 hover:bg-muted/50 transition-colors ${selected ? "bg-primary/5" : ""}`}
+                          >
+                            <span className="truncate font-semibold">{opt.label}</span>
+                            <span
+                              className={`text-[10px] truncate max-w-[220px] ${selected ? "text-foreground" : "text-muted-foreground"}`}
+                              style={opt.fontFamily ? { fontFamily: opt.fontFamily } : undefined}
+                            >
+                              Aa 123 — Sphinx of black quartz
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {(() => {
+                  const selected = TYPOGRAPHY_OPTIONS.find((o) => o.value === (globalConfig.typographyStyle || "elegant"))
+                  const fontFamily = selected?.fontFamily
+                  return (
+                    <div className="mt-3 rounded-xl border border-border/70 bg-background/70 p-3">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 mb-1">Example</div>
+                      <div style={fontFamily ? { fontFamily } : undefined}>
+                        <div className="text-sm font-black text-foreground leading-tight">Sphinx of black quartz, judge my vow</div>
+                        <div className="text-xs text-muted-foreground mt-1 italic">Aa 1234567890 — The quick brown fox jumps over the lazy dog.</div>
+                      </div>
+                    </div>
+                  )
+                })()}
+              </div>
+
+              {/* Mode */}
+              <div className="px-4 py-3 rounded-xl hover:bg-muted/40 transition-colors border border-transparent">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-2">
+                  Mode
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModified((m) => ({ ...m, darkMode: false }))
+                      autoSaveSection("darkMode", false)
+                    }}
+                    className={`py-2 rounded-lg border text-[10px] font-bold uppercase tracking-widest transition-all ${
+                      !globalConfig.darkMode
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border bg-background hover:border-primary/30 text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Light
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModified((m) => ({ ...m, darkMode: true }))
+                      autoSaveSection("darkMode", true)
+                    }}
+                    className={`py-2 rounded-lg border text-[10px] font-bold uppercase tracking-widest transition-all ${
+                      !!globalConfig.darkMode
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border bg-background hover:border-primary/30 text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Dark
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -814,8 +2080,79 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
 
       </aside>
 
+      {/* Add Section Modal */}
+      <Dialog open={addSectionOpen} onOpenChange={setAddSectionOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col p-0 gap-0">
+          <DialogHeader className="p-6 border-b border-border bg-muted/10">
+            <DialogTitle className="flex items-center gap-2">
+              <Layout className="w-5 h-5 text-primary" />
+              Add New Section
+            </DialogTitle>
+            <DialogDescription>
+              Choose a block to add to your page.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+            {SECTION_CATEGORIES.map((cat) => (
+              <div key={cat.label} className="space-y-4">
+                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
+                  <div className="w-1 h-4 bg-primary/20 rounded-full" />
+                  {cat.label}
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {cat.ids.map((id) => {
+                    if (id === 'hero') return null
+                    const isAdded = activeSections.includes(id)
+                    return (
+                      <div
+                        key={id}
+                        role="button"
+                        tabIndex={isAdded ? -1 : 0}
+                        aria-disabled={isAdded}
+                        onClick={() => {
+                          if (isAdded) return
+                          addSection(id)
+                        }}
+                        onKeyDown={(e) => {
+                          if (isAdded) return
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault()
+                            addSection(id)
+                          }
+                        }}
+                        className={`group relative flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${isAdded ? 'bg-muted/50 border-border opacity-60 cursor-not-allowed' : 'bg-background border-border hover:border-primary/30 hover:bg-primary/5 active:scale-[0.98]'}`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${isAdded ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white'}`}>
+                          <Plus className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold truncate leading-tight capitalize">{id.replace(/-/g, ' ')}</p>
+                          <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">{isAdded ? 'Already on page' : 'Click to add'}</p>
+                          {!isAdded && <SectionLivePreview id={id} />}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="p-4 border-t border-border bg-muted/5 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setAddSectionOpen(false)}
+              className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Main Content (Stage) */}
-      <main className="flex-1 flex flex-col min-w-0 bg-background relative">
+      <main className="flex-1 flex flex-col min-w-0 min-h-0 bg-background relative">
         <header className="fixed lg:absolute top-16 lg:top-0 left-0 lg:left-0 right-0 h-14 border-b border-border flex items-center justify-between px-4 sm:px-6 bg-muted/20 backdrop-blur-md z-[46] gap-4">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
             <button
@@ -998,9 +2335,9 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
         />
       </main>
 
-      {/* Edit Modal - Redesigned for better UI/UX. modal={false} allows portaled dropdowns (color palette, typography) to receive scroll/click. */}
-      <Dialog open={!!selectedSection} onOpenChange={(open) => { if (!open) { setSelectedSection(null); setGlobalSettingsModalTab("theme"); } }} modal={false}>
-        <DialogContent className={`p-0 overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh] min-h-0 border-0 shadow-2xl w-full sm:w-[95vw] ${selectedSection === 'global_settings' ? 'sm:max-w-[880px]' : 'sm:max-w-[840px]'}`}>
+      {/* Edit Modal - Redesigned for better UI/UX. modal={false} allows portaled dropdowns to receive scroll/click when used. */}
+      <Dialog open={!!selectedSection} onOpenChange={(open) => { if (!open) { setSelectedSection(null); } }} modal={false}>
+        <DialogContent className="p-0 overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh] min-h-0 border-0 shadow-2xl w-full sm:w-[95vw] sm:max-w-[840px]">
           {/* Polished header - shrink-0 keeps it always visible */}
           <div className="relative overflow-hidden shrink-0">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-primary/4 to-transparent" aria-hidden />
@@ -1008,9 +2345,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
             <DialogHeader className="relative p-4 sm:p-6 sm:pb-4">
               <div className="flex items-start gap-3 sm:gap-4">
                 <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  {selectedSection === 'global_settings' ? (
-                    <Settings className="w-6 h-6 text-primary" />
-                  ) : selectedSection === 'subscription' ? (
+                  {selectedSection === 'subscription' ? (
                     <CreditCard className="w-6 h-6 text-primary" />
                   ) : (
                     <Layout className="w-6 h-6 text-primary" />
@@ -1018,9 +2353,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                 </div>
                 <div className="min-w-0 flex-1">
                   <DialogTitle className="capitalize flex items-center gap-2 text-base sm:text-lg font-bold tracking-tight">
-                    {selectedSection === 'global_settings' ? (
-                      <>Global Site Settings</>
-                    ) : selectedSection === 'subscription' ? (
+                    {selectedSection === 'subscription' ? (
                       <>Subscription & Plan</>
                     ) : (
                       <div className="flex items-center gap-2">
@@ -1030,9 +2363,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                     )}
                   </DialogTitle>
                   <DialogDescription className="mt-0.5 sm:mt-1 text-xs sm:text-sm leading-relaxed line-clamp-1 sm:line-clamp-none">
-                    {selectedSection === 'global_settings' 
-                      ? "Manage theme, colors, and sections."
-                      : selectedSection === 'subscription'
+                    {selectedSection === 'subscription'
                       ? "View plan and auto-renewal."
                       : "Customize content and images."}
                   </DialogDescription>
@@ -1040,25 +2371,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               </div>
             </DialogHeader>
 
-            {/* Tabs for global_settings */}
-            {selectedSection === 'global_settings' && (
-              <div className="relative flex border-t border-border/60 px-6">
-                <button
-                  type="button"
-                  onClick={() => setGlobalSettingsModalTab("theme")}
-                  className={`px-4 py-3 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 -mb-px ${globalSettingsModalTab === "theme" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-                >
-                  Theme & Colors
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGlobalSettingsModalTab("sections")}
-                  className={`px-4 py-3 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 -mb-px ${globalSettingsModalTab === "sections" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-                >
-                  Page Sections
-                </button>
-              </div>
-            )}
+            {/* Tabs removed: global_settings now integrated into sidebar reordering */}
           </div>
 
           <div
@@ -1067,310 +2380,6 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
           >
             {selectedSection === 'subscription' ? (
               <SubscriptionSettings project={project as any} />
-            ) : selectedSection === 'global_settings' ? (
-              <div className="space-y-6">
-                {globalSettingsModalTab === "theme" && (
-                <>
-                {/* Theme & Appearance - Card with clear hierarchy */}
-                <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/30 to-muted/10 overflow-hidden">
-                  <div className="px-5 py-3 border-b border-border/60 bg-muted/20">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Layout className="w-4 h-4 text-primary" /> Theme & Appearance
-                    </h3>
-                  </div>
-                  <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Layout className="w-3 h-3" /> Layout Theme
-                    </label>
-                    <select 
-                      className="w-full p-2.5 bg-background border border-border/80 rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-colors"
-                      value={globalConfig.theme || 'lawyer'}
-                      onChange={(e) => {
-                        const val = e.target.value
-                        setModified(m => ({ ...m, theme: val }))
-                        autoSaveSection('theme', val)
-                      }}
-                    >
-                      {['lawyer', 'startup', 'chiropractor', 'dentist', 'clinic', 'cleaning', 'pool', 'pest-control', 'real-estate-modern', 'before-after-split', 'industrial', 'clean-delivery', 'luxury-soft', 'academic-clean', 'hvac', 'hvac-blue', 'generic'].map(t => (
-                        <option key={t} value={t}>{t.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-4" ref={colorPaletteRef}>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Settings className="w-3 h-3" /> Color Palette
-                    </label>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setTypographyOpen(false)
-                          const rect = colorPaletteRef.current?.getBoundingClientRect()
-                          if (rect) colorPaletteRectRef.current = rect
-                          setColorPaletteOpen((o) => !o)
-                        }}
-                        className="w-full p-2.5 bg-background border border-border/80 rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 flex items-center gap-3 text-left transition-colors"
-                      >
-                        <div className="flex gap-0.5 shrink-0">
-                          {(COLOR_THEME_SWATCHES[globalConfig.colorTheme || "partner"] ?? ["#94a3b8", "#cbd5e1", "#f1f5f9"]).map((hex, i) => (
-                            <div key={i} className="w-4 h-4 rounded-full border border-border shrink-0" style={{ backgroundColor: hex }} title={hex} />
-                          ))}
-                        </div>
-                        <span className="flex-1 truncate capitalize">
-                          {(globalConfig.colorTheme || "partner").replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                        </span>
-                        <ChevronRight className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${colorPaletteOpen ? "rotate-90" : ""}`} />
-                      </button>
-                      {colorPaletteOpen && typeof document !== "undefined" && colorPaletteRectRef.current && createPortal(
-                        (() => {
-                          const rect = colorPaletteRectRef.current!
-                          const spaceBelow = typeof window !== "undefined" ? window.innerHeight - rect.bottom - 24 : 280
-                          const maxHeight = Math.min(280, Math.max(160, spaceBelow))
-                          return (
-                        <div
-                          data-dropdown="color-palette"
-                          className="fixed z-[300] overflow-y-auto bg-background border border-border rounded-lg shadow-lg py-1 pointer-events-auto"
-                          style={{
-                            top: rect.bottom + 4,
-                            left: rect.left,
-                            width: Math.max(rect.width, 200),
-                            minWidth: 200,
-                            maxHeight,
-                          }}
-                        >
-                          {[
-                            "partner", "justice", "modern", "frost-fire", "reliable", "eco-clean",
-                            "surgeon", "wellness", "holistic", "clinical-gold", "red-crimson", "cyan-ocean", "orange-amber",
-                            "dark-pink-white", "blue-mint", "red-black", "dark-green-ivory-yellow", "bright-green-hot-pink",
-                            "dark-grey-yellowgreen", "blue-shades-white", "white-lime", "beige-dark-grey", "pastel-purple-neutral",
-                            "navy-electric-blue", "gradient-white-dark-blue", "white-blue-grey", "bright-red-white",
-                            "classic-blue-turquoise-gold", "dark-royal-blue-gold", "white-purple", "blue-shades-white-red-violet",
-                            "light-reddish-orange", "white-purple-orange", "deep-purple-orange-red-pink", "brown-beige", "navy-electric",
-                            "dark-green-ivory", "fiesta-red-yellow", "barangay-blue", "tropical-teal", "luxury-black-gold", "facebook-blue",
-                            "nebula", "flow", "mono"
-                          ].sort().map((c) => {
-                            const swatches = COLOR_THEME_SWATCHES[c] ?? ["#94a3b8", "#cbd5e1", "#f1f5f9"]
-                            const isSelected = (globalConfig.colorTheme || "partner") === c
-                            return (
-                              <button
-                                key={c}
-                                type="button"
-                                onClick={() => {
-                                  setModified((m) => ({ ...m, colorTheme: c }))
-                                  autoSaveSection("colorTheme", c)
-                                  setColorPaletteOpen(false)
-                                }}
-                                className={`w-full flex items-center gap-3 px-3 py-2 text-xs text-left hover:bg-muted/50 transition-colors ${isSelected ? "bg-primary/10 text-primary" : ""}`}
-                              >
-                                <div className="flex gap-0.5 shrink-0">
-                                  {swatches.map((hex, i) => (
-                                    <div key={i} className="w-5 h-5 rounded-full border border-border shrink-0" style={{ backgroundColor: hex }} />
-                                  ))}
-                                </div>
-                                <span className="flex-1 truncate capitalize">{c.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())}</span>
-                              </button>
-                            )
-                          })}
-                        </div>
-                          )
-                        })(),
-                        document.body
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-4" ref={typographyRef}>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <FileText className="w-3 h-3" /> Typography
-                    </label>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setColorPaletteOpen(false)
-                          const rect = typographyRef.current?.getBoundingClientRect()
-                          if (rect) typographyRectRef.current = rect
-                          setTypographyOpen((o) => !o)
-                        }}
-                        className="w-full p-2.5 bg-background border border-border/80 rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 flex items-center justify-between text-left transition-colors"
-                      >
-                        <span
-                          className="truncate"
-                          style={{ fontFamily: TYPOGRAPHY_OPTIONS.find((o) => o.value === (globalConfig.typographyStyle || "elegant"))?.fontFamily ?? TYPOGRAPHY_OPTIONS[0].fontFamily }}
-                        >
-                          {TYPOGRAPHY_OPTIONS.find((o) => o.value === (globalConfig.typographyStyle || "elegant"))?.label ?? "Elegant"}
-                        </span>
-                        <ChevronRight className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${typographyOpen ? "rotate-90" : ""}`} />
-                      </button>
-                      {typographyOpen && typeof document !== "undefined" && typographyRectRef.current && createPortal(
-                        <div
-                          data-dropdown="typography"
-                          className="fixed z-[300] bg-background border border-border rounded-lg shadow-lg py-1"
-                          style={{
-                            top: typographyRectRef.current.bottom + 4,
-                            left: typographyRectRef.current.left,
-                            width: typographyRectRef.current.width,
-                            minWidth: 200,
-                          }}
-                        >
-                          {TYPOGRAPHY_OPTIONS.map((opt) => {
-                            const isSelected = (globalConfig.typographyStyle || "elegant") === opt.value
-                            return (
-                              <button
-                                key={opt.value}
-                                type="button"
-                                onClick={() => {
-                                  setModified((m) => ({ ...m, typographyStyle: opt.value }))
-                                  autoSaveSection("typographyStyle", opt.value)
-                                  setTypographyOpen(false)
-                                }}
-                                className={`w-full px-3 py-2.5 text-xs text-left hover:bg-muted/50 transition-colors ${isSelected ? "bg-primary/10 text-primary" : ""}`}
-                                style={{ fontFamily: opt.fontFamily }}
-                              >
-                                {opt.label}
-                              </button>
-                            )
-                          })}
-                        </div>,
-                        document.body
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Eye className="w-3 h-3" /> Appearance
-                    </label>
-                    <div className="flex items-center gap-3 p-3 bg-background/80 border border-border/80 rounded-xl">
-                      <input
-                        type="checkbox"
-                        checked={!!globalConfig.darkMode}
-                        onChange={(e) => {
-                          const val = e.target.checked
-                          setModified(m => ({ ...m, darkMode: val }))
-                          autoSaveSection('darkMode', val)
-                        }}
-                        className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-                      />
-                      <span className="text-xs text-foreground font-medium">Dark Mode Enabled</span>
-                    </div>
-                  </div>
-                </div>
-                  </div>
-                </>
-                )}
-
-                {globalSettingsModalTab === "sections" && (
-                <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/30 to-muted/10 overflow-hidden">
-                  <div className="px-5 py-3 border-b border-border/60 bg-muted/20">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Plus className="w-4 h-4 text-primary" /> Active Sections (Drag to Reorder)
-                    </h3>
-                    <p className="text-[10px] text-muted-foreground/80 mt-1">Reorder or remove sections. Hero is always first.</p>
-                  </div>
-                  <div className="p-5 space-y-4">
-                    <div className="space-y-2">
-                    {activeSections.map((section: string, idx: number) => {
-                      const isDragging = dragSectionIndex === idx
-                      const isDropTarget = dropSectionIndex === idx
-                      const moveTo = (fromIndex: number, toIndex: number) => {
-                        if (fromIndex === toIndex) return
-                        const next = [...activeSections]
-                        const [removed] = next.splice(fromIndex, 1)
-                        const insertAt = fromIndex < toIndex ? toIndex - 1 : toIndex
-                        next.splice(insertAt, 0, removed)
-                        setModified(m => ({ ...m, activeSections: next }))
-                        autoSaveSection('activeSections', next)
-                      }
-                      return (
-                        <div
-                          key={idx}
-                          draggable={true}
-                          onDragStart={() => setDragSectionIndex(idx)}
-                          onDragEnd={() => { setDragSectionIndex(null); setDropSectionIndex(null) }}
-                          onDragOver={(e) => {
-                            e.preventDefault()
-                            e.dataTransfer.dropEffect = 'move'
-                            if (dragSectionIndex !== null && dragSectionIndex !== idx) setDropSectionIndex(idx)
-                          }}
-                          onDragLeave={() => setDropSectionIndex(null)}
-                          onDrop={(e) => {
-                            e.preventDefault()
-                            if (dragSectionIndex !== null && dragSectionIndex !== idx) {
-                              moveTo(dragSectionIndex, idx)
-                            }
-                            setDragSectionIndex(null)
-                            setDropSectionIndex(null)
-                          }}
-                          className={`flex items-center gap-3 p-3 border rounded-xl group transition-all duration-200 cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-60 bg-muted/50 border-primary/40 scale-[0.98]' : 'bg-background/80 border-border/80 hover:border-primary/20'} ${isDropTarget ? 'ring-2 ring-primary/40 ring-offset-2 ring-offset-background bg-primary/5 border-primary' : ''}`}
-                        >
-                          <GripVertical className="w-4 h-4 shrink-0 aria-hidden text-muted-foreground/50" />
-                          <span className="flex-1 text-xs font-medium capitalize select-none">{section.replace(/-/g, ' ')}</span>
-                          <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              type="button"
-                              onClick={() => { if (idx > 0) moveTo(idx, idx - 1) }}
-                              className="p-1 hover:bg-muted rounded text-[10px]"
-                            >Up</button>
-                            <button
-                              type="button"
-                              onClick={() => { if (idx < activeSections.length - 1) moveTo(idx, idx + 1) }}
-                              className="p-1 hover:bg-muted rounded text-[10px]"
-                            >Down</button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const next = [...activeSections];
-                                next.splice(idx, 1);
-                                setModified((m: any) => ({ ...m, activeSections: next }))
-                                autoSaveSection('activeSections', next)
-                              }}
-                              className="p-1 text-muted-foreground hover:text-red-500 rounded transition-colors"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                  
-                  <div className="pt-2">
-                    <select 
-                      className="w-full p-2.5 text-xs bg-background text-foreground border border-border/80 rounded-xl outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-colors"
-                      onChange={(e) => {
-                        const value = e.target.value
-                        if (!value) return
-                        const next = [...activeSections, value]
-                        setModified(m => ({ ...m, activeSections: next }))
-                        autoSaveSection('activeSections', next)
-                        e.target.value = ""
-                      }}
-                      value=""
-                    >
-                      <option value="">+ Add a New Section</option>
-                      {(() => {
-                        const activeSet = new Set(activeSections)
-                        return SECTION_CATEGORIES.map((cat) => {
-                          const available = cat.ids.filter((id) => !activeSet.has(id))
-                          if (available.length === 0) return null
-                          return (
-                            <optgroup key={cat.label} label={cat.label}>
-                              {available.sort().map((id) => (
-                                <option key={id} value={id}>{formatSectionLabel(id)}</option>
-                              ))}
-                            </optgroup>
-                          )
-                        })
-                      })()}
-                    </select>
-                  </div>
-                    </div>
-                </div>
-                )}
-              </div>
             ) : (
               <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
                 <div className="flex items-center justify-between mb-4">
@@ -1405,12 +2414,44 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   </div>
                 </div>
 
+                {selectedSection === 'hero' && (
+                  <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-border/60 bg-muted/10">
+                      <label className="text-xs font-bold uppercase tracking-widest text-primary">Layout Theme</label>
+                      <p className="text-[10px] text-muted-foreground mt-1">This controls the hero layout style for your site.</p>
+                    </div>
+                    <div className="p-4">
+                      <select
+                        className="w-full p-2.5 bg-background border border-border/80 rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-colors"
+                        value={globalConfig.theme || 'lawyer'}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          setModified((m) => ({ ...m, theme: val }))
+                          autoSaveSection('theme', val)
+                        }}
+                      >
+                        {['lawyer', 'startup', 'chiropractor', 'dentist', 'clinic', 'cleaning', 'pool', 'pest-control', 'real-estate-modern', 'before-after-split', 'industrial', 'clean-delivery', 'luxury-soft', 'academic-clean', 'hvac', 'hvac-blue', 'generic'].map((t) => (
+                          <option key={t} value={t}>
+                            {t.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
                 {/* 1) Text, Boolean, and Nested Object fields - use grid for horizontal layout */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {Object.entries(formValues)
+                    .filter(([key]) => {
+                      if (selectedSection === 'hero') {
+                        return !['trustbadges', 'trustsignals'].includes(key.toLowerCase());
+                      }
+                      return true;
+                    })
                     .map(([key, value]) => {
                       const isPageLinkUrl = ['privacyurl', 'termsurl', 'cookieurl'].includes(key.toLowerCase());
-                      const isImage = !isPageLinkUrl && (key.toLowerCase().includes('url') || key.toLowerCase().includes('image') || key.toLowerCase().includes('logo') || key.toLowerCase().includes('before') || key.toLowerCase().includes('after'));
+                      const isImage = !isPageLinkUrl && (key.toLowerCase().includes('url') || key.toLowerCase().includes('image') || key.toLowerCase().includes('logo'));
                       const isTextarea = typeof value === 'string' && value.length > 80;
                       const isBoolean = typeof value === 'boolean';
                       const isObject = typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -1633,7 +2674,12 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
 
                 {/* 2) Array Items detection (the powerful part) */}
                 {Object.entries(formValues)
-                  .filter(([_, v]) => Array.isArray(v))
+                  .filter(([key, v]) => {
+                    if (selectedSection === 'hero') {
+                      return Array.isArray(v) && !['trustbadges', 'trustsignals'].includes(key.toLowerCase());
+                    }
+                    return Array.isArray(v);
+                  })
                   .map(([key, items]) => {
                     const typedItems = items as any[]
                     const firstItem = typedItems[0]
@@ -1709,8 +2755,36 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                             const hasFacebookReviewsStructure = key === 'reviews' && isObject && (hasProp(itemObj, 'author') || hasProp(itemObj, 'text') || hasProp(itemObj, 'rating'))
                             const hasTrustSignalsStructure = key === 'trustSignals' && isObject && (hasProp(itemObj, 'label') || hasProp(itemObj, 'icon'))
                             const hasPracticeAreasStructure = key === 'items' && isObject && !hasStepsStructure && !hasFinancingStructure && !hasAcTypesStructure && hasProp(itemObj, 'title') && hasProp(itemObj, 'description') && !hasProp(itemObj, 'question') && !hasProp(itemObj, 'beforeImage')
+                            const hasSafetyStructure = key === 'items' && isObject && hasProp(itemObj, 'title') && hasProp(itemObj, 'description') && (hasProp(itemObj, 'icon') || hasProp(itemObj, 'imageUrl')) && selectedSection === 'safety-section'
                             const hasPageStyle = key === 'items' && isObject && hasAwardsStructure && !hasPracticeAreasStructure && !hasBeforeAfterStructure && !hasFeaturedListingsStructure && !hasDeveloperPartnersStructure && !hasAcTypesStructure && !hasPricePreviewStructure
 
+                            if (hasSafetyStructure) {
+                              return (
+                                <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <div className="p-4 space-y-3">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-10 h-10 rounded-full bg-background border border-border overflow-visible flex items-center justify-center shrink-0 text-primary relative z-10">
+                                        {hasImageUrl ? (
+                                          <img src={itemObj.imageUrl as string} alt="" className="w-full h-full rounded-full object-cover" />
+                                        ) : (
+                                          <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
+                                        )}
+                                      </div>
+                                      <div className="flex-1">
+                                        <ImageUpload value={(itemObj.imageUrl as string) || ''} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, imageUrl: url }; updateItems(next) }} />
+                                      </div>
+                                    </div>
+                                    <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                    <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                  </div>
+                                </div>
+                              )
+                            }
                             if (hasBlogStructure) {
                               return (
                                 <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
@@ -1831,11 +2905,9 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                                           <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
                                         )}
                                       </div>
-                                      {hasImageUrl && (
-                                        <div className="flex-1">
-                                          <ImageUpload value={itemObj.imageUrl as string} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, imageUrl: url }; updateItems(next) }} />
-                                        </div>
-                                      )}
+                                      <div className="flex-1">
+                                        <ImageUpload value={(itemObj.imageUrl as string) || ''} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, imageUrl: url }; updateItems(next) }} />
+                                      </div>
                                     </div>
                                     <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
                                     <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />

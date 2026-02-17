@@ -899,6 +899,8 @@ export default function SiteEditorSidebar() {
                         { id: "technical", label: "Technical" },
                         { id: "playful", label: "Playful" },
                         { id: "traditional", label: "Traditional" },
+                        { id: "lucky", label: "Lucky Guy" },
+                        { id: "display", label: "Display" },
                       ].map((t) => (
                         <button
                           key={t.id}

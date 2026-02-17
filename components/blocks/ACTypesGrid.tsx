@@ -34,22 +34,25 @@ export default function ACTypesGrid({
         </div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
-          {items.map((item, index) => (
-            <div 
-              key={index} 
-              className="group p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-border bg-muted/20 hover:border-primary/30 transition-all text-center"
-            >
-              <div className="w-8 h-8 sm:w-12 sm:h-12 mx-auto bg-primary/10 rounded-lg sm:rounded-xl overflow-hidden flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
-                {item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                ) : (
-                  <DynamicIcon name={item.icon} className="w-4 h-4 sm:w-6 h-6 text-primary" />
-                )}
+          {items.map((item, index) => {
+            const hasImage = Boolean(item.imageUrl);
+            return (
+              <div 
+                key={index} 
+                className="group p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-border bg-muted/20 hover:border-primary/30 transition-all text-center"
+              >
+                <div className={`${hasImage ? "w-12 h-12 sm:w-20 sm:h-20" : "w-8 h-8 sm:w-12 sm:h-12"} mx-auto bg-primary/10 rounded-lg sm:rounded-xl overflow-hidden flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform`}>
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <DynamicIcon name={item.icon} className="w-4 h-4 sm:w-6 h-6 text-primary" />
+                  )}
+                </div>
+                <h3 className="text-xs sm:text-base font-bold text-foreground mb-1">{item.name}</h3>
+                <p className="text-[9px] sm:text-xs text-muted-foreground">{item.description}</p>
               </div>
-              <h3 className="text-xs sm:text-base font-bold text-foreground mb-1">{item.name}</h3>
-              <p className="text-[9px] sm:text-xs text-muted-foreground">{item.description}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

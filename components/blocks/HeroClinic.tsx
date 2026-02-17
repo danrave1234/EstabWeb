@@ -79,11 +79,6 @@ export default function HeroClinic({
               {secondaryCTA}
             </a>
           </div>
-          {trustSignals && trustSignals.length > 0 && (
-            <div className="mt-12 pt-8 border-t border-border/50 w-full max-w-2xl">
-              <TrustSignals signals={trustSignals} className="justify-center" />
-            </div>
-          )}
         </div>
       </div>
     </section>

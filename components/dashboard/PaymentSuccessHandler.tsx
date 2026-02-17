@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { CheckCircle2, Loader2 } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 import {
   Dialog,
   DialogContent,
@@ -17,31 +18,62 @@ export default function PaymentSuccessHandler() {
   const router = useRouter()
   const [showModal, setShowModal] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
+  const [tookTooLong, setTookTooLong] = useState(false)
+  const doneRef = useRef(false)
 
   useEffect(() => {
     if (searchParams.get("payment_success") === "true") {
       setShowModal(true)
       setIsVerifying(true)
+      setTookTooLong(false)
+      doneRef.current = false
       
       // Clear the URL parameter without refreshing
       const newUrl = window.location.pathname + (window.location.search.replace(/[?&]payment_success=true/, "").replace(/^&/, "?") || "")
       window.history.replaceState({}, "", newUrl)
 
-      // Polling or waiting for webhook to propagate
-      // We refresh the page every 3 seconds for up to 15 seconds or until user closes
-      const interval = setInterval(() => {
-        router.refresh()
-      }, 3000)
+      const supabase = createClient()
+      const projectId = searchParams.get("projectId")
 
-      const timeout = setTimeout(() => {
-        clearInterval(interval)
+      const isPaidStatus = (status: string | null | undefined) => {
+        const s = (status || "free").toLowerCase()
+        return s === "active" || s === "admin_granted"
+      }
+
+      const checkOnce = async () => {
+        if (!projectId) return false
+        const { data, error } = await supabase
+          .from("projects")
+          .select("subscription_status")
+          .eq("id", projectId)
+          .limit(1)
+          .maybeSingle()
+        if (error) return false
+        return isPaidStatus((data as any)?.subscription_status)
+      }
+
+      // Poll for DB update (webhook propagation). Once active, refresh once and stop.
+      const interval = window.setInterval(async () => {
+        if (doneRef.current) return
+        const paid = await checkOnce()
+        if (!paid) return
+        doneRef.current = true
         setIsVerifying(false)
-        toast.success("Payment confirmed! Your subscription has been updated.")
-      }, 10000)
+        toast.success("Payment confirmed! Your subscription is now Pro.")
+        router.refresh()
+      }, 2000)
+
+      // Safety timeout: stop polling but keep UX informative.
+      const timeout = window.setTimeout(() => {
+        if (doneRef.current) return
+        window.clearInterval(interval)
+        setIsVerifying(false)
+        setTookTooLong(true)
+      }, 60000)
 
       return () => {
-        clearInterval(interval)
-        clearTimeout(timeout)
+        window.clearInterval(interval)
+        window.clearTimeout(timeout)
       }
     }
   }, [searchParams, router])
@@ -69,10 +101,18 @@ export default function PaymentSuccessHandler() {
           ) : (
             <div className="text-center">
               <p className="text-sm font-medium text-emerald-600 mb-4">
-                Everything is ready!
+                {tookTooLong ? "Still processing…" : "Everything is ready!"}
               </p>
+              {tookTooLong && (
+                <p className="text-xs text-muted-foreground mb-4">
+                  Activation can take up to a minute. If your plan still looks Free, click below or refresh once.
+                </p>
+              )}
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false)
+                  router.refresh()
+                }}
                 className="px-8 py-2.5 bg-primary text-primary-foreground rounded-full font-bold hover:scale-105 transition-all shadow-lg shadow-primary/20"
               >
                 Go to Dashboard

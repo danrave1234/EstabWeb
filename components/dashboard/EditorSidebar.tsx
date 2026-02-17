@@ -29,7 +29,7 @@ interface EditorSidebarProps {
   activeSections: string[]
   setHistoryOpen: (open: boolean) => void
   modified: Record<string, any>
-  setModified: (modified: Record<string, any>) => void
+  setModified: (modified: any) => void
   hasDraft: boolean
   LOCAL_KEY: string
   refreshPreview: () => void
@@ -45,7 +45,47 @@ interface EditorSidebarProps {
   autoSaveSection: (id: string, val: any) => void
 }
 
-import { Search, X } from "lucide-react"
+import { Search, X, Layers, Component } from "lucide-react"
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/Dialog"
+import { 
+  DEFAULT_AWARDS_STRIP, 
+  DEFAULT_FAQ_ACCORDION, 
+  DEFAULT_BLOG, 
+  DEFAULT_BEFORE_AFTER_GALLERY, 
+  DEFAULT_HOW_IT_WORKS, 
+  DEFAULT_PRACTICE_AREAS, 
+  DEFAULT_TREATMENT_PROCESS, 
+  DEFAULT_COMMON_PESTS, 
+  DEFAULT_FEATURED_LISTINGS, 
+  DEFAULT_DEVELOPER_PARTNERS, 
+  DEFAULT_REVIEW_TRUST_BAR, 
+  DEFAULT_FINANCING, 
+  DEFAULT_AC_TYPES, 
+  DEFAULT_PRICE_PREVIEW, 
+  DEFAULT_PRICING_TABLE, 
+  DEFAULT_MAINTENANCE_PLANS, 
+  DEFAULT_FACEBOOK_REVIEW_EMBED, 
+  DEFAULT_WHY_CHOOSE_ME, 
+  DEFAULT_SERVICE_AREA_MAP, 
+  DEFAULT_LOGO_CLOUD, 
+  DEFAULT_DELIVERY_COVERAGE,
+  sectionIdToKey
+} from "@/config/dashboard-config"
+
+const SECTION_CATEGORIES: { label: string; ids: string[] }[] = [
+  { label: "Trust & Social Proof", ids: ["awards", "review-trust-bar", "trust-badges-grid", "facebook-review-embed", "reviews-grid", "testimonials"] },
+  { label: "Services & Features", ids: ["features", "practice-areas", "feature-highlight", "ac-types-grid", "financing-section", "developer-partners", "featured-properties-grid", "features-modern", "services-grid", "project-gallery", "programs-grid", "warranty-block"] },
+  { label: "Process & Info", ids: ["how-it-works", "treatment-process", "patient-faq", "faq-accordion", "faq-two-column", "blog", "delivery-coverage", "stats-section"] },
+  { label: "Team & Profiles", ids: ["team-carousel", "team-grid", "attorney-profile", "faculty-grid", "why-choose-me"] },
+  { label: "Contact & Conversion", ids: ["contact", "contact-minimal", "contact-visual", "contact-with-map", "contact-columns", "free-consultation", "booking-cta", "pricing", "promo-cta-section", "promo-banner-strip", "payment-options-strip", "service-area-map", "coverage-radius-block", "emergency-cta-strip", "price-preview-strip", "maintenance-plans"] },
+  { label: "Visuals & Galleries", ids: ["before-after-gallery-grid", "before-after-slider", "common-pests", "safety-section", "logo-cloud"] },
+]
 
 export default function EditorSidebar({
   activeTab,
@@ -71,10 +111,69 @@ export default function EditorSidebar({
   autoSaveSection
 }: EditorSidebarProps) {
   const [searchQuery, setSearchQuery] = React.useState("")
+  const [addSectionOpen, setAddSectionOpen] = React.useState(false)
+
+  const addSection = (id: string) => {
+    const next = [...activeSections, id]
+    const sectionKey = sectionIdToKey(id)
+    
+    // Default data mapping
+    const defaultDataMap: Record<string, any> = {
+      'awards': DEFAULT_AWARDS_STRIP,
+      'certifications': DEFAULT_AWARDS_STRIP,
+      'faq-accordion': DEFAULT_FAQ_ACCORDION,
+      'blog': DEFAULT_BLOG,
+      'before-after-gallery-grid': DEFAULT_BEFORE_AFTER_GALLERY,
+      'how-it-works': DEFAULT_HOW_IT_WORKS,
+      'practice-areas': DEFAULT_PRACTICE_AREAS,
+      'treatment-process': DEFAULT_TREATMENT_PROCESS,
+      'common-pests': DEFAULT_COMMON_PESTS,
+      'featured-properties-grid': DEFAULT_FEATURED_LISTINGS,
+      'developer-partners': DEFAULT_DEVELOPER_PARTNERS,
+      'review-trust-bar': DEFAULT_REVIEW_TRUST_BAR,
+      'financing-section': DEFAULT_FINANCING,
+      'ac-types-grid': DEFAULT_AC_TYPES,
+      'price-preview-strip': DEFAULT_PRICE_PREVIEW,
+      'pricing': DEFAULT_PRICING_TABLE,
+      'maintenance-plans': DEFAULT_MAINTENANCE_PLANS,
+      'facebook-review-embed': DEFAULT_FACEBOOK_REVIEW_EMBED,
+      'why-choose-me': DEFAULT_WHY_CHOOSE_ME,
+      'service-area-map': DEFAULT_SERVICE_AREA_MAP,
+      'logo-cloud': DEFAULT_LOGO_CLOUD,
+      'delivery-coverage': DEFAULT_DELIVERY_COVERAGE,
+    }
+
+    const defaultData = defaultDataMap[id] || {}
+    
+    setModified((m: any) => ({ 
+      ...m, 
+      activeSections: next,
+      [sectionKey]: defaultData
+    }))
+    autoSaveSection('activeSections', next)
+    setAddSectionOpen(false)
+    setSelectedSection(id)
+  }
 
   const filteredSections = activeSections
     .filter((s: string) => s !== 'hero')
     .filter((s: string) => s.replace(/-/g, ' ').toLowerCase().includes(searchQuery.toLowerCase()))
+
+  const moveTo = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return
+    const next = [...activeSections]
+    const [removed] = next.splice(fromIndex, 1)
+    next.splice(toIndex, 0, removed)
+    setModified((m: any) => ({ ...m, activeSections: next }))
+    autoSaveSection('activeSections', next)
+  }
+
+  const removeSection = (idx: number) => {
+    const next = [...activeSections]
+    next.splice(idx, 1)
+    setModified((m: any) => ({ ...m, activeSections: next }))
+    autoSaveSection('activeSections', next)
+  }
 
   return (
     <aside className="w-[320px] border-r border-border bg-background flex flex-col shrink-0 shadow-xl z-20">
@@ -151,9 +250,13 @@ export default function EditorSidebar({
 
             <div className="pt-4 px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50 flex items-center justify-between">
               Page Sections
-              {activeSections.length > 5 && (
-                <span className="text-[8px] opacity-60 font-medium tracking-normal">{activeSections.length} blocks</span>
-              )}
+              <button 
+                onClick={() => setAddSectionOpen(true)}
+                className="p-1 hover:bg-primary/10 text-primary rounded transition-colors"
+                title="Add Section"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             {/* Search Bar */}
@@ -178,36 +281,86 @@ export default function EditorSidebar({
               </div>
             </div>
 
-            <button
-              onClick={() => setSelectedSection('hero')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'hero' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'} ${searchQuery && !'hero section'.includes(searchQuery.toLowerCase()) ? 'hidden' : ''} ${!activeSections.includes('hero') ? 'opacity-50 grayscale' : ''}`}
-            >
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
-                <Zap className="w-4 h-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate">Hero Section</p>
-                <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Main Banner</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
+            {activeSections.map((section: string, idx: number) => {
+              if (section === 'hero') return (
+                <button
+                  key="hero"
+                  onClick={() => setSelectedSection('hero')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'hero' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'} ${searchQuery && !'hero section'.includes(searchQuery.toLowerCase()) ? 'hidden' : ''}`}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold truncate">Hero Section</p>
+                    <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Main Banner</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              )
 
-            {filteredSections.map((section: string) => (
+              if (searchQuery && !section.replace(/-/g, ' ').toLowerCase().includes(searchQuery.toLowerCase())) return null
+
+              const isDragging = dragSectionIndex === idx
+              const isDropTarget = dropSectionIndex === idx
+
+              return (
+                <div
+                  key={`${section}-${idx}`}
+                  draggable={true}
+                  onDragStart={() => setDragSectionIndex(idx)}
+                  onDragEnd={() => { setDragSectionIndex(null); setDropSectionIndex(null) }}
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    if (dragSectionIndex !== null && dragSectionIndex !== idx) setDropSectionIndex(idx)
+                  }}
+                  onDragLeave={() => setDropSectionIndex(null)}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    if (dragSectionIndex !== null && dragSectionIndex !== idx) {
+                      moveTo(dragSectionIndex, idx)
+                    }
+                    setDragSectionIndex(null)
+                    setDropSectionIndex(null)
+                  }}
+                  className={`relative group w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left border ${isDragging ? 'opacity-40 bg-muted border-dashed' : selectedSection === section ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted border-transparent'} ${isDropTarget ? 'border-t-primary border-t-2' : ''}`}
+                >
+                  <div 
+                    className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground shrink-0 group-hover:scale-110 transition-transform cursor-grab active:cursor-grabbing hover:bg-primary/10 hover:text-primary z-10"
+                    title="Drag to reorder"
+                  >
+                    <GripVertical className="w-4 h-4" />
+                  </div>
+                  <button
+                    onClick={() => setSelectedSection(section)}
+                    className="flex-1 min-w-0 text-left py-1"
+                  >
+                    <p className="text-sm font-bold truncate capitalize">{section.replace(/-/g, ' ')}</p>
+                    <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Block Edit</p>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeSection(idx)
+                    }}
+                    className="p-1.5 opacity-40 group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-all"
+                    title="Remove Section"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )
+            })}
+
+            <div className="mt-4 px-1">
               <button
-                key={section}
-                onClick={() => setSelectedSection(section)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === section ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+                onClick={() => setAddSectionOpen(true)}
+                className="w-full py-3 flex items-center justify-center gap-2 border-2 border-dashed border-border hover:border-primary/30 hover:bg-primary/5 rounded-xl text-xs font-bold text-muted-foreground hover:text-primary transition-all group"
               >
-                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground shrink-0 group-hover:scale-110 transition-transform">
-                  <Layout className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate capitalize">{section.replace(/-/g, ' ')}</p>
-                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Block Edit</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+                Add New Block
               </button>
-            ))}
+            </div>
 
             <button
               onClick={() => setSelectedSection('footer')}
@@ -245,55 +398,12 @@ export default function EditorSidebar({
             </button>
 
             <div className="pt-4 px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
-              Section Order
+              Appearance Settings
             </div>
-            <div className="space-y-2 bg-muted/20 p-2 rounded-2xl border border-border/50">
-                  {activeSections.map((section, index) => (
-                    <div
-                      key={`${section}-${index}`}
-                      draggable
-                      onDragStart={() => setDragSectionIndex(index)}
-                      onDragOver={(e) => { e.preventDefault(); setDropSectionIndex(index) }}
-                      onDragEnd={() => {
-                        if (dragSectionIndex !== null && dropSectionIndex !== null && dragSectionIndex !== dropSectionIndex) {
-                          const newSections = [...activeSections]
-                          const [moved] = newSections.splice(dragSectionIndex, 1)
-                          newSections.splice(dropSectionIndex, 0, moved)
-                          setModified((m: any) => ({ ...m, activeSections: newSections }))
-                          autoSaveSection('activeSections', newSections)
-                        }
-                        setDragSectionIndex(null)
-                        setDropSectionIndex(null)
-                      }}
-                      className={`flex items-center gap-3 p-3 bg-background border border-border rounded-xl cursor-move transition-all ${dragSectionIndex === index ? 'opacity-50 scale-95 shadow-inner' : 'hover:border-primary/30 hover:shadow-md'} ${dropSectionIndex === index ? 'border-primary border-t-4' : ''}`}
-                    >
-                      <GripVertical className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-xs font-bold flex-1 truncate capitalize">
-                        {section.replace(/-/g, ' ')}
-                      </span>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          const next = [...activeSections];
-                          next.splice(index, 1);
-                          setModified((m: any) => ({ ...m, activeSections: next }))
-                          autoSaveSection('activeSections', next)
-                        }}
-                        className="p-1.5 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-              <div className="p-2">
-                <button
-                  onClick={() => { setSelectedSection('global_settings'); }}
-                  className="w-full py-3 flex items-center justify-center gap-2 border-2 border-dashed border-border hover:border-primary/30 hover:bg-primary/5 rounded-xl text-xs font-bold text-muted-foreground hover:text-primary transition-all group"
-                >
-                  <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-                  Add New Section
-                </button>
-              </div>
+            <div className="space-y-2">
+              <p className="px-3 text-[10px] text-muted-foreground leading-relaxed">
+                Customize global styles like colors, typography, and dark mode.
+              </p>
             </div>
           </div>
         )}
@@ -356,6 +466,66 @@ export default function EditorSidebar({
           </div>
         )}
       </div>
+
+      {/* Add Section Modal */}
+      <Dialog open={addSectionOpen} onOpenChange={setAddSectionOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col p-0 gap-0">
+          <DialogHeader className="p-6 border-b border-border bg-muted/10">
+            <DialogTitle className="flex items-center gap-2">
+              <Layers className="w-5 h-5 text-primary" />
+              Add New Section
+            </DialogTitle>
+            <DialogDescription>
+              Choose a block to add to your page.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+            {SECTION_CATEGORIES.map((cat) => (
+              <div key={cat.label} className="space-y-4">
+                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
+                  <div className="w-1 h-4 bg-primary/20 rounded-full" />
+                  {cat.label}
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {cat.ids.map((id) => {
+                    if (id === 'hero') return null;
+                    const isAdded = activeSections.includes(id);
+                    return (
+                      <button
+                        key={id}
+                        disabled={isAdded}
+                        onClick={() => addSection(id)}
+                        className={`group relative flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${isAdded ? 'bg-muted/50 border-border opacity-60 cursor-not-allowed' : 'bg-background border-border hover:border-primary/30 hover:bg-primary/5 active:scale-[0.98]'}`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${isAdded ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white'}`}>
+                          <Component className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold truncate leading-tight capitalize">{id.replace(/-/g, ' ')}</p>
+                          <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">{isAdded ? 'Already on page' : 'Click to add'}</p>
+                        </div>
+                        {!isAdded && (
+                          <Plus className="w-3.5 h-3.5 text-primary opacity-0 group-hover:opacity-100 transition-opacity absolute top-4 right-4" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="p-4 border-t border-border bg-muted/5 flex justify-end">
+            <button
+              onClick={() => setAddSectionOpen(false)}
+              className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="p-4 border-t border-border bg-muted/30">
         <div className="flex flex-col gap-2">

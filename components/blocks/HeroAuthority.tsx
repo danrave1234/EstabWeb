@@ -121,23 +121,6 @@ export default function HeroAuthority({
                   {secondaryCTA}
                 </a>
               </div>
-
-              {trustBadges.length > 0 && (
-                <div className="flex flex-wrap gap-6 pt-8 border-t border-border mt-12">
-                  {trustBadges.map((badge, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded bg-primary/10 overflow-hidden flex items-center justify-center">
-                        {badge.imageUrl ? (
-                          <img src={badge.imageUrl} alt={badge.label} className="w-full h-full object-cover" />
-                        ) : (
-                          <DynamicIcon name={badge.icon} className="w-4 h-4 text-primary" />
-                        )}
-                      </div>
-                      <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-muted-foreground">{badge.label}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
             
             <div className="lg:col-span-5 relative h-[400px] lg:h-[600px]">
@@ -214,7 +197,7 @@ export default function HeroAuthority({
                   </div>
                 )}
                 <div className="flex items-center gap-2 text-cyan-800/60 font-bold text-[10px] uppercase tracking-widest">
-                  <div className="w-4 h-4 flex items-center justify-center overflow-hidden">
+                  <div className={`${benefitImageUrl ? "w-8 h-8" : "w-4 h-4"} flex items-center justify-center overflow-hidden`}>
                     {benefitImageUrl ? (
                       <img src={benefitImageUrl} alt="" className="w-full h-full object-contain" />
                     ) : (
@@ -340,17 +323,6 @@ export default function HeroAuthority({
                   {secondaryCTA}
                 </a>
               </div>
-
-              {trustBadges.length > 0 && (
-                <div className="flex flex-wrap gap-10 pt-10 border-t border-border">
-                  {trustBadges.slice(0, 3).map((badge, i) => (
-                    <div key={i} className="flex flex-col gap-1">
-                      <p className="text-3xl font-black text-primary leading-none">{badge.label}</p>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{badge.icon}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
             <div className="lg:col-span-5 order-1 lg:order-2">
@@ -425,17 +397,6 @@ export default function HeroAuthority({
                   <span className="truncate">{secondaryCTA}</span>
                 </a>
               </div>
-
-              {trustBadges.length > 0 && (
-                <div className="flex flex-wrap gap-x-6 gap-y-3 pt-6 lg:pt-8 border-t border-border mt-8">
-                  {trustBadges.map((badge, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-primary" />
-                      <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-muted-foreground">{badge.label}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
             <div className="relative h-[400px] lg:h-full w-full">
@@ -502,19 +463,6 @@ export default function HeroAuthority({
                   {secondaryCTA}
                 </a>
               </div>
-
-              {trustBadges.length > 0 && (
-                <div className="flex flex-wrap gap-6 pt-4 border-t border-border">
-                  {trustBadges.map((badge, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
-                        <DynamicIcon name="ShieldCheck" className="w-4 h-4 text-primary" />
-                      </div>
-                      <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-muted-foreground">{badge.label}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
             <div className="relative group">
@@ -580,23 +528,6 @@ export default function HeroAuthority({
                   {secondaryCTA}
                 </a>
               </div>
-
-              {trustBadges.length > 0 && (
-                <div className="flex flex-wrap gap-8 pt-8 border-t border-border">
-                  {trustBadges.map((badge, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center overflow-hidden">
-                        {badge.imageUrl ? (
-                          <img src={badge.imageUrl} alt={badge.label} className="w-full h-full object-cover" />
-                        ) : (
-                          <DynamicIcon name={badge.icon} className="w-5 h-5 text-primary" />
-                        )}
-                      </div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-tight">{badge.label}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
             <div className="lg:col-span-6">
@@ -729,7 +660,10 @@ function BeforeAfterHeroSlider({ beforeImage, afterImage }: { beforeImage: strin
         className="absolute inset-0 w-full h-full overflow-hidden"
         style={{ width: `${position}%` }}
       >
-        <div className="relative w-full h-full" style={{ width: `${100 / (position / 100)}%` }}>
+        <div 
+          className="absolute inset-0 h-full"
+          style={{ width: `${100 * (100 / position)}%` }}
+        >
           <Image 
             src={beforeImage} 
             alt="Before" 

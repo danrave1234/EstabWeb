@@ -107,8 +107,10 @@ export default async function HubLayout({
       <body className="antialiased">
         <AuthProvider initialUser={sessionUser}>
           <HubLayoutClient initialUser={sessionUser}>
-            <ScrollReveal />
-            {children}
+            <div className="flex-1">
+              <ScrollReveal />
+              {children}
+            </div>
           </HubLayoutClient>
           <Toaster position="top-right" richColors />
         </AuthProvider>

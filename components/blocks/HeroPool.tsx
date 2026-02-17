@@ -113,11 +113,6 @@ export default function HeroPool({
               </a>
             )}
           </div>
-          {trustSignals && trustSignals.length > 0 && (
-            <div className="mt-12 pt-8 border-t border-border/50 reveal">
-              <TrustSignals signals={trustSignals} variant="light" className="justify-start" />
-            </div>
-          )}
         </div>
       </div>
     </section>

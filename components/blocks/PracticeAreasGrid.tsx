@@ -57,13 +57,14 @@ export default function PracticeAreasGrid({
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-8">
           {items.map((item, index) => {
             const href = item.href ?? "#";
+            const hasImage = Boolean(item.imageUrl);
             return (
               <article
                 key={index}
                 className="bg-background border border-border rounded-lg p-3 sm:p-8 flex flex-col shadow-sm"
               >
                 <div className="mb-3 sm:mb-6">
-                  <div className="w-8 h-8 sm:w-14 sm:h-14 flex items-center justify-center text-primary border border-primary/20 rounded overflow-hidden bg-primary/5">
+                  <div className={`${hasImage ? "w-12 h-12 sm:w-20 sm:h-20" : "w-8 h-8 sm:w-14 sm:h-14"} flex items-center justify-center text-primary border border-primary/20 rounded overflow-hidden bg-primary/5`}>
                     {item.imageUrl ? (
                       <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
                     ) : (

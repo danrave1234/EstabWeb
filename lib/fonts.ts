@@ -6,6 +6,8 @@ import {
   DM_Sans,
   Libre_Baskerville,
   Nunito,
+  Luckiest_Guy,
+  Bebas_Neue,
   Archivo,
   Lora,
   Source_Serif_4,
@@ -25,6 +27,8 @@ export const sourceSans = Source_Sans_3({ variable: "--font-source-sans-3", subs
 export const dmSans = DM_Sans({ variable: "--font-dm-sans", subsets: ["latin"] });
 export const libreBaskerville = Libre_Baskerville({ variable: "--font-libre-baskerville", weight: "400", subsets: ["latin"] });
 export const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"] });
+export const luckiestGuy = Luckiest_Guy({ variable: "--font-luckiest-guy", weight: "400", subsets: ["latin"] });
+export const bebasNeue = Bebas_Neue({ variable: "--font-bebas-neue", weight: "400", subsets: ["latin"] });
 export const archivo = Archivo({ variable: "--font-archivo", subsets: ["latin"] });
 export const lora = Lora({ variable: "--font-lora", subsets: ["latin"] });
 export const sourceSerif = Source_Serif_4({ variable: "--font-source-serif-4", subsets: ["latin"] });
@@ -44,6 +48,8 @@ export const fontVariables = [
   dmSans.variable,
   libreBaskerville.variable,
   nunito.variable,
+  luckiestGuy.variable,
+  bebasNeue.variable,
   archivo.variable,
   lora.variable,
   sourceSerif.variable,

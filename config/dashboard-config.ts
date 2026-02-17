@@ -54,6 +54,8 @@ export const TYPOGRAPHY_OPTIONS = [
   { value: "clinical", label: "Clinical", fontFamily: "var(--font-geist-sans), var(--font-source-serif-4), Georgia, serif" },
   { value: "playful", label: "Playful", fontFamily: "var(--font-nunito), system-ui, sans-serif" },
   { value: "traditional", label: "Traditional", fontFamily: "var(--font-source-sans-3), var(--font-libre-baskerville), Georgia, serif" },
+  { value: "lucky", label: "Luckiest Guy", fontFamily: "var(--font-luckiest-guy), system-ui, sans-serif" },
+  { value: "display", label: "Display", fontFamily: "var(--font-bebas-neue), system-ui, sans-serif" },
 ];
 
 export const AWARD_ICON_NAMES = ['Award', 'ShieldCheck', 'Star', 'Users', 'Shield', 'Gavel', 'Scale', 'Briefcase', 'Home', 'Zap', 'Clock', 'Calendar', 'ClipboardCheck', 'Phone', 'MapPin', 'Mail', 'Check', 'Heart', 'Smile', 'ThumbsUp', 'Bug', 'Search', 'RotateCw', 'Leaf', 'Lock', 'Dog', 'Hammer', 'BookOpen', 'PenTool', 'GraduationCap', 'Trophy', 'Snowflake', 'Layout', 'Grid', 'Wind', 'Building', 'Wallet'].sort();

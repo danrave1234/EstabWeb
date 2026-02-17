@@ -107,11 +107,6 @@ export default function HeroCleaning({
             </div>
           </div>
 
-          {trustSignals && trustSignals.length > 0 && (
-            <div className="pt-4">
-              <TrustSignals signals={trustSignals} className="justify-center" />
-            </div>
-          )}
         </div>
       </div>
     </section>

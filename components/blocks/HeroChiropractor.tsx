@@ -120,12 +120,6 @@ export default function HeroChiropractor({
               {secondaryCTA}
             </a>
           </div>
-          {trustSignals && trustSignals.length > 0 && (
-            <div className="mt-12 pt-8 border-t border-border/50 reveal">
-              <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Trusted By Patients</div>
-              <TrustSignals signals={trustSignals} variant="light" className="justify-start" />
-            </div>
-          )}
         </div>
       </div>
     </section>

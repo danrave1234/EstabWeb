@@ -34,6 +34,29 @@ function deepMerge(target: any, source: any): any {
 export default function LivePreviewProvider({ initialData, children }: LivePreviewProviderProps) {
   const [data, setData] = React.useState(initialData)
   const lastActiveRef = React.useRef<string | null>(null)
+  const intersectionMapRef = React.useRef<Map<Element, { id: string; ratio: number; top: number }>>(new Map())
+
+  const scrollToElement = React.useCallback((el: Element) => {
+    try {
+      const element = el as HTMLElement
+      const rect = element.getBoundingClientRect()
+      const vh = window.innerHeight || document.documentElement.clientHeight || 0
+      const isSmall = vh > 0 && rect.height > 0 && rect.height < vh * 0.6
+
+      // For short sections, center them in the viewport.
+      // For tall sections, keep the top aligned (respecting scroll-margin via CSS).
+      if (isSmall) {
+        const targetTop = window.scrollY + rect.top - (vh / 2 - rect.height / 2)
+        window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' })
+      } else {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    } catch {
+      try {
+        ;(el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' })
+      } catch {}
+    }
+  }, [])
 
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -59,13 +82,51 @@ export default function LivePreviewProvider({ initialData, children }: LivePrevi
         const sectionId = message.sectionId as string | undefined
         const sectionIndex = message.sectionIndex as number | undefined
         if (!sectionId || typeof document === 'undefined') return
-        const selector = typeof sectionIndex === 'number'
-          ? `[data-section-id="${sectionId}"][data-section-index="${sectionIndex}"]`
-          : `[data-section-id="${sectionId}"]`
-        const target = document.querySelector(selector)
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+        // The preview can be mid-rerender after reordering/layout changes.
+        // If we try to scroll immediately, the indexed node may not exist yet.
+        // Retry briefly, then fall back to best-effort selectors.
+        const tryScroll = () => {
+          const indexedSelector = typeof sectionIndex === 'number'
+            ? `[data-section-id="${sectionId}"][data-section-index="${sectionIndex}"]`
+            : null
+
+          // 1) Exact match (id + index)
+          const exact = indexedSelector ? document.querySelector(indexedSelector) : null
+          if (exact) {
+            scrollToElement(exact)
+            return true
+          }
+
+          // 2) Any match by id
+          const anyById = document.querySelector(`[data-section-id="${sectionId}"]`)
+          if (anyById) {
+            scrollToElement(anyById)
+            return true
+          }
+
+          // 3) Last resort: attempt to scroll to the element with matching index regardless of id
+          if (typeof sectionIndex === 'number') {
+            const anyByIndex = document.querySelector(`[data-section-index="${sectionIndex}"]`)
+            if (anyByIndex) {
+              scrollToElement(anyByIndex)
+              return true
+            }
+          }
+
+          return false
         }
+
+        const start = Date.now()
+        const maxMs = 900
+        const tick = () => {
+          if (tryScroll()) return
+          if (Date.now() - start > maxMs) return
+          window.setTimeout(tick, 60)
+        }
+
+        // Try immediately, then retry
+        tick()
       }
     }
 
@@ -85,24 +146,45 @@ export default function LivePreviewProvider({ initialData, children }: LivePrevi
     const sections = Array.from(document.querySelectorAll('[data-section-id]'))
     if (sections.length === 0) return
 
+    intersectionMapRef.current.clear()
     const observer = new IntersectionObserver(
       (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => (b.intersectionRatio - a.intersectionRatio))
-        const top = visible[0]
-        const nextId = (top?.target as HTMLElement | undefined)?.dataset?.sectionId || null
+        entries.forEach((entry) => {
+          const target = entry.target as HTMLElement | null
+          const id = target?.dataset?.sectionId
+          if (!id) return
+          if (entry.isIntersecting) {
+            intersectionMapRef.current.set(entry.target, {
+              id,
+              ratio: entry.intersectionRatio,
+              top: entry.boundingClientRect.top,
+            })
+          } else {
+            intersectionMapRef.current.delete(entry.target)
+          }
+        })
+
+        const visible = Array.from(intersectionMapRef.current.values())
+        if (visible.length === 0) return
+        visible.sort((a, b) => {
+          if (b.ratio !== a.ratio) return b.ratio - a.ratio
+          return Math.abs(a.top) - Math.abs(b.top)
+        })
+        const nextId = visible[0]?.id || null
         if (!nextId || nextId === lastActiveRef.current) return
         lastActiveRef.current = nextId
         if (window.parent !== window) {
           window.parent.postMessage({ type: 'PREVIEW_ACTIVE_SECTION', sectionId: nextId }, '*')
         }
       },
-      { root: null, rootMargin: '-20% 0px -60% 0px', threshold: [0.1, 0.25, 0.5, 0.75] }
+      { root: null, rootMargin: '-20% 0px -20% 0px', threshold: [0, 0.1, 0.25, 0.5, 0.75, 1] }
     )
 
     sections.forEach((section) => observer.observe(section))
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      intersectionMapRef.current.clear()
+    }
   }, [data])
 
   // Apply Global Site Settings (theme, colors, typography, dark mode) to the document
