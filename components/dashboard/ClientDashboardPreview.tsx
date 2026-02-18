@@ -13,7 +13,6 @@ import PreviewFrame from "@/components/dashboard/PreviewFrame"
 import AwardIconPicker from "@/components/dashboard/AwardIconPicker"
 import { createClient } from "@/lib/supabase/client"
 import ImageUpload from "@/components/shared/ImageUpload"
-import DynamicIcon from "@/components/shared/DynamicIcon"
 import {
   Dialog,
   DialogContent,
@@ -21,7 +20,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/Dialog"
-import MainHeader from "@/components/shared/MainHeader"
 import { GENRE_LABELS } from "@/config/presets"
 import { canPublishDirectly, canPublishNow, getPublishStats, isTrialExpired } from "@/lib/subscription"
 import { 
@@ -53,8 +51,6 @@ import {
   DEFAULT_LOGO_CLOUD,
   DEFAULT_DELIVERY_COVERAGE,
   DEFAULT_BLUEPRINT_CONFIG,
-  DEFAULT_BLUEPRINT_CONFIG as DEFAULT_LEGAL,
-  FIELD_LABELS,
   fieldLabel,
   ensureStringArray,
   navigationToArray,
@@ -77,6 +73,49 @@ const SECTION_CATEGORIES: { label: string; ids: string[] }[] = [
 ]
 
 const formatSectionLabel = (id: string) => id.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
+
+const slugify = (value: string) => value
+  .toLowerCase()
+  .replace(/[^a-z0-9\s-]/g, '')
+  .trim()
+  .replace(/\s+/g, '-')
+  .replace(/-+/g, '-')
+
+const normalizeArrayItems = <T,>(value: unknown, fallback: T[]): T[] => {
+  if (Array.isArray(value)) return value as T[]
+  if (value && typeof value === 'object') {
+    return Object.keys(value as Record<string, T>)
+      .filter((k) => /^\d+$/.test(k))
+      .sort((a, b) => Number(a) - Number(b))
+      .map((k) => (value as Record<string, T>)[k])
+  }
+  return fallback
+}
+
+const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
+  'awards': DEFAULT_AWARDS_STRIP,
+  'certifications': DEFAULT_AWARDS_STRIP,
+  'faq-accordion': DEFAULT_FAQ_ACCORDION,
+  'blog': DEFAULT_BLOG,
+  'before-after-gallery-grid': DEFAULT_BEFORE_AFTER_GALLERY,
+  'how-it-works': DEFAULT_HOW_IT_WORKS,
+  'practice-areas': DEFAULT_PRACTICE_AREAS,
+  'treatment-process': DEFAULT_TREATMENT_PROCESS,
+  'common-pests': DEFAULT_COMMON_PESTS,
+  'featured-properties-grid': DEFAULT_FEATURED_LISTINGS,
+  'developer-partners': DEFAULT_DEVELOPER_PARTNERS,
+  'review-trust-bar': DEFAULT_REVIEW_TRUST_BAR,
+  'financing-section': DEFAULT_FINANCING,
+  'ac-types-grid': DEFAULT_AC_TYPES,
+  'price-preview-strip': DEFAULT_PRICE_PREVIEW,
+  'pricing': DEFAULT_PRICING_TABLE,
+  'maintenance-plans': DEFAULT_MAINTENANCE_PLANS,
+  'facebook-review-embed': DEFAULT_FACEBOOK_REVIEW_EMBED,
+  'why-choose-me': DEFAULT_WHY_CHOOSE_ME,
+  'service-area-map': DEFAULT_SERVICE_AREA_MAP,
+  'logo-cloud': DEFAULT_LOGO_CLOUD,
+  'delivery-coverage': DEFAULT_DELIVERY_COVERAGE,
+}
 
 const LivePreviewFeaturesGrid = dynamic(() => import("@/components/blocks/FeaturesGrid"), { ssr: false })
 const LivePreviewFeaturesModern = dynamic(() => import("@/components/blocks/FeaturesModern"), { ssr: false })
@@ -906,6 +945,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const [addSectionOpen, setAddSectionOpen] = React.useState(false)
   const [sectionSearchQuery, setSectionSearchQuery] = React.useState("")
   const [activeTab, setActiveTab] = React.useState<"content" | "design" | "advanced">("content")
+  const [selectedPageIndex, setSelectedPageIndex] = React.useState(0)
   const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>({})
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false)
   const [globalSettingsModalTab, setGlobalSettingsModalTab] = React.useState<"theme" | "sections">("theme")
@@ -916,6 +956,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const manualScrollLockRef = React.useRef(false)
   const manualScrollTargetRef = React.useRef<string | null>(null)
   const manualScrollTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+  const discardInProgressRef = React.useRef(false)
 
   const paletteEntries = React.useMemo(() => {
     const hexToRgb = (hex: string) => {
@@ -991,7 +1032,11 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
     return () => document.removeEventListener("click", close)
   }, [])
 
-  const supabase = createClient()
+  const supabaseRef = React.useRef<ReturnType<typeof createClient> | null>(null)
+  if (!supabaseRef.current) {
+    supabaseRef.current = createClient()
+  }
+  const supabase = supabaseRef.current
 
   React.useEffect(() => {
     const checkPending = async () => {
@@ -1005,7 +1050,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
       setHasPendingRequest(!!data)
     }
     checkPending()
-  }, [project.id, supabase])
+  }, [project.id])
 
   const sendToIframe = React.useCallback((message: any) => {
     try {
@@ -1014,6 +1059,18 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
       win.postMessage(message, '*')
     } catch {}
   }, [])
+
+  const lastPreviewPayloadRef = React.useRef<string | null>(null)
+  const sendFullPreview = React.useCallback((payload: Record<string, any>) => {
+    try {
+      const next = JSON.stringify(payload)
+      if (lastPreviewPayloadRef.current === next) return
+      lastPreviewPayloadRef.current = next
+      sendToIframe({ type: 'LIVE_PREVIEW_FULL', data: payload })
+    } catch {
+      sendToIframe({ type: 'LIVE_PREVIEW_FULL', data: payload })
+    }
+  }, [sendToIframe])
 
   const scrollToSection = React.useCallback((sectionId: string, sectionIndex?: number) => {
     sendToIframe({ type: 'SCROLL_TO_SECTION', sectionId, sectionIndex })
@@ -1035,36 +1092,141 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
       if (raw) {
         const parsed = JSON.parse(raw)
         if (parsed && typeof parsed === 'object') {
+          console.log('[dashboard-preview] loaded local draft from storage', {
+            projectId: project.id,
+            keys: Object.keys(parsed || {}),
+          })
           setModified(parsed)
         }
+      } else {
+        console.log('[dashboard-preview] no local draft in storage', { projectId: project.id })
       }
     } catch {}
   }, [LOCAL_KEY])
 
-  const hasDraft = project.draft_config && Object.keys(project.draft_config).length > 0
-  const baseConfig = hasDraft ? project.draft_config : (project.current_config || {})
+  const [localDraftConfig, setLocalDraftConfig] = React.useState<Record<string, any> | null>(
+    (project.draft_config && Object.keys(project.draft_config).length > 0)
+      ? (project.draft_config as Record<string, any>)
+      : null
+  )
+
+  React.useEffect(() => {
+    if (project.draft_config && Object.keys(project.draft_config).length > 0) {
+      setLocalDraftConfig(project.draft_config as Record<string, any>)
+    } else {
+      setLocalDraftConfig(null)
+    }
+  }, [project.draft_config])
+
+  const hasDraft = !!localDraftConfig && Object.keys(localDraftConfig).length > 0
+  const baseConfig = hasDraft ? localDraftConfig : (project.current_config || {})
   const canPublish = canPublishDirectly(project)
+  const canUsePages = canPublish
   const publishStats = getPublishStats(project)
   const showUpgrade = (project.subscription_status || 'free') === 'free' || isTrialExpired(project)
-  const globalConfig = deepMerge(baseConfig, modified)
-  const activeSections = ensureStringArray(globalConfig.activeSections)
+  const hasLocalChanges = Object.keys(modified).length > 0
+  const publishDisabledReason = React.useMemo(() => {
+    if (canPublish) {
+      if (isPublishing) return 'Publishing in progress.'
+      if (!canPublishNow(project)) {
+        if (publishStats.remaining <= 0) {
+          return `Period limit reached (${publishStats.used}/${publishStats.limit}).`
+        }
+        if (publishStats.remainingToday <= 0) {
+          return `Daily limit reached (${publishStats.usedToday}/${publishStats.limitDaily} today).`
+        }
+        return 'Publishing is temporarily unavailable.'
+      }
+      if (!hasDraft && !hasLocalChanges) return 'Save a draft before publishing.'
+      return null
+    }
+
+    if (isQueueing) return 'Submitting for approval.'
+    if (hasPendingRequest) return 'A change request is already pending.'
+    return null
+  }, [canPublish, isPublishing, isQueueing, hasPendingRequest, publishStats.limit, publishStats.limitDaily, publishStats.remaining, publishStats.remainingToday, publishStats.used, publishStats.usedToday, project, hasDraft, hasLocalChanges])
+  const mergedConfig = React.useMemo(() => deepMerge(baseConfig, modified), [baseConfig, modified])
+  const globalConfig = mergedConfig
+  const normalizedPages = React.useMemo(() => {
+    const rawPages = Array.isArray(globalConfig.pages) ? globalConfig.pages : []
+    return rawPages.map((page: Record<string, any>, index: number) => {
+      const payload = (page || {}) as Record<string, any>
+      const rawSlug = typeof payload.slug === 'string' ? payload.slug : ''
+      const slug = rawSlug.replace(/^\/+|\/+$/g, '').toLowerCase()
+      return {
+        slug,
+        label: typeof payload.label === 'string' ? payload.label : (slug ? slug.replace(/-/g, ' ') : `Page ${index + 1}`),
+        activeSections: Array.isArray(payload.activeSections) ? payload.activeSections : [],
+        seo: payload.seo && typeof payload.seo === 'object' ? payload.seo : { title: '', description: '', keywords: [] },
+      }
+    })
+  }, [globalConfig.pages])
+
+  const pages = React.useMemo(() => {
+    if (normalizedPages.length > 0) return normalizedPages
+    return [{
+      slug: '',
+      label: 'Home',
+      activeSections: ensureStringArray(globalConfig.activeSections).length > 0 ? ensureStringArray(globalConfig.activeSections) : ['hero'],
+      seo: { title: '', description: '', keywords: [] },
+    }]
+  }, [normalizedPages, globalConfig.activeSections, ensureStringArray])
+
+  React.useEffect(() => {
+    if (selectedPageIndex > pages.length - 1) {
+      setSelectedPageIndex(0)
+    }
+  }, [pages.length, selectedPageIndex])
+
+  const activePage = pages[selectedPageIndex] ?? pages[0]
+  const isHomePage = !activePage?.slug
+  const activeSections = ensureStringArray(activePage?.activeSections ?? globalConfig.activeSections)
+    .filter((section) => isHomePage || !section.startsWith('hero'))
   // Use the project's subdomain for preview; always include projectId so the page can fetch by ID when subdomain/custom domain isn't set.
   const basePath = project?.subdomain ? `/${project.subdomain}` : '/preview'
-  const previewPath = `${basePath}?preview=true&projectId=${project.id}`
+  const activeSlug = activePage?.slug ? `/${activePage.slug}` : ''
+  const previewPath = `${basePath}${activeSlug}?preview=true&projectId=${project.id}`
+
+  const resolvePageIndexFromPath = React.useCallback((pathname: string) => {
+    if (!pathname) return 0
+    const cleanBase = basePath.replace(/\/+$/g, '')
+    let remainder = pathname
+    if (cleanBase && remainder.startsWith(cleanBase)) {
+      remainder = remainder.slice(cleanBase.length)
+    }
+    remainder = remainder.replace(/^\/+/, '')
+    const slug = remainder.split('/')[0] || ''
+    if (!slug) return 0
+    const normalized = slug.toLowerCase()
+    const matchIndex = pages.findIndex((page: { slug?: string | null }) => (page.slug || '').toLowerCase() === normalized)
+    return matchIndex >= 0 ? matchIndex : 0
+  }, [basePath, pages])
+
+  const buildPreviewData = React.useCallback((fullConfig: Record<string, any>) => {
+    const next = { ...fullConfig }
+    if (activePage) {
+      next.activeSections = activePage.activeSections ?? next.activeSections
+      next.seo = activePage.seo ?? next.seo
+    }
+    if (next.navigation !== undefined) next.navigation = navigationToArray(next.navigation)
+    if (next.activeSections !== undefined) next.activeSections = ensureStringArray(next.activeSections)
+    return next
+  }, [activePage, ensureStringArray, navigationToArray])
+
+  React.useEffect(() => {
+    sendFullPreview(buildPreviewData(mergedConfig))
+  }, [activePage, mergedConfig, buildPreviewData, sendFullPreview])
 
   // When the iframe indicates it's ready, send a full snapshot: baseConfig overlaid with local (unsaved) edits
   React.useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       if ((e.data as any)?.type === 'LIVE_PREVIEW_READY') {
-        const full = deepMerge(baseConfig, modified)
-        if (full.navigation !== undefined) full.navigation = navigationToArray(full.navigation)
-        if (full.activeSections !== undefined) full.activeSections = ensureStringArray(full.activeSections)
-        sendToIframe({ type: 'LIVE_PREVIEW_FULL', data: full })
+        sendFullPreview(buildPreviewData(mergedConfig))
       }
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
-  }, [baseConfig, modified, sendToIframe])
+  }, [mergedConfig, sendFullPreview, buildPreviewData])
 
   React.useEffect(() => {
     const onMessage = (e: MessageEvent) => {
@@ -1088,6 +1250,20 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
     return () => window.removeEventListener('message', onMessage)
   }, [activeSections])
 
+  React.useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      if ((e.data as any)?.type !== 'PREVIEW_ROUTE_CHANGED') return
+      const pathname = (e.data as any)?.pathname as string | undefined
+      const search = (e.data as any)?.search as string | undefined
+      if (!pathname) return
+      if (search && !search.includes(`projectId=${project.id}`)) return
+      const nextIndex = resolvePageIndexFromPath(pathname)
+      setSelectedPageIndex((current) => (current === nextIndex ? current : nextIndex))
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [project.id, resolvePageIndexFromPath])
+
   const refreshPreview = React.useCallback(() => {
     if (iframeRef.current) {
       const src = iframeRef.current.src
@@ -1096,6 +1272,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   }, [])
 
   const autoSaveSection = React.useCallback((sectionId: string, values: any) => {
+    if (discardInProgressRef.current) return
     if (saveTimer.current) clearTimeout(saveTimer.current)
     setIsSaving(true)
     
@@ -1107,6 +1284,12 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
       if (typeof window !== 'undefined') {
         localStorage.setItem(LOCAL_KEY, JSON.stringify(next))
       }
+      console.log('[dashboard-preview] autoSaveSection', {
+        projectId: project.id,
+        sectionId,
+        sectionKey: key,
+        modifiedKeys: Object.keys(next || {}),
+      })
       return next
     })
 
@@ -1114,86 +1297,124 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
     saveTimer.current = setTimeout(() => setIsSaving(false), 300)
   }, [sectionIdToKey, LOCAL_KEY])
 
+  const updatePages = React.useCallback((nextPages: any[]) => {
+    const sanitizedPages = nextPages.map((page) => {
+      const slug = typeof page?.slug === 'string' ? page.slug : ''
+      if (!slug) return page
+      const sections = Array.isArray(page?.activeSections) ? page.activeSections : []
+      return {
+        ...page,
+        activeSections: sections.filter((section: string) => !section.startsWith('hero')),
+      }
+    })
+    autoSaveSection('pages', sanitizedPages)
+    const homePage = sanitizedPages.find((page) => !page?.slug)
+    if (homePage?.activeSections) {
+      autoSaveSection('activeSections', homePage.activeSections)
+    }
+    console.log('[dashboard-preview] updatePages', {
+      projectId: project.id,
+      pageCount: sanitizedPages.length,
+      slugs: sanitizedPages.map((page) => page?.slug || ''),
+    })
+  }, [autoSaveSection])
+
+  const updateActivePage = React.useCallback((patch: Record<string, any>) => {
+    const nextPages = pages.map((page: Record<string, any>, idx: number) => {
+      if (idx !== selectedPageIndex) return page
+      return { ...page, ...patch }
+    })
+    updatePages(nextPages)
+  }, [pages, selectedPageIndex, updatePages])
+
+  const updateActivePageSections = React.useCallback((nextSections: string[]) => {
+    const cleaned = isHomePage
+      ? nextSections
+      : nextSections.filter((section) => !section.startsWith('hero'))
+
+    if (!isHomePage) {
+      const currentLabel = pages[selectedPageIndex]?.label || ""
+      const isGenericLabel = /^page\s+\d+$/i.test(currentLabel.trim())
+      if (isGenericLabel) {
+        const firstSection = cleaned.find((section) => typeof section === 'string' && section.length > 0)
+        if (firstSection) {
+          updateActivePage({ activeSections: cleaned, label: formatSectionLabel(firstSection) })
+          return
+        }
+      }
+    }
+
+    updateActivePage({ activeSections: cleaned })
+  }, [isHomePage, pages, selectedPageIndex, updateActivePage])
+
   const moveToSectionIndex = React.useCallback((fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex) return
     const next = [...activeSections]
     const [removed] = next.splice(fromIndex, 1)
     next.splice(toIndex, 0, removed)
-    autoSaveSection('activeSections', next)
-  }, [activeSections, autoSaveSection])
+    updateActivePageSections(next)
+  }, [activeSections, updateActivePageSections])
 
   const removeSectionAtIndex = React.useCallback((idx: number) => {
     const next = [...activeSections]
     const removed = next[idx]
     next.splice(idx, 1)
-    autoSaveSection('activeSections', next)
+    updateActivePageSections(next)
     if (removed && selectedSection === removed) {
-      setSelectedSection('hero')
-      setActivePreviewSection('hero')
-      lockPreviewHighlight('hero')
-      const heroIndex = next.indexOf('hero')
-      if (heroIndex >= 0) scrollToSection('hero', heroIndex)
+      if (isHomePage) {
+        setSelectedSection('hero')
+        setActivePreviewSection('hero')
+        lockPreviewHighlight('hero')
+        const heroIndex = next.indexOf('hero')
+        if (heroIndex >= 0) scrollToSection('hero', heroIndex)
+      } else {
+        setSelectedSection(null)
+        setActivePreviewSection(null)
+      }
     }
-  }, [activeSections, autoSaveSection, selectedSection, lockPreviewHighlight, scrollToSection])
+  }, [activeSections, updateActivePageSections, selectedSection, lockPreviewHighlight, scrollToSection, isHomePage])
 
   const addSection = React.useCallback((id: string) => {
     if (activeSections.includes(id)) return
     const next = [...activeSections, id]
 
-    // Default data mapping
-    const defaultDataMap: Record<string, any> = {
-      'awards': DEFAULT_AWARDS_STRIP,
-      'certifications': DEFAULT_AWARDS_STRIP,
-      'faq-accordion': DEFAULT_FAQ_ACCORDION,
-      'blog': DEFAULT_BLOG,
-      'before-after-gallery-grid': DEFAULT_BEFORE_AFTER_GALLERY,
-      'how-it-works': DEFAULT_HOW_IT_WORKS,
-      'practice-areas': DEFAULT_PRACTICE_AREAS,
-      'treatment-process': DEFAULT_TREATMENT_PROCESS,
-      'common-pests': DEFAULT_COMMON_PESTS,
-      'featured-properties-grid': DEFAULT_FEATURED_LISTINGS,
-      'developer-partners': DEFAULT_DEVELOPER_PARTNERS,
-      'review-trust-bar': DEFAULT_REVIEW_TRUST_BAR,
-      'financing-section': DEFAULT_FINANCING,
-      'ac-types-grid': DEFAULT_AC_TYPES,
-      'price-preview-strip': DEFAULT_PRICE_PREVIEW,
-      'pricing': DEFAULT_PRICING_TABLE,
-      'maintenance-plans': DEFAULT_MAINTENANCE_PLANS,
-      'facebook-review-embed': DEFAULT_FACEBOOK_REVIEW_EMBED,
-      'why-choose-me': DEFAULT_WHY_CHOOSE_ME,
-      'service-area-map': DEFAULT_SERVICE_AREA_MAP,
-      'logo-cloud': DEFAULT_LOGO_CLOUD,
-      'delivery-coverage': DEFAULT_DELIVERY_COVERAGE,
-    }
-    const defaultData = defaultDataMap[id] || {}
+    const defaultData = DEFAULT_SECTION_DATA_MAP[id] || {}
 
-    autoSaveSection('activeSections', next)
+    updateActivePageSections(next)
     autoSaveSection(id, defaultData)
     setAddSectionOpen(false)
     setSelectedSection(id)
     setActivePreviewSection(id)
     lockPreviewHighlight(id)
     scrollToSection(id, next.length - 1)
-  }, [activeSections, autoSaveSection, lockPreviewHighlight, scrollToSection])
+  }, [activeSections, autoSaveSection, updateActivePageSections, lockPreviewHighlight, scrollToSection])
 
   // Efficiently sync changes to the iframe with a short debounce
   React.useEffect(() => {
     const timer = setTimeout(() => {
       if (Object.keys(modified).length === 0) return
-      const full = deepMerge(baseConfig, modified)
-      if (full.navigation !== undefined) full.navigation = navigationToArray(full.navigation)
-      if (full.activeSections !== undefined) full.activeSections = ensureStringArray(full.activeSections)
-      sendToIframe({ type: 'LIVE_PREVIEW_FULL', data: full })
+      sendFullPreview(buildPreviewData(mergedConfig))
     }, 150) // 150ms debounce is fast enough to feel instant but slow enough to batch keystrokes
 
     return () => clearTimeout(timer)
-  }, [modified, baseConfig, sendToIframe])
+  }, [modified, mergedConfig, sendFullPreview, buildPreviewData])
 
   // Load full section object for the selected section (including arrays like items/steps)
   React.useEffect(() => {
     if (selectedSection) {
+      const setFormWithCollapsed = (values: Record<string, any>) => {
+        setFormValues(values)
+        const nextCollapsed: Record<string, boolean> = {}
+        Object.entries(values).forEach(([key, value]) => {
+          if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            nextCollapsed[`${selectedSection}-${key}`] = true
+          }
+        })
+        setCollapsedGroups(nextCollapsed)
+      }
+
       if (selectedSection === 'global_settings') {
-        setFormValues({}) // Not used for global
+        setFormWithCollapsed({}) // Not used for global
         return
       }
       const sectionKey = sectionIdToKey(selectedSection)
@@ -1206,10 +1427,10 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
           ...baseFooter,
           social: { ...DEFAULT_FOOTER.social, ...(baseFooter?.social ?? {}) },
         }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'navigation') {
         const nav = navigationToArray(base)
-        setFormValues(nav as unknown as Record<string, any>)
+        setFormWithCollapsed(nav as unknown as Record<string, any>)
       } else if (sectionKey === 'legal') {
         const baseLegal = (base || {}) as Record<string, { title?: string; content?: string; lastUpdated?: string }>
         const merged = {
@@ -1217,290 +1438,163 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
           termsofservice: { ...DEFAULT_BLUEPRINT_CONFIG.termsofservice, ...(baseLegal.termsofservice ?? {}) },
           cookiepolicy: { ...DEFAULT_BLUEPRINT_CONFIG.cookiepolicy, ...(baseLegal.cookiepolicy ?? {}) },
         }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
+      } else if (sectionKey === 'pages') {
+        const rawPages = Array.isArray(base) ? base : []
+        const normalizedPages = rawPages.map((page, index) => {
+          const payload = (page || {}) as Record<string, any>
+          const slug = typeof payload.slug === 'string' ? payload.slug.replace(/^\/+|\/+$/g, '').toLowerCase() : ''
+          return {
+            slug,
+            label: typeof payload.label === 'string' ? payload.label : slug ? slug.replace(/-/g, ' ') : `Page ${index + 1}`,
+            activeSections: Array.isArray(payload.activeSections) ? payload.activeSections : [],
+            seo: payload.seo && typeof payload.seo === 'object' ? payload.seo : { title: '', description: '', keywords: [] },
+          }
+        })
+        const baseSections = ensureStringArray(globalConfig.activeSections)
+        const fallbackPage = {
+          slug: '',
+          label: 'Home',
+          activeSections: baseSections.length > 0 ? baseSections : ['hero'],
+          seo: { title: '', description: '', keywords: [] },
+        }
+        setFormWithCollapsed({ pages: normalizedPages.length > 0 ? normalizedPages : [fallbackPage] })
       } else if (sectionKey === 'emergencyCTA') {
         const merged = { ...DEFAULT_EMERGENCY_CTA, ...(base as Record<string, any>) }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'awardsStrip') {
         const baseAwards = (base || {}) as Record<string, any>
-        let items = baseAwards.items
-        if (!Array.isArray(items) && items && typeof items === 'object') {
-          items = Object.keys(items)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (items as Record<string, any>)[k])
-        }
-        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_AWARDS_STRIP.items
+        const items = normalizeArrayItems(baseAwards.items, DEFAULT_AWARDS_STRIP.items)
         const merged = {
           ...DEFAULT_AWARDS_STRIP,
           ...baseAwards,
           items,
         }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'faqAccordion') {
         const baseFaq = (base || {}) as Record<string, any>
-        let items = baseFaq.items
-        if (!Array.isArray(items) && items && typeof items === 'object') {
-          items = Object.keys(items)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (items as Record<string, any>)[k])
-        }
-        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_FAQ_ACCORDION.items
+        const items = normalizeArrayItems(baseFaq.items, DEFAULT_FAQ_ACCORDION.items)
         const merged = {
           ...DEFAULT_FAQ_ACCORDION,
           ...baseFaq,
           items,
         }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'beforeAfterGallery') {
         const baseGal = (base || {}) as Record<string, any>
-        let items = baseGal.items
-        if (!Array.isArray(items) && items && typeof items === 'object') {
-          items = Object.keys(items)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (items as Record<string, any>)[k])
-        }
-        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_BEFORE_AFTER_GALLERY.items
+        const items = normalizeArrayItems(baseGal.items, DEFAULT_BEFORE_AFTER_GALLERY.items)
         const merged = {
           ...DEFAULT_BEFORE_AFTER_GALLERY,
           ...baseGal,
           items,
         }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'blog') {
         const baseBlog = (base || {}) as Record<string, any>
-        let posts = baseBlog.posts
-        if (!Array.isArray(posts) && posts && typeof posts === 'object') {
-          posts = Object.keys(posts)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (posts as Record<string, any>)[k])
-        }
-        if (!Array.isArray(posts) || posts.length === 0) posts = DEFAULT_BLOG.posts
+        const posts = normalizeArrayItems(baseBlog.posts, DEFAULT_BLOG.posts)
         const merged = {
           ...DEFAULT_BLOG,
           ...baseBlog,
           posts,
         }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'howItWorks') {
         const baseH = (base || {}) as Record<string, any>
-        let arr = baseH.steps ?? baseH.items
-        if (!Array.isArray(arr) && arr && typeof arr === 'object') {
-          arr = Object.keys(arr)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (arr as Record<string, any>)[k])
-        }
-        if (!Array.isArray(arr) || arr.length === 0) arr = DEFAULT_HOW_IT_WORKS.steps
-        const merged = { ...DEFAULT_HOW_IT_WORKS, ...baseH, steps: arr }
-        setFormValues(merged)
+        const steps = normalizeArrayItems(baseH.steps ?? baseH.items, DEFAULT_HOW_IT_WORKS.steps)
+        const merged = { ...DEFAULT_HOW_IT_WORKS, ...baseH, steps }
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'practiceAreas') {
         const baseP = (base || {}) as Record<string, any>
-        let items = baseP.items ?? baseP.areas
-        if (!Array.isArray(items) && items && typeof items === 'object') {
-          items = Object.keys(items)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (items as Record<string, any>)[k])
-        }
-        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_PRACTICE_AREAS.items
+        const items = normalizeArrayItems(baseP.items ?? baseP.areas, DEFAULT_PRACTICE_AREAS.items)
         const merged = { ...DEFAULT_PRACTICE_AREAS, ...baseP, items }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'treatmentProcess') {
         const baseT = (base || {}) as Record<string, any>
-        let steps = baseT.steps
-        if (!Array.isArray(steps) && steps && typeof steps === 'object') {
-          steps = Object.keys(steps)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (steps as Record<string, any>)[k])
-        }
-        if (!Array.isArray(steps) || steps.length === 0) steps = DEFAULT_TREATMENT_PROCESS.steps
+        const steps = normalizeArrayItems(baseT.steps, DEFAULT_TREATMENT_PROCESS.steps)
         const merged = { ...DEFAULT_TREATMENT_PROCESS, ...baseT, steps }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'commonPests') {
         const baseC = (base || {}) as Record<string, any>
-        let items = baseC.items
-        if (!Array.isArray(items) && items && typeof items === 'object') {
-          items = Object.keys(items)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (items as Record<string, any>)[k])
-        }
-        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_COMMON_PESTS.items
+        const items = normalizeArrayItems(baseC.items, DEFAULT_COMMON_PESTS.items)
         const merged = { ...DEFAULT_COMMON_PESTS, ...baseC, items }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'featuredListings') {
         const baseF = (base || {}) as Record<string, any>
-        let items = baseF.items
-        if (!Array.isArray(items) && items && typeof items === 'object') {
-          items = Object.keys(items)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (items as Record<string, any>)[k])
-        }
-        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_FEATURED_LISTINGS.items
+        const items = normalizeArrayItems(baseF.items, DEFAULT_FEATURED_LISTINGS.items)
         const merged = { ...DEFAULT_FEATURED_LISTINGS, ...baseF, items }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'developerPartners') {
         const baseD = (base || {}) as Record<string, any>
-        let items = baseD.items
-        if (!Array.isArray(items) && items && typeof items === 'object') {
-          items = Object.keys(items)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (items as Record<string, any>)[k])
-        }
-        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_DEVELOPER_PARTNERS.items
+        const items = normalizeArrayItems(baseD.items, DEFAULT_DEVELOPER_PARTNERS.items)
         const merged = { ...DEFAULT_DEVELOPER_PARTNERS, ...baseD, items }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'reviewTrustBar') {
         const baseR = (base || {}) as Record<string, any>
-        let testimonials = baseR.testimonials
-        if (!Array.isArray(testimonials) && testimonials && typeof testimonials === 'object') {
-          testimonials = Object.keys(testimonials)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (testimonials as Record<string, any>)[k])
-        }
-        if (!Array.isArray(testimonials) || testimonials.length === 0) testimonials = DEFAULT_REVIEW_TRUST_BAR.testimonials
+        const testimonials = normalizeArrayItems(baseR.testimonials, DEFAULT_REVIEW_TRUST_BAR.testimonials)
         const merged = { ...DEFAULT_REVIEW_TRUST_BAR, ...baseR, testimonials }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'financing') {
         const baseFi = (base || {}) as Record<string, any>
-        let items = baseFi.items
-        if (!Array.isArray(items) && items && typeof items === 'object') {
-          items = Object.keys(items)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (items as Record<string, any>)[k])
-        }
-        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_FINANCING.items
+        const items = normalizeArrayItems(baseFi.items, DEFAULT_FINANCING.items)
         const merged = { ...DEFAULT_FINANCING, ...baseFi, items }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'acTypes') {
         const baseA = (base || {}) as Record<string, any>
-        let items = baseA.items
-        if (!Array.isArray(items) && items && typeof items === 'object') {
-          items = Object.keys(items)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (items as Record<string, any>)[k])
-        }
-        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_AC_TYPES.items
+        const items = normalizeArrayItems(baseA.items, DEFAULT_AC_TYPES.items)
         const merged = { ...DEFAULT_AC_TYPES, ...baseA, items }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'pricePreview') {
         const baseP = (base || {}) as Record<string, any>
-        let items = baseP.items
-        if (!Array.isArray(items) && items && typeof items === 'object') {
-          items = Object.keys(items)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (items as Record<string, any>)[k])
-        }
-        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_PRICE_PREVIEW.items
+        const items = normalizeArrayItems(baseP.items, DEFAULT_PRICE_PREVIEW.items)
         const merged = { ...DEFAULT_PRICE_PREVIEW, ...baseP, items }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'safety') {
         const baseS = (base || {}) as Record<string, any>
-        let items = baseS.items
-        if (!Array.isArray(items) && items && typeof items === 'object') {
-          items = Object.keys(items)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (items as Record<string, any>)[k])
-        }
-        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_PRACTICE_AREAS.items
+        const items = normalizeArrayItems(baseS.items, DEFAULT_PRACTICE_AREAS.items)
         const merged = { ...DEFAULT_PRACTICE_AREAS, ...baseS, items }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'featureHighlight') {
         const baseFh = (base || {}) as Record<string, any>
-        let items = baseFh.items
-        if (!Array.isArray(items) && items && typeof items === 'object') {
-          items = Object.keys(items)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (items as Record<string, any>)[k])
-        }
-        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_PRACTICE_AREAS.items
+        const items = normalizeArrayItems(baseFh.items, DEFAULT_PRACTICE_AREAS.items)
         const merged = { ...DEFAULT_PRACTICE_AREAS, ...baseFh, items }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'pricingTable') {
         const baseP = (base || {}) as Record<string, any>
-        let plans = baseP.plans
-        if (!Array.isArray(plans) && plans && typeof plans === 'object') {
-          plans = Object.keys(plans)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (plans as Record<string, any>)[k])
-        }
-        if (!Array.isArray(plans) || plans.length === 0) plans = DEFAULT_PRICING_TABLE.plans
+        const plans = normalizeArrayItems(baseP.plans, DEFAULT_PRICING_TABLE.plans)
         const merged = { ...DEFAULT_PRICING_TABLE, ...baseP, plans }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'maintenancePlans') {
         const baseM = (base || {}) as Record<string, any>
-        let plans = baseM.plans
-        if (!Array.isArray(plans) && plans && typeof plans === 'object') {
-          plans = Object.keys(plans)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (plans as Record<string, any>)[k])
-        }
-        if (!Array.isArray(plans) || plans.length === 0) plans = DEFAULT_MAINTENANCE_PLANS.plans
+        const plans = normalizeArrayItems(baseM.plans, DEFAULT_MAINTENANCE_PLANS.plans)
         const merged = { ...DEFAULT_MAINTENANCE_PLANS, ...baseM, plans }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'facebookReviewEmbed') {
         const baseFb = (base || {}) as Record<string, any>
-        let reviews = baseFb.reviews
-        if (!Array.isArray(reviews) && reviews && typeof reviews === 'object') {
-          reviews = Object.keys(reviews)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (reviews as Record<string, any>)[k])
-        }
-        if (!Array.isArray(reviews) || reviews.length === 0) reviews = DEFAULT_FACEBOOK_REVIEW_EMBED.reviews
+        const reviews = normalizeArrayItems(baseFb.reviews, DEFAULT_FACEBOOK_REVIEW_EMBED.reviews)
         const merged = { ...DEFAULT_FACEBOOK_REVIEW_EMBED, ...baseFb, reviews }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'whyChooseMe') {
         const baseW = (base || {}) as Record<string, any>
-        let trustSignals = baseW.trustSignals
-        if (!Array.isArray(trustSignals) && trustSignals && typeof trustSignals === 'object') {
-          trustSignals = Object.keys(trustSignals)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (trustSignals as Record<string, any>)[k])
-        }
-        if (!Array.isArray(trustSignals) || trustSignals.length === 0) trustSignals = DEFAULT_WHY_CHOOSE_ME.trustSignals
+        const trustSignals = normalizeArrayItems(baseW.trustSignals, DEFAULT_WHY_CHOOSE_ME.trustSignals)
         const merged = { ...DEFAULT_WHY_CHOOSE_ME, ...baseW, trustSignals }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'serviceAreaMap') {
         const baseS = (base || {}) as Record<string, any>
         let cities = Array.isArray(baseS.cities) ? baseS.cities : (Array.isArray(baseS.areas) ? baseS.areas : DEFAULT_SERVICE_AREA_MAP.cities)
         const merged = { ...DEFAULT_SERVICE_AREA_MAP, ...baseS, cities }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'logoCloud') {
         const baseL = (base || {}) as Record<string, any>
-        let items = baseL.items
-        if (!Array.isArray(items) && items && typeof items === 'object') {
-          items = Object.keys(items)
-            .filter((k) => /^\d+$/.test(k))
-            .sort((a, b) => Number(a) - Number(b))
-            .map((k) => (items as Record<string, any>)[k])
-        }
-        if (!Array.isArray(items) || items.length === 0) items = DEFAULT_LOGO_CLOUD.items
+        const items = normalizeArrayItems(baseL.items, DEFAULT_LOGO_CLOUD.items)
         const merged = { ...DEFAULT_LOGO_CLOUD, ...baseL, items }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'deliveryCoverage') {
         const baseD = (base || {}) as Record<string, any>
         let areas = Array.isArray(baseD.areas) ? baseD.areas : DEFAULT_DELIVERY_COVERAGE.areas
         const merged = { ...DEFAULT_DELIVERY_COVERAGE, ...baseD, areas }
-        setFormValues(merged)
+        setFormWithCollapsed(merged)
       } else {
-        setFormValues(base as Record<string, any>)
+        setFormWithCollapsed(base as Record<string, any>)
       }
     }
   }, [selectedSection, baseConfig, modified, sectionIdToKey])
@@ -1590,6 +1684,90 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               </button>
 
               <div className="pt-4 px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50 flex items-center justify-between">
+                Pages
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!canUsePages) return
+                    const baseLabel = `Page ${pages.length + 1}`
+                    let slug = slugify(baseLabel)
+                    let counter = 1
+                    while (pages.some((page: { slug?: string | null }) => page.slug === slug)) {
+                      slug = `${slugify(baseLabel)}-${counter}`
+                      counter += 1
+                    }
+                    const next = [...pages, { slug, label: baseLabel, activeSections: [], seo: { title: '', description: '', keywords: [] } }]
+                    updatePages(next)
+                    setSelectedPageIndex(next.length - 1)
+                    setSelectedSection(null)
+                    setActivePreviewSection(null)
+                  }}
+                  disabled={!canUsePages}
+                  className="p-1 hover:bg-primary/10 text-primary rounded transition-colors disabled:text-muted-foreground disabled:hover:bg-transparent"
+                  title="Add Page"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {!canUsePages && (
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[11px] text-amber-700 font-semibold">
+                    Multi-page sites are available on paid plans. Upgrade to add more pages.
+                  </div>
+                )}
+                {pages.map((page: Record<string, any>, idx: number) => (
+                  <div key={`${page.slug || 'home'}-${idx}`} className="relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPageIndex(idx)
+                        if (page.slug) {
+                          setSelectedSection(null)
+                          setActivePreviewSection(null)
+                          return
+                        }
+                        setSelectedSection(null)
+                        setActivePreviewSection(null)
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group border ${selectedPageIndex === idx ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted border-transparent'}`}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground shrink-0 group-hover:scale-110 transition-transform">
+                        <Layout className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold truncate">{page.label || (page.slug ? page.slug.replace(/-/g, ' ') : 'Home')}</p>
+                        <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">
+                          {page.slug ? `/${page.slug}` : 'Home'}
+                        </p>
+                      </div>
+                    </button>
+                    {page.slug && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = pages.filter((_: Record<string, any>, i: number) => i !== idx)
+                          updatePages(next)
+                          if (selectedPageIndex === idx) {
+                            setSelectedPageIndex(0)
+                            setSelectedSection(null)
+                            setActivePreviewSection(null)
+                          } else if (selectedPageIndex > idx) {
+                            setSelectedPageIndex(selectedPageIndex - 1)
+                          }
+                        }}
+                        className="absolute right-2 top-2 p-1.5 opacity-40 group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-all"
+                        title="Remove Page"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+
+              </div>
+
+              <div className="pt-4 px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50 flex items-center justify-between">
                 Page Sections
                 <button
                   type="button"
@@ -1600,25 +1778,27 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <button
-                onClick={() => {
-                  setSelectedSection('hero')
-                  setActivePreviewSection('hero')
-                  lockPreviewHighlight('hero')
-                  const heroIndex = activeSections.indexOf('hero')
-                  if (heroIndex >= 0) scrollToSection('hero', heroIndex)
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group border border-transparent ${(selectedSection === 'hero' || activePreviewSection === 'hero') ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
-              >
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
-                  <Zap className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate">Hero Section</p>
-                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Main Banner</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
+              {isHomePage && (
+                <button
+                  onClick={() => {
+                    setSelectedSection('hero')
+                    setActivePreviewSection('hero')
+                    lockPreviewHighlight('hero')
+                    const heroIndex = activeSections.indexOf('hero')
+                    if (heroIndex >= 0) scrollToSection('hero', heroIndex)
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group border border-transparent ${(selectedSection === 'hero' || activePreviewSection === 'hero') ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold truncate">Hero Section</p>
+                    <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Main Banner</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              )}
 
               <div className="px-1">
                 <div className="relative">
@@ -2074,6 +2254,25 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
+
+              <button
+                onClick={() => setSelectedSection('pages')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'pages' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                  <Layout className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate">Site Pages</p>
+                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Multi-page setup</p>
+                </div>
+                {!canUsePages && (
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                    Pro
+                  </span>
+                )}
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
             </div>
           )}
         </div>
@@ -2197,6 +2396,9 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   const json = await res.json()
                   if (!res.ok) throw new Error(json.error || 'Failed to save draft')
                   toast.success('Draft saved')
+                  if (json?.draft && typeof json.draft === 'object') {
+                    setLocalDraftConfig(json.draft)
+                  }
                   setModified({})
                   if (typeof window !== 'undefined') {
                     localStorage.removeItem(LOCAL_KEY)
@@ -2217,18 +2419,37 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
             </button>
             <button
               onClick={() => {
+                discardInProgressRef.current = true
+                console.log('[dashboard-preview] discard local changes', {
+                  projectId: project.id,
+                  modifiedKeys: Object.keys(modified || {}),
+                  hasDraft,
+                })
                 setModified({})
                 if (typeof window !== 'undefined') {
                   localStorage.removeItem(LOCAL_KEY)
                 }
+                setSelectedSection(null)
+                setActivePreviewSection(null)
+                setSelectedPageIndex(0)
+                setFormValues({})
                 if (selectedSection) {
                   const sectionKey = sectionIdToKey(selectedSection)
                   const base = baseConfig[sectionKey] || {}
                   setFormValues(base as any)
                 }
                 // push the clean base config back into the preview
-                sendToIframe({ type: 'LIVE_PREVIEW_FULL', data: baseConfig })
+                lastPreviewPayloadRef.current = null
+                console.log('[dashboard-preview] send preview after discard', {
+                  projectId: project.id,
+                  baseConfigKeys: Object.keys(baseConfig || {}),
+                })
+                sendFullPreview(baseConfig)
+                router.refresh()
                 toast.success('Local changes discarded')
+                window.setTimeout(() => {
+                  discardInProgressRef.current = false
+                }, 0)
               }}
               className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-semibold hover:bg-muted transition-all duration-200 shadow-sm shrink-0"
             >
@@ -2236,94 +2457,114 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               <span className="shrink-0">Discard</span>
             </button>
             {canPublish ? (
-              <button
-                onClick={async () => {
-                  if (!canPublishNow(project)) {
-                    toast.error(`Publish limit reached (${publishStats.used}/${publishStats.limit} this period).`)
-                    return
-                  }
-                  setIsPublishing(true)
-                  try {
-                    if (Object.keys(modified).length > 0) {
-                      const saveRes = await fetch('/api/project-config', {
+              <div className="flex flex-col items-end">
+                <button
+                  onClick={async () => {
+                    if (!canPublishNow(project)) {
+                      toast.error(`Publish limit reached (${publishStats.used}/${publishStats.limit} this period).`)
+                      return
+                    }
+                    setIsPublishing(true)
+                    try {
+                      if (Object.keys(modified).length > 0) {
+                        const saveRes = await fetch('/api/project-config', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ projectId: project.id, patch: modified })
+                        })
+                        const saveJson = await saveRes.json()
+                        if (!saveRes.ok) throw new Error(saveJson.error || 'Failed to save draft')
+                        if (saveJson?.draft && typeof saveJson.draft === 'object') {
+                          setLocalDraftConfig(saveJson.draft)
+                        }
+                        setModified({})
+                        if (typeof window !== 'undefined') localStorage.removeItem(LOCAL_KEY)
+                        router.refresh()
+                      }
+                      const res = await fetch('/api/publish', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ projectId: project.id, patch: modified })
+                        body: JSON.stringify({ projectId: project.id })
                       })
-                      const saveJson = await saveRes.json()
-                      if (!saveRes.ok) throw new Error(saveJson.error || 'Failed to save draft')
-                      setModified({})
-                      if (typeof window !== 'undefined') localStorage.removeItem(LOCAL_KEY)
+                      const json = await res.json()
+                      if (!res.ok) throw new Error(json.error || 'Failed to publish')
+                      const remaining = (json as { remaining?: number; remainingToday?: number })?.remaining ?? publishStats.remaining - 1
+                      const remainingToday = (json as { remainingToday?: number })?.remainingToday ?? publishStats.remainingToday - 1
+                      toast.success(`Published! ${remaining} left this period, ${remainingToday} today.`)
+                      setLocalDraftConfig(null)
                       router.refresh()
+                      setTimeout(() => refreshPreview(), 100)
+                    } catch (e: any) {
+                      toast.error(e?.message || 'Failed to publish')
+                    } finally {
+                      setIsPublishing(false)
                     }
-                    const res = await fetch('/api/publish', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ projectId: project.id })
-                    })
-                    const json = await res.json()
-                    if (!res.ok) throw new Error(json.error || 'Failed to publish')
-                    const remaining = (json as { remaining?: number; remainingToday?: number })?.remaining ?? publishStats.remaining - 1
-                    const remainingToday = (json as { remainingToday?: number })?.remainingToday ?? publishStats.remainingToday - 1
-                    toast.success(`Published! ${remaining} left this period, ${remainingToday} today.`)
-                    router.refresh()
-                    setTimeout(() => refreshPreview(), 100)
-                  } catch (e: any) {
-                    toast.error(e?.message || 'Failed to publish')
-                  } finally {
-                    setIsPublishing(false)
-                  }
-                }}
-                disabled={isPublishing || !canPublishNow(project) || (!hasDraft && Object.keys(modified).length === 0)}
-                className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
-              >
-                <Send className="w-3.5 h-3.5 shrink-0" />
-                <span className="shrink-0">{isPublishing ? 'Publishing…' : 'Publish'}</span>
-              </button>
+                  }}
+                  disabled={isPublishing || !canPublishNow(project) || (!hasDraft && !hasLocalChanges)}
+                  title={publishDisabledReason || undefined}
+                  className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
+                >
+                  <Send className="w-3.5 h-3.5 shrink-0" />
+                  <span className="shrink-0">{isPublishing ? 'Publishing…' : 'Publish'}</span>
+                </button>
+                {publishDisabledReason && (
+                  <span className="mt-1 text-[10px] text-muted-foreground text-right max-w-[180px]">
+                    {publishDisabledReason}
+                  </span>
+                )}
+              </div>
             ) : (
-              <button
-                onClick={async () => {
-                  if (hasPendingRequest) {
-                    toast.error('A change request is already pending. Please wait for it to be reviewed.')
-                    return
-                  }
-                  setIsQueueing(true)
-                  try {
-                    if (Object.keys(modified).length > 0) {
-                      const saveRes = await fetch('/api/project-config', {
+              <div className="flex flex-col items-end">
+                <button
+                  onClick={async () => {
+                    if (hasPendingRequest) {
+                      toast.error('A change request is already pending. Please wait for it to be reviewed.')
+                      return
+                    }
+                    setIsQueueing(true)
+                    try {
+                      if (Object.keys(modified).length > 0) {
+                        const saveRes = await fetch('/api/project-config', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ projectId: project.id, patch: modified })
+                        })
+                        const saveJson = await saveRes.json()
+                        if (!saveRes.ok) throw new Error(saveJson.error || 'Failed to auto-save draft before submission')
+                        setModified({})
+                        if (typeof window !== 'undefined') localStorage.removeItem(LOCAL_KEY)
+                        router.refresh()
+                      }
+                      const res = await fetch('/api/change-requests', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ projectId: project.id, patch: modified })
+                        body: JSON.stringify({ projectId: project.id })
                       })
-                      const saveJson = await saveRes.json()
-                      if (!saveRes.ok) throw new Error(saveJson.error || 'Failed to auto-save draft before submission')
-                      setModified({})
-                      if (typeof window !== 'undefined') localStorage.removeItem(LOCAL_KEY)
+                      const json = await res.json()
+                      if (!res.ok) throw new Error(json.error || 'Failed to submit for approval')
+                      toast.success('Draft saved and submitted for approval')
+                      setHasPendingRequest(true)
                       router.refresh()
+                      setTimeout(() => refreshPreview(), 100)
+                    } catch (e: any) {
+                      toast.error(e?.message || 'Failed to submit for approval')
+                    } finally {
+                      setIsQueueing(false)
                     }
-                    const res = await fetch('/api/change-requests', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ projectId: project.id })
-                    })
-                    const json = await res.json()
-                    if (!res.ok) throw new Error(json.error || 'Failed to submit for approval')
-                    toast.success('Draft saved and submitted for approval')
-                    setHasPendingRequest(true)
-                    router.refresh()
-                    setTimeout(() => refreshPreview(), 100)
-                  } catch (e: any) {
-                    toast.error(e?.message || 'Failed to submit for approval')
-                  } finally {
-                    setIsQueueing(false)
-                  }
-                }}
-                disabled={isQueueing || hasPendingRequest}
-                className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
-              >
-                <Send className="w-3.5 h-3.5 shrink-0" />
-                <span className="shrink-0">{isQueueing ? 'Submitting…' : hasPendingRequest ? 'Pending Review' : 'Submit'}</span>
-              </button>
+                  }}
+                  disabled={isQueueing || hasPendingRequest}
+                  title={publishDisabledReason || undefined}
+                  className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
+                >
+                  <Send className="w-3.5 h-3.5 shrink-0" />
+                  <span className="shrink-0">{isQueueing ? 'Submitting…' : hasPendingRequest ? 'Pending Review' : 'Submit'}</span>
+                </button>
+                {publishDisabledReason && (
+                  <span className="mt-1 text-[10px] text-muted-foreground text-right max-w-[180px]">
+                    {publishDisabledReason}
+                  </span>
+                )}
+              </div>
             )}
           </div>
         </header>
@@ -2335,14 +2576,32 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
         />
       </main>
 
-      {/* Edit Modal - Redesigned for better UI/UX. modal={false} allows portaled dropdowns to receive scroll/click when used. */}
-      <Dialog open={!!selectedSection} onOpenChange={(open) => { if (!open) { setSelectedSection(null); } }} modal={false}>
-        <DialogContent className="p-0 overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh] min-h-0 border-0 shadow-2xl w-full sm:w-[95vw] sm:max-w-[840px]">
+      {/* Edit Panel - Simplified to avoid focus-scope loops */}
+      {selectedSection && typeof document !== "undefined" && createPortal(
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-6"
+          onClick={() => setSelectedSection(null)}
+        >
+          <div className="absolute inset-0 bg-black/50" aria-hidden />
+          <div
+            className="relative z-[210] p-0 overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh] min-h-0 border border-border bg-background shadow-2xl w-full sm:w-[95vw] sm:max-w-[840px] rounded-2xl"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <button
+              type="button"
+              onClick={() => setSelectedSection(null)}
+              className="absolute right-4 top-4 z-20 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </button>
           {/* Polished header - shrink-0 keeps it always visible */}
           <div className="relative overflow-hidden shrink-0">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-primary/4 to-transparent" aria-hidden />
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" aria-hidden />
-            <DialogHeader className="relative p-4 sm:p-6 sm:pb-4">
+            <div className="relative p-4 sm:p-6 sm:pb-4">
               <div className="flex items-start gap-3 sm:gap-4">
                 <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                   {selectedSection === 'subscription' ? (
@@ -2352,7 +2611,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <DialogTitle className="capitalize flex items-center gap-2 text-base sm:text-lg font-bold tracking-tight">
+                  <h2 className="capitalize flex items-center gap-2 text-base sm:text-lg font-bold tracking-tight">
                     {selectedSection === 'subscription' ? (
                       <>Subscription & Plan</>
                     ) : (
@@ -2361,15 +2620,15 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                         <span>{selectedSection?.replace(/-/g, ' ')}</span>
                       </div>
                     )}
-                  </DialogTitle>
-                  <DialogDescription className="mt-0.5 sm:mt-1 text-xs sm:text-sm leading-relaxed line-clamp-1 sm:line-clamp-none">
+                  </h2>
+                  <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm leading-relaxed line-clamp-1 sm:line-clamp-none text-muted-foreground">
                     {selectedSection === 'subscription'
                       ? "View plan and auto-renewal."
                       : "Customize content and images."}
-                  </DialogDescription>
+                  </p>
                 </div>
               </div>
-            </DialogHeader>
+            </div>
 
             {/* Tabs removed: global_settings now integrated into sidebar reordering */}
           </div>
@@ -2692,6 +2951,143 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                         autoSaveSection(selectedSection!, next)
                         return next
                       })
+                    }
+
+                    if (selectedSection === 'pages' && key === 'pages') {
+                      const updatePages = (nextItems: any[]) => {
+                        setFormValues({ pages: nextItems })
+                        setModified(m => ({ ...m, pages: nextItems }))
+                        autoSaveSection('pages', nextItems)
+                      }
+
+                      return (
+                        <div key={key} className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden pt-0 transition-all duration-300">
+                          <div className="px-4 py-3 border-b border-border/60 bg-muted/10 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs font-bold uppercase tracking-widest text-primary">Pages</span>
+                              <span className="text-[10px] font-medium text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">
+                                {typedItems.length} {typedItems.length === 1 ? 'page' : 'pages'}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!canUsePages) return
+                                const next = [...typedItems, { slug: '', label: `Page ${typedItems.length + 1}`, activeSections: [], seo: { title: '', description: '', keywords: [] } }]
+                                updatePages(next)
+                              }}
+                              disabled={!canUsePages}
+                              className="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline disabled:text-muted-foreground disabled:cursor-not-allowed"
+                            >
+                              + Add Page
+                            </button>
+                          </div>
+                          <div className="p-4 space-y-4">
+                            {!canUsePages && (
+                              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-[11px] text-amber-700 font-semibold">
+                                Multi-page sites are available on paid plans. Upgrade to add more pages.
+                              </div>
+                            )}
+                            {typedItems.map((page, idx) => {
+                              const pageObj = (page || {}) as Record<string, any>
+                              const keywords = Array.isArray(pageObj.seo?.keywords) ? pageObj.seo.keywords.join(', ') : ''
+                              return (
+                                <div key={idx} className="rounded-xl border border-border/80 bg-background/80 shadow-sm p-4 space-y-3 relative">
+                                  <div className="absolute -top-2 -right-2 flex gap-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updatePages(next); } }} className="px-2 py-1 text-[9px] rounded bg-muted hover:bg-muted/70">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updatePages(next); } }} className="px-2 py-1 text-[9px] rounded bg-muted hover:bg-muted/70">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updatePages(next); }} className="px-2 py-1 text-[9px] rounded bg-red-500/10 text-red-600">Remove</button>
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">Slug</label>
+                                      <input
+                                        value={pageObj.slug || ''}
+                                        onChange={(e) => {
+                                          const next = [...typedItems]
+                                          next[idx] = { ...pageObj, slug: e.target.value }
+                                          updatePages(next)
+                                        }}
+                                        placeholder="about"
+                                        className="w-full px-2 py-1 text-[11px] bg-background border border-border rounded"
+                                      />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">Label</label>
+                                      <input
+                                        value={pageObj.label || ''}
+                                        onChange={(e) => {
+                                          const next = [...typedItems]
+                                          next[idx] = { ...pageObj, label: e.target.value }
+                                          updatePages(next)
+                                        }}
+                                        placeholder="About"
+                                        className="w-full px-2 py-1 text-[11px] bg-background border border-border rounded"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">Sections (comma separated)</label>
+                                    <input
+                                      value={Array.isArray(pageObj.activeSections) ? pageObj.activeSections.join(', ') : ''}
+                                      onChange={(e) => {
+                                        const next = [...typedItems]
+                                        next[idx] = { ...pageObj, activeSections: e.target.value.split(',').map((s) => s.trim()).filter(Boolean) }
+                                        updatePages(next)
+                                      }}
+                                      placeholder="hero, features, contact"
+                                      className="w-full px-2 py-1 text-[11px] bg-background border border-border rounded"
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">SEO Title</label>
+                                      <input
+                                        value={pageObj.seo?.title || ''}
+                                        onChange={(e) => {
+                                          const next = [...typedItems]
+                                          next[idx] = { ...pageObj, seo: { ...pageObj.seo, title: e.target.value } }
+                                          updatePages(next)
+                                        }}
+                                        placeholder="Page title"
+                                        className="w-full px-2 py-1 text-[11px] bg-background border border-border rounded"
+                                      />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">SEO Keywords</label>
+                                      <input
+                                        value={keywords}
+                                        onChange={(e) => {
+                                          const next = [...typedItems]
+                                          const seo = { ...pageObj.seo, keywords: e.target.value.split(',').map((s) => s.trim()).filter(Boolean) }
+                                          next[idx] = { ...pageObj, seo }
+                                          updatePages(next)
+                                        }}
+                                        placeholder="keyword1, keyword2"
+                                        className="w-full px-2 py-1 text-[11px] bg-background border border-border rounded"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground">SEO Description</label>
+                                    <textarea
+                                      value={pageObj.seo?.description || ''}
+                                      onChange={(e) => {
+                                        const next = [...typedItems]
+                                        next[idx] = { ...pageObj, seo: { ...pageObj.seo, description: e.target.value } }
+                                        updatePages(next)
+                                      }}
+                                      rows={2}
+                                      placeholder="Short description for search results"
+                                      className="w-full px-2 py-1 text-[11px] bg-background border border-border rounded"
+                                    />
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )
                     }
 
                     return (
@@ -3350,8 +3746,10 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               Done
             </button>
           </div>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Version History / Rollback Modal */}
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>

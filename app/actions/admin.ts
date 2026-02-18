@@ -158,6 +158,11 @@ const setSubscriptionSchema = z.object({
   publishLimitDaily: z.number().int().min(1).optional(),
 })
 
+const setPlanLimitsSchema = z.object({
+  proMaxPages: z.number().int().min(1),
+  freeMaxPages: z.number().int().min(1).optional(),
+})
+
 export async function setProjectSubscription(
   projectId: string,
   subscriptionStatus: 'free' | 'trial' | 'active' | 'admin_granted',
@@ -210,5 +215,51 @@ export async function setProjectSubscription(
   if (error) return { error: error.message }
   revalidatePath('/admin/clients')
   revalidatePath('/dashboard')
+  return { success: true }
+}
+
+export async function setPlanLimits(input: { proMaxPages: number; freeMaxPages?: number }) {
+  const validated = setPlanLimitsSchema.safeParse(input)
+  if (!validated.success) return { error: 'Invalid input' }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') return { error: 'Forbidden' }
+
+  const { data: existing } = await supabase
+    .from('site_config')
+    .select('id, payload')
+    .eq('key', 'plan_limits')
+    .single()
+
+  const nextPayload = {
+    free: { maxPages: validated.data.freeMaxPages ?? 1 },
+    pro: { maxPages: validated.data.proMaxPages },
+  }
+
+  if (existing?.id) {
+    const { error } = await supabase
+      .from('site_config')
+      .update({ payload: nextPayload, updated_at: new Date().toISOString() })
+      .eq('id', existing.id)
+
+    if (error) return { error: error.message }
+  } else {
+    const { error } = await supabase
+      .from('site_config')
+      .insert({ key: 'plan_limits', payload: nextPayload })
+
+    if (error) return { error: error.message }
+  }
+
+  revalidatePath('/admin/settings')
   return { success: true }
 }

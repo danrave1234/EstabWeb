@@ -27,7 +27,7 @@ export interface ProjectSubscription {
 const CAN_PUBLISH_DIRECTLY: SubscriptionStatus[] = ['trial', 'active', 'admin_granted']
 
 export function canPublishDirectly(project: ProjectSubscription): boolean {
-  const status = (project?.subscription_status || 'free') as SubscriptionStatus
+  const status = (project?.subscription_status || 'free').toLowerCase() as SubscriptionStatus
   if (!CAN_PUBLISH_DIRECTLY.includes(status)) return false
 
   const now = new Date()
@@ -49,7 +49,7 @@ export function canPublishDirectly(project: ProjectSubscription): boolean {
 
 /** Whether trial has expired */
 export function isTrialExpired(project: ProjectSubscription): boolean {
-  if ((project?.subscription_status || '') !== 'trial') return false
+  if ((project?.subscription_status || '').toLowerCase() !== 'trial') return false
   const endsAt = project.trial_ends_at ? new Date(project.trial_ends_at) : null
   return endsAt ? endsAt < new Date() : false
 }

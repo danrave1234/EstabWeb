@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { deepMerge } from '@/lib/utils'
+import { getMaxPagesForProject, getPlanLimits, isLegalPageSlug, normalizePages } from '@/lib/utils/site-pages'
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     // Load project to get both current and draft configs
     const { data: proj, error } = await supabase
       .from('projects')
-      .select('id, current_config, draft_config')
+      .select('id, current_config, draft_config, subscription_status, trial_ends_at, subscription_ends_at')
       .eq('id', projectId)
       .single()
 
@@ -28,6 +29,19 @@ export async function POST(req: Request) {
     const base = hasDraft ? (proj.draft_config as any) : (proj.current_config as any || {})
     
     const next = deepMerge(base, patch as Record<string, unknown>)
+
+    const pages = normalizePages((next as any)?.pages)
+    if (pages.length > 0) {
+      const planLimits = await getPlanLimits(supabase)
+      const maxPages = getMaxPagesForProject(proj, planLimits)
+      const paidPages = pages.filter((page) => page.slug && !isLegalPageSlug(page.slug))
+      if (paidPages.length > maxPages) {
+        return NextResponse.json(
+          { error: `Page limit exceeded (${paidPages.length}/${maxPages}).` },
+          { status: 400 }
+        )
+      }
+    }
 
     const { error: upErr } = await supabase
       .from('projects')

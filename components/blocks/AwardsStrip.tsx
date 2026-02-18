@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
 
 export type AwardItem = {
@@ -16,8 +17,16 @@ export type AwardsStripProps = {
 
 export default function AwardsStrip({ title, items }: AwardsStripProps) {
   const safeItems = Array.isArray(items) ? items.filter((item) => item != null && typeof item === "object") : []
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   return (
-    <section id="credentials" className="w-full bg-muted/20 border-y border-border py-8 sm:py-12 reveal">
+    <section
+      id="credentials"
+      className={`w-full bg-muted/20 border-y border-border py-8 sm:py-12${mounted ? " reveal" : ""}`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {title && (
           <p className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-8 sm:mb-10">

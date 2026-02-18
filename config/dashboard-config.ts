@@ -411,7 +411,8 @@ export function sectionIdToKey(id: string) {
     'footer': 'footer',
     'contact': 'contact',
     'navigation': 'navigation',
-    'legal': 'legal'
+    'legal': 'legal',
+    'pages': 'pages'
   };
   return map[id] || id;
 }
@@ -490,7 +491,8 @@ export function formatSectionLabel(id: string): string {
     'footer': 'Footer Settings',
     'contact': 'Contact Info',
     'navigation': 'Navigation Menu',
-    'legal': 'Legal Pages'
+    'legal': 'Legal Pages',
+    'pages': 'Site Pages'
   };
   return labelMap[id] || id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }

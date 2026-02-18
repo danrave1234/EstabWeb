@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from 'react'
+import { usePathname, useSearchParams } from 'next/navigation'
 
 const LivePreviewContext = React.createContext<any>(null)
 
@@ -35,6 +36,43 @@ export default function LivePreviewProvider({ initialData, children }: LivePrevi
   const [data, setData] = React.useState(initialData)
   const lastActiveRef = React.useRef<string | null>(null)
   const intersectionMapRef = React.useRef<Map<Element, { id: string; ratio: number; top: number }>>(new Map())
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const lastRouteRef = React.useRef<string | null>(null)
+  const searchString = React.useMemo(() => searchParams?.toString() ?? '', [searchParams])
+  const previewParams = React.useMemo(() => new URLSearchParams(searchString), [searchString])
+
+  const dataForRoute = React.useMemo(() => {
+    if (!data) return data
+    const pages = Array.isArray((data as any)?.pages) ? (data as any).pages : []
+    if (pages.length === 0) return data
+
+    const isPreview = Boolean(previewParams.get('preview')) || Boolean(previewParams.get('projectId'))
+    const hasProjectId = Boolean(previewParams.get('projectId'))
+    const segments = (pathname || '').split('/').filter(Boolean)
+    let slug = ''
+    if (isPreview && hasProjectId && segments.length >= 2) {
+      slug = segments[1]
+    } else if (segments.length >= 1) {
+      slug = segments[0]
+    }
+
+    const cleanSlug = slug.replace(/^\/+|\/+$/g, '').toLowerCase()
+    if (!cleanSlug) return data
+
+    const match = pages.find((page: any) => {
+      const rawSlug = typeof page?.slug === 'string' ? page.slug : ''
+      return rawSlug.replace(/^\/+|\/+$/g, '').toLowerCase() === cleanSlug
+    })
+
+    if (!match) return data
+
+    return {
+      ...data,
+      activeSections: match.activeSections ?? (data as any).activeSections,
+      seo: match.seo ?? (data as any).seo,
+    }
+  }, [data, pathname, previewParams])
 
   const scrollToElement = React.useCallback((el: Element) => {
     try {
@@ -141,6 +179,17 @@ export default function LivePreviewProvider({ initialData, children }: LivePrevi
   }, [])
 
   React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    const searchQuery = searchString ? `?${searchString}` : ''
+    const routeKey = `${pathname}${searchQuery}`
+    if (routeKey === lastRouteRef.current) return
+    lastRouteRef.current = routeKey
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'PREVIEW_ROUTE_CHANGED', pathname, search: searchQuery }, '*')
+    }
+  }, [pathname, searchString])
+
+  React.useEffect(() => {
     if (!data || typeof window === 'undefined' || typeof document === 'undefined') return
 
     const sections = Array.from(document.querySelectorAll('[data-section-id]'))
@@ -201,7 +250,7 @@ export default function LivePreviewProvider({ initialData, children }: LivePrevi
   }, [data])
 
   return (
-    <LivePreviewContext.Provider value={data}>
+    <LivePreviewContext.Provider value={dataForRoute}>
       {children}
     </LivePreviewContext.Provider>
   )

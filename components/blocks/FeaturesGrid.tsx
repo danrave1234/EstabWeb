@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
 
@@ -21,8 +22,17 @@ export default function FeaturesGrid({
   subtitle,
   features,
 }: FeaturesGridProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
-    <section id="services" className="py-10 sm:py-16 px-4 sm:px-6 lg:px-8 bg-muted/30 reveal">
+    <section
+      id="services"
+      className={`py-10 sm:py-16 px-4 sm:px-6 lg:px-8 bg-muted/30${mounted ? " reveal" : ""}`}
+    >
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4">{title}</h2>

@@ -27,8 +27,8 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { showOverlay?: boolean }
+>(({ className, children, showOverlay = true, ...props }, ref) => {
   // Radix closes the dialog on "outside" interactions (pointer/focus).
   // We want: close on outside *click*, but NOT when the user starts a drag inside
   // the dialog content and releases outside.
@@ -53,7 +53,7 @@ const DialogContent = React.forwardRef<
 
   return (
     <DialogPortal>
-      <DialogOverlay />
+      {showOverlay && <DialogOverlay />}
       <DialogPrimitive.Content
         ref={ref}
         className={cn(

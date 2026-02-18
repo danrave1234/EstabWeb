@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { generateSubdomain } from '@/lib/codes'
 import { deepMerge } from '@/lib/utils'
 import { canPublishDirectly, canPublishNow, getPublishStats, DEFAULT_PUBLISH_LIMIT, DEFAULT_PUBLISH_LIMIT_DAILY } from '@/lib/subscription'
+import { getMaxPagesForProject, getPlanLimits, isLegalPageSlug, normalizePages } from '@/lib/utils/site-pages'
 
 const PERIOD_DAYS = 30
 
@@ -53,6 +54,18 @@ export async function POST(req: Request) {
 
     const current = (proj.current_config ?? {}) as Record<string, unknown>
     const newConfig = deepMerge(current, draft)
+    const pages = normalizePages((newConfig as any)?.pages)
+    if (pages.length > 0) {
+      const planLimits = await getPlanLimits(supabase)
+      const maxPages = getMaxPagesForProject(proj, planLimits)
+      const paidPages = pages.filter((page) => page.slug && !isLegalPageSlug(page.slug))
+      if (paidPages.length > maxPages) {
+        return NextResponse.json(
+          { error: `Page limit exceeded (${paidPages.length}/${maxPages}).` },
+          { status: 400 }
+        )
+      }
+    }
     const nextVersion = (proj.config_version ?? 0) + 1
 
     const updatePayload: Record<string, unknown> = {

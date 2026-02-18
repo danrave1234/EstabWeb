@@ -303,17 +303,61 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     { name: "Contact", href: "/contact" },
   ];
 
+  const slugify = (value: string) => value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+  const pagesNav = Array.isArray((data as any)?.pages)
+    ? (data as any).pages
+        .map((page: any, index: number) => {
+          const rawSlug = typeof page?.slug === "string" ? page.slug : "";
+          let slug = rawSlug.replace(/^\/+|\/+$/g, "").toLowerCase();
+          const rawLabel = typeof page?.label === "string" ? page.label : "";
+          const rawSections = Array.isArray(page?.activeSections) ? page.activeSections : [];
+          const firstSection = typeof rawSections[0] === "string" ? rawSections[0] : "";
+          const fallbackLabel = firstSection
+            ? firstSection.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
+            : slug
+              ? slug.replace(/-/g, " ")
+              : "Home";
+          const isGenericLabel = /^page\s+\d+$/i.test(rawLabel.trim());
+          const label = rawLabel && !isGenericLabel ? rawLabel : fallbackLabel;
+          if (!slug && label.toLowerCase() !== "home") {
+            slug = slugify(label);
+          }
+          return {
+            name: label,
+            href: slug ? `/${slug}` : "/",
+          };
+        })
+        .filter((entry: any, idx: number, arr: any[]) =>
+          entry.name && entry.href && arr.findIndex((e: any) => e.href === entry.href || e.name === entry.name) === idx
+        )
+    : [];
+
   const navigationFromSections =
     Array.isArray(navigation) && navigation.length > 0
       ? navigation
-      : builtFromSections.length > 0
-        ? builtFromSections
-        : defaultNav;
+      : pagesNav.length > 1 || pagesNav.some((item: any) => item.href !== "/")
+        ? pagesNav
+        : builtFromSections.length > 0
+          ? builtFromSections
+          : defaultNav;
 
   const contactSections = ["contact", "contact-minimal", "contact-visual", "contact-with-map", "contact-columns"];
   const footerSections = ["footer", "lead-magnet-footer", "simple-footer", "minimal-footer"];
-  const showHeader = activeSections.includes("header") || (activeSections.length > 0 && (activeSections.includes("hero") || activeSections.some((s: string) => s.startsWith("hero")))) || activeSections.length === 0;
-  const showFooter = activeSections.includes("footer") || (activeSections.length > 0 && activeSections.some((s: string) => contactSections.includes(s) || footerSections.includes(s))) || activeSections.length === 0;
+  const showHeader =
+    activeSections.includes("header") ||
+    navigationFromSections.length > 0 ||
+    activeSections.length === 0;
+  const showFooter =
+    activeSections.includes("footer") ||
+    navigationFromSections.length > 0 ||
+    activeSections.some((s: string) => contactSections.includes(s) || footerSections.includes(s)) ||
+    activeSections.length === 0;
 
   const renderedSections = Array.isArray(activeSections) ? activeSections : [];
 

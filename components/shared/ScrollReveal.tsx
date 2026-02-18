@@ -47,7 +47,12 @@ export default function ScrollReveal() {
           const mutationObserver = new MutationObserver(() => {
             updateObservers();
           });
-          mutationObserver.observe(document.body, { childList: true, subtree: true });
+          mutationObserver.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["class"],
+          });
 
           // Cleanup
           cleanupFns.push(() => mutationObserver.disconnect());

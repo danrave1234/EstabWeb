@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
 
 export type ProcessStep = {
@@ -16,8 +17,14 @@ export type TreatmentProcessTimelineProps = {
 };
 
 export default function TreatmentProcessTimeline({ title, subtitle, steps }: TreatmentProcessTimelineProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   return (
-    <section id="process" className="py-12 sm:py-20 bg-muted/10 reveal">
+    <section id="process" className={`py-12 sm:py-20 bg-muted/10${isMounted ? " reveal" : ""}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {(title || subtitle) && (
           <div className="text-center mb-16">

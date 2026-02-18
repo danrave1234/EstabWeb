@@ -19,10 +19,10 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 
 export default function UpgradeButton({ projectId, subscriptionStatus = "free", variant = "inline" }: UpgradeButtonProps) {
   const [loading, setLoading] = useState(false)
-  const status = (subscriptionStatus || "free") as keyof typeof STATUS_LABELS
+  const status = ((subscriptionStatus || "free").toLowerCase() as keyof typeof STATUS_LABELS)
   const currentStatus = STATUS_LABELS[status] || STATUS_LABELS.free
 
-  const isUpgradable = status !== "active"
+  const isUpgradable = status === "free" || status === "trial"
 
   const handleUpgrade = async () => {
     if (!isUpgradable) return

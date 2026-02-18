@@ -1,5 +1,7 @@
 import { MetadataRoute } from 'next'
 import { headers } from 'next/headers'
+import { getSiteConfigWithProject } from '@/lib/utils/site-config'
+import { canUseMultiPage, getMaxPagesForProject, getPlanLimits, isLegalPageSlug, normalizePages } from '@/lib/utils/site-pages'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const headersList = await headers()
@@ -27,12 +29,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // For client sites
   const baseUrl = `https://${host}`
-  return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1,
-    },
+  const { config, project } = await getSiteConfigWithProject(host, headersList)
+  const pages = normalizePages(config?.pages)
+  const planLimits = await getPlanLimits()
+  const maxPages = getMaxPagesForProject(project, planLimits)
+  const paidPages = canUseMultiPage(project)
+    ? pages.filter((page) => page.slug && !isLegalPageSlug(page.slug)).slice(0, maxPages)
+    : []
+
+  const routes = [
+    '',
+    '/privacy',
+    '/terms',
+    '/cookies',
+    ...paidPages.map((page) => `/${page.slug}`),
   ]
+
+  return routes.map((route) => ({
+    url: `${baseUrl}${route}`,
+    lastModified: new Date(),
+    changeFrequency: route === '' ? 'weekly' : 'monthly',
+    priority: route === '' ? 1 : 0.7,
+  }))
 }

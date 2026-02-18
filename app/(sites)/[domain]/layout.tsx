@@ -49,9 +49,6 @@ export async function generateMetadata({
       apple: iconUrl,
     },
     metadataBase: new URL(`https://${host}`),
-    alternates: {
-      canonical: "/",
-    },
   };
 }
 

@@ -193,3 +193,189 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
     return null;
   }
 }
+
+export async function getSiteConfigWithProject(domain: string, headersList?: Headers): Promise<{ config: any | null; project: any | null }> {
+  const isPreview = headersList?.get('x-preview-mode') === 'true';
+  const projectId = headersList?.get('x-project-id') || undefined;
+  const requestId = headersList?.get('x-request-id') || undefined;
+  let config: any = null;
+  let project: any | null = null;
+
+  try {
+    const supabase = await createClient();
+
+    if (requestId) {
+      console.log(`[getSiteConfigWithProject] Fetching by requestId: ${requestId}`);
+      const { data: request, error: reqError } = await supabase
+        .from('change_requests')
+        .select('*, projects(*)')
+        .eq('id', requestId)
+        .single();
+
+      if (reqError) {
+        console.error(`[getSiteConfigWithProject] Error fetching change request:`, reqError);
+      }
+
+      if (request && request.projects) {
+        project = Array.isArray(request.projects) ? request.projects[0] : request.projects;
+        const sectionId = request.section_id;
+        const requestedChanges = request.requested_changes;
+
+        console.log(`[getSiteConfigWithProject] Applying changes for section: ${sectionId}`);
+
+        if (!sectionId || sectionId === 'full-site') {
+          config = requestedChanges;
+        } else {
+          config = JSON.parse(JSON.stringify(project.current_config || {}));
+          const sectionKey = getSectionKey(sectionId);
+          config[sectionKey] = {
+            ...(config[sectionKey] || {}),
+            ...requestedChanges,
+          };
+        }
+      }
+    } else {
+      let dbRow: any | undefined;
+
+      if (projectId) {
+        console.log(`[getSiteConfigWithProject] Searching by projectId: ${projectId}`);
+        const { data } = await supabase
+          .from("projects")
+          .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+          .eq("id", projectId)
+          .limit(1);
+        dbRow = data?.[0];
+      } else {
+        console.log(`[getSiteConfigWithProject] Searching by domain: "${domain}"`);
+
+        const { data, error } = await supabase
+          .from("projects")
+          .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+          .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`);
+
+        dbRow = data?.[0];
+
+        if (!dbRow) {
+          const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com').toLowerCase();
+          if (domain.endsWith(`.${ROOT_DOMAIN}`)) {
+            const sub = domain.slice(0, -(ROOT_DOMAIN.length + 1));
+            console.log(`[getSiteConfigWithProject] No exact match for "${domain}", trying subdomain "${sub}"`);
+            const { data: subData } = await supabase
+              .from("projects")
+              .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+              .eq("subdomain", sub)
+              .limit(1);
+            dbRow = subData?.[0];
+          }
+        }
+
+        if (!dbRow) {
+          console.log(`[getSiteConfigWithProject] Still no match, trying case-insensitive search for "${domain}"`);
+          const { data: ciData } = await supabase
+            .from("projects")
+            .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+            .ilike("subdomain", domain)
+            .limit(1);
+          dbRow = ciData?.[0];
+        }
+
+        if (error) {
+          console.error(`[getSiteConfigWithProject] DB Error for domain "${domain}":`, error);
+        }
+      }
+
+      if (dbRow) {
+        project = dbRow;
+        console.log(`[getSiteConfigWithProject] Found project in DB: ${dbRow.id}`);
+        if (isPreview) {
+          const hasDraft = dbRow?.draft_config && Object.keys(dbRow.draft_config).length > 0;
+          config = hasDraft ? dbRow.draft_config : dbRow.current_config;
+        } else {
+          const hasCurrent = dbRow?.current_config && Object.keys(dbRow.current_config).length > 0;
+          config = hasCurrent ? dbRow.current_config : dbRow.draft_config;
+        }
+      } else if (domain === 'master') {
+        console.log(`[getSiteConfigWithProject] Fetching master template config`);
+        const { data } = await supabase
+          .from("site_config")
+          .select("payload")
+          .eq("key", "template_master")
+          .single();
+
+        if (data) {
+          config = data.payload;
+        }
+      } else if (domain === 'localhost' || domain === 'localhost:3000' || domain === 'localhost:3001') {
+        console.log(`[getSiteConfigWithProject] Falling back to global site_config for: ${domain}`);
+        const { data } = await supabase
+          .from("site_config")
+          .select("payload")
+          .eq("key", "global")
+          .single();
+
+        if (data) {
+          config = data.payload;
+        }
+      } else {
+        console.log(`[getSiteConfigWithProject] No project found for domain: ${domain}`);
+      }
+    }
+
+    if (config && Object.keys(config).length > 0) {
+      return { config, project };
+    }
+  } catch (error) {
+    console.error("Error fetching site config from DB:", error);
+  }
+
+  try {
+    const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
+    const fileData = JSON.parse(raw);
+
+    console.log(`[getSiteConfigWithProject] Using file fallback for domain: "${domain}"`);
+    if (domain === 'master') {
+      try {
+        const supabase = await createClient();
+        const { data: templateConfig } = await supabase
+          .from("site_config")
+          .select("id")
+          .eq("key", "template_master")
+          .single();
+
+        if (!templateConfig) {
+          await supabase.from("site_config").insert({
+            key: "template_master",
+            payload: fileData,
+          });
+          console.log("Auto-migrated site-data.json to template_master in DB");
+        }
+      } catch (migrateErr) {
+        console.error("Auto-migration failed for master:", migrateErr);
+      }
+    } else if (domain === 'localhost' || domain === 'localhost:3000' || domain === 'localhost:3001') {
+      try {
+        const supabase = await createClient();
+        const { data: globalConfig } = await supabase
+          .from("site_config")
+          .select("id")
+          .eq("key", "global")
+          .single();
+
+        if (!globalConfig) {
+          await supabase.from("site_config").insert({
+            key: "global",
+            payload: fileData,
+          });
+          console.log("Auto-migrated site-data.json to site_config table in DB");
+        }
+      } catch (migrateErr) {
+        console.error("Auto-migration failed:", migrateErr);
+      }
+    }
+
+    return { config: fileData, project };
+  } catch (error) {
+    console.error("Error reading site-data.json:", error);
+    return { config: null, project };
+  }
+}

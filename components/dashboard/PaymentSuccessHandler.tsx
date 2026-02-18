@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { CheckCircle2, Loader2 } from "lucide-react"
@@ -16,13 +16,22 @@ import {
 export default function PaymentSuccessHandler() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const searchString = useMemo(() => searchParams?.toString() ?? "", [searchParams])
+  const paymentSuccess = useMemo(() => {
+    if (!searchString) return false
+    return new URLSearchParams(searchString).get("payment_success") === "true"
+  }, [searchString])
+  const projectId = useMemo(() => {
+    if (!searchString) return null
+    return new URLSearchParams(searchString).get("projectId")
+  }, [searchString])
   const [showModal, setShowModal] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
   const [tookTooLong, setTookTooLong] = useState(false)
   const doneRef = useRef(false)
 
   useEffect(() => {
-    if (searchParams.get("payment_success") === "true") {
+    if (paymentSuccess) {
       setShowModal(true)
       setIsVerifying(true)
       setTookTooLong(false)
@@ -33,7 +42,6 @@ export default function PaymentSuccessHandler() {
       window.history.replaceState({}, "", newUrl)
 
       const supabase = createClient()
-      const projectId = searchParams.get("projectId")
 
       const isPaidStatus = (status: string | null | undefined) => {
         const s = (status || "free").toLowerCase()
@@ -76,7 +84,7 @@ export default function PaymentSuccessHandler() {
         window.clearTimeout(timeout)
       }
     }
-  }, [searchParams, router])
+  }, [paymentSuccess, projectId, router])
 
   return (
     <Dialog open={showModal} onOpenChange={setShowModal}>
