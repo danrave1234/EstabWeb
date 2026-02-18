@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import SiteTemplate from "@/components/shared/SiteTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
 import { getSiteConfig } from "@/lib/utils/site-config";
-import { getPageBySlug, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
+import { getPageBySlug, normalizePages, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
