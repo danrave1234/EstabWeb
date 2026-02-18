@@ -310,6 +310,38 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
+  const pageCategoryLabels: Record<string, string> = {
+    "review-trust-bar": "Reviews",
+    "reviews-grid": "Reviews",
+    "facebook-review-embed": "Reviews",
+    "testimonials": "Reviews",
+    "trust-badges-grid": "Trust",
+    "awards": "Credentials",
+    "pricing": "Pricing",
+    "pricing-table": "Pricing",
+    "packages-pricing": "Pricing",
+    "practice-areas": "Services",
+    "features": "Services",
+    "features-modern": "Services",
+    "services-grid": "Services",
+    "feature-highlight": "Highlights",
+    "how-it-works": "How It Works",
+    "treatment-process": "Process",
+    "patient-faq": "FAQ",
+    "faq-accordion": "FAQ",
+    "faq-two-column": "FAQ",
+    "team-carousel": "Team",
+    "team-grid": "Team",
+    "attorney-profile": "About",
+    "contact": "Contact",
+    "contact-minimal": "Contact",
+    "contact-visual": "Contact",
+    "contact-with-map": "Contact",
+    "contact-columns": "Contact",
+  };
+
+  const categoryLabelForSection = (sectionId: string) => pageCategoryLabels[sectionId] || "";
+
   const pagesNav = Array.isArray((data as any)?.pages)
     ? (data as any).pages
         .map((page: any, index: number) => {
@@ -318,14 +350,19 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
           const rawLabel = typeof page?.label === "string" ? page.label : "";
           const rawSections = Array.isArray(page?.activeSections) ? page.activeSections : [];
           const firstSection = typeof rawSections[0] === "string" ? rawSections[0] : "";
-          const fallbackLabel = firstSection
-            ? firstSection.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
+          const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : "";
+          const fallbackLabel = categoryLabel
+            ? categoryLabel
             : slug
               ? slug.replace(/-/g, " ")
               : "Home";
-          const isGenericLabel = /^page\s+\d+$/i.test(rawLabel.trim());
+          const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim());
           const label = rawLabel && !isGenericLabel ? rawLabel : fallbackLabel;
-          if (!slug && label.toLowerCase() !== "home") {
+          const autoSlugFromLabel = slugify(rawLabel || `Page ${index + 1}`);
+          const shouldUseDefaultSlug = !slug || (isGenericLabel && (!rawSlug || slug === autoSlugFromLabel));
+          if (label.toLowerCase() === "home") {
+            slug = "";
+          } else if (shouldUseDefaultSlug) {
             slug = slugify(label);
           }
           return {

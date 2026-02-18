@@ -113,7 +113,23 @@ export async function POST(req: Request) {
     })
 
     const domainParam = proj.subdomain || proj.custom_domain
-    if (domainParam) revalidatePath(`/${domainParam}`)
+    if (domainParam) {
+      revalidatePath(`/${domainParam}`)
+      const configPages = normalizePages((newConfig as any)?.pages)
+      if (configPages.length > 0) {
+        const planLimits = await getPlanLimits(supabase)
+        const maxPages = getMaxPagesForProject(proj, planLimits)
+        const paidPages = configPages
+          .filter((page) => page.slug && !isLegalPageSlug(page.slug))
+          .slice(0, maxPages)
+        paidPages.forEach((page) => {
+          revalidatePath(`/${domainParam}/${page.slug}`)
+        })
+      }
+      ;["privacy", "terms", "cookies"].forEach((slug) => {
+        revalidatePath(`/${domainParam}/${slug}`)
+      })
+    }
 
     const newCount = (updatePayload as any).publish_count as number
     const newCountToday = (updatePayload as any).publish_count_today as number

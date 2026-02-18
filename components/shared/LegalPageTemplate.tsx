@@ -1,9 +1,11 @@
 "use client"
 
 import React from "react";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
 import { useLivePreview } from "./LivePreviewProvider";
+import Header from "@/components/shared/Header";
+import LeadMagnetFooter from "@/components/blocks/LeadMagnetFooter";
+import SimpleFooter from "@/components/blocks/SimpleFooter";
+import MinimalFooter from "@/components/blocks/MinimalFooter";
 
 interface LegalPageTemplateProps {
   title: string;
@@ -22,19 +24,108 @@ export default function LegalPageTemplate({ title, lastUpdated, content, serverD
   const displayContent = legalData.content || content || "Content coming soon...";
   const displayDate = legalData.lastUpdated || lastUpdated || new Date().toLocaleDateString();
 
+  const brand = data?.brand || { name: "Site", logoUrl: "" };
+  const hero = data?.hero || {};
+  const contact = data?.contact || {};
+  const footer = data?.footer || {};
+  const headerStyle = data?.headerStyle || "solid";
+  const footerStyle = data?.footerStyle || "lead-magnet";
+
+  const defaultNav = [
+    { name: "Services", href: "#services" },
+    { name: "About Us", href: "#about" },
+    { name: "Testimonials", href: "#testimonials" },
+    { name: "Contact", href: "/contact" },
+  ];
+
+  const slugify = (value: string) => value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+  const pageCategoryLabels: Record<string, string> = {
+    "review-trust-bar": "Reviews",
+    "reviews-grid": "Reviews",
+    "facebook-review-embed": "Reviews",
+    "testimonials": "Reviews",
+    "trust-badges-grid": "Trust",
+    "awards": "Credentials",
+    "pricing": "Pricing",
+    "pricing-table": "Pricing",
+    "packages-pricing": "Pricing",
+    "practice-areas": "Services",
+    "features": "Services",
+    "features-modern": "Services",
+    "services-grid": "Services",
+    "feature-highlight": "Highlights",
+    "how-it-works": "How It Works",
+    "treatment-process": "Process",
+    "patient-faq": "FAQ",
+    "faq-accordion": "FAQ",
+    "faq-two-column": "FAQ",
+    "team-carousel": "Team",
+    "team-grid": "Team",
+    "attorney-profile": "About",
+    "contact": "Contact",
+    "contact-minimal": "Contact",
+    "contact-visual": "Contact",
+    "contact-with-map": "Contact",
+    "contact-columns": "Contact",
+  };
+
+  const categoryLabelForSection = (sectionId: string) => pageCategoryLabels[sectionId] || "";
+  const pagesNav = Array.isArray((data as any)?.pages)
+    ? (data as any).pages
+        .map((page: any, index: number) => {
+          const rawSlug = typeof page?.slug === "string" ? page.slug : "";
+          let slug = rawSlug.replace(/^\/+|\/+$/g, "").toLowerCase();
+          const rawLabel = typeof page?.label === "string" ? page.label : "";
+          const rawSections = Array.isArray(page?.activeSections) ? page.activeSections : [];
+          const firstSection = typeof rawSections[0] === "string" ? rawSections[0] : "";
+          const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : "";
+          const fallbackLabel = categoryLabel
+            ? categoryLabel
+            : slug
+              ? slug.replace(/-/g, " ")
+              : "Home";
+          const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim());
+          const label = rawLabel && !isGenericLabel ? rawLabel : fallbackLabel;
+          const autoSlugFromLabel = slugify(rawLabel || `Page ${index + 1}`);
+          const shouldUseDefaultSlug = !slug || (isGenericLabel && (!rawSlug || slug === autoSlugFromLabel));
+          if (label.toLowerCase() === "home") {
+            slug = "";
+          } else if (shouldUseDefaultSlug) {
+            slug = slugify(label);
+          }
+          return {
+            name: label,
+            href: slug ? `/${slug}` : "/",
+          };
+        })
+        .filter((entry: any, idx: number, arr: any[]) =>
+          entry.name && entry.href && arr.findIndex((e: any) => e.href === entry.href || e.name === entry.name) === idx
+        )
+    : [];
+
+  const navigationFromSections =
+    Array.isArray((data as any)?.navigation) && (data as any).navigation.length > 0
+      ? (data as any).navigation
+      : pagesNav.length > 1 || pagesNav.some((item: any) => item.href !== "/")
+        ? pagesNav
+        : defaultNav;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b border-border bg-background/50 backdrop-blur-md sticky top-0 z-10">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-            <ChevronLeft className="w-4 h-4" />
-            Back to Home
-          </Link>
-          <div className="text-sm font-bold text-primary">
-            {data?.brand?.name || "Site"}
-          </div>
-        </div>
-      </header>
+      <Header
+        brandName={brand.name}
+        logoUrl={brand.logoUrl}
+        navigation={navigationFromSections}
+        ctaText={brand.ctaText ?? hero.primaryCTA}
+        ctaHref={brand.ctaHref ?? "#contact"}
+        headerStyle={headerStyle}
+      />
 
       <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl">
         <h1 className="text-4xl font-black mb-4 tracking-tight">{displayTitle}</h1>
@@ -53,11 +144,74 @@ export default function LegalPageTemplate({ title, lastUpdated, content, serverD
         />
       </main>
 
-      <footer className="border-t border-border py-8 bg-muted/20">
-        <div className="container mx-auto px-4 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} {data?.brand?.name}. All rights reserved.
+      {footerStyle === "lead-magnet" && (
+        <div data-section-id="footer">
+          <LeadMagnetFooter
+            brandName={brand.name}
+            logoUrl={brand.logoUrl}
+            tagline={footer.tagline ?? hero.subtitle ?? ""}
+            contact={{
+              email: footer.email ?? contact.email ?? "info@example.com",
+              phone: footer.phone ?? contact.phone ?? "1-800-000-0000",
+              address: footer.address ?? contact.address ?? "123 Street Name, City, Country",
+            }}
+            formHeading={footer.formHeading ?? "Contact Us"}
+            formSubmitText={footer.formSubmitText ?? "Send Message"}
+            formThankYouText={footer.formThankYouText ?? "Message sent!"}
+            social={footer.social ?? {}}
+            privacyUrl={footer.privacyUrl ?? "/privacy"}
+            termsUrl={footer.termsUrl ?? "/terms"}
+            cookieUrl={footer.cookieUrl ?? "/cookies"}
+            contactUsLabel={footer.contactUsLabel}
+            callUsNowLabel={footer.callUsNowLabel}
+            privacyLabel={footer.privacyLabel}
+            termsLabel={footer.termsLabel}
+            cookieLabel={footer.cookieLabel}
+          />
         </div>
-      </footer>
+      )}
+      {footerStyle === "simple" && (
+        <div data-section-id="footer">
+          <SimpleFooter
+            brandName={brand.name}
+            logoUrl={brand.logoUrl}
+            tagline={footer.tagline ?? hero.subtitle ?? ""}
+            navigation={navigationFromSections}
+            contact={{
+              email: footer.email ?? contact.email ?? "info@example.com",
+              phone: footer.phone ?? contact.phone ?? "1-800-000-0000",
+              address: footer.address ?? contact.address ?? "123 Street Name, City, Country",
+            }}
+            social={footer.social ?? {}}
+            privacyUrl={footer.privacyUrl ?? "/privacy"}
+            termsUrl={footer.termsUrl ?? "/terms"}
+            cookieUrl={footer.cookieUrl ?? "/cookies"}
+            contactLabel={footer.contactLabel}
+            followLabel={footer.followLabel}
+            privacyLabel={footer.privacyLabel}
+            termsLabel={footer.termsLabel}
+            cookieLabel={footer.cookieLabel}
+          />
+        </div>
+      )}
+      {footerStyle === "minimal" && (
+        <div data-section-id="footer">
+          <MinimalFooter
+            brandName={brand.name}
+            logoUrl={brand.logoUrl}
+            tagline={footer.tagline ?? hero.subtitle ?? ""}
+            contact={{
+              email: footer.email ?? contact.email ?? "info@example.com",
+              phone: footer.phone ?? contact.phone ?? "1-800-000-0000",
+              address: footer.address ?? contact.address ?? "123 Street Name, City, Country",
+            }}
+            social={footer.social ?? {}}
+            privacyUrl={footer.privacyUrl ?? "/privacy"}
+            termsUrl={footer.termsUrl ?? "/terms"}
+            cookieUrl={footer.cookieUrl ?? "/cookies"}
+          />
+        </div>
+      )}
     </div>
   );
 }

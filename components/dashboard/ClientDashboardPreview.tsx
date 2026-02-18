@@ -81,6 +81,38 @@ const slugify = (value: string) => value
   .replace(/\s+/g, '-')
   .replace(/-+/g, '-')
 
+const PAGE_CATEGORY_LABELS: Record<string, string> = {
+  'review-trust-bar': 'Reviews',
+  'reviews-grid': 'Reviews',
+  'facebook-review-embed': 'Reviews',
+  'testimonials': 'Reviews',
+  'trust-badges-grid': 'Trust',
+  'awards': 'Credentials',
+  'pricing': 'Pricing',
+  'pricing-table': 'Pricing',
+  'packages-pricing': 'Pricing',
+  'practice-areas': 'Services',
+  'features': 'Services',
+  'features-modern': 'Services',
+  'services-grid': 'Services',
+  'feature-highlight': 'Highlights',
+  'how-it-works': 'How It Works',
+  'treatment-process': 'Process',
+  'patient-faq': 'FAQ',
+  'faq-accordion': 'FAQ',
+  'faq-two-column': 'FAQ',
+  'team-carousel': 'Team',
+  'team-grid': 'Team',
+  'attorney-profile': 'About',
+  'contact': 'Contact',
+  'contact-minimal': 'Contact',
+  'contact-visual': 'Contact',
+  'contact-with-map': 'Contact',
+  'contact-columns': 'Contact',
+}
+
+const categoryLabelForSection = (sectionId: string) => PAGE_CATEGORY_LABELS[sectionId] || ''
+
 const normalizeArrayItems = <T,>(value: unknown, fallback: T[]): T[] => {
   if (Array.isArray(value)) return value as T[]
   if (value && typeof value === 'object') {
@@ -1153,10 +1185,20 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
       const payload = (page || {}) as Record<string, any>
       const rawSlug = typeof payload.slug === 'string' ? payload.slug : ''
       const slug = rawSlug.replace(/^\/+|\/+$/g, '').toLowerCase()
+      const rawLabel = typeof payload.label === 'string' ? payload.label : ''
+      const rawSections = Array.isArray(payload.activeSections) ? payload.activeSections : []
+      const firstSection = typeof rawSections[0] === 'string' ? rawSections[0] : ''
+      const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : ''
+      const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim())
+      const fallbackLabel = categoryLabel || (slug ? slug.replace(/-/g, ' ') : `Page ${index + 1}`)
+      const label = isGenericLabel ? fallbackLabel : rawLabel
+      const autoSlugFromLabel = slugify(rawLabel || `Page ${index + 1}`)
+      const shouldUseDefaultSlug = !slug || (isGenericLabel && (!rawSlug || slug === autoSlugFromLabel))
+      const nextSlug = label.toLowerCase() === 'home' ? '' : (shouldUseDefaultSlug ? slugify(label) : slug)
       return {
-        slug,
-        label: typeof payload.label === 'string' ? payload.label : (slug ? slug.replace(/-/g, ' ') : `Page ${index + 1}`),
-        activeSections: Array.isArray(payload.activeSections) ? payload.activeSections : [],
+        slug: nextSlug,
+        label,
+        activeSections: rawSections,
         seo: payload.seo && typeof payload.seo === 'object' ? payload.seo : { title: '', description: '', keywords: [] },
       }
     })
@@ -1338,7 +1380,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
       if (isGenericLabel) {
         const firstSection = cleaned.find((section) => typeof section === 'string' && section.length > 0)
         if (firstSection) {
-          updateActivePage({ activeSections: cleaned, label: formatSectionLabel(firstSection) })
+          const nextLabel = categoryLabelForSection(firstSection) || formatSectionLabel(firstSection)
+          updateActivePage({ activeSections: cleaned, label: nextLabel })
           return
         }
       }
@@ -1443,11 +1486,22 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
         const rawPages = Array.isArray(base) ? base : []
         const normalizedPages = rawPages.map((page, index) => {
           const payload = (page || {}) as Record<string, any>
-          const slug = typeof payload.slug === 'string' ? payload.slug.replace(/^\/+|\/+$/g, '').toLowerCase() : ''
+          const rawSlug = typeof payload.slug === 'string' ? payload.slug : ''
+          const slug = rawSlug.replace(/^\/+|\/+$/g, '').toLowerCase()
+          const rawLabel = typeof payload.label === 'string' ? payload.label : ''
+          const rawSections = Array.isArray(payload.activeSections) ? payload.activeSections : []
+          const firstSection = typeof rawSections[0] === 'string' ? rawSections[0] : ''
+          const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : ''
+          const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim())
+          const fallbackLabel = categoryLabel || (slug ? slug.replace(/-/g, ' ') : `Page ${index + 1}`)
+          const label = isGenericLabel ? fallbackLabel : rawLabel
+          const autoSlugFromLabel = slugify(rawLabel || `Page ${index + 1}`)
+          const shouldUseDefaultSlug = !slug || (isGenericLabel && (!rawSlug || slug === autoSlugFromLabel))
+          const nextSlug = label.toLowerCase() === 'home' ? '' : (shouldUseDefaultSlug ? slugify(label) : slug)
           return {
-            slug,
-            label: typeof payload.label === 'string' ? payload.label : slug ? slug.replace(/-/g, ' ') : `Page ${index + 1}`,
-            activeSections: Array.isArray(payload.activeSections) ? payload.activeSections : [],
+            slug: nextSlug,
+            label,
+            activeSections: rawSections,
             seo: payload.seo && typeof payload.seo === 'object' ? payload.seo : { title: '', description: '', keywords: [] },
           }
         })
@@ -3017,8 +3071,17 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                                       <input
                                         value={pageObj.label || ''}
                                         onChange={(e) => {
+                                          const nextLabel = e.target.value
+                                          const currentLabel = pageObj.label || ''
+                                          const currentSlug = pageObj.slug || ''
+                                          const currentAutoSlug = slugify(currentLabel || `Page ${idx + 1}`)
+                                          const shouldSyncSlug = !currentSlug || currentSlug === currentAutoSlug
                                           const next = [...typedItems]
-                                          next[idx] = { ...pageObj, label: e.target.value }
+                                          next[idx] = {
+                                            ...pageObj,
+                                            label: nextLabel,
+                                            slug: shouldSyncSlug ? slugify(nextLabel) : currentSlug,
+                                          }
                                           updatePages(next)
                                         }}
                                         placeholder="About"

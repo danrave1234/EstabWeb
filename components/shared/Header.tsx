@@ -32,34 +32,44 @@ export default function Header({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [previewState, setPreviewState] = useState({ query: "", isPreview: false, basePrefix: "" });
 
-  useEffect(() => {
+  const derivePreviewState = () => {
+    if (typeof window === "undefined") {
+      return { query: "", isPreview: false, basePrefix: "" };
+    }
     const query = window.location.search || "";
-    const isPreview = query.includes("preview=true") || query.includes("projectId=");
+    const isPreview = query.includes("preview=true") || query.includes("projectId=") || query.includes("requestId=");
     let basePrefix = "";
-    if (isPreview && query.includes("projectId=")) {
+    if (isPreview && (query.includes("projectId=") || query.includes("requestId="))) {
       const segments = window.location.pathname.split("/").filter(Boolean);
       if (segments.length >= 1) {
         basePrefix = `/${segments[0]}`;
       }
     }
-    setPreviewState({ query, isPreview, basePrefix });
+    return { query, isPreview, basePrefix };
+  };
+
+  useEffect(() => {
+    setPreviewState(derivePreviewState());
   }, []);
 
   const buildHref = (href: string) => {
+    const effectiveState = previewState.isPreview ? previewState : derivePreviewState();
     if (!href || href.startsWith("#")) return href;
-    const basePrefix = previewState.basePrefix && href.startsWith("/") && !href.startsWith(previewState.basePrefix)
-      ? previewState.basePrefix
+    const basePrefix = effectiveState.basePrefix && href.startsWith("/") && !href.startsWith(effectiveState.basePrefix)
+      ? effectiveState.basePrefix
       : "";
-    if (!previewState.isPreview && basePrefix) return `${basePrefix}${href}`;
-    if (!previewState.isPreview) return href;
+    if (!effectiveState.isPreview && basePrefix) return `${basePrefix}${href}`;
+    if (!effectiveState.isPreview) return href;
     if (href.startsWith("/")) {
       const [path, hash] = `${basePrefix}${href}`.split("#");
       const hasQuery = path.includes("?");
-      const next = `${path}${hasQuery ? "&" : "?"}${previewState.query.replace(/^\?/, "")}`;
+      const next = `${path}${hasQuery ? "&" : "?"}${effectiveState.query.replace(/^\?/, "")}`;
       return hash ? `${next}#${hash}` : next;
     }
     return href;
   };
+
+  const isInternalRoute = (href: string) => href.startsWith("/");
 
   const initials = brandName
     .split(" ")
@@ -116,26 +126,46 @@ export default function Header({
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
             {navigation.map((item) => (
-              <a
-                key={item.name}
-                href={buildHref(item.href)}
-                className="px-4 py-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2"
-              >
-                {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
-                {item.name}
-              </a>
+              isInternalRoute(item.href) ? (
+                <Link
+                  key={item.name}
+                  href={buildHref(item.href)}
+                  className="px-4 py-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2"
+                >
+                  {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
+                  {item.name}
+                </Link>
+              ) : (
+                <a
+                  key={item.name}
+                  href={buildHref(item.href)}
+                  className="px-4 py-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2"
+                >
+                  {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
+                  {item.name}
+                </a>
+              )
             ))}
           </nav>
 
           {/* CTA Button */}
           <div className="hidden md:flex items-center gap-3">
             {ctaText && (
-              <a
-                href={buildHref(ctaHref)}
-                className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors"
-              >
-                {ctaText}
-              </a>
+              isInternalRoute(ctaHref) ? (
+                <Link
+                  href={buildHref(ctaHref)}
+                  className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+                >
+                  {ctaText}
+                </Link>
+              ) : (
+                <a
+                  href={buildHref(ctaHref)}
+                  className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+                >
+                  {ctaText}
+                </a>
+              )
             )}
           </div>
 
@@ -154,24 +184,46 @@ export default function Header({
         <div className="md:hidden border-t border-border bg-background">
           <nav className="px-4 py-4 flex flex-col gap-1">
             {navigation.map((item) => (
-              <a
-                key={item.name}
-                href={buildHref(item.href)}
-                onClick={() => setMobileOpen(false)}
-                className="py-3 px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl font-medium transition-colors flex items-center gap-2"
-              >
-                {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
-                {item.name}
-              </a>
+              isInternalRoute(item.href) ? (
+                <Link
+                  key={item.name}
+                  href={buildHref(item.href)}
+                  onClick={() => setMobileOpen(false)}
+                  className="py-3 px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl font-medium transition-colors flex items-center gap-2"
+                >
+                  {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
+                  {item.name}
+                </Link>
+              ) : (
+                <a
+                  key={item.name}
+                  href={buildHref(item.href)}
+                  onClick={() => setMobileOpen(false)}
+                  className="py-3 px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl font-medium transition-colors flex items-center gap-2"
+                >
+                  {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
+                  {item.name}
+                </a>
+              )
             ))}
             {ctaText && (
-              <a
-                href={buildHref(ctaHref)}
-                onClick={() => setMobileOpen(false)}
-                className="mt-2 py-3 px-4 bg-primary text-primary-foreground text-center font-semibold rounded-xl hover:bg-primary/90"
-              >
-                {ctaText}
-              </a>
+              isInternalRoute(ctaHref) ? (
+                <Link
+                  href={buildHref(ctaHref)}
+                  onClick={() => setMobileOpen(false)}
+                  className="mt-2 py-3 px-4 bg-primary text-primary-foreground text-center font-semibold rounded-xl hover:bg-primary/90"
+                >
+                  {ctaText}
+                </Link>
+              ) : (
+                <a
+                  href={buildHref(ctaHref)}
+                  onClick={() => setMobileOpen(false)}
+                  className="mt-2 py-3 px-4 bg-primary text-primary-foreground text-center font-semibold rounded-xl hover:bg-primary/90"
+                >
+                  {ctaText}
+                </a>
+              )
             )}
           </nav>
         </div>
