@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import SiteTemplate from "@/components/shared/SiteTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
 import { getSiteConfigWithProject } from "@/lib/utils/site-config";
@@ -34,6 +34,18 @@ async function resolvePageData(domain: string, slug: string, heads: Headers) {
   const maxPages = getMaxPagesForProject(project, planLimits);
   const paidPages = pages.filter((page) => page.slug && !isLegalPageSlug(page.slug)).slice(0, maxPages);
   const page = getPageBySlug(paidPages, slug);
+
+  if (!page) {
+    const legacyMatch = slug.match(/^page-(\d+)$/i);
+    if (legacyMatch) {
+      const index = Number(legacyMatch[1]) - 1;
+      const legacyPage = Number.isFinite(index) ? paidPages[index] : undefined;
+      if (legacyPage && legacyPage.slug && legacyPage.slug !== slug) {
+        return { config, page: legacyPage, project, redirectSlug: legacyPage.slug };
+      }
+    }
+  }
+
   return { config, page, project };
 }
 
@@ -46,7 +58,7 @@ export async function generateMetadata({
   const heads = await headers();
   const host = heads.get("host") || domain;
 
-  const { config, page } = await resolvePageData(domain, slug, heads);
+  const { config, page, redirectSlug } = await resolvePageData(domain, slug, heads);
   if (!config || !page) {
     notFound();
   }
@@ -117,9 +129,13 @@ export default async function SitePage({
   const heads = await headers();
   const preview = heads.get("x-preview-mode") === "true";
 
-  const { config, page } = await resolvePageData(domain, slug, heads);
+  const { config, page, redirectSlug } = await resolvePageData(domain, slug, heads);
   if (!config || !page) {
     notFound();
+  }
+
+  if (redirectSlug) {
+    redirect(`/${redirectSlug}`);
   }
 
   const dataForPage = {
