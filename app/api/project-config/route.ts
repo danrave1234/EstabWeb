@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { deepMerge } from '@/lib/utils'
-import { getMaxPagesForProject, getPlanLimits, isLegalPageSlug, normalizePages } from '@/lib/utils/site-pages'
+import { getMaxPagesForProject, getPlanLimits, isLegalPageSlug, normalizePagesWithDefaults } from '@/lib/utils/site-pages'
 
 export async function POST(req: Request) {
   try {
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     
     const next = deepMerge(base, patch as Record<string, unknown>)
 
-    const pages = normalizePages((next as any)?.pages)
+    const pages = normalizePagesWithDefaults((next as any)?.pages)
     if (pages.length > 0) {
       const planLimits = await getPlanLimits(supabase)
       const maxPages = getMaxPagesForProject(proj, planLimits)
@@ -41,6 +41,10 @@ export async function POST(req: Request) {
           { status: 400 }
         )
       }
+    }
+
+    if (pages.length > 0) {
+      (next as any).pages = pages
     }
 
     const { error: upErr } = await supabase

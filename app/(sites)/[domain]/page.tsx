@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import SiteTemplate from "@/components/shared/SiteTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
 import { getSiteConfig } from "@/lib/utils/site-config";
-import { getPageBySlug, normalizePages } from "@/lib/utils/site-pages";
+import { getPageBySlug, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -30,7 +30,7 @@ export async function generateMetadata({
   const host = heads.get("host") || domain;
   const config = await getSiteConfig(domain, heads);
 
-  const pages = normalizePages(config?.pages);
+  const pages = normalizePagesWithDefaults(config?.pages);
   const homePage = getPageBySlug(pages, "");
   const seo = homePage?.seo || config?.seo || {};
   const brand = config?.brand || {};

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import SiteTemplate from "@/components/shared/SiteTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
 import { getSiteConfigWithProject } from "@/lib/utils/site-config";
-import { canUseMultiPage, getMaxPagesForProject, getPlanLimits, getPageBySlug, isLegalPageSlug, normalizePages } from "@/lib/utils/site-pages";
+import { canUseMultiPage, getMaxPagesForProject, getPlanLimits, getPageBySlug, isLegalPageSlug, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -27,7 +27,7 @@ async function resolvePageData(domain: string, slug: string, heads: Headers) {
 
   if (isLegalPageSlug(slug)) return { config, page: null, project };
 
-  const pages = normalizePages(config?.pages);
+  const pages = normalizePagesWithDefaults(config?.pages);
   if (!canUseMultiPage(project)) return { config, page: null, project };
 
   const planLimits = await getPlanLimits();

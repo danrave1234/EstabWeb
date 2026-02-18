@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { generateSubdomain } from '@/lib/codes'
 import { deepMerge } from '@/lib/utils'
 import { canPublishDirectly, canPublishNow, getPublishStats, DEFAULT_PUBLISH_LIMIT, DEFAULT_PUBLISH_LIMIT_DAILY } from '@/lib/subscription'
-import { getMaxPagesForProject, getPlanLimits, isLegalPageSlug, normalizePages } from '@/lib/utils/site-pages'
+import { getMaxPagesForProject, getPlanLimits, isLegalPageSlug, normalizePagesWithDefaults } from '@/lib/utils/site-pages'
 
 const PERIOD_DAYS = 30
 
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
 
     const current = (proj.current_config ?? {}) as Record<string, unknown>
     const newConfig = deepMerge(current, draft)
-    const pages = normalizePages((newConfig as any)?.pages)
+    const pages = normalizePagesWithDefaults((newConfig as any)?.pages)
     if (pages.length > 0) {
       const planLimits = await getPlanLimits(supabase)
       const maxPages = getMaxPagesForProject(proj, planLimits)
@@ -65,6 +65,9 @@ export async function POST(req: Request) {
           { status: 400 }
         )
       }
+    }
+    if (pages.length > 0) {
+      (newConfig as any).pages = pages
     }
     const nextVersion = (proj.config_version ?? 0) + 1
 
@@ -115,7 +118,7 @@ export async function POST(req: Request) {
     const domainParam = proj.subdomain || proj.custom_domain
     if (domainParam) {
       revalidatePath(`/${domainParam}`)
-      const configPages = normalizePages((newConfig as any)?.pages)
+      const configPages = normalizePagesWithDefaults((newConfig as any)?.pages)
       if (configPages.length > 0) {
         const planLimits = await getPlanLimits(supabase)
         const maxPages = getMaxPagesForProject(proj, planLimits)

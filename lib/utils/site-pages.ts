@@ -13,6 +13,45 @@ export interface PlanLimits {
   pro?: { maxPages?: number };
 }
 
+const PAGE_CATEGORY_LABELS: Record<string, string> = {
+  "review-trust-bar": "Reviews",
+  "reviews-grid": "Reviews",
+  "facebook-review-embed": "Reviews",
+  "testimonials": "Reviews",
+  "trust-badges-grid": "Trust",
+  "awards": "Credentials",
+  "pricing": "Pricing",
+  "pricing-table": "Pricing",
+  "packages-pricing": "Pricing",
+  "practice-areas": "Services",
+  "features": "Services",
+  "features-modern": "Services",
+  "services-grid": "Services",
+  "feature-highlight": "Highlights",
+  "how-it-works": "How It Works",
+  "treatment-process": "Process",
+  "patient-faq": "FAQ",
+  "faq-accordion": "FAQ",
+  "faq-two-column": "FAQ",
+  "team-carousel": "Team",
+  "team-grid": "Team",
+  "attorney-profile": "About",
+  "contact": "Contact",
+  "contact-minimal": "Contact",
+  "contact-visual": "Contact",
+  "contact-with-map": "Contact",
+  "contact-columns": "Contact",
+};
+
+const slugify = (value: string) => value
+  .toLowerCase()
+  .replace(/[^a-z0-9\s-]/g, "")
+  .trim()
+  .replace(/\s+/g, "-")
+  .replace(/-+/g, "-");
+
+const categoryLabelForSection = (sectionId: string) => PAGE_CATEGORY_LABELS[sectionId] || "";
+
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
 const DEFAULT_PRO_MAX_PAGES = Number(
@@ -34,6 +73,33 @@ export function normalizePages(pages: unknown): SitePageConfig[] {
       };
     })
     .filter((page) => page.slug !== undefined);
+}
+
+export function normalizePagesWithDefaults(pages: unknown): SitePageConfig[] {
+  return applyPageDefaults(normalizePages(pages));
+}
+
+export function applyPageDefaults(pages: SitePageConfig[]): SitePageConfig[] {
+  return pages.map((page, index) => {
+    const rawSlug = typeof page.slug === "string" ? page.slug : "";
+    const slug = rawSlug.replace(/^\/+|\/+$/g, "").toLowerCase();
+    const rawLabel = typeof page.label === "string" ? page.label : "";
+    const rawSections = Array.isArray(page.activeSections) ? page.activeSections : [];
+    const firstSection = typeof rawSections[0] === "string" ? rawSections[0] : "";
+    const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : "";
+    const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim());
+    const fallbackLabel = categoryLabel || (slug ? slug.replace(/-/g, " ") : `Page ${index + 1}`);
+    const label = isGenericLabel ? fallbackLabel : rawLabel;
+    const autoSlugFromLabel = slugify(rawLabel || `Page ${index + 1}`);
+    const shouldUseDefaultSlug = !slug || (isGenericLabel && (!rawSlug || slug === autoSlugFromLabel));
+    const nextSlug = label.toLowerCase() === "home" ? "" : (shouldUseDefaultSlug ? slugify(label) : slug);
+    return {
+      ...page,
+      slug: nextSlug,
+      label,
+      activeSections: rawSections,
+    };
+  });
 }
 
 export function getPageBySlug(pages: SitePageConfig[], slug: string): SitePageConfig | undefined {

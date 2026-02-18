@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 import { headers } from 'next/headers'
 import { getSiteConfigWithProject } from '@/lib/utils/site-config'
-import { canUseMultiPage, getMaxPagesForProject, getPlanLimits, isLegalPageSlug, normalizePages } from '@/lib/utils/site-pages'
+import { canUseMultiPage, getMaxPagesForProject, getPlanLimits, isLegalPageSlug, normalizePagesWithDefaults } from '@/lib/utils/site-pages'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const headersList = await headers()
@@ -30,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // For client sites
   const baseUrl = `https://${host}`
   const { config, project } = await getSiteConfigWithProject(host, headersList)
-  const pages = normalizePages(config?.pages)
+  const pages = normalizePagesWithDefaults(config?.pages)
   const planLimits = await getPlanLimits()
   const maxPages = getMaxPagesForProject(project, planLimits)
   const paidPages = canUseMultiPage(project)
