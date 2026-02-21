@@ -7,7 +7,7 @@ import { toast } from "sonner"
 interface UpgradeButtonProps {
   projectId: string
   subscriptionStatus?: string | null
-  variant?: "sidebar" | "inline"
+  variant?: "sidebar" | "inline" | "badge"
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -24,7 +24,7 @@ const STATUS_BADGE: Record<string, { label: string; color: string }> = {
   admin_granted: { label: "Pro", color: "text-purple-600 bg-purple-500/10 border border-purple-500/20" },
 }
 
-export default function UpgradeButton({ projectId, subscriptionStatus = "free", variant = "inline" }: UpgradeButtonProps & { variant?: "sidebar" | "inline" | "badge" }) {
+export default function UpgradeButton({ projectId, subscriptionStatus = "free", variant = "inline" }: UpgradeButtonProps) {
   const [loading, setLoading] = useState(false)
   const status = ((subscriptionStatus || "free").toLowerCase() as keyof typeof STATUS_LABELS)
   const currentStatus = STATUS_LABELS[status] || STATUS_LABELS.free
