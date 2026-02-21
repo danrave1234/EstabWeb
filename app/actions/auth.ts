@@ -7,7 +7,7 @@ import { z } from 'zod'
 
 const authSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 })
 
 export async function login(formData: FormData) {
@@ -44,7 +44,12 @@ export async function signup(formData: FormData) {
   const supabase = await createClient()
 
   const { data: { user }, error } = await supabase.auth.signUp({ email, password })
-  if (error) return { error: error.message }
+  if (error) {
+    if (error.message.toLowerCase().includes('already registered') || error.message.toLowerCase().includes('already exists')) {
+      return { error: 'An account with this email already exists. Try logging in instead.' }
+    }
+    return { error: error.message }
+  }
 
   if (user) {
     // We attempt to create the profile here as a backup to the DB trigger.

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ShieldCheckIcon, ClockIcon, LockIcon } from "@phosphor-icons/react";
+import { trackLead } from "@/components/shared/Analytics";
 
 export type FreeConsultationFormProps = {
   headline: string;
@@ -42,6 +43,7 @@ export default function FreeConsultationForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
+    trackLead('form', undefined, { name: formData.name, email: formData.email });
     setTimeout(() => {
       setSubmitted(false);
       setFormData({ name: "", email: "", issue: dropdownOptions[0] ?? "" });

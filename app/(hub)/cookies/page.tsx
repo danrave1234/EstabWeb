@@ -18,7 +18,7 @@ export default async function CookiePage() {
   return (
     <>
       <main className="flex-1 container mx-auto px-4 py-24 max-w-4xl">
-        <h1 className="text-4xl font-bold mb-8">Cookie Policy</h1>
+        <h1 className="text-2xl sm:text-4xl font-bold mb-8">Cookie Policy</h1>
         <div className="prose prose-neutral dark:prose-invert max-w-none space-y-6">
           <p>Last updated: February 11, 2026</p>
           

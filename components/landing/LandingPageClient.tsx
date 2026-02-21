@@ -31,17 +31,17 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
               <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4 sm:px-0">
                 Stop fighting with complex builders. EstabWeb provides high-performance, industry-specific sites that are fully managed and optimized for growth.
               </p>
-              <div className="grid grid-cols-2 gap-2 pt-4 max-w-sm mx-auto">
-                <Link 
-                  href="/login?mode=signup" 
-                  className="px-4 py-2.5 bg-primary text-primary-foreground rounded-full text-[11px] sm:text-sm font-bold hover:scale-105 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2"
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 w-full max-w-sm mx-auto">
+                <Link
+                  href="/login?mode=signup"
+                  className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-full text-sm font-bold hover:scale-105 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2"
                 >
                   Start Building
                   <ArrowRightIcon weight="duotone" className="w-4 h-4" />
                 </Link>
-                <Link 
-                  href="#how-it-works" 
-                  className="px-4 py-2.5 bg-background border border-border rounded-full text-[11px] sm:text-sm font-bold hover:bg-muted transition-all flex items-center justify-center gap-2"
+                <Link
+                  href="#how-it-works"
+                  className="flex-1 px-6 py-3 bg-background border border-border rounded-full text-sm font-bold hover:bg-muted transition-all flex items-center justify-center gap-2"
                 >
                   See How
                 </Link>
@@ -53,7 +53,7 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
         {/* Stats/Social Proof */}
         <section className="py-12 sm:py-24 border-y border-border bg-muted/30 reveal">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-3 gap-2 sm:gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
               {[
                 { label: 'Time to Live', value: '< 1 Hour', color: 'text-primary' },
                 { label: 'Industries', value: '12+', color: 'text-amber-500' },
@@ -63,7 +63,7 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
                   key={stat.label} 
                   className="p-3 sm:p-6 bg-background border border-border rounded-2xl flex flex-col justify-center items-center text-center shadow-sm"
                 >
-                  <div className={`text-sm sm:text-3xl font-black ${stat.color} mb-0.5 sm:mb-1`}>{stat.value}</div>
+                  <div className={`text-2xl sm:text-3xl font-black ${stat.color} mb-1`}>{stat.value}</div>
                   <div className="text-[8px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground line-clamp-1">{stat.label}</div>
                 </div>
               ))}
@@ -78,7 +78,7 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">Built for <span className="text-primary">Performance.</span></h2>
               <p className="text-muted-foreground max-w-2xl mx-auto px-4 sm:px-0">Everything you need to dominate your local market without the technical headache.</p>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
               {[
                 {
                   icon: <LightningIcon weight="duotone" className="w-5 h-5 sm:w-6 sm:h-6" />,
@@ -139,16 +139,16 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
               <div className="relative z-10 space-y-8 max-w-3xl mx-auto">
                 <h2 className="text-4xl lg:text-6xl font-bold tracking-tight">Ready to transform your online presence?</h2>
                 <p className="text-lg opacity-90">Join the next generation of local businesses building with EstabWeb.</p>
-                <div className="grid grid-cols-2 gap-2 pt-4 max-w-sm mx-auto">
-                  <Link 
-                    href="/login?mode=signup" 
-                    className="px-6 py-3 bg-white text-primary rounded-full text-[11px] sm:text-sm font-bold hover:scale-105 transition-all shadow-xl flex items-center justify-center"
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 w-full max-w-sm mx-auto">
+                  <Link
+                    href="/login?mode=signup"
+                    className="flex-1 px-6 py-3 bg-white text-primary rounded-full text-sm font-bold hover:scale-105 transition-all shadow-xl flex items-center justify-center"
                   >
                     Get Started Free
                   </Link>
-                  <Link 
-                    href="/login" 
-                    className="px-6 py-3 bg-primary-foreground/10 border border-white/20 rounded-full text-[11px] sm:text-sm font-bold hover:bg-white/20 transition-all flex items-center justify-center"
+                  <Link
+                    href="/login"
+                    className="flex-1 px-6 py-3 bg-primary-foreground/10 border border-white/20 rounded-full text-sm font-bold hover:bg-white/20 transition-all flex items-center justify-center"
                   >
                     Contact Sales
                   </Link>

@@ -55,12 +55,12 @@ export default function ReviewTrustBar({
             />
           )}
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 items-start">
           {testimonials.slice(0, 3).map((review, index) => (
             <div
               key={index}
               className={`bg-muted/50 rounded-xl p-4 sm:p-6 border border-border flex flex-col ${
-                index === 2 ? "col-span-2 lg:col-span-1" : ""
+                index === 2 ? "sm:col-span-2 lg:col-span-1" : ""
               }`}
             >
               <p className="font-semibold text-foreground text-sm sm:text-lg mb-1.5 sm:mb-2 leading-tight">

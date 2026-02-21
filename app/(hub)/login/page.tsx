@@ -69,7 +69,7 @@ function LoginContent() {
               height={48} 
               className="w-12 h-12 object-contain group-hover:-rotate-6 transition-transform"
             />
-            <span className="text-3xl font-bold tracking-tighter">EstabWeb</span>
+            <span className="text-2xl sm:text-3xl font-bold tracking-tighter">EstabWeb</span>
           </Link>
 
           <div className="space-y-6">
@@ -81,7 +81,7 @@ function LoginContent() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-6 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
             {[
               { icon: <LightningIcon weight="duotone" className="w-5 h-5" />, text: "Instant Launch" },
               { icon: <ShieldCheckIcon weight="duotone" className="w-5 h-5" />, text: "Managed Security" },
@@ -130,7 +130,7 @@ function LoginContent() {
 
         <div className="w-full max-w-[400px] space-y-10">
           <div className="space-y-3 text-center lg:text-left">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               {mode === 'login' ? 'Welcome back' : 'Start for free'}
             </h1>
             <p className="text-muted-foreground">
@@ -212,7 +212,7 @@ function LoginContent() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
                <button className="flex items-center justify-center gap-2 px-4 py-3 border border-border rounded-2xl hover:bg-muted/50 transition-all text-sm font-semibold">
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

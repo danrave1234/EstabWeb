@@ -4,8 +4,9 @@ import { fontVariables } from "@/lib/fonts";
 import ScrollReveal from "@/components/shared/ScrollReveal";
 import { Toaster } from "sonner";
 import { headers } from "next/headers";
-import { getSiteConfig } from "@/lib/utils/site-config";
+import { getSiteConfigWithProject } from "@/lib/utils/site-config";
 import StructuredData from "@/components/shared/StructuredData";
+import { GoogleAnalytics, FacebookPixel, AnalyticsProvider } from "@/components/shared/Analytics";
 
 export async function generateMetadata({
   params,
@@ -15,7 +16,7 @@ export async function generateMetadata({
   const { domain } = await params;
   const heads = await headers();
   const host = heads.get("host") || domain;
-  const config = await getSiteConfig(domain, heads);
+  const { config } = await getSiteConfigWithProject(domain, heads);
 
   const seo = config?.seo || {};
   const brand = config?.brand || {};
@@ -49,6 +50,12 @@ export async function generateMetadata({
       apple: iconUrl,
     },
     metadataBase: new URL(`https://${host}`),
+    alternates: {
+      canonical: "/",
+    },
+    other: {
+      "sitemap": `https://${host}/sitemap.xml`,
+    },
   };
 }
 
@@ -79,13 +86,17 @@ export default async function SiteLayout({
   let dbConf: any = null;
   let domain = "";
   let host = "";
+  let projectId: string | undefined = undefined;
 
   try {
     const resolvedParams = await params;
     domain = resolvedParams.domain;
     const heads = await headers();
     host = heads.get("host") || domain;
-    dbConf = await getSiteConfig(domain, heads);
+    const siteData = await getSiteConfigWithProject(domain, heads);
+    dbConf = siteData.config;
+    const project = siteData.project;
+    projectId = project?.id;
     
     if (dbConf) {
       if (dbConf.colorTheme && VALID_COLOR_THEMES.includes(dbConf.colorTheme)) {
@@ -140,9 +151,13 @@ export default async function SiteLayout({
         )}
       </head>
       <body className="antialiased">
-        <ScrollReveal />
-        {children}
-        <Toaster position="top-right" richColors />
+        <AnalyticsProvider projectId={projectId || dbConf?.projectId}>
+          {dbConf?.analytics?.ga4Id && <GoogleAnalytics id={dbConf.analytics.ga4Id} />}
+          {dbConf?.analytics?.pixelId && <FacebookPixel id={dbConf.analytics.pixelId} />}
+          <ScrollReveal />
+          {children}
+          <Toaster position="top-right" richColors />
+        </AnalyticsProvider>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon } from "@phosphor-icons/react";
+import { trackLead } from "@/components/shared/Analytics";
 
 export type ContactMinimalProps = {
   title?: string;
@@ -38,6 +39,7 @@ export default function ContactMinimal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitted(true);
+    trackLead('form', undefined, { name: formData.name, email: formData.email });
     setTimeout(() => {
       router.push("/success");
     }, 1000);
@@ -59,15 +61,19 @@ export default function ContactMinimal({
             </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 sm:gap-6">
-                <div className="flex items-center sm:items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-muted/50 border border-border/50">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                <a 
+                  href={`tel:${phone.replace(/\s/g, "")}`}
+                  onClick={() => trackLead('call')}
+                  className="flex items-center sm:items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-muted/50 border border-border/50 hover:border-primary transition-colors group"
+                >
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 text-primary group-hover:text-primary-foreground" />
                   </div>
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 sm:mb-1">Call Us</p>
                     <p className="text-sm sm:text-base font-bold text-foreground">{phone}</p>
                   </div>
-                </div>
+                </a>
 
                 <div className="flex items-center sm:items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-muted/50 border border-border/50">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">

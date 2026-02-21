@@ -31,7 +31,7 @@ export default function ServiceAreaMap({
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <div className="space-y-8">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {cities.map((city, index) => (

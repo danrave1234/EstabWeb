@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
   const RESERVED_ROOT_PATHS = ['api', 'admin', 'login', 'dashboard', 'onboarding', 'auth', 'preview', 'pricing', 'terms', 'privacy', 'cookies', 'contact', 'success']
   if (!isDevHost && isRoot && url.pathname !== '/') {
     const segment = url.pathname.replace(/^\/|\/$/g, '').split('/')[0]?.toLowerCase()
-    if (segment && !RESERVED_ROOT_PATHS.includes(segment)) {
+    if (segment && !RESERVED_ROOT_PATHS.includes(segment) && !segment.includes('.')) {
       const protocol = request.headers.get('x-forwarded-proto') === 'https' ? 'https' : (request.url.startsWith('https') ? 'https' : 'http')
       const redirectUrl = `${protocol}://${segment}.${ROOT_DOMAIN}${url.pathname.slice(segment.length + 1) || '/'}${url.search}`
       const redirect = NextResponse.redirect(redirectUrl, 301)

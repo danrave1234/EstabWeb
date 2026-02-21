@@ -99,7 +99,7 @@ export default function HeroChiropractor({
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed mb-10 reveal">
             {subtitle}
           </p>
-          <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 reveal">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 reveal">
             <a
               href={primaryCTAHref}
               className="inline-flex items-center justify-center min-h-[56px] px-4 sm:px-8 py-4 bg-primary text-primary-foreground font-bold rounded-full hover:scale-105 transition-all shadow-xl shadow-primary/20 text-[10px] sm:text-base text-center"

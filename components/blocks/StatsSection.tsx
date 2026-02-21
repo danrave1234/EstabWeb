@@ -39,8 +39,8 @@ export default function StatsSection({
 
         <div className={`grid gap-2 sm:gap-8 ${
           variant === "bar" 
-            ? "grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x border-y border-border py-4 sm:py-12" 
-            : "grid-cols-2 lg:grid-cols-4"
+            ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x border-y border-border py-4 sm:py-12" 
+            : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
         }`}>
           {items.map((stat, i) => (
             <div key={i} className={`flex flex-col items-center text-center p-3 sm:p-6 ${

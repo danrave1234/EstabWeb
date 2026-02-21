@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import { trackLead } from "@/components/shared/Analytics";
 
 export type NavItem = {
   name: string;
@@ -161,6 +162,9 @@ export default function Header({
               ) : (
                 <a
                   href={buildHref(ctaHref)}
+                  onClick={() => {
+                    if (ctaHref.startsWith('tel:')) trackLead('call');
+                  }}
                   className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors"
                 >
                   {ctaText}
@@ -218,7 +222,10 @@ export default function Header({
               ) : (
                 <a
                   href={buildHref(ctaHref)}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={() => {
+                    setMobileOpen(false);
+                    if (ctaHref.startsWith('tel:')) trackLead('call');
+                  }}
                   className="mt-2 py-3 px-4 bg-primary text-primary-foreground text-center font-semibold rounded-xl hover:bg-primary/90"
                 >
                   {ctaText}

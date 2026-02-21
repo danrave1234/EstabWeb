@@ -228,6 +228,10 @@ export const DEFAULT_BLUEPRINT_CONFIG = {
     content: "This policy explains how we use cookies and similar technologies.\n\nWe use cookies to improve your experience, analyze site traffic, and personalize content. You can control cookie preferences through your browser settings.",
     lastUpdated: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
   },
+  analytics: {
+    ga4Id: "",
+    pixelId: "",
+  },
 };
 
 export const FIELD_LABELS: Record<string, string> = {
@@ -242,6 +246,8 @@ export const FIELD_LABELS: Record<string, string> = {
   privacyUrl: "Privacy page link",
   termsUrl: "Terms page link",
   cookieUrl: "Cookie page link",
+  ga4Id: "Google Analytics 4 ID (G-XXXXXXXXXX)",
+  pixelId: "Facebook Pixel ID",
 };
 
 export const DEFAULT_AC_TYPES = {

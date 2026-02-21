@@ -20,7 +20,7 @@ export default function Error({
       <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-6">
         <AlertTriangle className="w-8 h-8 text-red-600" />
       </div>
-      <h1 className="text-3xl font-bold tracking-tight mb-2 text-foreground">Something went wrong!</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2 text-foreground">Something went wrong!</h1>
       <p className="text-muted-foreground max-w-md mb-8">
         We apologize for the inconvenience. An unexpected error has occurred.
       </p>

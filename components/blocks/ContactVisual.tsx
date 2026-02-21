@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { trackLead } from "@/components/shared/Analytics";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon, PaperPlaneRightIcon } from "@phosphor-icons/react";
 import Image from "next/image";
 
@@ -34,6 +35,7 @@ export default function ContactVisual({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    trackLead('form', undefined, { name: formData.name, email: formData.email });
     setIsSubmitted(true);
     setTimeout(() => {
       router.push("/success");

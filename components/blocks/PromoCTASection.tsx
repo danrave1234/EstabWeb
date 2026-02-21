@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import { trackLead } from "@/components/shared/Analytics";
 
 export type PromoCTASectionProps = {
   title?: string;
@@ -113,9 +114,13 @@ export default function PromoCTASection({
           )}
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-            <div className="grid grid-cols-2 gap-3 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <a 
                 href={buttonHref}
+                onClick={() => {
+                  if (buttonHref === '#contact') trackLead('form');
+                  else if (buttonHref.startsWith('tel:')) trackLead('call');
+                }}
                 className="col-span-1 px-4 sm:px-10 py-3 sm:py-5 bg-primary text-primary-foreground font-black rounded-full hover:scale-105 transition-all shadow-2xl uppercase tracking-widest text-[9px] sm:text-sm flex items-center justify-center text-center"
               >
                 {buttonText}
@@ -123,6 +128,7 @@ export default function PromoCTASection({
               {phone ? (
                 <a 
                   href={`tel:${phone.replace(/\s/g, '')}`}
+                  onClick={() => trackLead('call')}
                   className="col-span-1 px-4 sm:px-10 py-3 sm:py-5 bg-white/10 backdrop-blur-md text-white font-black rounded-full border border-white/30 hover:bg-white/20 transition-all uppercase tracking-widest text-[9px] sm:text-sm flex items-center justify-center gap-2 text-center"
                 >
                   <DynamicIcon name="Phone" className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />

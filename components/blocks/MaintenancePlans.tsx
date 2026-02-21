@@ -48,7 +48,7 @@ export default function MaintenancePlans({
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">{subtitle}</p>
         </div>
         
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-2 lg:gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-8 max-w-4xl mx-auto">
           {plans.map((plan, index) => (
             <div 
               key={index} 

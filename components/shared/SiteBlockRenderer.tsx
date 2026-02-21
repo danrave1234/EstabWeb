@@ -1,5 +1,6 @@
 import { dynamicWithSkeleton } from "@/lib/utils/dynamic";
 import React from "react";
+import { PAGE_CATEGORY_LABELS, SECTION_NAV_MAP, slugify, categoryLabelForSection } from "@/lib/utils/blocks";
 
 import FloatingCTA from "@/components/shared/FloatingCTA";
 import SiteEditorSidebar from "@/components/shared/SiteEditorSidebar";
@@ -29,6 +30,7 @@ const ContactMinimal = dynamicWithSkeleton(() => import("@/components/blocks/Con
 const ContactVisual = dynamicWithSkeleton(() => import("@/components/blocks/ContactVisual"), { className: "h-[600px]" });
 const ContactWithMap = dynamicWithSkeleton(() => import("@/components/blocks/ContactWithMap"), { className: "h-[600px]" });
 const ContactColumns = dynamicWithSkeleton(() => import("@/components/blocks/ContactColumns"), { className: "h-[800px]" });
+const ContactSplit = dynamicWithSkeleton(() => import("@/components/blocks/ContactSplit"), { className: "h-[700px]" });
 const PracticeAreasGrid = dynamicWithSkeleton(() => import("@/components/blocks/PracticeAreasGrid"), { className: "h-[500px]" });
 const AttorneyProfile = dynamicWithSkeleton(() => import("@/components/blocks/AttorneyProfile"), { className: "h-[500px]" });
 const FreeConsultationForm = dynamicWithSkeleton(() => import("@/components/blocks/FreeConsultationForm"), { className: "h-[500px]" });
@@ -255,33 +257,33 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     benefitImageUrl: hero.benefitImageUrl,
   };
 
-  const sectionNavMap: Record<string, { name: string; href: string } | null> = {
-    hero: null,
-    "hero-emergency": { name: "Emergency", href: "#hero-emergency" },
-    features: { name: "Services", href: "#services" },
-    "features-modern": { name: "Services", href: "#services" },
-    "features-grid": { name: "Services", href: "#services" },
-    "feature-highlight": { name: "Highlights", href: "#highlights" },
-    "pricing-table": { name: "Pricing", href: "#pricing" },
-    "packages-pricing": { name: "Pricing", href: "#pricing" },
-    "how-it-works": { name: "How It Works", href: "#how-it-works" },
-    "team-carousel": { name: "Team", href: "#team" },
-    "patient-faq": { name: "FAQ", href: "#faq" },
-    "faq-two-column": { name: "FAQ", href: "#faq" },
-    "faq-accordion": { name: "FAQ", href: "#faq" },
-    "practice-areas": { name: "Practice Areas", href: "#services" },
-    "attorney-profile": { name: "About", href: "#about" },
-    testimonials: { name: "Testimonials", href: "#testimonials" },
-    "review-trust-bar": { name: "Reviews", href: "#reviews" },
-    contact: { name: "Contact", href: "#contact" },
-    "contact-minimal": { name: "Contact", href: "#contact" },
-    "contact-visual": { name: "Contact", href: "#contact" },
-    "contact-with-map": { name: "Contact", href: "#contact" },
-    "contact-columns": { name: "Contact", href: "#contact" },
-    "free-consultation": { name: "Free Consultation", href: "#contact" },
-    "pricing": { name: "Pricing", href: "/pricing" },
-    "awards": { name: "Credentials", href: "#credentials" },
-    "blog": { name: "Insights", href: "#blog" },
+  // SECTION_NAV_MAP imported from @/lib/utils/blocks
+  const sectionNavMap = SECTION_NAV_MAP;
+
+  // Hero theme → component lookup (replaces if/else chain)
+  const HERO_BY_THEME: Record<string, React.ReactElement> = {
+    chiropractor: <HeroChiropractor key="hero" {...heroChiropractorProps} />,
+    dentist: <HeroDentist key="hero" {...heroDentistProps} />,
+    clinic: <HeroClinic key="hero" {...heroClinicProps} />,
+    pool: <HeroPool key="hero" {...heroPoolProps} />,
+    cleaning: <HeroCleaning key="hero" {...heroCleaningProps} />,
+    "pest-control": <HeroPestControl key="hero" {...heroPestControlProps} />,
+    startup: <HeroSaas key="hero" {...heroProps} />,
+    generic: <HeroBlock key="hero" {...heroProps} />,
+  };
+
+  const AUTHORITY_LAYOUT_BY_THEME: Record<string, string> = {
+    "before-after": "before-after",
+    "real-estate-modern": "full-screen",
+    industrial: "industrial",
+    "clean-delivery": "bright-clean",
+    "luxury-soft": "soft-luxury",
+    "academic-clean": "structured-split",
+    hvac: "hvac-urgent",
+    "hvac-blue": "hvac-blue",
+    cleaning: "cleaning-fresh",
+    "personal-portfolio": "full-screen",
+    photobooth: "soft-luxury",
   };
 
   const builtFromSections = activeSections.reduce(
@@ -303,44 +305,9 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     { name: "Contact", href: "/contact" },
   ];
 
-  const slugify = (value: string) => value
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+  // slugify imported from @/lib/utils/blocks
 
-  const pageCategoryLabels: Record<string, string> = {
-    "review-trust-bar": "Reviews",
-    "reviews-grid": "Reviews",
-    "facebook-review-embed": "Reviews",
-    "testimonials": "Reviews",
-    "trust-badges-grid": "Trust",
-    "awards": "Credentials",
-    "pricing": "Pricing",
-    "pricing-table": "Pricing",
-    "packages-pricing": "Pricing",
-    "practice-areas": "Services",
-    "features": "Services",
-    "features-modern": "Services",
-    "services-grid": "Services",
-    "feature-highlight": "Highlights",
-    "how-it-works": "How It Works",
-    "treatment-process": "Process",
-    "patient-faq": "FAQ",
-    "faq-accordion": "FAQ",
-    "faq-two-column": "FAQ",
-    "team-carousel": "Team",
-    "team-grid": "Team",
-    "attorney-profile": "About",
-    "contact": "Contact",
-    "contact-minimal": "Contact",
-    "contact-visual": "Contact",
-    "contact-with-map": "Contact",
-    "contact-columns": "Contact",
-  };
-
-  const categoryLabelForSection = (sectionId: string) => pageCategoryLabels[sectionId] || "";
+  // PAGE_CATEGORY_LABELS and categoryLabelForSection imported from @/lib/utils/blocks
 
   const pagesNav = Array.isArray((data as any)?.pages)
     ? (data as any).pages
@@ -422,35 +389,18 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
           const key = `${sectionId}-${index}`;
           let sectionContent: React.ReactNode = null;
           switch (sectionId) {
-            case "hero":
-              if (theme === "chiropractor") sectionContent = <HeroChiropractor key={key} {...heroChiropractorProps} />;
-              else if (theme === "dentist") sectionContent = <HeroDentist key={key} {...heroDentistProps} />;
-              else if (theme === "clinic") sectionContent = <HeroClinic key={key} {...heroClinicProps} />;
-              else if (theme === "pool") sectionContent = <HeroPool key={key} {...heroPoolProps} />;
-              else if (theme === "cleaning") sectionContent = <HeroCleaning key={key} {...heroCleaningProps} />;
-              else if (theme === "pest-control") sectionContent = <HeroPestControl key={key} {...heroPestControlProps} />;
-              else if (theme === "startup") sectionContent = <HeroSaas key={key} {...heroProps} />;
-              else if (theme === "generic") sectionContent = <HeroBlock key={key} {...heroProps} />;
-              if (theme === "before-after" || theme === "real-estate-modern" || theme === "before-after-split" || theme === "industrial" || theme === "clean-delivery" || theme === "luxury-soft" || theme === "academic-clean" || theme === "hvac" || theme === "personal-portfolio" || theme === "photobooth") {
-                let layout: any = undefined;
-                if (theme === "before-after") layout = "before-after";
-                if (theme === "real-estate-modern") layout = "full-screen";
-                if (theme === "industrial") layout = "industrial";
-                if (theme === "clean-delivery") layout = "bright-clean";
-                if (theme === "luxury-soft") layout = "soft-luxury";
-                if (theme === "academic-clean") layout = "structured-split";
-                if (theme === "hvac") layout = "hvac-urgent";
-                if (theme === "hvac-blue") layout = "hvac-blue";
-                if (theme === "cleaning") layout = "cleaning-fresh";
-                if (theme === "personal-portfolio") layout = "full-screen";
-                if (theme === "photobooth") layout = "soft-luxury";
-
-                sectionContent = <HeroAuthority key={key} {...heroProps} layout={layout} />;
-              }
-              if (!sectionContent) {
-                sectionContent = <HeroAuthority key={key} {...heroProps} />;
+            case "hero": {
+              // Dedicated hero component per theme (lookup map — no if/else chain)
+              const dedicatedHero = HERO_BY_THEME[theme];
+              if (dedicatedHero) {
+                sectionContent = React.cloneElement(dedicatedHero, { key });
+              } else {
+                // Authority layout: theme drives the layout prop
+                const authorityLayout = AUTHORITY_LAYOUT_BY_THEME[theme] as any;
+                sectionContent = <HeroAuthority key={key} {...heroProps} layout={authorityLayout} />;
               }
               break;
+            }
             case "hero-emergency":
               sectionContent = (
                 <HeroEmergency
@@ -769,6 +719,26 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   formHeading={contact.formHeading ?? "Send us a Message"}
                   formSubmitText={contact.formSubmitText ?? "Send Message"}
                   formThankYouText={contact.formThankYouText ?? "Message Sent!"}
+                />
+              );
+              break;
+            case "contact-split":
+              sectionContent = (
+                <ContactSplit
+                  key={key}
+                  email={contact.email ?? ""}
+                  phone={contact.phone ?? ""}
+                  address={contact.address ?? ""}
+                  tagline={contact.tagline ?? contact.subtitle ?? ""}
+                  formHeading={contact.formHeading ?? "Get in Touch"}
+                  formSubmitText={contact.formSubmitText ?? "Send Message"}
+                  formThankYouText={contact.formThankYouText ?? "Message Sent!"}
+                  callLabel={contact.callLabel}
+                  emailUsLabel={contact.emailUsLabel}
+                  locationLabel={contact.locationLabel}
+                  nameLabel={contact.nameLabel}
+                  emailLabel={contact.emailLabel}
+                  messageLabel={contact.messageLabel}
                 />
               );
               break;

@@ -1,10 +1,10 @@
-"use client"
+﻿"use client"
 
 import * as React from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
-import { ChevronRight, FileText, Settings, Eye, Layout, Send, Plus, Trash2, GripVertical, Image as ImageIcon, History, RotateCcw, Zap, CreditCard, Palette, X } from "lucide-react"
+import { ChevronRight, FileText, Settings, Eye, Layout, Send, Plus, Trash2, GripVertical, Image as ImageIcon, History, RotateCcw, Zap, CreditCard, Palette, X, BarChart3, Phone, MessageSquare, FormInput } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import UpgradeButton from "@/components/dashboard/UpgradeButton"
@@ -21,6 +21,10 @@ import {
   DialogTitle,
 } from "@/components/ui/Dialog"
 import { GENRE_LABELS } from "@/config/presets"
+import { slugify, PAGE_CATEGORY_LABELS, categoryLabelForSection } from "@/lib/utils/blocks"
+import { SectionLivePreview } from "@/components/dashboard/SectionLivePreview"
+import { AddSectionModal } from "@/components/dashboard/AddSectionModal"
+import { VersionHistoryModal } from "@/components/dashboard/VersionHistoryModal"
 import { canPublishDirectly, canPublishNow, getPublishStats, isTrialExpired } from "@/lib/subscription"
 import { 
   COLOR_THEME_SWATCHES, 
@@ -62,56 +66,11 @@ import {
 
 
 
-const SECTION_CATEGORIES: { label: string; ids: string[] }[] = [
-  { label: "Hero & Identity", ids: ["hero"] },
-  { label: "Trust & Social Proof", ids: ["awards", "review-trust-bar", "trust-badges-grid", "facebook-review-embed", "reviews-grid", "testimonials"] },
-  { label: "Services & Features", ids: ["features", "practice-areas", "feature-highlight", "ac-types-grid", "financing-section", "developer-partners", "featured-properties-grid", "features-modern", "services-grid", "project-gallery", "programs-grid", "warranty-block"] },
-  { label: "Process & Info", ids: ["how-it-works", "treatment-process", "patient-faq", "faq-accordion", "faq-two-column", "blog", "delivery-coverage", "stats-section"] },
-  { label: "Team & Profiles", ids: ["team-carousel", "team-grid", "attorney-profile", "faculty-grid", "why-choose-me"] },
-  { label: "Contact & Conversion", ids: ["contact", "contact-minimal", "contact-visual", "contact-with-map", "contact-columns", "free-consultation", "booking-cta", "messenger-sticky-cta", "pricing", "promo-cta-section", "promo-banner-strip", "payment-options-strip", "service-area-map", "coverage-radius-block", "emergency-cta-strip", "price-preview-strip", "maintenance-plans"] },
-  { label: "Visuals & Galleries", ids: ["before-after-gallery-grid", "before-after-slider", "common-pests", "safety-section", "logo-cloud"] },
-]
+// SECTION_CATEGORIES moved to @/lib/utils/block-registry
 
 const formatSectionLabel = (id: string) => id.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
 
-const slugify = (value: string) => value
-  .toLowerCase()
-  .replace(/[^a-z0-9\s-]/g, '')
-  .trim()
-  .replace(/\s+/g, '-')
-  .replace(/-+/g, '-')
-
-const PAGE_CATEGORY_LABELS: Record<string, string> = {
-  'review-trust-bar': 'Reviews',
-  'reviews-grid': 'Reviews',
-  'facebook-review-embed': 'Reviews',
-  'testimonials': 'Reviews',
-  'trust-badges-grid': 'Trust',
-  'awards': 'Credentials',
-  'pricing': 'Pricing',
-  'pricing-table': 'Pricing',
-  'packages-pricing': 'Pricing',
-  'practice-areas': 'Services',
-  'features': 'Services',
-  'features-modern': 'Services',
-  'services-grid': 'Services',
-  'feature-highlight': 'Highlights',
-  'how-it-works': 'How It Works',
-  'treatment-process': 'Process',
-  'patient-faq': 'FAQ',
-  'faq-accordion': 'FAQ',
-  'faq-two-column': 'FAQ',
-  'team-carousel': 'Team',
-  'team-grid': 'Team',
-  'attorney-profile': 'About',
-  'contact': 'Contact',
-  'contact-minimal': 'Contact',
-  'contact-visual': 'Contact',
-  'contact-with-map': 'Contact',
-  'contact-columns': 'Contact',
-}
-
-const categoryLabelForSection = (sectionId: string) => PAGE_CATEGORY_LABELS[sectionId] || ''
+// slugify, PAGE_CATEGORY_LABELS, categoryLabelForSection imported from @/lib/utils/blocks
 
 const normalizeArrayItems = <T,>(value: unknown, fallback: T[]): T[] => {
   if (Array.isArray(value)) return value as T[]
@@ -149,800 +108,8 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
   'delivery-coverage': DEFAULT_DELIVERY_COVERAGE,
 }
 
-const LivePreviewFeaturesGrid = dynamic(() => import("@/components/blocks/FeaturesGrid"), { ssr: false })
-const LivePreviewFeaturesModern = dynamic(() => import("@/components/blocks/FeaturesModern"), { ssr: false })
-const LivePreviewPracticeAreas = dynamic(() => import("@/components/blocks/PracticeAreasGrid"), { ssr: false })
-const LivePreviewHowItWorks = dynamic(() => import("@/components/blocks/HowItWorksSteps"), { ssr: false })
-const LivePreviewTreatmentProcess = dynamic(() => import("@/components/blocks/TreatmentProcessTimeline"), { ssr: false })
-const LivePreviewAwardsStrip = dynamic(() => import("@/components/blocks/AwardsStrip"), { ssr: false })
-const LivePreviewBeforeAfterSlider = dynamic(() => import("@/components/blocks/BeforeAfterSlider"), { ssr: false })
-const LivePreviewBeforeAfterGallery = dynamic(() => import("@/components/blocks/BeforeAfterGalleryGrid"), { ssr: false })
-const LivePreviewTrustBadges = dynamic(() => import("@/components/blocks/TrustBadgesGrid"), { ssr: false })
-const LivePreviewSafetySection = dynamic(() => import("@/components/blocks/SafetySection"), { ssr: false })
-const LivePreviewLogoCloud = dynamic(() => import("@/components/blocks/LogoCloud"), { ssr: false })
-const LivePreviewACTypes = dynamic(() => import("@/components/blocks/ACTypesGrid"), { ssr: false })
-const LivePreviewPricingTable = dynamic(() => import("@/components/blocks/PricingTable"), { ssr: false })
-const LivePreviewFeaturedListings = dynamic(() => import("@/components/blocks/FeaturedListingsGrid"), { ssr: false })
-const LivePreviewFinancingSection = dynamic(() => import("@/components/blocks/FinancingSection"), { ssr: false })
-const LivePreviewDeveloperPartners = dynamic(() => import("@/components/blocks/DeveloperPartnersLogos"), { ssr: false })
-const LivePreviewWhyChooseMe = dynamic(() => import("@/components/blocks/WhyChooseMe"), { ssr: false })
-const LivePreviewServiceAreaMap = dynamic(() => import("@/components/blocks/ServiceAreaMap"), { ssr: false })
-const LivePreviewPricePreviewStrip = dynamic(() => import("@/components/blocks/PricePreviewStrip"), { ssr: false })
-const LivePreviewEmergencyCTAStrip = dynamic(() => import("@/components/blocks/EmergencyCTAStrip"), { ssr: false })
-const LivePreviewMaintenancePlans = dynamic(() => import("@/components/blocks/MaintenancePlans"), { ssr: false })
-const LivePreviewPromoCTASection = dynamic(() => import("@/components/blocks/PromoCTASection"), { ssr: false })
-const LivePreviewPromoBannerStrip = dynamic(() => import("@/components/blocks/PromoBannerStrip"), { ssr: false })
-const LivePreviewPaymentOptionsStrip = dynamic(() => import("@/components/blocks/PaymentOptionsStrip"), { ssr: false })
-const LivePreviewStatsSection = dynamic(() => import("@/components/blocks/StatsSection"), { ssr: false })
-const LivePreviewFAQAccordion = dynamic(() => import("@/components/blocks/FAQAccordion"), { ssr: false })
-const LivePreviewCommonPests = dynamic(() => import("@/components/blocks/CommonPestsGrid"), { ssr: false })
-const LivePreviewWarrantyBlock = dynamic(() => import("@/components/blocks/WarrantyGuaranteeBlock"), { ssr: false })
-const LivePreviewFacebookReviewEmbed = dynamic(() => import("@/components/blocks/FacebookReviewEmbed"), { ssr: false })
+// prefetchSectionPreview, MinimalSectionPreview, SectionLivePreview moved to @/components/dashboard/SectionLivePreview
 
-function prefetchSectionPreview(id: string) {
-  // Next/dynamic with `ssr: false` renders `null` until the chunk is loaded.
-  // Prefetch on hover so the preview doesn't look empty.
-  switch (id) {
-    case "features":
-    case "services-grid":
-    case "project-gallery":
-    case "programs-grid":
-    case "faculty-grid":
-      void import("@/components/blocks/FeaturesGrid")
-      return
-    case "features-modern":
-      void import("@/components/blocks/FeaturesModern")
-      return
-    case "practice-areas":
-      void import("@/components/blocks/PracticeAreasGrid")
-      return
-    case "how-it-works":
-      void import("@/components/blocks/HowItWorksSteps")
-      return
-    case "treatment-process":
-      void import("@/components/blocks/TreatmentProcessTimeline")
-      return
-    case "awards":
-    case "certifications":
-      void import("@/components/blocks/AwardsStrip")
-      return
-    case "before-after-slider":
-      void import("@/components/blocks/BeforeAfterSlider")
-      return
-    case "before-after-gallery-grid":
-      void import("@/components/blocks/BeforeAfterGalleryGrid")
-      return
-    case "trust-badges-grid":
-      void import("@/components/blocks/TrustBadgesGrid")
-      return
-    case "safety-section":
-      void import("@/components/blocks/SafetySection")
-      return
-    case "logo-cloud":
-      void import("@/components/blocks/LogoCloud")
-      return
-    case "ac-types-grid":
-      void import("@/components/blocks/ACTypesGrid")
-      return
-    case "pricing":
-      void import("@/components/blocks/PricingTable")
-      return
-    case "featured-properties-grid":
-      void import("@/components/blocks/FeaturedListingsGrid")
-      return
-    case "financing-section":
-      void import("@/components/blocks/FinancingSection")
-      return
-    case "developer-partners":
-      void import("@/components/blocks/DeveloperPartnersLogos")
-      return
-    case "why-choose-me":
-      void import("@/components/blocks/WhyChooseMe")
-      return
-    case "service-area-map":
-      void import("@/components/blocks/ServiceAreaMap")
-      return
-    case "price-preview-strip":
-      void import("@/components/blocks/PricePreviewStrip")
-      return
-    case "emergency-cta-strip":
-      void import("@/components/blocks/EmergencyCTAStrip")
-      return
-    case "maintenance-plans":
-      void import("@/components/blocks/MaintenancePlans")
-      return
-    case "promo-cta-section":
-      void import("@/components/blocks/PromoCTASection")
-      return
-    case "promo-banner-strip":
-      void import("@/components/blocks/PromoBannerStrip")
-      return
-    case "payment-options-strip":
-      void import("@/components/blocks/PaymentOptionsStrip")
-      return
-    case "stats-section":
-      void import("@/components/blocks/StatsSection")
-      return
-    case "faq-accordion":
-      void import("@/components/blocks/FAQAccordion")
-      return
-    case "common-pests":
-      void import("@/components/blocks/CommonPestsGrid")
-      return
-    case "warranty-block":
-      void import("@/components/blocks/WarrantyGuaranteeBlock")
-      return
-    case "facebook-review-embed":
-      void import("@/components/blocks/FacebookReviewEmbed")
-      return
-    default:
-      return
-  }
-}
-
-type MinimalPreviewKind =
-  | "cards-3"
-  | "cards-4"
-  | "timeline"
-  | "strip"
-  | "logos"
-  | "pricing"
-  | "faq"
-  | "gallery"
-  | "map"
-  | "cta"
-  | "stats"
-  | "generic"
-
-function minimalPreviewKindForSection(id: string): MinimalPreviewKind {
-  // Keep these lightweight and visually distinct. No text/images, just layout hints.
-  switch (id) {
-    // Trust/social
-    case "awards":
-    case "certifications":
-    case "review-trust-bar":
-    case "payment-options-strip":
-    case "promo-banner-strip":
-      return "strip"
-    case "trust-badges-grid":
-      return "cards-4"
-    case "logo-cloud":
-    case "developer-partners":
-      return "logos"
-
-    // Services/features
-    case "features":
-    case "features-modern":
-    case "services-grid":
-    case "project-gallery":
-    case "programs-grid":
-    case "faculty-grid":
-    case "practice-areas":
-    case "ac-types-grid":
-    case "common-pests":
-    case "safety-section":
-    case "reviews-grid":
-    case "testimonials":
-      return "cards-3"
-
-    // Process/info
-    case "how-it-works":
-    case "treatment-process":
-      return "timeline"
-    case "faq-accordion":
-    case "faq-two-column":
-    case "patient-faq":
-      return "faq"
-
-    // Visuals
-    case "before-after-slider":
-      return "gallery"
-    case "before-after-gallery-grid":
-      return "gallery"
-
-    // Conversion/contact
-    case "pricing":
-      return "pricing"
-    case "maintenance-plans":
-      return "pricing"
-    case "price-preview-strip":
-      return "cta"
-    case "promo-cta-section":
-    case "emergency-cta-strip":
-    case "booking-cta":
-    case "free-consultation":
-      return "cta"
-    case "service-area-map":
-    case "coverage-radius-block":
-      return "map"
-    case "stats-section":
-    case "delivery-coverage":
-      return "stats"
-
-    default:
-      return "generic"
-  }
-}
-
-function MinimalSectionPreview({ kind }: { kind: MinimalPreviewKind }) {
-  // Minimal layout only: no text, no real content.
-  return (
-    <div className="w-full aspect-video rounded-lg border border-border/60 bg-muted/20 overflow-hidden">
-      <div className="w-full h-full p-3 animate-pulse">
-        {kind === "strip" && (
-          <>
-            <div className="h-3 w-2/3 rounded bg-muted" />
-            <div className="mt-4 grid grid-cols-4 gap-2">
-              <div className="h-10 rounded bg-muted" />
-              <div className="h-10 rounded bg-muted" />
-              <div className="h-10 rounded bg-muted" />
-              <div className="h-10 rounded bg-muted" />
-            </div>
-            <div className="mt-3 h-16 rounded bg-muted" />
-          </>
-        )}
-
-        {kind === "logos" && (
-          <>
-            <div className="h-3 w-1/2 rounded bg-muted" />
-            <div className="mt-4 grid grid-cols-6 gap-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-10 rounded bg-muted" />
-              ))}
-            </div>
-            <div className="mt-3 grid grid-cols-6 gap-2 opacity-70">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-8 rounded bg-muted" />
-              ))}
-            </div>
-          </>
-        )}
-
-        {kind === "timeline" && (
-          <>
-            <div className="h-3 w-2/3 rounded bg-muted" />
-            <div className="mt-5 h-1 rounded bg-muted" />
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="rounded-lg border border-border/40 bg-background/40 p-3">
-                  <div className="h-8 w-8 rounded-full bg-muted" />
-                  <div className="mt-3 h-3 w-3/4 rounded bg-muted" />
-                  <div className="mt-2 h-10 rounded bg-muted" />
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {(kind === "cards-3" || kind === "cards-4") && (
-          <>
-            <div className="h-3 w-2/3 rounded bg-muted" />
-            <div className={`mt-4 grid ${kind === "cards-4" ? "grid-cols-4" : "grid-cols-3"} gap-2`}>
-              {Array.from({ length: kind === "cards-4" ? 4 : 3 }).map((_, i) => (
-                <div key={i} className="h-14 rounded bg-muted" />
-              ))}
-            </div>
-            <div className="mt-3 h-20 rounded bg-muted" />
-            <div className="mt-2 flex gap-2">
-              <div className="h-3 w-16 rounded bg-muted" />
-              <div className="h-3 w-20 rounded bg-muted" />
-              <div className="h-3 w-12 rounded bg-muted" />
-            </div>
-          </>
-        )}
-
-        {kind === "pricing" && (
-          <>
-            <div className="h-3 w-1/2 rounded bg-muted" />
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="rounded-lg border border-border/40 bg-background/40 p-3">
-                  <div className="h-3 w-2/3 rounded bg-muted" />
-                  <div className="mt-3 h-6 w-1/2 rounded bg-muted" />
-                  <div className="mt-3 space-y-2">
-                    <div className="h-2 w-full rounded bg-muted" />
-                    <div className="h-2 w-5/6 rounded bg-muted" />
-                    <div className="h-2 w-4/6 rounded bg-muted" />
-                  </div>
-                  <div className="mt-4 h-8 rounded bg-muted" />
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {kind === "faq" && (
-          <>
-            <div className="h-3 w-1/2 rounded bg-muted" />
-            <div className="mt-4 space-y-2">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-10 rounded bg-muted" />
-              ))}
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="h-16 rounded bg-muted" />
-              <div className="h-16 rounded bg-muted" />
-            </div>
-          </>
-        )}
-
-        {kind === "gallery" && (
-          <>
-            <div className="h-3 w-2/3 rounded bg-muted" />
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <div className="aspect-[4/3] rounded bg-muted" />
-              <div className="aspect-[4/3] rounded bg-muted" />
-            </div>
-            <div className="mt-3 h-10 rounded bg-muted" />
-          </>
-        )}
-
-        {kind === "map" && (
-          <>
-            <div className="h-3 w-1/2 rounded bg-muted" />
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              <div className="col-span-2 aspect-video rounded bg-muted" />
-              <div className="space-y-2">
-                <div className="h-10 rounded bg-muted" />
-                <div className="h-10 rounded bg-muted" />
-                <div className="h-10 rounded bg-muted" />
-              </div>
-            </div>
-          </>
-        )}
-
-        {kind === "cta" && (
-          <>
-            <div className="h-3 w-2/3 rounded bg-muted" />
-            <div className="mt-4 h-24 rounded bg-muted" />
-            <div className="mt-3 flex gap-2">
-              <div className="h-10 w-28 rounded bg-muted" />
-              <div className="h-10 w-28 rounded bg-muted" />
-            </div>
-          </>
-        )}
-
-        {kind === "stats" && (
-          <>
-            <div className="h-3 w-1/2 rounded bg-muted" />
-            <div className="mt-4 grid grid-cols-4 gap-2">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="rounded-lg border border-border/40 bg-background/40 p-3">
-                  <div className="h-6 w-1/2 rounded bg-muted" />
-                  <div className="mt-2 h-2 w-3/4 rounded bg-muted" />
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 h-16 rounded bg-muted" />
-          </>
-        )}
-
-        {kind === "generic" && (
-          <>
-            <div className="h-3 w-2/3 rounded bg-muted" />
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              <div className="h-12 rounded bg-muted" />
-              <div className="h-12 rounded bg-muted" />
-              <div className="h-12 rounded bg-muted" />
-            </div>
-            <div className="mt-3 h-20 rounded bg-muted" />
-            <div className="mt-2 flex gap-2">
-              <div className="h-3 w-16 rounded bg-muted" />
-              <div className="h-3 w-20 rounded bg-muted" />
-              <div className="h-3 w-12 rounded bg-muted" />
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function SectionLivePreview({ id }: { id: string }) {
-  // Change of plan: keep the list fast by default (minimal preview only).
-  // Only render the real block when the user hovers the preview.
-  const [hovered, setHovered] = React.useState(false)
-  const prefetchedRef = React.useRef(false)
-
-  const STAGE_W = 1920
-  const STAGE_H = 1080
-
-  const viewportRef = React.useRef<HTMLDivElement | null>(null)
-  const [scale, setScale] = React.useState(0.18)
-
-  React.useLayoutEffect(() => {
-    if (!hovered) return
-    const el = viewportRef.current
-    if (!el) return
-
-    const update = () => {
-      const rect = el.getBoundingClientRect()
-      const w = rect.width || 0
-      const h = rect.height || 0
-      if (w <= 0 || h <= 0) return
-      const next = Math.min(w / STAGE_W, h / STAGE_H)
-      setScale(next)
-    }
-
-    update()
-    const ro = new ResizeObserver(() => update())
-    ro.observe(el)
-    window.addEventListener("resize", update)
-    return () => {
-      window.removeEventListener("resize", update)
-      ro.disconnect()
-    }
-  }, [hovered])
-
-  const content = React.useMemo(() => {
-    if (!hovered) return null
-    switch (id) {
-      case "features":
-      case "services-grid":
-      case "project-gallery":
-      case "programs-grid":
-      case "faculty-grid": {
-        const fallbackFeatures = (DEFAULT_PRACTICE_AREAS.items || []).map((it: any) => ({
-          title: it.title,
-          description: it.description,
-          icon: it.icon,
-        }))
-        return (
-          <LivePreviewFeaturesGrid
-            title="Our Services"
-            subtitle="What we can do for you"
-            features={fallbackFeatures}
-          />
-        )
-      }
-      case "features-modern": {
-        const items = (DEFAULT_PRACTICE_AREAS.items || []).map((it: any) => ({
-          title: it.title,
-          description: it.description,
-          icon: it.icon,
-        }))
-        return (
-          <LivePreviewFeaturesModern
-            title="Our Services"
-            subtitle="Fast, friendly, reliable"
-            features={items}
-          />
-        )
-      }
-      case "practice-areas":
-        return (
-          <LivePreviewPracticeAreas
-            title={DEFAULT_PRACTICE_AREAS.title}
-            subtitle={DEFAULT_PRACTICE_AREAS.subtitle}
-            items={DEFAULT_PRACTICE_AREAS.items as any}
-            linkText="Learn More"
-          />
-        )
-      case "how-it-works":
-        return (
-          <LivePreviewHowItWorks
-            title={DEFAULT_HOW_IT_WORKS.title}
-            subtitle={DEFAULT_HOW_IT_WORKS.subtitle}
-            steps={DEFAULT_HOW_IT_WORKS.steps as any}
-          />
-        )
-      case "treatment-process":
-        return (
-          <LivePreviewTreatmentProcess
-            title={DEFAULT_TREATMENT_PROCESS.title}
-            subtitle={DEFAULT_TREATMENT_PROCESS.subtitle}
-            steps={DEFAULT_TREATMENT_PROCESS.steps as any}
-          />
-        )
-      case "awards":
-      case "certifications": {
-        return <LivePreviewAwardsStrip title={DEFAULT_AWARDS_STRIP.title} items={DEFAULT_AWARDS_STRIP.items as any} />
-      }
-      case "trust-badges-grid": {
-        const items = (DEFAULT_AWARDS_STRIP.items || []).map((it: any) => ({
-          label: it.label,
-          sublabel: it.sublabel,
-          icon: it.icon || "Award",
-          imageUrl: it.imageUrl,
-        }))
-        return <LivePreviewTrustBadges title="Trusted By" subtitle="Social proof" items={items as any} />
-      }
-      case "before-after-slider":
-        return (
-          <LivePreviewBeforeAfterSlider
-            title="Before & After"
-            subtitle="Real transformations"
-            beforeImage={(DEFAULT_BEFORE_AFTER_GALLERY.items?.[0] as any)?.beforeImage || ""}
-            afterImage={(DEFAULT_BEFORE_AFTER_GALLERY.items?.[0] as any)?.afterImage || ""}
-            beforeLabel={DEFAULT_BEFORE_AFTER_GALLERY.beforeLabel}
-            afterLabel={DEFAULT_BEFORE_AFTER_GALLERY.afterLabel}
-          />
-        )
-      case "before-after-gallery-grid":
-        return (
-          <LivePreviewBeforeAfterGallery
-            title={DEFAULT_BEFORE_AFTER_GALLERY.title}
-            subtitle={DEFAULT_BEFORE_AFTER_GALLERY.subtitle}
-            items={DEFAULT_BEFORE_AFTER_GALLERY.items as any}
-            beforeLabel={DEFAULT_BEFORE_AFTER_GALLERY.beforeLabel}
-            afterLabel={DEFAULT_BEFORE_AFTER_GALLERY.afterLabel}
-          />
-        )
-      case "safety-section": {
-        const items = (DEFAULT_PRACTICE_AREAS.items || []).map((it: any) => ({
-          title: it.title,
-          description: it.description,
-          icon: it.icon,
-        }))
-        return <LivePreviewSafetySection title="Safety First" subtitle="Low-tox, family-friendly" items={items as any} />
-      }
-      case "logo-cloud": {
-        return <LivePreviewLogoCloud title={DEFAULT_LOGO_CLOUD.title} items={DEFAULT_LOGO_CLOUD.items as any} />
-      }
-      case "ac-types-grid": {
-        return (
-          <LivePreviewACTypes
-            title={DEFAULT_AC_TYPES.title}
-            subtitle={DEFAULT_AC_TYPES.subtitle}
-            items={DEFAULT_AC_TYPES.items as any}
-          />
-        )
-      }
-      case "pricing": {
-        const plans = (DEFAULT_PRICING_TABLE as any)?.plans
-        return (
-          <LivePreviewPricingTable
-            title={(DEFAULT_PRICING_TABLE as any)?.title ?? "Affordable Plans"}
-            subtitle={(DEFAULT_PRICING_TABLE as any)?.subtitle}
-            plans={(Array.isArray(plans) ? plans : []) as any}
-            mostPopularLabel={(DEFAULT_PRICING_TABLE as any)?.mostPopularLabel}
-            startingAtLabel={(DEFAULT_PRICING_TABLE as any)?.startingAtLabel}
-            periodLabel={(DEFAULT_PRICING_TABLE as any)?.periodLabel}
-          />
-        )
-      }
-      case "featured-properties-grid": {
-        return (
-          <LivePreviewFeaturedListings
-            title={DEFAULT_FEATURED_LISTINGS.title}
-            subtitle={DEFAULT_FEATURED_LISTINGS.subtitle}
-            items={DEFAULT_FEATURED_LISTINGS.items as any}
-            viewDetailsLabel={(DEFAULT_FEATURED_LISTINGS as any)?.viewDetailsLabel}
-            sqmLabel={(DEFAULT_FEATURED_LISTINGS as any)?.sqmLabel}
-          />
-        )
-      }
-      case "financing-section": {
-        return (
-          <LivePreviewFinancingSection
-            title={DEFAULT_FINANCING.title}
-            subtitle={DEFAULT_FINANCING.subtitle}
-            items={DEFAULT_FINANCING.items as any}
-          />
-        )
-      }
-      case "developer-partners": {
-        return (
-          <LivePreviewDeveloperPartners
-            title={DEFAULT_DEVELOPER_PARTNERS.title}
-            items={DEFAULT_DEVELOPER_PARTNERS.items as any}
-          />
-        )
-      }
-      case "why-choose-me": {
-        const w = DEFAULT_WHY_CHOOSE_ME as any
-        return (
-          <LivePreviewWhyChooseMe
-            title={w.title}
-            subtitle={w.subtitle}
-            agentName={w.agentName ?? "Juan Dela Cruz"}
-            agentRole={w.agentRole ?? "Licensed Professional"}
-            licenseNumber={w.licenseNumber ?? "#12345"}
-            agentBio={w.agentBio ?? "Add your bio"}
-            agentImageUrl={w.agentImageUrl || "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&q=80"}
-            trustSignals={(Array.isArray(w.trustSignals) ? w.trustSignals : []) as any}
-            licensedBrokerLabel={w.licensedBrokerLabel}
-            inquireNowLabel={w.inquireNowLabel}
-          />
-        )
-      }
-      case "service-area-map": {
-        const s = DEFAULT_SERVICE_AREA_MAP as any
-        return (
-          <LivePreviewServiceAreaMap
-            title={s.title}
-            subtitle={s.subtitle}
-            cities={(Array.isArray(s.cities) ? s.cities : []) as any}
-            googleMapsEmbedUrl={s.googleMapsEmbedUrl}
-            cantFindCityTitle={s.cantFindCityTitle}
-            cantFindCityDescription={s.cantFindCityDescription}
-          />
-        )
-      }
-      case "price-preview-strip": {
-        const p = DEFAULT_PRICE_PREVIEW as any
-        return (
-          <LivePreviewPricePreviewStrip
-            title={p.title}
-            items={(Array.isArray(p.items) ? p.items : []) as any}
-            transparentPricingNote={p.transparentPricingNote}
-            bookNowLabel={p.bookNowLabel}
-          />
-        )
-      }
-      case "emergency-cta-strip": {
-        const e = DEFAULT_EMERGENCY_CTA as any
-        return (
-          <LivePreviewEmergencyCTAStrip
-            title={e.title}
-            subtitle={e.subtitle}
-            buttonText={e.buttonText}
-            phone={e.phone}
-            imageUrl={e.imageUrl || "https://images.unsplash.com/photo-1520975958225-41d8f94b07d2?w=1200&q=80"}
-            icon={e.icon}
-          />
-        )
-      }
-      case "maintenance-plans": {
-        const m = DEFAULT_MAINTENANCE_PLANS as any
-        return (
-          <LivePreviewMaintenancePlans
-            title={m.title}
-            subtitle={m.subtitle}
-            plans={(Array.isArray(m.plans) ? m.plans : []) as any}
-            signUpNowLabel={m.signUpNowLabel}
-          />
-        )
-      }
-      case "promo-cta-section": {
-        const p = (DEFAULT_FINANCING as any)
-        // Fall back to safe, simple promo CTA props without needing another default constant.
-        return (
-          <LivePreviewPromoCTASection
-            title={"Limited Time Offer"}
-            subtitle={"Add urgency with a promo CTA"}
-            promoBadge={"PROMO"}
-            buttonText={"Book Now"}
-            buttonHref={"#contact"}
-            phone={""}
-            countdownEndDate={undefined}
-            backgroundImage={"https://images.unsplash.com/photo-1520975958225-41d8f94b07d2?w=1200&q=80"}
-            daysLabel={"Days"}
-            hoursLabel={"Hours"}
-            minsLabel={"Mins"}
-            secsLabel={"Secs"}
-          />
-        )
-      }
-      case "promo-banner-strip": {
-        return (
-          <LivePreviewPromoBannerStrip
-            text={"Promo banner strip"}
-            countdownDate={undefined}
-            buttonText={"Learn More"}
-            buttonHref={"#"}
-          />
-        )
-      }
-      case "payment-options-strip": {
-        return (
-          <LivePreviewPaymentOptionsStrip
-            title={"Payment Options"}
-            methods={["Visa", "GCash", "Bank Transfer"] as any}
-          />
-        )
-      }
-      case "stats-section": {
-        return (
-          <LivePreviewStatsSection
-            title={"Results"}
-            subtitle={"A quick stats section"}
-            items={[
-              { label: "Clients", value: "1,200+" },
-              { label: "Years", value: "10" },
-              { label: "Rating", value: "4.9" },
-              { label: "Projects", value: "350" },
-            ] as any}
-            variant={"cards"}
-          />
-        )
-      }
-      case "faq-accordion": {
-        return (
-          <LivePreviewFAQAccordion
-            title={DEFAULT_FAQ_ACCORDION.title}
-            subtitle={DEFAULT_FAQ_ACCORDION.subtitle}
-            items={DEFAULT_FAQ_ACCORDION.items as any}
-          />
-        )
-      }
-      case "common-pests": {
-        return (
-          <LivePreviewCommonPests
-            title={DEFAULT_COMMON_PESTS.title}
-            subtitle={DEFAULT_COMMON_PESTS.subtitle}
-            items={DEFAULT_COMMON_PESTS.items as any}
-          />
-        )
-      }
-      case "warranty-block": {
-        return (
-          <LivePreviewWarrantyBlock
-            title={"Warranty"}
-            subtitle={"Show your guarantee"}
-            badgeText={"Guaranteed"}
-            icon={"ShieldCheck"}
-            imageUrl={""}
-          />
-        )
-      }
-      case "facebook-review-embed": {
-        const f = DEFAULT_FACEBOOK_REVIEW_EMBED as any
-        return (
-          <LivePreviewFacebookReviewEmbed
-            title={f.title}
-            subtitle={f.subtitle}
-            reviews={(Array.isArray(f.reviews) ? f.reviews : []) as any}
-            followUsLabel={f.followUsLabel}
-            facebookReviewsLabel={f.facebookReviewsLabel}
-            footerNoteLabel={f.footerNoteLabel}
-          />
-        )
-      }
-      default:
-        return null
-    }
-  }, [hovered, id])
-
-  return (
-    <div
-      className="mt-3 relative"
-      onMouseEnter={() => {
-        if (!prefetchedRef.current) {
-          prefetchedRef.current = true
-          prefetchSectionPreview(id)
-        }
-        setHovered(true)
-      }}
-      onMouseLeave={() => setHovered(false)}
-      onFocus={() => {
-        if (!prefetchedRef.current) {
-          prefetchedRef.current = true
-          prefetchSectionPreview(id)
-        }
-        setHovered(true)
-      }}
-      onBlur={() => setHovered(false)}
-    >
-      <MinimalSectionPreview kind={minimalPreviewKindForSection(id)} />
-
-      {hovered && (
-        <div className="absolute inset-0 z-20 rounded-lg border border-primary/25 bg-background shadow-2xl overflow-hidden">
-          <div ref={viewportRef} className="w-full h-full overflow-hidden bg-background">
-            <div className="pointer-events-none">
-              <div
-                className="origin-top-left"
-                style={{
-                  width: STAGE_W,
-                  height: STAGE_H,
-                  transform: `scale(${scale})`,
-                }}
-              >
-                {content ?? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="w-[70%] h-[60%] bg-muted/20 border border-border rounded-xl flex items-center justify-center">
-                      <div className="text-xs font-semibold text-muted-foreground">Loading preview…</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
 
 interface DashboardClientProps {
   project: any
@@ -976,11 +143,13 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const [dropSectionIndex, setDropSectionIndex] = React.useState<number | null>(null)
   const [addSectionOpen, setAddSectionOpen] = React.useState(false)
   const [sectionSearchQuery, setSectionSearchQuery] = React.useState("")
-  const [activeTab, setActiveTab] = React.useState<"content" | "design" | "advanced">("content")
+  const [activeTab, setActiveTab] = React.useState<"content" | "design" | "advanced" | "analytics">("content")
   const [selectedPageIndex, setSelectedPageIndex] = React.useState(0)
   const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>({})
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false)
   const [globalSettingsModalTab, setGlobalSettingsModalTab] = React.useState<"theme" | "sections">("theme")
+  const [leads, setLeads] = React.useState<any[]>([])
+  const [leadsLoading, setLeadsLoading] = React.useState(false)
   const colorPaletteRef = React.useRef<HTMLButtonElement>(null)
   const typographyRef = React.useRef<HTMLButtonElement>(null)
   const colorPaletteRectRef = React.useRef<DOMRect | null>(null)
@@ -1048,6 +217,31 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
       return { key, swatches, tags }
     })
   }, [])
+
+  React.useEffect(() => {
+    if (activeTab === 'analytics' && project?.id) {
+      const fetchLeads = async () => {
+        setLeadsLoading(true)
+        try {
+          const supabase = createClient()
+          const { data, error } = await supabase
+            .from('project_leads')
+            .select('*')
+            .eq('project_id', project.id)
+            .order('created_at', { ascending: false })
+          
+          if (error) throw error
+          setLeads(data || [])
+        } catch (err) {
+          console.error('Error fetching leads:', err)
+          toast.error('Failed to load analytics data')
+        } finally {
+          setLeadsLoading(false)
+        }
+      }
+      fetchLeads()
+    }
+  }, [activeTab, project?.id])
 
   React.useEffect(() => {
     const close = (e: MouseEvent) => {
@@ -1690,6 +884,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
           {[
             { id: "content", label: "Content", icon: FileText },
             { id: "design", label: "Design", icon: Palette },
+            { id: "analytics", label: "Analytics", icon: BarChart3 },
             { id: "advanced", label: "Advanced", icon: Settings },
           ].map((tab) => (
             <button
@@ -2017,7 +1212,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                             type="text"
                             value={colorPaletteQuery}
                             onChange={(e) => setColorPaletteQuery(e.target.value)}
-                            placeholder="Search palettes (e.g. blue, gold, eco)…"
+                            placeholder="Search palettes (e.g. blue, gold, eco)â€¦"
                             className="w-full px-3 pr-8 py-2 bg-background border border-border/70 rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all placeholder:text-muted-foreground/50"
                             autoFocus
                           />
@@ -2191,7 +1386,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               className={`text-[10px] truncate max-w-[220px] ${selected ? "text-foreground" : "text-muted-foreground"}`}
                               style={opt.fontFamily ? { fontFamily: opt.fontFamily } : undefined}
                             >
-                              Aa 123 — Sphinx of black quartz
+                              Aa 123 â€” Sphinx of black quartz
                             </span>
                           </button>
                         )
@@ -2208,7 +1403,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                       <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 mb-1">Example</div>
                       <div style={fontFamily ? { fontFamily } : undefined}>
                         <div className="text-sm font-black text-foreground leading-tight">Sphinx of black quartz, judge my vow</div>
-                        <div className="text-xs text-muted-foreground mt-1 italic">Aa 1234567890 — The quick brown fox jumps over the lazy dog.</div>
+                        <div className="text-xs text-muted-foreground mt-1 italic">Aa 1234567890 â€” The quick brown fox jumps over the lazy dog.</div>
                       </div>
                     </div>
                   )
@@ -2329,80 +1524,111 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               </button>
             </div>
           )}
+
+          {activeTab === "analytics" && (
+            <div className="space-y-6">
+              <div className="px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
+                Lead Performance
+              </div>
+              
+              {leadsLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-3 opacity-50">
+                  <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                  <p className="text-[10px] font-black uppercase tracking-widest">Loading stats...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: 'Calls', icon: Phone, color: 'text-green-600', bg: 'bg-green-500/10', count: leads.filter(l => l.type === 'call').length },
+                      { label: 'Forms', icon: FormInput, color: 'text-blue-600', bg: 'bg-blue-500/10', count: leads.filter(l => l.type === 'form').length },
+                      { label: 'Messenger', icon: MessageSquare, color: 'text-sky-600', bg: 'bg-sky-500/10', count: leads.filter(l => l.type === 'messenger').length },
+                      { label: 'Viber', icon: MessageSquare, color: 'text-indigo-600', bg: 'bg-indigo-500/10', count: leads.filter(l => l.type === 'viber').length },
+                    ].map((stat) => (
+                      <div key={stat.label} className="p-4 rounded-2xl bg-card border border-border shadow-sm flex flex-col gap-2">
+                        <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center ${stat.color}`}>
+                          <stat.icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-2xl font-black text-foreground">{stat.count}</span>
+                          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    <div className="px-3 py-1 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
+                      Recent Activity
+                    </div>
+                    {leads.length === 0 ? (
+                      <div className="px-4 py-8 text-center bg-muted/30 rounded-2xl border border-dashed border-border">
+                        <p className="text-xs font-medium text-muted-foreground">No leads recorded yet.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {leads.slice(0, 20).map((lead) => {
+                          const meta = lead.metadata || {}
+                          const contactName = meta.name
+                          const contactEmail = meta.email
+                          const referrer = meta.referrer
+                          const utmSource = meta.utm_source
+                          let source = utmSource || null
+                          if (!source && referrer) {
+                            try { source = new URL(referrer).hostname } catch { source = referrer }
+                          }
+                          return (
+                            <div key={lead.id} className="p-3 bg-card border border-border rounded-xl shadow-sm space-y-1.5">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                                  lead.type === 'call' ? 'bg-green-500/10 text-green-600' :
+                                  lead.type === 'form' ? 'bg-blue-500/10 text-blue-600' :
+                                  lead.type === 'messenger' ? 'bg-sky-500/10 text-sky-600' :
+                                  'bg-indigo-500/10 text-indigo-600'
+                                }`}>
+                                  {lead.type === 'call' && <Phone className="w-3.5 h-3.5" />}
+                                  {lead.type === 'form' && <FormInput className="w-3.5 h-3.5" />}
+                                  {(lead.type === 'messenger' || lead.type === 'viber') && <MessageSquare className="w-3.5 h-3.5" />}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-bold capitalize">
+                                    {contactName || `${lead.type} lead`}
+                                  </p>
+                                  <p className="text-[9px] text-muted-foreground">{new Date(lead.created_at).toLocaleString()}</p>
+                                </div>
+                                <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 bg-muted rounded-full shrink-0 capitalize">{lead.type}</span>
+                              </div>
+                              {(contactEmail || source) && (
+                                <div className="flex flex-wrap gap-1.5 pl-11">
+                                  {contactEmail && (
+                                    <span className="text-[9px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full truncate max-w-[160px]">{contactEmail}</span>
+                                  )}
+                                  {source && (
+                                    <span className="text-[9px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">via {source}</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
       </aside>
 
       {/* Add Section Modal */}
-      <Dialog open={addSectionOpen} onOpenChange={setAddSectionOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col p-0 gap-0">
-          <DialogHeader className="p-6 border-b border-border bg-muted/10">
-            <DialogTitle className="flex items-center gap-2">
-              <Layout className="w-5 h-5 text-primary" />
-              Add New Section
-            </DialogTitle>
-            <DialogDescription>
-              Choose a block to add to your page.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-            {SECTION_CATEGORIES.map((cat) => (
-              <div key={cat.label} className="space-y-4">
-                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
-                  <div className="w-1 h-4 bg-primary/20 rounded-full" />
-                  {cat.label}
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {cat.ids.map((id) => {
-                    if (id === 'hero') return null
-                    const isAdded = activeSections.includes(id)
-                    return (
-                      <div
-                        key={id}
-                        role="button"
-                        tabIndex={isAdded ? -1 : 0}
-                        aria-disabled={isAdded}
-                        onClick={() => {
-                          if (isAdded) return
-                          addSection(id)
-                        }}
-                        onKeyDown={(e) => {
-                          if (isAdded) return
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault()
-                            addSection(id)
-                          }
-                        }}
-                        className={`group relative flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${isAdded ? 'bg-muted/50 border-border opacity-60 cursor-not-allowed' : 'bg-background border-border hover:border-primary/30 hover:bg-primary/5 active:scale-[0.98]'}`}
-                      >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${isAdded ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white'}`}>
-                          <Plus className="w-4 h-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold truncate leading-tight capitalize">{id.replace(/-/g, ' ')}</p>
-                          <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">{isAdded ? 'Already on page' : 'Click to add'}</p>
-                          {!isAdded && <SectionLivePreview id={id} />}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="p-4 border-t border-border bg-muted/5 flex justify-end">
-            <button
-              type="button"
-              onClick={() => setAddSectionOpen(false)}
-              className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AddSectionModal
+        open={addSectionOpen}
+        onOpenChange={setAddSectionOpen}
+        activeSections={activeSections}
+        addSection={addSection}
+      />
 
       {/* Main Content (Stage) */}
       <main className="flex-1 flex flex-col min-w-0 min-h-0 bg-background relative">
@@ -2432,7 +1658,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
             <button onClick={refreshPreview} className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-semibold hover:bg-muted transition-all duration-200 shadow-sm active:scale-95 shrink-0">
               <Eye className="w-3.5 h-3.5 shrink-0" />
-              <span className="shrink-0">{isSaving ? 'Saving…' : 'Refresh'}</span>
+              <span className="shrink-0">{isSaving ? 'Savingâ€¦' : 'Refresh'}</span>
             </button>
             <button
               onClick={async () => {
@@ -2469,7 +1695,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
             >
               <FileText className="w-3.5 h-3.5 shrink-0" />
-              <span className="shrink-0">{isSubmitting ? 'Saving…' : 'Save'}</span>
+              <span className="shrink-0">{isSubmitting ? 'Savingâ€¦' : 'Save'}</span>
             </button>
             <button
               onClick={() => {
@@ -2559,7 +1785,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
                 >
                   <Send className="w-3.5 h-3.5 shrink-0" />
-                  <span className="shrink-0">{isPublishing ? 'Publishing…' : 'Publish'}</span>
+                  <span className="shrink-0">{isPublishing ? 'Publishingâ€¦' : 'Publish'}</span>
                 </button>
                 {publishDisabledReason && (
                   <span className="mt-1 text-[10px] text-muted-foreground text-right max-w-[180px]">
@@ -2611,7 +1837,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
                 >
                   <Send className="w-3.5 h-3.5 shrink-0" />
-                  <span className="shrink-0">{isQueueing ? 'Submitting…' : hasPendingRequest ? 'Pending Review' : 'Submit'}</span>
+                  <span className="shrink-0">{isQueueing ? 'Submittingâ€¦' : hasPendingRequest ? 'Pending Review' : 'Submit'}</span>
                 </button>
                 {publishDisabledReason && (
                   <span className="mt-1 text-[10px] text-muted-foreground text-right max-w-[180px]">
@@ -3048,8 +2274,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="rounded-xl border border-border/80 bg-background/80 shadow-sm p-4 space-y-3 relative">
                                   <div className="absolute -top-2 -right-2 flex gap-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updatePages(next); } }} className="px-2 py-1 text-[9px] rounded bg-muted hover:bg-muted/70">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updatePages(next); } }} className="px-2 py-1 text-[9px] rounded bg-muted hover:bg-muted/70">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updatePages(next); } }} className="px-2 py-1 text-[9px] rounded bg-muted hover:bg-muted/70">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updatePages(next); } }} className="px-2 py-1 text-[9px] rounded bg-muted hover:bg-muted/70">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updatePages(next); }} className="px-2 py-1 text-[9px] rounded bg-red-500/10 text-red-600">Remove</button>
                                   </div>
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -3221,8 +2447,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <div className="p-4 space-y-3">
@@ -3248,8 +2474,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <div className="rounded-t-xl">
@@ -3269,8 +2495,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-3 relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <input value={(itemObj.question as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, question: e.target.value }; updateItems(next) }} placeholder="Question" className="w-full px-3 py-2 text-xs font-medium bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
@@ -3283,8 +2509,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="flex flex-col items-center text-center p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-3 relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <div className="w-16 h-16 rounded-full bg-background border border-border overflow-hidden flex items-center justify-center shrink-0">
@@ -3302,8 +2528,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <div className="p-4 space-y-3">
@@ -3326,8 +2552,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <div className="p-4 space-y-3">
@@ -3351,8 +2577,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <div className="p-4 space-y-3">
@@ -3379,8 +2605,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <div className="relative aspect-[4/3] min-h-[120px] bg-muted/30 overflow-visible">
@@ -3405,8 +2631,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="flex flex-col items-center p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <div className="w-full aspect-[2/1] max-h-16 bg-muted/30 rounded-lg overflow-visible flex items-center justify-center mb-2 relative z-10">
@@ -3424,8 +2650,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-3 relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <input value={(itemObj.quoteTitle as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, quoteTitle: e.target.value }; updateItems(next) }} placeholder="Quote title" className="w-full px-3 py-2 text-xs font-bold bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
@@ -3443,8 +2669,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <div className="p-4 space-y-3">
@@ -3473,8 +2699,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-2 relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <input value={(itemObj.service as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, service: e.target.value }; updateItems(next) }} placeholder="Service" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
@@ -3487,8 +2713,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <div className="p-4 space-y-3">
@@ -3510,8 +2736,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="flex flex-col rounded-xl bg-background/80 border border-border/80 overflow-hidden shadow-sm relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <div className="p-4 space-y-3">
@@ -3561,8 +2787,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-3 relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <textarea value={(itemObj.text as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, text: e.target.value }; updateItems(next) }} placeholder="Review text" rows={3} className="w-full px-3 py-2 text-[10px] text-muted-foreground bg-background border border-border rounded-lg resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
@@ -3576,8 +2802,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="flex flex-col items-center text-center p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-3 relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <div className="w-12 h-12 rounded-full bg-background border border-border overflow-visible flex items-center justify-center shrink-0 text-primary relative z-10">
@@ -3591,8 +2817,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                               return (
                                 <div key={idx} className="flex flex-col items-center text-center p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-3 relative group hover:border-primary/15 transition-colors overflow-visible">
                                   <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
-                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
-                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems]; [next[idx-1], next[idx]] = [next[idx], next[idx-1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†‘</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems]; [next[idx+1], next[idx]] = [next[idx], next[idx+1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">â†“</button>
                                     <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                   <div className="w-12 h-12 rounded-full bg-background border border-border overflow-visible flex items-center justify-center shrink-0 text-primary relative z-10">
@@ -3799,7 +3025,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
             <div className="flex items-center gap-2 min-w-0">
               <span className={`shrink-0 w-2 h-2 rounded-full ${isSaving ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
               <span className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">
-                {isSaving ? 'Syncing…' : 'Saved'}
+                {isSaving ? 'Syncingâ€¦' : 'Saved'}
               </span>
             </div>
             <button
@@ -3815,80 +3041,39 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
       )}
 
       {/* Version History / Rollback Modal */}
-      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
-        <DialogContent className="sm:max-w-[480px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <History className="w-5 h-5 text-primary" />
-              Version History
-            </DialogTitle>
-            <DialogDescription>
-              Restore your site to a previous working state if something went wrong.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto">
-            {versionsLoading ? (
-              <p className="text-sm text-muted-foreground py-6 text-center">Loading history…</p>
-            ) : versions.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-6 text-center">No version history yet. Publish changes to create restore points.</p>
-            ) : (
-              <ul className="space-y-2">
-                {versions.map((v) => (
-                  <li
-                    key={v.id}
-                    className="flex items-center justify-between gap-4 py-2 px-3 rounded-lg border border-border bg-muted/20"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm font-medium">Version {v.version}</span>
-                      <span className="text-xs text-muted-foreground ml-2">
-                        {new Date(v.createdAt).toLocaleString()}
-                      </span>
-                      {v.isCurrent && (
-                        <span className="ml-2 text-[10px] font-bold text-emerald-600 uppercase">Current</span>
-                      )}
-                    </div>
-                    {!v.isCurrent && (
-                      <button
-                        onClick={async () => {
-                          setRollbackLoading(v.version)
-                          try {
-                            const res = await fetch('/api/rollback', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ projectId: project.id, version: v.version }),
-                            })
-                            const json = await res.json()
-                            if (!res.ok) throw new Error(json.error || 'Rollback failed')
-                            toast.success(`Restored to version ${v.version}`)
-                            setHistoryOpen(false)
-                            router.refresh()
-                            setTimeout(() => refreshPreview(), 100)
-                          } catch (e: any) {
-                            toast.error(e?.message || 'Rollback failed')
-                          } finally {
-                            setRollbackLoading(null)
-                          }
-                        }}
-                        disabled={rollbackLoading !== null}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground rounded-lg transition-colors disabled:opacity-50"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        {rollbackLoading === v.version ? 'Restoring…' : 'Restore'}
-                      </button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <VersionHistoryModal
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        versions={versions}
+        versionsLoading={versionsLoading}
+        rollbackLoading={rollbackLoading}
+        onRestore={async (version) => {
+          setRollbackLoading(version)
+          try {
+            const res = await fetch('/api/rollback', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ projectId: project.id, version }),
+            })
+            const json = await res.json()
+            if (!res.ok) throw new Error(json.error || 'Rollback failed')
+            toast.success(`Restored to version ${version}`)
+            setHistoryOpen(false)
+            router.refresh()
+            setTimeout(() => refreshPreview(), 100)
+          } catch (e: any) {
+            toast.error(e?.message || 'Rollback failed')
+          } finally {
+            setRollbackLoading(null)
+          }
+        }}
+      />
       </div>
 
       {/* Footer */}
       <footer className="py-6 border-t border-border bg-muted/30">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          © 2026 EstabWeb. All rights reserved.
+          Â© 2026 EstabWeb. All rights reserved.
         </div>
       </footer>
       <style jsx global>{`

@@ -33,7 +33,7 @@ export default function AwardsStrip({ title, items }: AwardsStripProps) {
             {title}
           </p>
         )}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-12 items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-12 items-center">
             {safeItems.map((item, index) => {
               const label = (item as AwardItem).label ?? ""
               const sublabel = (item as AwardItem).sublabel

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import SiteTemplate from "@/components/shared/SiteTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
-import { getSiteConfig } from "@/lib/utils/site-config";
+import { getSiteConfigWithProject } from "@/lib/utils/site-config";
 import { getPageBySlug, normalizePages, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +28,7 @@ export async function generateMetadata({
   const { domain } = await params;
   const heads = await headers();
   const host = heads.get("host") || domain;
-  const config = await getSiteConfig(domain, heads);
+  const { config } = await getSiteConfigWithProject(domain, heads);
 
   const pages = normalizePagesWithDefaults(config?.pages);
   const homePage = getPageBySlug(pages, "");
@@ -98,7 +98,7 @@ export default async function Home({
   const heads = await headers();
   const preview = heads.get('x-preview-mode') === 'true';
 
-  const initialData = await getSiteConfig(domain, heads);
+  const { config: initialData, project } = await getSiteConfigWithProject(domain, heads);
 
   // Final fallback to error UI if nothing found
   if (!initialData) {
@@ -116,10 +116,14 @@ export default async function Home({
   const dataForPage = homePage
     ? {
         ...initialData,
+        projectId: project?.id,
         activeSections: homePage.activeSections ?? initialData.activeSections,
         seo: homePage.seo ?? initialData.seo,
       }
-    : initialData;
+    : {
+        ...initialData,
+        projectId: project?.id
+      };
 
   // If preview mode is ON, we wrap in a Client Component that listens for postMessage
   if (preview) {

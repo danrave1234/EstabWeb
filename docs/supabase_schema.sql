@@ -32,7 +32,20 @@ create table if not exists projects (
   current_config jsonb default '{}',
   draft_config jsonb default '{}',
   config_version int default 0,
-  created_at timestamptz default now()
+  created_at timestamptz default now(),
+  
+  -- Subscription & Publish Limits
+  subscription_status text default 'free' check (subscription_status in ('free','trial','active','admin_granted')),
+  trial_ends_at timestamptz,
+  subscription_ends_at timestamptz,
+  auto_renew boolean default true,
+  has_paid_initial boolean default false,
+  publish_limit int default 10,
+  publish_limit_daily int default 3,
+  publish_count int default 0,
+  publish_count_today int default 0,
+  publish_date timestamptz,
+  publish_period_start timestamptz default now()
 );
 
 create index if not exists projects_client_idx on projects(client_id);
@@ -126,6 +139,16 @@ create or replace trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
+-- Project Analytics/Leads
+create table if not exists project_leads (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid references projects(id) on delete cascade,
+  type text not null check (type in ('messenger', 'viber', 'call', 'form')),
+  metadata jsonb default '{}',
+  created_at timestamptz default now()
+);
+create index if not exists project_leads_project_idx on project_leads(project_id);
+
 -- RLS Enablement
 alter table if exists profiles enable row level security;
 alter table if exists template_codes enable row level security;
@@ -133,6 +156,17 @@ alter table if exists code_redemptions enable row level security;
 alter table if exists projects enable row level security;
 alter table if exists project_versions enable row level security;
 alter table if exists change_requests enable row level security;
+alter table if exists project_leads enable row level security;
+
+-- POLICIES: Project Leads
+drop policy if exists project_leads_select_owner on project_leads;
+create policy project_leads_select_owner on project_leads for select to authenticated using (exists (select 1 from projects p where p.id = project_leads.project_id and p.client_id = auth.uid()));
+
+drop policy if exists project_leads_insert_public on project_leads;
+create policy project_leads_insert_public on project_leads for insert with check (true);
+
+drop policy if exists project_leads_admin_all on project_leads;
+create policy project_leads_admin_all on project_leads for all to authenticated using (is_admin());
 
 -- POLICIES: Profiles
 drop policy if exists profiles_select_self on profiles;

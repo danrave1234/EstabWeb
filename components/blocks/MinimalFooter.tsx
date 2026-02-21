@@ -1,5 +1,8 @@
+"use client";
+
 import type { FooterSocial } from "./LeadMagnetFooter";
 import Image from "next/image";
+import { trackLead } from "@/components/shared/Analytics";
 
 type MinimalFooterProps = {
   brandName: string;
@@ -72,8 +75,8 @@ export default function MinimalFooter({
 
         {social.showContact !== false && (
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground font-medium">
-            {contact.phone && <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="hover:text-primary transition-colors">{contact.phone}</a>}
-            {contact.email && <a href={`mailto:${contact.email}`} className="hover:text-primary transition-colors">{contact.email}</a>}
+            {contact.phone && <a href={`tel:${contact.phone.replace(/\s/g, "")}`} onClick={() => trackLead('call')} className="hover:text-primary transition-colors">{contact.phone}</a>}
+            {contact.email && <a href={`mailto:${contact.email}`} onClick={() => trackLead('form')} className="hover:text-primary transition-colors">{contact.email}</a>}
             {contact.address && <span>{contact.address}</span>}
           </div>
         )}

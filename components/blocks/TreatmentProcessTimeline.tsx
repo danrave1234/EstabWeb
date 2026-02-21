@@ -45,7 +45,7 @@ export default function TreatmentProcessTimeline({ title, subtitle, steps }: Tre
           {/* Timeline Line */}
           <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-primary/20 -translate-y-1/2 z-0" />
           
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-12 relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-12 relative z-10">
             {steps.map((step, index) => {
               const hasImage = Boolean(step.imageUrl);
               return (

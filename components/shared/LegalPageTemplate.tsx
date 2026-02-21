@@ -128,7 +128,7 @@ export default function LegalPageTemplate({ title, lastUpdated, content, serverD
       />
 
       <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl">
-        <h1 className="text-4xl font-black mb-4 tracking-tight">{displayTitle}</h1>
+        <h1 className="text-2xl sm:text-4xl font-black mb-4 tracking-tight">{displayTitle}</h1>
         <p className="text-sm text-muted-foreground mb-12 flex items-center gap-2">
           <span className="w-1 h-1 bg-primary rounded-full" />
           Last updated: {displayDate}

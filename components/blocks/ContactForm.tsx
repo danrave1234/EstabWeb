@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PhoneIcon, EnvelopeIcon, MapPinIcon } from "@phosphor-icons/react";
+import { trackLead } from "@/components/shared/Analytics";
 
 export type ContactFormProps = {
   tagline: string;
@@ -43,6 +44,7 @@ export default function ContactForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitted(true);
+    trackLead('form', undefined, { name: formData.name, email: formData.email });
     
     // Simulate API call
     setTimeout(() => {
@@ -109,6 +111,7 @@ export default function ContactForm({
             <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-6">
               <a
                 href={`tel:${phoneHref}`}
+                onClick={() => trackLead('call')}
                 className="col-span-2 lg:col-span-1 group flex items-center gap-2 sm:gap-4 p-3 sm:p-4 bg-background border border-border rounded-xl hover:border-primary transition-all duration-200 shadow-sm"
               >
                 <div className="w-8 h-8 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">

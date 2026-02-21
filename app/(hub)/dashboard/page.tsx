@@ -40,6 +40,22 @@ export default async function DashboardPage({
     .order('created_at', { ascending: false })
 
   if (error) console.error('Dashboard Fetch Error:', error)
+  
+  // Fetch lead counts for all user's projects
+  const projectIds = projects?.map(p => p.id) || []
+  let leadsData: any[] = []
+  if (projectIds.length > 0) {
+    const { data: leads, error: leadsError } = await supabase
+      .from('project_leads')
+      .select('project_id')
+      .in('project_id', projectIds)
+    
+    if (leadsError) console.error('Leads Fetch Error:', leadsError)
+    else leadsData = leads || []
+  }
+
+  // Helper to count leads for a project
+  const getLeadCount = (id: string) => leadsData.filter(l => l.project_id === id).length
 
   // If a specific project is selected, show the preview
   if (projectId && projects?.some(p => p.id === projectId)) {
@@ -162,6 +178,10 @@ export default async function DashboardPage({
                     <h3 className="font-bold text-foreground truncate">{siteName}</h3>
                     <p className="text-[10px] text-muted-foreground truncate">{domain}</p>
                   </div>
+                  <div className="text-right">
+                    <p className="text-lg font-black text-green-600 leading-none">{getLeadCount(project.id)}</p>
+                    <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mt-1">Leads</p>
+                  </div>
                 </div>
                 
                 <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground pt-2 border-t border-border">
@@ -203,6 +223,7 @@ export default async function DashboardPage({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[40%] text-[11px] font-black uppercase tracking-widest">Website</TableHead>
+                <TableHead className="text-[11px] font-black uppercase tracking-widest">Leads</TableHead>
                 <TableHead className="text-[11px] font-black uppercase tracking-widest">Domain</TableHead>
                 <TableHead className="text-[11px] font-black uppercase tracking-widest">Created</TableHead>
                 <TableHead className="text-right text-[11px] font-black uppercase tracking-widest">Actions</TableHead>
@@ -229,6 +250,14 @@ export default async function DashboardPage({
                           <span className="text-[10px] text-muted-foreground truncate max-w-[200px]">{project.id}</span>
                         </div>
                       </Link>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-600">
+                          <Sparkles className="w-4 h-4" />
+                        </div>
+                        <span className="font-black text-foreground">{getLeadCount(project.id)}</span>
+                      </div>
                     </TableCell>
                     <TableCell className="py-4">
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">

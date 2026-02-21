@@ -72,7 +72,7 @@ export default function HeroAuthority({
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 pt-4">
-            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
               <a href={primaryCTAHref} className="col-span-1 px-10 py-5 bg-white text-black font-black rounded-none hover:bg-white/90 transition-all shadow-2xl uppercase tracking-[0.2em] text-xs flex items-center justify-center text-center">
                 {primaryCTA}
               </a>
@@ -113,7 +113,7 @@ export default function HeroAuthority({
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
                 <a href={primaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-8 py-5 bg-primary text-primary-foreground font-black rounded-none hover:translate-x-1 hover:-translate-y-1 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] uppercase tracking-tighter text-[10px] sm:text-sm text-center">
                   {primaryCTA}
                 </a>
@@ -172,7 +172,7 @@ export default function HeroAuthority({
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 justify-center lg:justify-start">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
                 <a href={primaryCTAHref} className="px-4 sm:px-10 py-5 bg-cyan-500 text-white font-black rounded-full hover:bg-cyan-600 hover:scale-105 transition-all shadow-[0_20px_40px_-10px_rgba(6,182,212,0.3)] uppercase tracking-widest text-[10px] sm:text-xs flex items-center justify-center text-center">
                   {primaryCTA}
                 </a>
@@ -265,7 +265,7 @@ export default function HeroAuthority({
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
               <a href={primaryCTAHref} className="px-4 sm:px-12 py-5 bg-primary text-primary-foreground font-light rounded-none hover:bg-primary/90 hover:tracking-[0.4em] transition-all duration-500 uppercase tracking-[0.3em] text-[10px] flex items-center justify-center text-center">
                 {primaryCTA}
               </a>
@@ -315,7 +315,7 @@ export default function HeroAuthority({
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <a href={primaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-10 py-5 bg-primary text-primary-foreground font-black rounded-sm hover:translate-y-[-2px] hover:shadow-xl transition-all shadow-lg text-[10px] sm:text-xs uppercase tracking-widest text-center">
                   {primaryCTA}
                 </a>
@@ -388,7 +388,7 @@ export default function HeroAuthority({
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 pt-2">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
                 <a href={primaryCTAHref} className="inline-flex items-center justify-center gap-2 px-4 sm:px-8 py-4 bg-primary text-primary-foreground font-black rounded-lg hover:scale-105 transition-all shadow-xl text-[10px] sm:text-sm uppercase tracking-tight text-center">
                   <DynamicIcon name="Phone" className="w-4 h-4 shrink-0" />
                   <span className="truncate">{primaryCTA}</span>
@@ -455,7 +455,7 @@ export default function HeroAuthority({
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <a href={primaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-10 py-5 bg-primary text-primary-foreground font-black rounded-sm hover:scale-105 transition-all shadow-2xl text-[10px] sm:text-sm uppercase tracking-widest text-center">
                   {primaryCTA}
                 </a>
@@ -520,7 +520,7 @@ export default function HeroAuthority({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <a href={primaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-10 py-5 bg-primary text-primary-foreground font-black rounded-full hover:scale-105 transition-all shadow-xl uppercase tracking-widest text-[10px] sm:text-xs text-center">
                   {primaryCTA}
                 </a>
@@ -601,7 +601,7 @@ export default function HeroAuthority({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2 lg:pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 lg:pt-4">
             <a
               href={primaryCTAHref}
               className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[52px] px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-sm hover:opacity-90 transition-opacity duration-200 shadow-md text-center touch-manipulation uppercase tracking-widest text-[10px] sm:text-xs"

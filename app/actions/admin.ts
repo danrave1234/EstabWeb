@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { getSectionKey } from '@/lib/utils/config-mapping'
 import { generateSubdomain } from '@/lib/codes'
 import { deepMerge } from '@/lib/utils'
+import { addSubdomainToVercel, addDomainToVercel } from '@/lib/utils/vercel-domains'
 
 const processChangeRequestSchema = z.object({
   requestId: z.string().uuid(),
@@ -86,6 +87,20 @@ export async function processChangeRequest(
 
     if (newBrandName && newBrandName !== oldBrandName) {
       updatePayload.subdomain = generateSubdomain(newBrandName)
+    }
+
+    // Register subdomain/custom_domain with Vercel automatically (fire-and-forget)
+    const subdomainToRegister = updatePayload.subdomain || project.subdomain
+    const customDomainToRegister = updatePayload.custom_domain || project.custom_domain
+    if (subdomainToRegister) {
+      addSubdomainToVercel(subdomainToRegister).catch((e) =>
+        console.error('[admin] Vercel subdomain registration error:', e)
+      )
+    }
+    if (customDomainToRegister) {
+      addDomainToVercel(customDomainToRegister).catch((e) =>
+        console.error('[admin] Vercel custom domain registration error:', e)
+      )
     }
 
     // Update project config and clear draft

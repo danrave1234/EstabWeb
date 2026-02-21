@@ -46,7 +46,7 @@ export default function HeroCleaning({
             </p>
           </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 w-full max-w-md px-4 sm:px-0">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-md px-4 sm:px-0">
               <a
                 href={primaryCTAHref}
                 className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[56px] px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-full hover:scale-105 transition-transform shadow-xl text-[10px] sm:text-base touch-manipulation text-center"
@@ -67,7 +67,7 @@ export default function HeroCleaning({
             <div className="absolute inset-0 bg-primary/5 rounded-[3rem] rotate-2 scale-105" />
             <div className="relative">
               {hasSplit ? (
-                <div className="grid grid-cols-2 gap-4 rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-background bg-muted/20">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-background bg-muted/20">
                   <div className="relative aspect-[4/3] bg-muted">
                     <Image
                       src={beforeImageUrl!}

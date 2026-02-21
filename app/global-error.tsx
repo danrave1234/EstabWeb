@@ -19,7 +19,7 @@ export default function GlobalError({
       <body className="antialiased flex items-center justify-center min-h-screen bg-background p-4 text-center">
         <div className="space-y-6">
           <div className="text-6xl mb-4">⚠️</div>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground">Critical Error</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground">Critical Error</h1>
           <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
             A critical system error has occurred. We've been notified and are looking into it.
           </p>

@@ -1,5 +1,8 @@
+"use client";
+
 import type { FooterSocial } from "./LeadMagnetFooter";
 import Image from "next/image";
+import { trackLead } from "@/components/shared/Analytics";
 
 type SimpleFooterProps = {
   brandName: string;
@@ -106,10 +109,10 @@ export default function SimpleFooter({
                   {contactLabel}
                 </h3>
                 <div className="space-y-3 text-sm text-muted-foreground">
-                  <a href={`tel:${phoneHref}`} className="block hover:text-foreground transition-colors">
+                  <a href={`tel:${phoneHref}`} onClick={() => trackLead('call')} className="block hover:text-foreground transition-colors">
                     {contact.phone}
                   </a>
-                  <a href={`mailto:${contact.email}`} className="block hover:text-foreground transition-colors">
+                  <a href={`mailto:${contact.email}`} onClick={() => trackLead('form')} className="block hover:text-foreground transition-colors">
                     {contact.email}
                   </a>
                   <p className="whitespace-pre-line leading-relaxed">{contact.address}</p>

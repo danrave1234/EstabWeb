@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { trackLead } from "@/components/shared/Analytics";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon, ClockIcon } from "@phosphor-icons/react";
 
 export type ContactWithMapProps = {
@@ -39,6 +40,7 @@ export default function ContactWithMap({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    trackLead('form', undefined, { name: formData.name, email: formData.email });
     setIsSubmitted(true);
     setTimeout(() => {
       router.push("/success");
@@ -100,11 +102,11 @@ export default function ContactWithMap({
               <div className="space-y-4">
                 <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Contact Details</h4>
                 <div className="space-y-3">
-                  <a href={`tel:${phone}`} className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
+                  <a href={`tel:${phone}`} onClick={() => trackLead('call')} className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
                     <PhoneIcon weight="duotone" className="w-4 h-4" />
                     <span className="text-sm font-medium">{phone}</span>
                   </a>
-                  <a href={`mailto:${email}`} className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
+                  <a href={`mailto:${email}`} onClick={() => trackLead('form')} className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
                     <EnvelopeIcon weight="duotone" className="w-4 h-4" />
                     <span className="text-sm font-medium">{email}</span>
                   </a>

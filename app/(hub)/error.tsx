@@ -28,7 +28,7 @@ export default function HubError({
           </div>
           
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">Something went wrong!</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Something went wrong!</h2>
             <p className="text-muted-foreground">
               We've encountered an unexpected error. Our team has been notified and we're working to fix it.
             </p>

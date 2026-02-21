@@ -33,7 +33,7 @@ export default function HeroEmergency({
             <p className="text-sm sm:text-xl text-muted-foreground font-medium order-2 lg:order-none lg:mb-0">
               {subtitle}
             </p>
-            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
               <a
                 href={primaryCTAHref}
                 className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] gap-2 px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 transition-opacity text-[10px] sm:text-lg shadow-lg touch-manipulation text-center"

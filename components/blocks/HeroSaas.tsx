@@ -37,7 +37,7 @@ export default function HeroSaas({
               <p className="text-sm sm:text-lg md:text-xl text-muted-foreground order-2 lg:order-none lg:mb-0 text-center lg:text-left max-w-xl lg:max-w-none leading-relaxed">
                 {subtitle}
               </p>
-              <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:gap-4 justify-center lg:justify-start order-4 lg:order-none">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start order-4 lg:order-none">
                 <a
                   href={primaryCTAHref}
                   className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 transition-opacity shadow-lg touch-manipulation text-[10px] sm:text-base text-center"

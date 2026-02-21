@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
@@ -27,9 +27,10 @@ export function AuthProvider({
 }) {
   const [user, setUser] = useState<User | null>(initialUser);
   const [loading, setLoading] = useState(!initialUser);
-  const supabase = createClient();
+  const supabaseRef = useRef(createClient());
 
   useEffect(() => {
+    const supabase = supabaseRef.current;
     // If we don't have an initial user, fetch it once
     if (!initialUser) {
       supabase.auth.getUser().then(({ data: { user } }) => {
@@ -54,7 +55,7 @@ export function AuthProvider({
     return () => {
       subscription.unsubscribe();
     };
-  }, [initialUser, supabase]);
+  }, [initialUser]);
 
   return (
     <AuthContext.Provider value={{ user, loading, setUser }}>

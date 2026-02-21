@@ -33,7 +33,7 @@ export default function ACTypesGrid({
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">{subtitle}</p>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
           {items.map((item, index) => {
             const hasImage = Boolean(item.imageUrl);
             return (

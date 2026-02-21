@@ -76,19 +76,19 @@ export default async function PricingPage() {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full translate-x-1/2 -translate-y-1/2 blur-3xl" />
                 
                 <div className="relative z-10">
-                  <div className="grid grid-cols-2 gap-3 mb-6">
-                    <div className="col-span-2 sm:col-span-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                    <div className="col-span-1">
                       <h3 className="text-lg lg:text-xl font-black mb-1">{plan.name}</h3>
                       <p className="text-[10px] text-muted-foreground">{plan.description}</p>
                     </div>
-                    <div className="col-span-2 sm:col-span-1 flex items-start justify-end">
+                    <div className="col-span-1 flex items-start justify-end">
                       <div className="px-2.5 py-1 bg-primary text-primary-foreground text-[8px] font-black rounded-full uppercase tracking-widest shrink-0">
                         Recommended
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 mb-6">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 mb-6">
                     <div className="p-3 bg-muted/20 rounded-xl border border-border/50">
                       <div className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Initial Setup</div>
                       <div className="text-xl lg:text-3xl font-black text-primary tracking-tighter">{plan.setupPrice}</div>
@@ -104,7 +104,7 @@ export default async function PricingPage() {
 
                   <div className="space-y-4">
                     <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground pb-1.5 border-b border-border">Included Features</div>
-                    <ul className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
                       {plan.features.map((feature) => (
                         <li key={feature} className="flex gap-2 items-center text-[13px]">
                           <CheckCircleIcon weight="duotone" className="w-4 h-4 text-primary shrink-0" />

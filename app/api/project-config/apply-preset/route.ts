@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { generateSubdomain } from '@/lib/codes'
 import { GENRE_PRESETS } from '@/config/presets'
 import { deepMerge } from '@/lib/utils'
+import { addSubdomainToVercel } from '@/lib/utils/vercel-domains'
 
 export async function POST(req: Request) {
   try {
@@ -102,6 +103,14 @@ export async function POST(req: Request) {
   if (!project.subdomain) {
     const brandName = (next as any)?.brand?.name
     updatePayload.subdomain = generateSubdomain(brandName || user.email || 'user')
+  }
+
+  // Register subdomain with Vercel automatically (fire-and-forget, non-blocking)
+  const finalSubdomain = updatePayload.subdomain || project.subdomain
+  if (finalSubdomain) {
+    addSubdomainToVercel(finalSubdomain).catch((e) =>
+      console.error('[apply-preset] Vercel domain registration error:', e)
+    )
   }
 
   const { error: upErr } = await supabase

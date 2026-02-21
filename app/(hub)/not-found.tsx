@@ -21,7 +21,7 @@ export default function HubNotFound() {
           </div>
           
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">Page Not Found</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Page Not Found</h2>
             <p className="text-muted-foreground">
               Oops! The page you're looking for seems to have vanished into the digital void.
             </p>

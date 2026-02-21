@@ -388,6 +388,10 @@
     ]
   },
   "typographyStyle": "elegant",
+  "analytics": {
+    "ga4Id": "",
+    "pixelId": ""
+  },
   "legal": {
     "privacypolicy": {
       "title": "Privacy Policy",

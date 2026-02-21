@@ -1,52 +1,31 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import SiteTemplate from "@/components/shared/SiteTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
 import { getSiteConfigWithProject } from "@/lib/utils/site-config";
-import { canUseMultiPage, getMaxPagesForProject, getPlanLimits, getPageBySlug, isLegalPageSlug, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
+import {
+  canUseMultiPage,
+  getMaxPagesForProject,
+  getPageBySlug,
+  getPlanLimits,
+  isLegalPageSlug,
+  normalizePagesWithDefaults,
+} from "@/lib/utils/site-pages";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 function pickFirstText(...values: Array<unknown>): string {
-  const found = values.find((value) => typeof value === "string" && value.trim().length > 0);
+  const found = values.find((v) => typeof v === "string" && v.trim().length > 0);
   return typeof found === "string" ? found.trim() : "";
 }
 
 function buildKeywords(values: Array<unknown>): string[] {
   const list = values
-    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-    .map((value) => value.trim());
+    .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+    .map((v) => v.trim());
   return Array.from(new Set(list)).slice(0, 12);
-}
-
-async function resolvePageData(domain: string, slug: string, heads: Headers) {
-  const { config, project } = await getSiteConfigWithProject(domain, heads);
-  if (!config) return { config: null, page: null, project: null };
-
-  if (isLegalPageSlug(slug)) return { config, page: null, project };
-
-  const pages = normalizePagesWithDefaults(config?.pages);
-  if (!canUseMultiPage(project)) return { config, page: null, project };
-
-  const planLimits = await getPlanLimits();
-  const maxPages = getMaxPagesForProject(project, planLimits);
-  const paidPages = pages.filter((page) => page.slug && !isLegalPageSlug(page.slug)).slice(0, maxPages);
-  const page = getPageBySlug(paidPages, slug);
-
-  if (!page) {
-    const legacyMatch = slug.match(/^page-(\d+)$/i);
-    if (legacyMatch) {
-      const index = Number(legacyMatch[1]) - 1;
-      const legacyPage = Number.isFinite(index) ? paidPages[index] : undefined;
-      if (legacyPage && legacyPage.slug && legacyPage.slug !== slug) {
-        return { config, page: legacyPage, project, redirectSlug: legacyPage.slug };
-      }
-    }
-  }
-
-  return { config, page, project };
 }
 
 export async function generateMetadata({
@@ -57,38 +36,28 @@ export async function generateMetadata({
   const { domain, slug } = await params;
   const heads = await headers();
   const host = heads.get("host") || domain;
+  const { config } = await getSiteConfigWithProject(domain, heads);
 
-  const { config, page, redirectSlug } = await resolvePageData(domain, slug, heads);
-  if (!config || !page) {
-    notFound();
-  }
-
-  const seo = page.seo || config?.seo || {};
+  const pages = normalizePagesWithDefaults(config?.pages);
+  const page = getPageBySlug(pages, slug);
+  const seo = page?.seo || config?.seo || {};
   const brand = config?.brand || {};
   const hero = config?.hero || {};
   const features = config?.features || {};
-  const practiceAreas = config?.practiceAreas || {};
-  const contact = config?.contact || {};
-  const theme = config?.theme || "";
 
-  const pageLabel = page?.label || (page?.slug ? page.slug.replace(/-/g, " ") : "");
-  const baseTitle = pickFirstText(seo.title, pageLabel, hero.title, features.title, practiceAreas.title);
+  const pageLabel = page?.label || slug.replace(/-/g, " ");
+  const baseTitle = pickFirstText(seo.title, pageLabel, hero.title, features.title);
   const brandName = brand.name || domain;
   const title = baseTitle
     ? baseTitle.includes(brandName) ? baseTitle : `${baseTitle} | ${brandName}`
-    : `${brandName} | Professional Website`;
-  const description = pickFirstText(
-    seo.description,
-    hero.subtitle,
-    features.subtitle,
-    practiceAreas.subtitle,
-    contact.tagline,
-    contact.subtitle,
-    contact.formHeading
-  ) || `Welcome to ${brandName}. Built with EstabWeb.`;
-  const keywords = Array.isArray(seo.keywords) && seo.keywords.length > 0
-    ? seo.keywords
-    : buildKeywords([brand.name, pageLabel, theme, hero.benefitText, hero.badgeText, features.title, practiceAreas.title]);
+    : `${pageLabel} | ${brandName}`;
+  const description =
+    pickFirstText(seo.description, hero.subtitle, features.subtitle) ||
+    `${pageLabel} — ${brandName}. Built with EstabWeb.`;
+  const keywords =
+    Array.isArray(seo.keywords) && seo.keywords.length > 0
+      ? seo.keywords
+      : buildKeywords([brand.name, pageLabel, config?.theme, hero.benefitText, features.title]);
   const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
 
   return {
@@ -115,12 +84,12 @@ export async function generateMetadata({
     },
     metadataBase: new URL(`https://${host}`),
     alternates: {
-      canonical: `/${page.slug}`,
+      canonical: `/${slug}`,
     },
   };
 }
 
-export default async function SitePage({
+export default async function SubPage({
   params,
 }: {
   params: Promise<{ domain: string; slug: string }>;
@@ -129,19 +98,48 @@ export default async function SitePage({
   const heads = await headers();
   const preview = heads.get("x-preview-mode") === "true";
 
-  const { config, page, redirectSlug } = await resolvePageData(domain, slug, heads);
-  if (!config || !page) {
+  // Legal pages have their own dedicated routes — never handle them here
+  if (isLegalPageSlug(slug)) {
     notFound();
   }
 
-  if (redirectSlug) {
-    redirect(`/${redirectSlug}`);
+  const { config: initialData, project } = await getSiteConfigWithProject(domain, heads);
+
+  if (!initialData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <p className="text-muted-foreground text-sm sm:text-base">
+          Configuration not found. Please check your domain.
+        </p>
+      </div>
+    );
+  }
+
+  // Entitlement check — free projects cannot access subpages
+  if (!canUseMultiPage(project)) {
+    notFound();
+  }
+
+  const planLimits = await getPlanLimits();
+  const maxPages = getMaxPagesForProject(project, planLimits);
+  const pages = normalizePagesWithDefaults(initialData?.pages);
+
+  // Only expose pages within the plan limit (exclude home slug "")
+  const allowedPages = pages
+    .filter((p) => p.slug && !isLegalPageSlug(p.slug))
+    .slice(0, maxPages);
+
+  const page = allowedPages.find((p) => p.slug === slug.toLowerCase());
+
+  if (!page) {
+    notFound();
   }
 
   const dataForPage = {
-    ...config,
-    activeSections: page.activeSections ?? config.activeSections,
-    seo: page.seo ?? config.seo,
+    ...initialData,
+    projectId: project?.id,
+    activeSections: page.activeSections ?? initialData.activeSections,
+    seo: page.seo ?? initialData.seo,
   };
 
   if (preview) {

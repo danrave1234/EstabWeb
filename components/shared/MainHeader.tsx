@@ -262,7 +262,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
             ))}
             <div className="h-px bg-border my-2" />
             {loading ? (
-              <div className="grid grid-cols-2 gap-3 mt-2">
+              <div className="flex flex-col xs:flex-row gap-3 mt-2">
                 <div className="h-11 bg-muted animate-pulse rounded-xl" />
                 <div className="h-11 bg-muted animate-pulse rounded-xl" />
               </div>
@@ -306,7 +306,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
                 </button>
               </>
             ) : (
-              <div className="grid grid-cols-2 gap-3 mt-2">
+              <div className="flex flex-col xs:flex-row gap-3 mt-2">
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}

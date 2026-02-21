@@ -60,7 +60,7 @@ export default function HeroDentist({
               <p className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-xl mb-6 sm:mb-10 leading-relaxed">
                 {sub}
               </p>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <a
                   href={primaryCTAHref}
                   className="inline-flex items-center justify-center min-h-[48px] sm:min-h-[56px] px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-xl sm:rounded-2xl hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/20 text-[10px] sm:text-base touch-manipulation text-center"

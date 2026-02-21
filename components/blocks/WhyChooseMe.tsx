@@ -31,7 +31,7 @@ export default function WhyChooseMe({
   return (
     <section className="py-16 sm:py-24 bg-background reveal overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Agent Image */}
           <div className="relative group">
             <div className="absolute inset-0 bg-primary/10 rounded-3xl -rotate-3 group-hover:rotate-0 transition-transform duration-500" />
@@ -45,7 +45,7 @@ export default function WhyChooseMe({
               />
             </div>
             {/* License Badge */}
-            <div className="absolute -bottom-6 -right-6 bg-primary p-6 rounded-2xl shadow-2xl z-10 border-4 border-background animate-bounce-slow">
+            <div className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 bg-primary p-3 sm:p-6 rounded-xl sm:rounded-2xl shadow-2xl z-10 border-4 border-background animate-bounce-slow">
               <p className="text-[10px] font-bold uppercase tracking-widest text-primary-foreground/70 mb-1">{licensedBrokerLabel}</p>
               <p className="text-sm font-black text-primary-foreground">{licenseNumber}</p>
             </div>
@@ -68,7 +68,7 @@ export default function WhyChooseMe({
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
               {trustSignals.map((signal, index) => (
                 <div key={index} className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-primary/5 rounded-full overflow-hidden flex items-center justify-center shrink-0">

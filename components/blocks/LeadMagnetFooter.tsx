@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { PhoneIcon, MapPinIcon, EnvelopeIcon } from "@phosphor-icons/react";
 import { SocialIcon } from "@/components/shared/SocialIcon";
+import { trackLead } from "@/components/shared/Analytics";
 
 export type FooterSocial = {
   facebook?: string;
@@ -65,6 +66,7 @@ export default function LeadMagnetFooter({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitted(true);
+    trackLead('form', undefined, { name: formData.name, email: formData.email });
     setTimeout(() => {
       setIsSubmitted(false);
       setFormData({ name: "", email: "" });
@@ -209,7 +211,11 @@ export default function LeadMagnetFooter({
               </h3>
 
               <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-6">
-                <a href={`tel:${phoneHref}`} className="group flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-xl bg-muted/20 border border-border hover:border-primary transition-all">
+                <a 
+                  href={`tel:${phoneHref}`} 
+                  onClick={() => trackLead('call')}
+                  className="group flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-xl bg-muted/20 border border-border hover:border-primary transition-all"
+                >
                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                     <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>

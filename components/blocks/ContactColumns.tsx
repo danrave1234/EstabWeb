@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { trackLead } from "@/components/shared/Analytics";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon, ChatCircleDotsIcon, GlobeIcon, ClockIcon } from "@phosphor-icons/react";
 
 export type ContactColumnsProps = {
@@ -35,6 +36,7 @@ export default function ContactColumns({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    trackLead('form', undefined, { name: formData.name, email: formData.email });
     setIsSubmitted(true);
     setTimeout(() => {
       router.push("/success");
@@ -49,14 +51,14 @@ export default function ContactColumns({
           <p className="text-lg text-muted-foreground">{subtitle}</p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 mb-16">
           <div className="bg-background p-4 sm:p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
             <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 sm:mb-6">
               <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
             </div>
             <h3 className="font-bold mb-1 sm:mb-2 text-[10px] sm:text-base">Call Us</h3>
             <p className="hidden sm:block text-xs text-muted-foreground mb-4">Mon-Fri from 8am to 5pm.</p>
-            <a href={`tel:${phone}`} className="text-primary font-bold hover:underline text-[10px] sm:text-sm">{phone}</a>
+            <a href={`tel:${phone}`} onClick={() => trackLead('call')} className="text-primary font-bold hover:underline text-[10px] sm:text-sm">{phone}</a>
           </div>
 
           <div className="bg-background p-4 sm:p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
@@ -65,7 +67,7 @@ export default function ContactColumns({
             </div>
             <h3 className="font-bold mb-1 sm:mb-2 text-[10px] sm:text-base">Email Us</h3>
             <p className="hidden sm:block text-xs text-muted-foreground mb-4">Our team is here to help.</p>
-            <a href={`mailto:${email}`} className="text-primary font-bold hover:underline text-[10px] sm:text-sm break-all">{email}</a>
+            <a href={`mailto:${email}`} onClick={() => trackLead('form')} className="text-primary font-bold hover:underline text-[10px] sm:text-sm break-all">{email}</a>
           </div>
 
           <div className="bg-background p-4 sm:p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
@@ -84,8 +86,8 @@ export default function ContactColumns({
             <h3 className="font-bold mb-1 sm:mb-2 text-[10px] sm:text-base">Chat</h3>
             <p className="hidden sm:block text-xs text-muted-foreground mb-4">Available on Messenger/Viber.</p>
             <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
-               {messenger && <a href={messenger} target="_blank" className="text-primary font-bold hover:underline text-[10px] sm:text-sm">Messenger</a>}
-               {whatsapp && <a href={`https://wa.me/${whatsapp.replace(/\+/g, '')}`} target="_blank" className="text-primary font-bold hover:underline text-[10px] sm:text-sm">WhatsApp</a>}
+               {messenger && <a href={messenger} target="_blank" onClick={() => trackLead('messenger')} className="text-primary font-bold hover:underline text-[10px] sm:text-sm">Messenger</a>}
+               {whatsapp && <a href={`https://wa.me/${whatsapp.replace(/\+/g, '')}`} target="_blank" onClick={() => trackLead('messenger')} className="text-primary font-bold hover:underline text-[10px] sm:text-sm">WhatsApp</a>}
                {!messenger && !whatsapp && <span className="text-muted-foreground text-[10px] sm:text-sm">Online</span>}
             </div>
           </div>
