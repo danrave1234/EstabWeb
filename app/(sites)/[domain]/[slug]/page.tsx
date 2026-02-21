@@ -46,11 +46,13 @@ export async function generateMetadata({
   const features = config?.features || {};
 
   const pageLabel = page?.label || slug.replace(/-/g, " ");
-  const baseTitle = pickFirstText(seo.title, pageLabel, hero.title, features.title);
   const brandName = brand.name || domain;
-  const title = baseTitle
-    ? baseTitle.includes(brandName) ? baseTitle : `${baseTitle} | ${brandName}`
-    : `${pageLabel} | ${brandName}`;
+  const customSeoTitle = pickFirstText(seo.title);
+  const isGenericSeoTitle = !customSeoTitle || /^page\s+\d+$/i.test(customSeoTitle.trim());
+  const baseTitle = isGenericSeoTitle ? pageLabel : customSeoTitle;
+  const title = baseTitle.includes(brandName)
+    ? baseTitle
+    : `${baseTitle} | ${brandName}`;
   const description =
     pickFirstText(seo.description, hero.subtitle, features.subtitle) ||
     `${pageLabel} — ${brandName}. Built with EstabWeb.`;
