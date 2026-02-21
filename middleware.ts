@@ -25,12 +25,13 @@ export async function middleware(request: NextRequest) {
 
   const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com').toLowerCase()
   const isDevHost = ['localhost', '127.0.0.1'].includes(hostname)
-  const isRoot = hostname === ROOT_DOMAIN || hostname === `www.${ROOT_DOMAIN}` || isDevHost
+  const isStagingHost = hostname === `staging.${ROOT_DOMAIN}`
+  const isRoot = hostname === ROOT_DOMAIN || hostname === `www.${ROOT_DOMAIN}` || isDevHost || isStagingHost
   const isAdmin = hostname === `admin.${ROOT_DOMAIN}` || hostname.startsWith('admin.')
 
   // On production root domain: redirect /subdomain to subdomain.estabweb.com so project sites use subdomains
   const RESERVED_ROOT_PATHS = ['api', 'admin', 'login', 'dashboard', 'onboarding', 'auth', 'preview', 'pricing', 'terms', 'privacy', 'cookies', 'contact', 'success']
-  if (!isDevHost && isRoot && url.pathname !== '/') {
+  if (!isDevHost && !isStagingHost && isRoot && url.pathname !== '/') {
     const segment = url.pathname.replace(/^\/|\/$/g, '').split('/')[0]?.toLowerCase()
     if (segment && !RESERVED_ROOT_PATHS.includes(segment) && !segment.includes('.')) {
       const protocol = request.headers.get('x-forwarded-proto') === 'https' ? 'https' : (request.url.startsWith('https') ? 'https' : 'http')

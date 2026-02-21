@@ -143,13 +143,11 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const [dropSectionIndex, setDropSectionIndex] = React.useState<number | null>(null)
   const [addSectionOpen, setAddSectionOpen] = React.useState(false)
   const [sectionSearchQuery, setSectionSearchQuery] = React.useState("")
-  const [activeTab, setActiveTab] = React.useState<"content" | "design" | "advanced" | "analytics">("content")
+  const [activeTab, setActiveTab] = React.useState<"content" | "design" | "advanced">("content")
   const [selectedPageIndex, setSelectedPageIndex] = React.useState(0)
   const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>({})
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false)
   const [globalSettingsModalTab, setGlobalSettingsModalTab] = React.useState<"theme" | "sections">("theme")
-  const [leads, setLeads] = React.useState<any[]>([])
-  const [leadsLoading, setLeadsLoading] = React.useState(false)
   const colorPaletteRef = React.useRef<HTMLButtonElement>(null)
   const typographyRef = React.useRef<HTMLButtonElement>(null)
   const colorPaletteRectRef = React.useRef<DOMRect | null>(null)
@@ -218,30 +216,6 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
     })
   }, [])
 
-  React.useEffect(() => {
-    if (activeTab === 'analytics' && project?.id) {
-      const fetchLeads = async () => {
-        setLeadsLoading(true)
-        try {
-          const supabase = createClient()
-          const { data, error } = await supabase
-            .from('project_leads')
-            .select('*')
-            .eq('project_id', project.id)
-            .order('created_at', { ascending: false })
-          
-          if (error) throw error
-          setLeads(data || [])
-        } catch (err) {
-          console.error('Error fetching leads:', err)
-          toast.error('Failed to load analytics data')
-        } finally {
-          setLeadsLoading(false)
-        }
-      }
-      fetchLeads()
-    }
-  }, [activeTab, project?.id])
 
   React.useEffect(() => {
     const close = (e: MouseEvent) => {
@@ -884,7 +858,6 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
           {[
             { id: "content", label: "Content", icon: FileText },
             { id: "design", label: "Design", icon: Palette },
-            { id: "analytics", label: "Analytics", icon: BarChart3 },
             { id: "advanced", label: "Advanced", icon: Settings },
           ].map((tab) => (
             <button
@@ -1525,99 +1498,6 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
             </div>
           )}
 
-          {activeTab === "analytics" && (
-            <div className="space-y-6">
-              <div className="px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
-                Lead Performance
-              </div>
-              
-              {leadsLoading ? (
-                <div className="flex flex-col items-center justify-center py-12 gap-3 opacity-50">
-                  <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                  <p className="text-[10px] font-black uppercase tracking-widest">Loading stats...</p>
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { label: 'Calls', icon: Phone, color: 'text-green-600', bg: 'bg-green-500/10', count: leads.filter(l => l.type === 'call').length },
-                      { label: 'Forms', icon: FormInput, color: 'text-blue-600', bg: 'bg-blue-500/10', count: leads.filter(l => l.type === 'form').length },
-                      { label: 'Messenger', icon: MessageSquare, color: 'text-sky-600', bg: 'bg-sky-500/10', count: leads.filter(l => l.type === 'messenger').length },
-                      { label: 'Viber', icon: MessageSquare, color: 'text-indigo-600', bg: 'bg-indigo-500/10', count: leads.filter(l => l.type === 'viber').length },
-                    ].map((stat) => (
-                      <div key={stat.label} className="p-4 rounded-2xl bg-card border border-border shadow-sm flex flex-col gap-2">
-                        <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center ${stat.color}`}>
-                          <stat.icon className="w-4 h-4" />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-2xl font-black text-foreground">{stat.count}</span>
-                          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="space-y-3 pt-2">
-                    <div className="px-3 py-1 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
-                      Recent Activity
-                    </div>
-                    {leads.length === 0 ? (
-                      <div className="px-4 py-8 text-center bg-muted/30 rounded-2xl border border-dashed border-border">
-                        <p className="text-xs font-medium text-muted-foreground">No leads recorded yet.</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {leads.slice(0, 20).map((lead) => {
-                          const meta = lead.metadata || {}
-                          const contactName = meta.name
-                          const contactEmail = meta.email
-                          const referrer = meta.referrer
-                          const utmSource = meta.utm_source
-                          let source = utmSource || null
-                          if (!source && referrer) {
-                            try { source = new URL(referrer).hostname } catch { source = referrer }
-                          }
-                          return (
-                            <div key={lead.id} className="p-3 bg-card border border-border rounded-xl shadow-sm space-y-1.5">
-                              <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                                  lead.type === 'call' ? 'bg-green-500/10 text-green-600' :
-                                  lead.type === 'form' ? 'bg-blue-500/10 text-blue-600' :
-                                  lead.type === 'messenger' ? 'bg-sky-500/10 text-sky-600' :
-                                  'bg-indigo-500/10 text-indigo-600'
-                                }`}>
-                                  {lead.type === 'call' && <Phone className="w-3.5 h-3.5" />}
-                                  {lead.type === 'form' && <FormInput className="w-3.5 h-3.5" />}
-                                  {(lead.type === 'messenger' || lead.type === 'viber') && <MessageSquare className="w-3.5 h-3.5" />}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-bold capitalize">
-                                    {contactName || `${lead.type} lead`}
-                                  </p>
-                                  <p className="text-[9px] text-muted-foreground">{new Date(lead.created_at).toLocaleString()}</p>
-                                </div>
-                                <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 bg-muted rounded-full shrink-0 capitalize">{lead.type}</span>
-                              </div>
-                              {(contactEmail || source) && (
-                                <div className="flex flex-wrap gap-1.5 pl-11">
-                                  {contactEmail && (
-                                    <span className="text-[9px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full truncate max-w-[160px]">{contactEmail}</span>
-                                  )}
-                                  {source && (
-                                    <span className="text-[9px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">via {source}</span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
         </div>
 
       </aside>

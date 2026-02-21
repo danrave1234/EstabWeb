@@ -17,7 +17,14 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   admin_granted: { label: "Admin Granted", color: "text-purple-600 bg-purple-500/10 border-purple-500/20" },
 }
 
-export default function UpgradeButton({ projectId, subscriptionStatus = "free", variant = "inline" }: UpgradeButtonProps) {
+const STATUS_BADGE: Record<string, { label: string; color: string }> = {
+  free: { label: "Free", color: "text-amber-600 bg-amber-500/10 border border-amber-500/20" },
+  trial: { label: "Trial", color: "text-emerald-600 bg-emerald-500/10 border border-emerald-500/20" },
+  active: { label: "Pro", color: "text-emerald-600 bg-emerald-500/10 border border-emerald-500/20" },
+  admin_granted: { label: "Pro", color: "text-purple-600 bg-purple-500/10 border border-purple-500/20" },
+}
+
+export default function UpgradeButton({ projectId, subscriptionStatus = "free", variant = "inline" }: UpgradeButtonProps & { variant?: "sidebar" | "inline" | "badge" }) {
   const [loading, setLoading] = useState(false)
   const status = ((subscriptionStatus || "free").toLowerCase() as keyof typeof STATUS_LABELS)
   const currentStatus = STATUS_LABELS[status] || STATUS_LABELS.free
@@ -46,6 +53,16 @@ export default function UpgradeButton({ projectId, subscriptionStatus = "free", 
     } finally {
       setLoading(false)
     }
+  }
+
+  if (variant === "badge") {
+    const badge = STATUS_BADGE[status] || STATUS_BADGE.free
+    return (
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${badge.color}`}>
+        <Zap className="w-2.5 h-2.5" />
+        {badge.label}
+      </span>
+    )
   }
 
   if (variant === "inline") {

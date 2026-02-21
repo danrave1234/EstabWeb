@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Layout, Globe, ChevronRight, ExternalLink, Sparkles, Plus } from 'lucide-react'
+import { Layout, Globe, ChevronRight, ExternalLink, Sparkles, Plus, BarChart3 } from 'lucide-react'
 import UpgradeButton from '@/components/dashboard/UpgradeButton'
 import ClientDashboardPreview from '@/components/dashboard/ClientDashboardPreview'
 import MainHeader from '@/components/shared/MainHeader'
@@ -171,11 +171,19 @@ export default async function DashboardPage({
             return (
               <div key={project.id} className="bg-card border border-border rounded-2xl p-4 shadow-sm space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                    <Globe className="w-6 h-6" />
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary overflow-hidden">
+                    {(project.current_config as any)?.brand?.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={(project.current_config as any).brand.logoUrl} alt={siteName} className="w-full h-full object-contain" />
+                    ) : (
+                      <Globe className="w-6 h-6" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-foreground truncate">{siteName}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-foreground truncate">{siteName}</h3>
+                      <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} variant="badge" />
+                    </div>
                     <p className="text-[10px] text-muted-foreground truncate">{domain}</p>
                   </div>
                   <div className="text-right">
@@ -186,24 +194,9 @@ export default async function DashboardPage({
                 
                 <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground pt-2 border-t border-border">
                   <span>Created: {new Date(project.created_at).toLocaleDateString()}</span>
-                  <div className="flex items-center gap-2">
-                    <a 
-                      href={previewUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="p-2 bg-muted rounded-lg text-foreground"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 pt-2">
-                  <UpgradeButton 
-                    projectId={project.id} 
-                    subscriptionStatus={project.subscription_status}
-                    variant="inline" 
-                  />
                   <Link
                     href={`/dashboard?projectId=${project.id}`}
                     className="flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
@@ -211,6 +204,24 @@ export default async function DashboardPage({
                     Edit Site
                     <ChevronRight className="w-3 h-3" />
                   </Link>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Link
+                    href={`/dashboard/analytics?projectId=${project.id}`}
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-muted hover:bg-muted/80 text-foreground rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex-1"
+                  >
+                    <BarChart3 className="w-3.5 h-3.5" />
+                    Analytics
+                  </Link>
+                  <a 
+                    href={previewUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-3 bg-muted hover:bg-muted/80 rounded-xl text-foreground transition-colors"
+                    title="Visit Live Site"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
                 </div>
               </div>
             )
@@ -242,12 +253,19 @@ export default async function DashboardPage({
                   <TableRow key={project.id} className="group transition-colors">
                     <TableCell className="py-4">
                       <Link href={`/dashboard?projectId=${project.id}`} className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                          <Globe className="w-5 h-5" />
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors overflow-hidden">
+                          {(project.current_config as any)?.brand?.logoUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={(project.current_config as any).brand.logoUrl} alt={siteName} className="w-full h-full object-contain" />
+                          ) : (
+                            <Globe className="w-5 h-5" />
+                          )}
                         </div>
                         <div className="flex flex-col">
-                          <span className="font-bold text-foreground group-hover:text-primary transition-colors">{siteName}</span>
-                          <span className="text-[10px] text-muted-foreground truncate max-w-[200px]">{project.id}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-foreground group-hover:text-primary transition-colors">{siteName}</span>
+                            <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} variant="badge" />
+                          </div>
                         </div>
                       </Link>
                     </TableCell>
@@ -269,11 +287,21 @@ export default async function DashboardPage({
                     </TableCell>
                     <TableCell className="py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <UpgradeButton 
-                          projectId={project.id} 
-                          subscriptionStatus={project.subscription_status}
-                          variant="inline" 
-                        />
+                        <Link
+                          href={`/dashboard/analytics?projectId=${project.id}`}
+                          className="flex items-center gap-1 px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-lg text-xs font-bold transition-all"
+                          title="Analytics"
+                        >
+                          <BarChart3 className="w-4 h-4" />
+                          Analytics
+                        </Link>
+                        <Link
+                          href={`/dashboard?projectId=${project.id}`}
+                          className="flex items-center gap-1 px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground rounded-lg text-xs font-bold transition-all"
+                        >
+                          Edit Site
+                          <ChevronRight className="w-3 h-3" />
+                        </Link>
                         <a 
                           href={previewUrl} 
                           target="_blank" 
@@ -283,13 +311,6 @@ export default async function DashboardPage({
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
-                        <Link
-                          href={`/dashboard?projectId=${project.id}`}
-                          className="flex items-center gap-1 px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground rounded-lg text-xs font-bold transition-all"
-                        >
-                          Edit Site
-                          <ChevronRight className="w-3 h-3" />
-                        </Link>
                       </div>
                     </TableCell>
                   </TableRow>
