@@ -2,6 +2,7 @@
 
 import { CheckCircleIcon } from "@phosphor-icons/react";
 import { X } from "lucide-react";
+import { dynamicGridCols } from "@/lib/utils/grid-cols";
 
 export type PricingPlan = {
   name: string;
@@ -48,14 +49,14 @@ export default function PricingTable({
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 items-start">
+        <div className={`grid ${dynamicGridCols(plans.length, 4)} gap-4 sm:gap-8 items-start`}>
           {plans.map((plan, index) => (
             <div
               key={index}
               className={`relative flex flex-col p-4 sm:p-8 rounded-2xl border transition-all duration-300 ${
                 plan.isPopular
-                  ? "border-primary bg-primary/5 shadow-xl col-span-2 lg:col-span-1 lg:scale-105 z-10"
-                  : "border-border bg-background hover:border-primary/30 shadow-sm col-span-1"
+                  ? "border-primary bg-primary/5 shadow-xl lg:scale-105 z-10"
+                  : "border-border bg-background hover:border-primary/30 shadow-sm"
               }`}
             >
               {plan.isPopular && (

@@ -54,7 +54,7 @@ export default function Header({
   }, []);
 
   const buildHref = (href: string) => {
-    const effectiveState = previewState.isPreview ? previewState : derivePreviewState();
+    const effectiveState = previewState;
     if (!href || href.startsWith("#")) return href;
     const basePrefix = effectiveState.basePrefix && href.startsWith("/") && !href.startsWith(effectiveState.basePrefix)
       ? effectiveState.basePrefix

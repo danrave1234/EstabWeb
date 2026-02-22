@@ -14,6 +14,7 @@
 
 import * as React from "react"
 import dynamic from "next/dynamic"
+import { BadgeDollarSign, ShieldCheck, Star, CheckCircle, Lock, Leaf, ClipboardList } from "lucide-react"
 import { getPreviewKind } from "@/lib/utils/block-registry"
 import {
   DEFAULT_PRACTICE_AREAS,
@@ -29,14 +30,11 @@ import {
   DEFAULT_AC_TYPES,
   DEFAULT_PRICE_PREVIEW,
   DEFAULT_PRICING_TABLE,
-  DEFAULT_MAINTENANCE_PLANS,
   DEFAULT_FACEBOOK_REVIEW_EMBED,
   DEFAULT_WHY_CHOOSE_ME,
   DEFAULT_SERVICE_AREA_MAP,
   DEFAULT_LOGO_CLOUD,
-  DEFAULT_DELIVERY_COVERAGE,
   DEFAULT_FAQ_ACCORDION,
-  DEFAULT_BLOG,
 } from "@/config/dashboard-config"
 
 // ── Live-preview dynamic imports (ssr: false — section picker only) ──────────
@@ -60,7 +58,6 @@ const LivePreviewWhyChooseMe = dynamic(() => import("@/components/blocks/WhyChoo
 const LivePreviewServiceAreaMap = dynamic(() => import("@/components/blocks/ServiceAreaMap"), { ssr: false })
 const LivePreviewPricePreviewStrip = dynamic(() => import("@/components/blocks/PricePreviewStrip"), { ssr: false })
 const LivePreviewEmergencyCTAStrip = dynamic(() => import("@/components/blocks/EmergencyCTAStrip"), { ssr: false })
-const LivePreviewMaintenancePlans = dynamic(() => import("@/components/blocks/MaintenancePlans"), { ssr: false })
 const LivePreviewPromoCTASection = dynamic(() => import("@/components/blocks/PromoCTASection"), { ssr: false })
 const LivePreviewPromoBannerStrip = dynamic(() => import("@/components/blocks/PromoBannerStrip"), { ssr: false })
 const LivePreviewPaymentOptionsStrip = dynamic(() => import("@/components/blocks/PaymentOptionsStrip"), { ssr: false })
@@ -69,6 +66,20 @@ const LivePreviewFAQAccordion = dynamic(() => import("@/components/blocks/FAQAcc
 const LivePreviewCommonPests = dynamic(() => import("@/components/blocks/CommonPestsGrid"), { ssr: false })
 const LivePreviewWarrantyBlock = dynamic(() => import("@/components/blocks/WarrantyGuaranteeBlock"), { ssr: false })
 const LivePreviewFacebookReviewEmbed = dynamic(() => import("@/components/blocks/FacebookReviewEmbed"), { ssr: false })
+const LivePreviewTeamGrid = dynamic(() => import("@/components/blocks/TeamGrid"), { ssr: false })
+const LivePreviewTeamCarousel = dynamic(() => import("@/components/blocks/TeamCarousel"), { ssr: false })
+const LivePreviewAttorneyProfile = dynamic(() => import("@/components/blocks/AttorneyProfile"), { ssr: false })
+const LivePreviewBlogGrid = dynamic(() => import("@/components/blocks/BlogGrid"), { ssr: false })
+const LivePreviewContactMinimal = dynamic(() => import("@/components/blocks/ContactMinimal"), { ssr: false })
+const LivePreviewContactWithMap = dynamic(() => import("@/components/blocks/ContactWithMap"), { ssr: false })
+const LivePreviewContactColumns = dynamic(() => import("@/components/blocks/ContactColumns"), { ssr: false })
+const LivePreviewContactSplit = dynamic(() => import("@/components/blocks/ContactSplit"), { ssr: false })
+const LivePreviewContactVisual = dynamic(() => import("@/components/blocks/ContactVisual"), { ssr: false })
+const LivePreviewCoverageRadius = dynamic(() => import("@/components/blocks/CoverageRadiusBlock"), { ssr: false })
+const LivePreviewFAQTwoColumn = dynamic(() => import("@/components/blocks/FAQTwoColumn"), { ssr: false })
+const LivePreviewMaintenancePlans = dynamic(() => import("@/components/blocks/MaintenancePlans"), { ssr: false })
+const LivePreviewFreeConsultation = dynamic(() => import("@/components/blocks/FreeConsultationForm"), { ssr: false })
+const LivePreviewMessengerStickyCTA = dynamic(() => import("@/components/blocks/MessengerStickyCTA"), { ssr: false })
 
 // ── Prefetch on hover ────────────────────────────────────────────────────────
 export function prefetchSectionPreview(id: string) {
@@ -118,8 +129,6 @@ export function prefetchSectionPreview(id: string) {
       void import("@/components/blocks/PricePreviewStrip"); return
     case "emergency-cta-strip":
       void import("@/components/blocks/EmergencyCTAStrip"); return
-    case "maintenance-plans":
-      void import("@/components/blocks/MaintenancePlans"); return
     case "promo-cta-section":
       void import("@/components/blocks/PromoCTASection"); return
     case "promo-banner-strip":
@@ -343,234 +352,7 @@ export function SectionLivePreview({ id }: { id: string }) {
 
   const content = React.useMemo(() => {
     if (!hovered) return null
-    switch (id) {
-      case "features":
-      case "services-grid":
-      case "project-gallery":
-      case "programs-grid":
-      case "faculty-grid": {
-        const fallbackFeatures = (DEFAULT_PRACTICE_AREAS.items || []).map((it: any) => ({
-          title: it.title,
-          description: it.description,
-          icon: it.icon,
-        }))
-        return (
-          <LivePreviewFeaturesGrid
-            title="Our Services"
-            subtitle="What we can do for you"
-            features={fallbackFeatures}
-          />
-        )
-      }
-      case "features-modern": {
-        const items = (DEFAULT_PRACTICE_AREAS.items || []).map((it: any) => ({
-          title: it.title,
-          description: it.description,
-          icon: it.icon,
-        }))
-        return (
-          <LivePreviewFeaturesModern
-            title="Our Services"
-            subtitle="Fast, friendly, reliable"
-            features={items}
-          />
-        )
-      }
-      case "practice-areas":
-        return (
-          <LivePreviewPracticeAreas
-            title={DEFAULT_PRACTICE_AREAS.title}
-            subtitle={DEFAULT_PRACTICE_AREAS.subtitle}
-            items={DEFAULT_PRACTICE_AREAS.items as any}
-            linkText="Learn More"
-          />
-        )
-      case "how-it-works":
-        return (
-          <LivePreviewHowItWorks
-            title={DEFAULT_HOW_IT_WORKS.title}
-            subtitle={DEFAULT_HOW_IT_WORKS.subtitle}
-            steps={DEFAULT_HOW_IT_WORKS.steps as any}
-          />
-        )
-      case "treatment-process":
-        return (
-          <LivePreviewTreatmentProcess
-            title={DEFAULT_TREATMENT_PROCESS.title}
-            subtitle={DEFAULT_TREATMENT_PROCESS.subtitle}
-            steps={DEFAULT_TREATMENT_PROCESS.steps as any}
-          />
-        )
-      case "awards":
-      case "certifications":
-        return <LivePreviewAwardsStrip title={DEFAULT_AWARDS_STRIP.title} items={DEFAULT_AWARDS_STRIP.items as any} />
-      case "trust-badges-grid": {
-        const items = (DEFAULT_AWARDS_STRIP.items || []).map((it: any) => ({
-          label: it.label,
-          sublabel: it.sublabel,
-          icon: it.icon || "Award",
-          imageUrl: it.imageUrl,
-        }))
-        return <LivePreviewTrustBadges title="Trusted By" subtitle="Social proof" items={items as any} />
-      }
-      case "before-after-slider":
-        return (
-          <LivePreviewBeforeAfterSlider
-            title="Before & After"
-            subtitle="See the difference"
-            beforeImage={(DEFAULT_BEFORE_AFTER_GALLERY.items?.[0] as any)?.beforeImage || ""}
-            afterImage={(DEFAULT_BEFORE_AFTER_GALLERY.items?.[0] as any)?.afterImage || ""}
-            beforeLabel={DEFAULT_BEFORE_AFTER_GALLERY.beforeLabel}
-            afterLabel={DEFAULT_BEFORE_AFTER_GALLERY.afterLabel}
-          />
-        )
-      case "before-after-gallery-grid":
-        return (
-          <LivePreviewBeforeAfterGallery
-            title="Before & After"
-            subtitle="See the difference"
-            items={DEFAULT_BEFORE_AFTER_GALLERY.items as any}
-          />
-        )
-      case "safety-section":
-        return <LivePreviewSafetySection title="Safety First" subtitle="Our commitment to you" items={[]} />
-      case "logo-cloud":
-        return (
-          <LivePreviewLogoCloud
-            title={DEFAULT_LOGO_CLOUD.title}
-            items={DEFAULT_LOGO_CLOUD.items as any}
-          />
-        )
-      case "ac-types-grid":
-        return (
-          <LivePreviewACTypes
-            title={DEFAULT_AC_TYPES.title}
-            subtitle={DEFAULT_AC_TYPES.subtitle}
-            items={DEFAULT_AC_TYPES.items as any}
-          />
-        )
-      case "pricing":
-        return (
-          <LivePreviewPricingTable
-            title={DEFAULT_PRICING_TABLE.title}
-            subtitle={DEFAULT_PRICING_TABLE.subtitle}
-            plans={DEFAULT_PRICING_TABLE.plans as any}
-          />
-        )
-      case "featured-properties-grid":
-        return (
-          <LivePreviewFeaturedListings
-            title={DEFAULT_FEATURED_LISTINGS.title}
-            subtitle={DEFAULT_FEATURED_LISTINGS.subtitle}
-            items={DEFAULT_FEATURED_LISTINGS.items as any}
-          />
-        )
-      case "financing-section":
-        return (
-          <LivePreviewFinancingSection
-            title={DEFAULT_FINANCING.title}
-            subtitle={DEFAULT_FINANCING.subtitle}
-            items={DEFAULT_FINANCING.items as any}
-          />
-        )
-      case "developer-partners":
-        return (
-          <LivePreviewDeveloperPartners
-            title={DEFAULT_DEVELOPER_PARTNERS.title}
-            items={DEFAULT_DEVELOPER_PARTNERS.items as any}
-          />
-        )
-      case "why-choose-me": {
-        const w = DEFAULT_WHY_CHOOSE_ME as any
-        return (
-          <LivePreviewWhyChooseMe
-            title={w.title}
-            subtitle={w.subtitle}
-            agentName={w.agentName ?? "Juan Dela Cruz"}
-            agentRole={w.agentRole ?? "Licensed Professional"}
-            licenseNumber={w.licenseNumber ?? "#12345"}
-            agentBio={w.agentBio ?? "Add your bio"}
-            agentImageUrl={w.agentImageUrl || "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&q=80"}
-            trustSignals={(Array.isArray(w.trustSignals) ? w.trustSignals : []) as any}
-            licensedBrokerLabel={w.licensedBrokerLabel}
-            inquireNowLabel={w.inquireNowLabel}
-          />
-        )
-      }
-      case "service-area-map":
-        return (
-          <LivePreviewServiceAreaMap
-            title={DEFAULT_SERVICE_AREA_MAP.title}
-            subtitle={DEFAULT_SERVICE_AREA_MAP.subtitle}
-            cities={(DEFAULT_SERVICE_AREA_MAP.cities ?? []) as any}
-            googleMapsEmbedUrl={(DEFAULT_SERVICE_AREA_MAP as any).googleMapsEmbedUrl}
-          />
-        )
-      case "price-preview-strip":
-        return (
-          <LivePreviewPricePreviewStrip
-            title={DEFAULT_PRICE_PREVIEW.title}
-            items={DEFAULT_PRICE_PREVIEW.items as any}
-          />
-        )
-      case "emergency-cta-strip":
-        return <LivePreviewEmergencyCTAStrip title="Emergency? We're here." phone="(555) 000-0000" />
-      case "maintenance-plans":
-        return (
-          <LivePreviewMaintenancePlans
-            title={DEFAULT_MAINTENANCE_PLANS.title}
-            subtitle={DEFAULT_MAINTENANCE_PLANS.subtitle}
-            plans={DEFAULT_MAINTENANCE_PLANS.plans as any}
-          />
-        )
-      case "promo-cta-section":
-        return <LivePreviewPromoCTASection title="Limited Time Offer" subtitle="Book today and save." buttonText="Claim Offer" buttonHref="#" />
-      case "promo-banner-strip":
-        return <LivePreviewPromoBannerStrip text="Special Offer — This week only" />
-      case "payment-options-strip":
-        return <LivePreviewPaymentOptionsStrip title="We Accept" />
-      case "stats-section":
-        return (
-          <LivePreviewStatsSection
-            title="By the Numbers"
-            subtitle="Our track record"
-            items={[
-              { label: "Happy Clients", value: "500+" },
-              { label: "Projects Done", value: "1,200+" },
-              { label: "Years Experience", value: "10+" },
-              { label: "5-Star Reviews", value: "300+" },
-            ]}
-          />
-        )
-      case "faq-accordion":
-        return (
-          <LivePreviewFAQAccordion
-            title={DEFAULT_FAQ_ACCORDION.title}
-            subtitle={DEFAULT_FAQ_ACCORDION.subtitle}
-            items={DEFAULT_FAQ_ACCORDION.items as any}
-          />
-        )
-      case "common-pests":
-        return (
-          <LivePreviewCommonPests
-            title={DEFAULT_COMMON_PESTS.title}
-            subtitle={DEFAULT_COMMON_PESTS.subtitle}
-            items={DEFAULT_COMMON_PESTS.items as any}
-          />
-        )
-      case "warranty-block":
-        return <LivePreviewWarrantyBlock title="Our Guarantee" subtitle="100% satisfaction or your money back." />
-      case "facebook-review-embed":
-        return (
-          <LivePreviewFacebookReviewEmbed
-            title={DEFAULT_FACEBOOK_REVIEW_EMBED.title}
-            subtitle={DEFAULT_FACEBOOK_REVIEW_EMBED.subtitle}
-            reviews={DEFAULT_FACEBOOK_REVIEW_EMBED.reviews as any}
-          />
-        )
-      default:
-        return null
-    }
+    return buildSectionPreviewContent(id)
   }, [hovered, id])
 
   return (
@@ -621,4 +403,850 @@ export function SectionLivePreview({ id }: { id: string }) {
       )}
     </div>
   )
+}
+
+// ── Full-panel always-visible preview (used in AddSectionModal right panel) ──
+export const SectionLivePreviewPanel = React.memo(function SectionLivePreviewPanel({ id }: { id: string }) {
+  const STAGE_W = 1280
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
+  const [scale, setScale] = React.useState(0.7)
+
+  React.useLayoutEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const update = () => {
+      const w = el.getBoundingClientRect().width
+      if (w > 0) setScale(w / STAGE_W)
+    }
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  const content = React.useMemo(() => buildSectionPreviewContent(id), [id])
+
+  return (
+    <div ref={containerRef} className="w-full rounded-xl border border-border bg-background overflow-hidden shadow-sm">
+      <div
+        className="pointer-events-none origin-top-left"
+        style={{ width: STAGE_W, transform: `scale(${scale})`, transformOrigin: "top left", height: `calc(100% / ${scale})` }}
+      >
+        {content ?? (
+          <div className="w-full py-24 flex items-center justify-center">
+            <div className="text-sm font-semibold text-muted-foreground">No preview available</div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+})
+
+// ── Shared content builder ────────────────────────────────────────────────────
+function buildSectionPreviewContent(id: string): React.ReactNode {
+  switch (id) {
+      // ── Services / Features ──────────────────────────────────────────────
+      case "services":
+      case "features":
+      case "services-grid":
+      case "project-gallery":
+      case "programs-grid":
+      case "faculty-grid": {
+        const fallbackFeatures = (DEFAULT_PRACTICE_AREAS.items || []).map((it: any) => ({
+          title: it.title,
+          description: it.description,
+          icon: it.icon,
+        }))
+        return (
+          <LivePreviewFeaturesGrid
+            title="Our Services"
+            subtitle="What we can do for you"
+            features={fallbackFeatures}
+          />
+        )
+      }
+      case "services--modern":
+      case "features-modern": {
+        const items = (DEFAULT_PRACTICE_AREAS.items || []).map((it: any) => ({
+          title: it.title,
+          description: it.description,
+          icon: it.icon,
+        }))
+        return (
+          <LivePreviewFeaturesModern
+            title="Our Services"
+            subtitle="Fast, friendly, reliable"
+            features={items}
+          />
+        )
+      }
+      case "services--highlight":
+      case "practice-areas":
+        return (
+          <LivePreviewPracticeAreas
+            title={DEFAULT_PRACTICE_AREAS.title}
+            subtitle={DEFAULT_PRACTICE_AREAS.subtitle}
+            items={DEFAULT_PRACTICE_AREAS.items as any}
+            linkText="Learn More"
+          />
+        )
+      case "process":
+      case "how-it-works":
+        return (
+          <LivePreviewHowItWorks
+            title={DEFAULT_HOW_IT_WORKS.title}
+            subtitle={DEFAULT_HOW_IT_WORKS.subtitle}
+            steps={DEFAULT_HOW_IT_WORKS.steps as any}
+          />
+        )
+      case "process--timeline":
+      case "treatment-process":
+        return (
+          <LivePreviewTreatmentProcess
+            title={DEFAULT_TREATMENT_PROCESS.title}
+            subtitle={DEFAULT_TREATMENT_PROCESS.subtitle}
+            steps={[
+              ...(DEFAULT_TREATMENT_PROCESS.steps as any[]).slice(0, 4),
+              ...((DEFAULT_TREATMENT_PROCESS.steps as any[]).length < 4
+                ? Array.from({ length: 4 - (DEFAULT_TREATMENT_PROCESS.steps as any[]).length }, (_, i) => ({
+                    title: `Step ${(DEFAULT_TREATMENT_PROCESS.steps as any[]).length + i + 1}`,
+                    description: "Detailed step description goes here.",
+                    icon: "CheckCircle",
+                  }))
+                : []),
+            ]}
+          />
+        )
+      case "certifications":
+      case "awards":
+        return <LivePreviewAwardsStrip title={DEFAULT_AWARDS_STRIP.title} items={DEFAULT_AWARDS_STRIP.items as any} />
+      case "trust_badges":
+      case "trust-badges-grid": {
+        const items = (DEFAULT_AWARDS_STRIP.items || []).map((it: any) => ({
+          label: it.label,
+          sublabel: it.sublabel,
+          icon: it.icon || "Award",
+          imageUrl: it.imageUrl,
+        }))
+        return <LivePreviewTrustBadges title="Trusted By" subtitle="Social proof" items={items as any} />
+      }
+      case "gallery--slider":
+      case "before-after-slider":
+        return (
+          <LivePreviewBeforeAfterSlider
+            title="Before & After"
+            subtitle="See the difference"
+            beforeImage={(DEFAULT_BEFORE_AFTER_GALLERY.items?.[0] as any)?.beforeImage || ""}
+            afterImage={(DEFAULT_BEFORE_AFTER_GALLERY.items?.[0] as any)?.afterImage || ""}
+            beforeLabel={DEFAULT_BEFORE_AFTER_GALLERY.beforeLabel}
+            afterLabel={DEFAULT_BEFORE_AFTER_GALLERY.afterLabel}
+          />
+        )
+      case "case_study":
+      case "case_study--detail":
+      case "gallery":
+      case "before-after-gallery-grid":
+        return (
+          <LivePreviewBeforeAfterGallery
+            title="Before & After"
+            subtitle="See the difference"
+            items={DEFAULT_BEFORE_AFTER_GALLERY.items as any}
+          />
+        )
+      case "safety-section":
+        return <LivePreviewSafetySection title="Safety First" subtitle="Our commitment to you" items={[]} />
+      case "logo_cloud":
+      case "logo-cloud":
+        return (
+          <LivePreviewLogoCloud
+            title={DEFAULT_LOGO_CLOUD.title}
+            items={DEFAULT_LOGO_CLOUD.items as any}
+          />
+        )
+      case "ac-types-grid":
+        return (
+          <LivePreviewACTypes
+            title={DEFAULT_AC_TYPES.title}
+            subtitle={DEFAULT_AC_TYPES.subtitle}
+            items={DEFAULT_AC_TYPES.items as any}
+          />
+        )
+      case "pricing":
+        return (
+          <LivePreviewPricingTable
+            title={DEFAULT_PRICING_TABLE.title}
+            subtitle={DEFAULT_PRICING_TABLE.subtitle}
+            plans={[
+              ...(DEFAULT_PRICING_TABLE.plans as any[]).slice(0, 3),
+              ...((DEFAULT_PRICING_TABLE.plans as any[]).length < 3
+                ? [{ name: "Premium", price: "₱4,999", period: "/ month", description: "Full-featured plan for power users.", features: ["Everything in Pro", "Priority support", "Custom integrations"], isPopular: false }]
+                : []),
+            ]}
+          />
+        )
+      case "pricing--subscription":
+      case "maintenance-plans":
+        return (
+          <LivePreviewMaintenancePlans
+            title="Maintenance Plans"
+            subtitle="Keep your system running all year round with our scheduled programs."
+            plans={[
+              { name: "Basic", price: "₱999", period: "/ month", description: "Essential maintenance for small setups.", features: ["Monthly check-up", "Filter cleaning", "Email support"], isPopular: false },
+              { name: "Standard", price: "₱1,999", period: "/ month", description: "Comprehensive care for most homes.", features: ["Bi-monthly visits", "Parts discount", "Priority scheduling", "Phone support"], isPopular: true },
+              { name: "Premium", price: "₱3,499", period: "/ month", description: "Full-coverage plan with unlimited visits.", features: ["Unlimited visits", "Free parts replacement", "24/7 emergency line", "Annual deep clean"], isPopular: false },
+            ]}
+          />
+        )
+      case "comparison--table":
+        return (
+          <div className="py-16 px-8 bg-background">
+            <div className="max-w-5xl mx-auto">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl font-bold text-foreground mb-3">Us vs The Competition</h2>
+                <p className="text-muted-foreground">See why customers choose us over others</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-muted/40">
+                      <th className="text-left p-4 font-semibold text-foreground border border-border">Feature</th>
+                      <th className="text-center p-4 font-semibold text-primary border border-border bg-primary/5">Us</th>
+                      <th className="text-center p-4 font-semibold text-muted-foreground border border-border">Others</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ["Licensed & Insured", "Yes", "Sometimes"],
+                      ["Same-Day Service", "Yes", "No"],
+                      ["Satisfaction Guarantee", "100%", "Limited"],
+                      ["Transparent Pricing", "Always", "Hidden fees"],
+                      ["24/7 Emergency Line", "Yes", "No"],
+                    ].map((row, i) => (
+                      <tr key={i} className={i % 2 === 0 ? "bg-background" : "bg-muted/20"}>
+                        <td className="p-4 border border-border text-sm font-medium text-foreground">{row[0]}</td>
+                        <td className="p-4 border border-border text-sm text-center font-semibold text-primary bg-primary/5">{row[1]}</td>
+                        <td className="p-4 border border-border text-sm text-center text-muted-foreground">{row[2]}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )
+      case "comparison--vs":
+        return (
+          <div className="py-16 px-8 bg-background">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl font-bold text-foreground mb-3">Why Choose Us?</h2>
+                <p className="text-muted-foreground">The clear choice for quality service</p>
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="rounded-2xl border-2 border-primary bg-primary/5 p-6">
+                  <div className="text-center mb-4">
+                    <span className="inline-block bg-primary text-white text-xs font-bold px-3 py-1 rounded-full mb-2">US</span>
+                    <h3 className="text-xl font-bold text-foreground">Our Company</h3>
+                  </div>
+                  <ul className="space-y-3">
+                    {["Licensed & fully insured","Same-day response","Transparent pricing","Satisfaction guarantee","24/7 emergency support"].map((f,i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-foreground"><span className="w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">✓</span>{f}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="rounded-2xl border border-border bg-muted/20 p-6">
+                  <div className="text-center mb-4">
+                    <span className="inline-block bg-muted text-muted-foreground text-xs font-bold px-3 py-1 rounded-full mb-2">OTHERS</span>
+                    <h3 className="text-xl font-bold text-muted-foreground">Typical Competitors</h3>
+                  </div>
+                  <ul className="space-y-3">
+                    {["Unlicensed contractors","Long wait times","Hidden fees","No guarantee","Business hours only"].map((f,i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground"><span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold">✗</span>{f}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      case "comparison":
+        return (
+          <div className="py-16 px-8 bg-background">
+            <div className="max-w-5xl mx-auto">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl font-bold text-foreground mb-3">Compare Our Plans</h2>
+                <p className="text-muted-foreground">See which plan is right for you</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-muted/40">
+                      <th className="text-left p-4 font-semibold text-foreground border border-border">Feature</th>
+                      <th className="text-center p-4 font-semibold text-foreground border border-border">Basic</th>
+                      <th className="text-center p-4 font-semibold text-primary border border-border bg-primary/5">Pro</th>
+                      <th className="text-center p-4 font-semibold text-foreground border border-border">Enterprise</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ["24/7 Support", "—", "✓", "✓"],
+                      ["Custom Domain", "—", "✓", "✓"],
+                      ["Analytics", "Basic", "Advanced", "Full"],
+                      ["Team Members", "1", "5", "Unlimited"],
+                      ["Storage", "5 GB", "50 GB", "500 GB"],
+                    ].map((row, i) => (
+                      <tr key={i} className={i % 2 === 0 ? "bg-background" : "bg-muted/20"}>
+                        {row.map((cell, j) => (
+                          <td key={j} className={`p-4 border border-border text-sm ${j === 0 ? "font-medium text-foreground" : "text-center text-muted-foreground"} ${j === 2 ? "bg-primary/5 font-semibold text-primary" : ""}`}>{cell}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )
+      case "specialty_listings":
+      case "featured-properties-grid":
+        return (
+          <LivePreviewFeaturedListings
+            title={DEFAULT_FEATURED_LISTINGS.title}
+            subtitle={DEFAULT_FEATURED_LISTINGS.subtitle}
+            items={DEFAULT_FEATURED_LISTINGS.items as any}
+          />
+        )
+      case "financing-section":
+        return (
+          <LivePreviewFinancingSection
+            title={DEFAULT_FINANCING.title}
+            subtitle={DEFAULT_FINANCING.subtitle}
+            items={DEFAULT_FINANCING.items as any}
+          />
+        )
+      case "developer-partners":
+        return (
+          <LivePreviewDeveloperPartners
+            title={DEFAULT_DEVELOPER_PARTNERS.title}
+            items={DEFAULT_DEVELOPER_PARTNERS.items as any}
+          />
+        )
+      case "why-choose-me": {
+        const w = DEFAULT_WHY_CHOOSE_ME as any
+        return (
+          <LivePreviewWhyChooseMe
+            title={w.title}
+            subtitle={w.subtitle}
+            agentName={w.agentName ?? "Juan Dela Cruz"}
+            agentRole={w.agentRole ?? "Licensed Professional"}
+            licenseNumber={w.licenseNumber ?? "#12345"}
+            agentBio={w.agentBio ?? "Add your bio"}
+            agentImageUrl={w.agentImageUrl || "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&q=80"}
+            trustSignals={(Array.isArray(w.trustSignals) ? w.trustSignals : []) as any}
+            licensedBrokerLabel={w.licensedBrokerLabel}
+            inquireNowLabel={w.inquireNowLabel}
+          />
+        )
+      }
+      case "service_area":
+      case "service-area-map":
+        return (
+          <LivePreviewServiceAreaMap
+            title={DEFAULT_SERVICE_AREA_MAP.title}
+            subtitle={DEFAULT_SERVICE_AREA_MAP.subtitle}
+            cities={(DEFAULT_SERVICE_AREA_MAP.cities ?? []) as any}
+            googleMapsEmbedUrl={(DEFAULT_SERVICE_AREA_MAP as any).googleMapsEmbedUrl}
+          />
+        )
+      case "service_area--radius":
+        return (
+          <LivePreviewCoverageRadius
+            title="Coverage Radius"
+            subtitle="We serve all locations within our primary zone."
+            radiusKm={10}
+            locationName="Our Main Office"
+            note="A small fee applies outside the 10km radius."
+          />
+        )
+      case "price_preview":
+      case "price-preview-strip":
+        return (
+          <LivePreviewPricePreviewStrip
+            title={DEFAULT_PRICE_PREVIEW.title}
+            items={DEFAULT_PRICE_PREVIEW.items as any}
+          />
+        )
+      case "cta--emergency":
+      case "emergency-cta-strip":
+        return <LivePreviewEmergencyCTAStrip title="Emergency? We're here." phone="(555) 000-0000" />
+      case "announcement_bar":
+      case "announcement_bar--standard":
+        return (
+          <div className="w-full bg-primary text-white py-3 px-6 flex items-center justify-center gap-4">
+            <span className="text-sm font-medium">Important update: We are now serving new areas. Check availability today.</span>
+            <button className="shrink-0 bg-white text-primary text-xs font-bold px-4 py-1.5 rounded-full hover:bg-white/90 transition-colors">Learn More</button>
+          </div>
+        )
+      case "announcement_bar--promo":
+        return (
+          <div className="w-full bg-amber-500 text-white py-3 px-6 flex items-center justify-center gap-4">
+            <span className="text-sm font-bold">Limited Offer:</span>
+            <span className="text-sm">Get 20% off your first service booking this month only.</span>
+            <button className="shrink-0 bg-white text-amber-600 text-xs font-bold px-4 py-1.5 rounded-full">Claim Now</button>
+          </div>
+        )
+      case "announcement_bar--emergency":
+        return (
+          <div className="w-full bg-red-600 text-white py-3 px-6 flex items-center justify-center gap-4">
+            <span className="text-sm font-bold">24/7 Emergency Hotline:</span>
+            <span className="text-sm font-mono">(555) 000-0000</span>
+            <button className="shrink-0 bg-white text-red-600 text-xs font-bold px-4 py-1.5 rounded-full">Call Now</button>
+          </div>
+        )
+      case "announcement_bar--offer":
+        return (
+          <div className="w-full bg-green-600 text-white py-3 px-6 flex items-center justify-center gap-4">
+            <span className="text-sm font-bold">Free Inspection:</span>
+            <span className="text-sm">Book a free no-obligation inspection for your home or business.</span>
+            <button className="shrink-0 bg-white text-green-700 text-xs font-bold px-4 py-1.5 rounded-full">Book Free</button>
+          </div>
+        )
+      case "service_detail":
+      case "feature-highlight":
+      case "why-choose-us":
+        return (
+          <div className="py-16 px-8 bg-background">
+            <div className="max-w-5xl mx-auto grid grid-cols-2 gap-12 items-center">
+              <div className="rounded-2xl overflow-hidden bg-muted aspect-[4/3]">
+                <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80" alt="Service" className="w-full h-full object-cover" />
+              </div>
+              <div>
+                <span className="inline-block bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full mb-4">Our Specialty</span>
+                <h2 className="text-3xl font-bold text-foreground mb-4">Deep Cleaning Service</h2>
+                <p className="text-muted-foreground mb-6">Our professional deep cleaning service covers every corner of your space. We use eco-friendly products and proven techniques to deliver spotless results every time.</p>
+                <ul className="space-y-2 mb-8">
+                  {["Eco-friendly products","Trained & vetted staff","Satisfaction guaranteed","Flexible scheduling"].map((b,i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-foreground"><span className="w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs">✓</span>{b}</li>
+                  ))}
+                </ul>
+                <button className="bg-primary text-white px-6 py-3 rounded-lg font-semibold text-sm">Get a Free Quote</button>
+              </div>
+            </div>
+          </div>
+        )
+      case "service_detail--split":
+        return (
+          <div className="py-16 px-8 bg-muted/30">
+            <div className="max-w-5xl mx-auto grid grid-cols-2 gap-12 items-center">
+              <div>
+                <span className="inline-block bg-secondary/20 text-secondary-foreground text-xs font-bold px-3 py-1 rounded-full mb-4">Why It Works</span>
+                <h2 className="text-3xl font-bold text-foreground mb-4">Pest Control That Actually Lasts</h2>
+                <p className="text-muted-foreground mb-6">Unlike one-time sprays, our integrated treatment plan targets the root cause — eliminating colonies, sealing entry points, and preventing re-infestation for good.</p>
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  {[
+                    { label: "Inspection", desc: "Full property assessment" },
+                    { label: "Treatment", desc: "Targeted elimination" },
+                    { label: "Prevention", desc: "Entry point sealing" },
+                    { label: "Follow-up", desc: "30-day guarantee check" },
+                  ].map((item, i) => (
+                    <div key={i} className="bg-background rounded-xl p-4 border border-border">
+                      <p className="text-sm font-bold text-foreground mb-1">{item.label}</p>
+                      <p className="text-xs text-muted-foreground">{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+                <button className="bg-primary text-white px-6 py-3 rounded-lg font-semibold text-sm">Schedule Inspection</button>
+              </div>
+              <div className="rounded-2xl overflow-hidden bg-muted aspect-[4/3]">
+                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80" alt="Service Detail" className="w-full h-full object-cover" />
+              </div>
+            </div>
+          </div>
+        )
+      case "lead_capture":
+        return (
+          <div className="py-16 px-8 bg-background">
+            <div className="max-w-lg mx-auto">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-foreground mb-3">Get a Free Quote</h2>
+                <p className="text-muted-foreground">Tell us about your needs and we will get back to you within 24 hours.</p>
+              </div>
+              <div className="bg-muted/30 rounded-xl border border-border p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Service Type</label>
+                  <div className="h-10 rounded-lg bg-muted/60 border border-border" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Your Name</label>
+                  <div className="h-10 rounded-lg bg-muted/60 border border-border" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Phone Number</label>
+                  <div className="h-10 rounded-lg bg-muted/60 border border-border" />
+                </div>
+                <div className="h-11 rounded-lg bg-primary" />
+              </div>
+            </div>
+          </div>
+        )
+      case "lead_capture--multi-step":
+        return (
+          <div className="py-16 px-8 bg-background">
+            <div className="max-w-lg mx-auto">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-foreground mb-2">Get Your Free Quote</h2>
+                <p className="text-muted-foreground">3 quick steps — takes less than 60 seconds</p>
+              </div>
+              <div className="flex items-center justify-center gap-2 mb-8">
+                {["Service","Location","Contact"].map((step, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${i === 0 ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}>{i+1}</div>
+                    <span className={`text-xs font-medium ${i === 0 ? "text-foreground" : "text-muted-foreground"}`}>{step}</span>
+                    {i < 2 && <div className="w-8 h-px bg-border" />}
+                  </div>
+                ))}
+              </div>
+              <div className="bg-muted/30 rounded-xl border border-border p-6 space-y-4">
+                <p className="text-sm font-semibold text-foreground mb-2">Step 1: What service do you need?</p>
+                {["Cleaning","Pest Control","HVAC","Plumbing"].map((s,i) => (
+                  <div key={i} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer ${i===0?"border-primary bg-primary/5":"border-border bg-background"}`}>
+                    <div className={`w-4 h-4 rounded-full border-2 ${i===0?"border-primary bg-primary":"border-muted-foreground"}`} />
+                    <span className="text-sm font-medium text-foreground">{s}</span>
+                  </div>
+                ))}
+                <button className="w-full h-11 rounded-lg bg-primary text-white font-semibold text-sm mt-2">Next: Location</button>
+              </div>
+            </div>
+          </div>
+        )
+      case "cta":
+      case "promo-cta-section":
+        return <LivePreviewPromoCTASection title="Limited Time Offer" subtitle="Book today and save." buttonText="Claim Offer" buttonHref="#" />
+      case "cta--sticky":
+        return (
+          <LivePreviewMessengerStickyCTA
+            messengerUrl="https://m.me/example"
+            viberNumber="09171234567"
+            phone="(555) 000-0000"
+          />
+        )
+      case "booking":
+        return (
+          <div className="py-16 px-8 bg-background">
+            <div className="max-w-lg mx-auto text-center">
+              <h2 className="text-3xl font-bold text-foreground mb-3">Book an Appointment</h2>
+              <p className="text-muted-foreground mb-8">Choose a date and time that works for you.</p>
+              <div className="bg-muted/30 rounded-xl border border-border p-6 text-left space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Your Name</label>
+                  <div className="h-10 rounded-lg bg-muted/60 border border-border" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Preferred Date</label>
+                  <div className="h-10 rounded-lg bg-muted/60 border border-border" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Service Type</label>
+                  <div className="h-10 rounded-lg bg-muted/60 border border-border" />
+                </div>
+                <div className="h-11 rounded-lg bg-primary" />
+              </div>
+            </div>
+          </div>
+        )
+      case "free_consultation":
+        return (
+          <LivePreviewFreeConsultation
+            headline="Get a Free Consultation"
+            subtitle="No obligation. Talk to an expert today."
+            bullet1="100% Free — No hidden fees"
+            bullet2="Response within 24 hours"
+            bullet3="Personalized advice for your needs"
+            formTitle="Request Your Free Consultation"
+            dropdownOptions={["General Inquiry", "Service Quote", "Partnership", "Other"]}
+            buttonText="Get Free Consultation"
+          />
+        )
+      case "cta--promo-strip":
+      case "promo-banner-strip":
+        return <LivePreviewPromoBannerStrip text="Special Offer — This week only" />
+      case "payment_options":
+      case "payment-options-strip":
+        return <LivePreviewPaymentOptionsStrip title="We Accept" />
+      case "stats":
+      case "stats-section":
+        return (
+          <LivePreviewStatsSection
+            title="By the Numbers"
+            subtitle="Our track record"
+            items={[
+              { label: "Happy Clients", value: "500+" },
+              { label: "Projects Done", value: "1,200+" },
+              { label: "Years Experience", value: "10+" },
+              { label: "5-Star Reviews", value: "300+" },
+            ]}
+          />
+        )
+      case "faq":
+      case "faq-accordion":
+        return (
+          <LivePreviewFAQAccordion
+            title={DEFAULT_FAQ_ACCORDION.title}
+            subtitle={DEFAULT_FAQ_ACCORDION.subtitle}
+            items={DEFAULT_FAQ_ACCORDION.items as any}
+          />
+        )
+      case "common-pests":
+        return (
+          <LivePreviewCommonPests
+            title={DEFAULT_COMMON_PESTS.title}
+            subtitle={DEFAULT_COMMON_PESTS.subtitle}
+            items={DEFAULT_COMMON_PESTS.items as any}
+          />
+        )
+      case "guarantee":
+      case "warranty-block":
+        return <LivePreviewWarrantyBlock title="Our Guarantee" subtitle="100% satisfaction or your money back." />
+      case "guarantee--badge":
+        return (
+          <div className="py-16 px-8 bg-background">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl font-bold text-foreground mb-4">Our Promise to You</h2>
+              <p className="text-muted-foreground mb-10">We stand behind every job we do. If you are not satisfied, we will make it right.</p>
+              <div className="flex flex-wrap justify-center gap-6">
+                {[
+                  { Icon: BadgeDollarSign, title: "Money-Back Guarantee", desc: "Full refund if not satisfied" },
+                  { Icon: ShieldCheck, title: "1-Year Warranty", desc: "All work covered for 12 months" },
+                  { Icon: Star, title: "5-Star Service", desc: "Rated top in your area" },
+                ].map((b,i) => (
+                  <div key={i} className="flex flex-col items-center gap-3 p-6 rounded-2xl border border-border bg-muted/20 w-48">
+                    <b.Icon className="w-10 h-10 text-primary" />
+                    <p className="text-sm font-bold text-foreground text-center">{b.title}</p>
+                    <p className="text-xs text-muted-foreground text-center">{b.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+      case "guarantee--safety":
+        return (
+          <div className="py-16 px-8 bg-background">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl font-bold text-foreground mb-4">Safety & Compliance</h2>
+              <p className="text-muted-foreground mb-10">We meet and exceed all industry safety standards and regulations.</p>
+              <div className="flex flex-wrap justify-center gap-6">
+                {[
+                  { Icon: CheckCircle, title: "OSHA Compliant", desc: "Meets all safety regulations" },
+                  { Icon: Lock, title: "Fully Insured", desc: "Licensed & bonded" },
+                  { Icon: Leaf, title: "Eco-Friendly", desc: "Safe for kids & pets" },
+                  { Icon: ClipboardList, title: "Certified Staff", desc: "Background-checked team" },
+                ].map((b,i) => (
+                  <div key={i} className="flex flex-col items-center gap-3 p-5 rounded-2xl border border-border bg-muted/20 w-44">
+                    <b.Icon className="w-9 h-9 text-primary" />
+                    <p className="text-sm font-bold text-foreground text-center">{b.title}</p>
+                    <p className="text-xs text-muted-foreground text-center">{b.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+      case "testimonials--facebook":
+      case "facebook-review-embed":
+        return (
+          <LivePreviewFacebookReviewEmbed
+            title={DEFAULT_FACEBOOK_REVIEW_EMBED.title}
+            subtitle={DEFAULT_FACEBOOK_REVIEW_EMBED.subtitle}
+            reviews={DEFAULT_FACEBOOK_REVIEW_EMBED.reviews as any}
+          />
+        )
+      // ── Testimonials (bar / grid) ────────────────────────────────────────
+      case "testimonials":
+      case "review-trust-bar":
+      case "reviews-grid":
+        return (
+          <LivePreviewFeaturesGrid
+            title="What Our Clients Say"
+            subtitle="Real reviews from real customers"
+            features={(DEFAULT_REVIEW_TRUST_BAR?.testimonials ?? []).slice(0, 3).map((r: any) => ({
+              title: r.author ?? r.name ?? "Happy Client",
+              description: r.text ?? r.body ?? "",
+              icon: "Star",
+            }))}
+          />
+        )
+      case "testimonials--grid":
+        return (
+          <LivePreviewFeaturesGrid
+            title="Customer Reviews"
+            subtitle="See what our clients are saying"
+            features={[
+              { title: "Maria Santos", description: "\"Absolutely amazing service! Fast, professional, and very affordable. Highly recommend!\"", icon: "Star" },
+              { title: "John Reyes", description: "\"The team was on time and did a fantastic job. Will definitely call again.\"", icon: "Star" },
+              { title: "Ana Lim", description: "\"Best experience I've had. They went above and beyond my expectations.\"", icon: "Star" },
+            ]}
+          />
+        )
+      // ── Team grid / carousel ─────────────────────────────────────────────
+      case "team":
+      case "team-grid":
+        return (
+          <LivePreviewTeamGrid
+            title="Meet Our Team"
+            subtitle="The experts dedicated to your success."
+            members={[
+              { name: "Jane Smith", specialty: "Lead Technician", imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80" },
+              { name: "Mark Reyes", specialty: "Senior Specialist", imageUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80" },
+              { name: "Ana Cruz", specialty: "Customer Support", imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80" },
+            ]}
+          />
+        )
+      case "team--carousel":
+      case "team-carousel":
+        return (
+          <LivePreviewTeamCarousel
+            title="Our Team"
+            subtitle="Swipe to meet everyone"
+            members={[
+              { name: "Jane Smith", specialty: "Lead Technician", imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80" },
+              { name: "Mark Reyes", specialty: "Senior Specialist", imageUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80" },
+              { name: "Ana Cruz", specialty: "Customer Support", imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80" },
+              { name: "Luis Torres", specialty: "Field Technician", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80" },
+            ]}
+          />
+        )
+      case "team--spotlight":
+        return (
+          <LivePreviewWhyChooseMe
+            title="Team Spotlight"
+            subtitle="Get to know our lead professional"
+            agentName="Maria Santos"
+            agentRole="Senior Specialist"
+            licenseNumber="#SP-2024"
+            agentBio="With over 10 years of hands-on experience, Maria leads our team with dedication and expertise. She has helped hundreds of clients achieve outstanding results."
+            agentImageUrl="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&q=80"
+            trustSignals={[
+              { label: "10+ Years Experience", icon: "Award" },
+              { label: "500+ Happy Clients", icon: "Users" },
+              { label: "Certified Professional", icon: "ShieldCheck" },
+            ]}
+          />
+        )
+      case "team--profile":
+        return (
+          <LivePreviewAttorneyProfile
+            label="About Our Expert"
+            name="Juan Dela Cruz"
+            bioParagraph1="With over 15 years of experience in the industry, Juan has built a reputation for excellence, integrity, and results-driven service."
+            bioParagraph2="He is committed to providing personalized attention to every client, ensuring the best possible outcome for each unique situation."
+            signatureName="Juan Dela Cruz"
+            headshotUrl="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&q=80"
+          />
+        )
+      // ── Blog preview ─────────────────────────────────────────────────────
+      case "blog_preview":
+      case "blog":
+        return (
+          <LivePreviewBlogGrid
+            title="Latest Insights"
+            subtitle="Tips, guides, and updates from our team"
+            posts={[
+              { title: "5 Signs You Need a Professional Inspection", excerpt: "Don't wait until it's too late. Here are the top warning signs every homeowner should know.", date: "Jan 15, 2025", category: "Tips", imageUrl: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80" },
+              { title: "How to Choose the Right Service Provider", excerpt: "A step-by-step guide to finding a trusted professional in your area without overpaying.", date: "Feb 3, 2025", category: "Guide", imageUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80" },
+              { title: "What to Expect During Your First Appointment", excerpt: "We walk you through the entire process so you know exactly what happens from start to finish.", date: "Feb 20, 2025", category: "FAQ", imageUrl: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=600&q=80" },
+            ]}
+          />
+        )
+      // ── Contact variants ─────────────────────────────────────────────────
+      case "contact":
+        return (
+          <LivePreviewFeaturesGrid
+            title="Get In Touch"
+            subtitle="We'd love to hear from you"
+            features={[
+              { title: "Call Us", description: "(555) 000-0000", icon: "Phone" },
+              { title: "Email Us", description: "hello@example.com", icon: "Mail" },
+              { title: "Visit Us", description: "123 Main St, City", icon: "MapPin" },
+            ]}
+          />
+        )
+      case "contact--minimal":
+        return (
+          <LivePreviewContactMinimal
+            title="Get in Touch"
+            subtitle="Have questions? We're here to help."
+            email="hello@example.com"
+            phone="(555) 000-0000"
+            address="123 Main St, City"
+          />
+        )
+      case "contact--visual":
+        return (
+          <LivePreviewContactVisual
+            title="Ready to Get Started?"
+            subtitle="Contact us today for a free consultation."
+            email="hello@example.com"
+            phone="(555) 000-0000"
+            address="123 Main St, City"
+          />
+        )
+      case "contact--with-map":
+        return (
+          <LivePreviewContactWithMap
+            title="Visit Our Office"
+            subtitle="We're conveniently located and ready to welcome you."
+            email="hello@example.com"
+            phone="(555) 000-0000"
+            address="123 Main St, City"
+          />
+        )
+      case "contact--columns":
+        return (
+          <LivePreviewContactColumns
+            title="Contact Us"
+            subtitle="Choose your preferred way to reach out."
+            email="hello@example.com"
+            phone="(555) 000-0000"
+            address="123 Main St, City"
+          />
+        )
+      case "contact--split":
+        return (
+          <LivePreviewContactSplit
+            tagline="Let's Work Together"
+            formHeading="Send Us a Message"
+            formSubmitText="Send Message"
+            formThankYouText="Thank you! We'll be in touch soon."
+            email="hello@example.com"
+            phone="(555) 000-0000"
+            address="123 Main St, City"
+          />
+        )
+      // ── FAQ two-column ────────────────────────────────────────────────────
+      case "faq--two-column":
+        return (
+          <LivePreviewFAQTwoColumn
+            title="Common Questions"
+            subtitle="Everything you need to know about our services."
+            items={(DEFAULT_FAQ_ACCORDION.items as any[]).slice(0, 6)}
+          />
+        )
+      // ── Hero variants ────────────────────────────────────────────────────
+      case "hero":
+      case "hero--emergency":
+        return (
+          <LivePreviewFeaturesGrid
+            title="Professional Services"
+            subtitle="Fast, reliable, trusted"
+            features={[
+              { title: "24/7 Service", description: "Always available when you need us", icon: "Clock" },
+              { title: "Licensed & Insured", description: "Fully certified professionals", icon: "ShieldCheck" },
+              { title: "Free Estimates", description: "No obligation quotes", icon: "BadgeDollarSign" },
+            ]}
+          />
+        )
+      default:
+        return null
+    }
 }

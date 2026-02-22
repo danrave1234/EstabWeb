@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { MapPinIcon, BedIcon, BathtubIcon, SquareIcon } from "@phosphor-icons/react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import { dynamicGridCols } from "@/lib/utils/grid-cols";
 
 export type PropertyListing = {
   title: string;
@@ -43,7 +44,7 @@ export default function FeaturedListingsGrid({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
+        <div className={`grid ${dynamicGridCols(items.length, 3)} gap-4 sm:gap-8`}>
           {items.map((property, index) => (
             <div 
               key={index} 

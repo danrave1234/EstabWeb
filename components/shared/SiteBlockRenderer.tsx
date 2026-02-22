@@ -1,6 +1,6 @@
 import { dynamicWithSkeleton } from "@/lib/utils/dynamic";
 import React from "react";
-import { PAGE_CATEGORY_LABELS, SECTION_NAV_MAP, slugify, categoryLabelForSection } from "@/lib/utils/blocks";
+import { SECTION_NAV_MAP, slugify, categoryLabelForSection } from "@/lib/utils/blocks";
 
 import FloatingCTA from "@/components/shared/FloatingCTA";
 import SiteEditorSidebar from "@/components/shared/SiteEditorSidebar";
@@ -172,8 +172,6 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     icon: hero.icon,
   };
 
-  const trustSignals = Array.isArray(hero.trustSignals) ? hero.trustSignals : [];
-
   const heroChiropractorProps = {
     ...heroProps,
     title: hero.title ?? "Live Life Without the Pain.",
@@ -318,15 +316,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
           const rawSections = Array.isArray(page?.activeSections) ? page.activeSections : [];
           const firstSection = typeof rawSections[0] === "string" ? rawSections[0] : "";
           const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : "";
-          const fallbackLabel = categoryLabel
-            ? categoryLabel
-            : slug
-              ? slug.replace(/-/g, " ")
-              : "Home";
           const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim());
-          const label = rawLabel && !isGenericLabel ? rawLabel : fallbackLabel;
-          const autoSlugFromLabel = slugify(rawLabel || `Page ${index + 1}`);
-          const shouldUseDefaultSlug = !slug || (isGenericLabel && (!rawSlug || slug === autoSlugFromLabel));
+          const isGenericSlug = !slug || /^page-\d+$/i.test(slug);
+          const fallbackLabel = categoryLabel || (slug && !isGenericSlug ? slug.replace(/-/g, " ") : `Page ${index + 1}`);
+          const label = isGenericLabel ? fallbackLabel : rawLabel;
+          const shouldUseDefaultSlug = isGenericSlug;
           if (label.toLowerCase() === "home") {
             slug = "";
           } else if (shouldUseDefaultSlug) {
@@ -363,11 +357,20 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     activeSections.some((s: string) => contactSections.includes(s) || footerSections.includes(s)) ||
     activeSections.length === 0;
 
+  const announcementBarIds = ["announcement_bar", "announcement_bar--promo", "announcement_bar--emergency", "announcement_bar--offer", "promo-banner-strip", "cta--promo-strip"];
+  const announcementBarId = Array.isArray(activeSections) ? activeSections.find((s: string) => announcementBarIds.includes(s)) : null;
   const renderedSections = Array.isArray(activeSections) ? activeSections : [];
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {isAdmin && <SiteEditorSidebar />}
+      {announcementBarId && (
+        <PromoBannerStrip
+          text={promoBannerStrip?.text}
+          countdownDate={promoBannerStrip?.countdownDate}
+          buttonText={promoBannerStrip?.buttonText}
+          buttonHref={promoBannerStrip?.buttonHref}
+        />
+      )}
       {showHeader && (
         <Header
           brandName={brand.name}
@@ -417,6 +420,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
               );
               break;
             case "pricing":
+            case "pricing--cards":
             case "packages-pricing":
               sectionContent = (
                 <PricingTable
@@ -443,8 +447,8 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
-            case "awards":
-            case "certifications": {
+            case "certifications":
+            case "awards": {
               let awardsItems = awardsStrip.items
               if (!Array.isArray(awardsItems) && awardsItems && typeof awardsItems === "object") {
                 awardsItems = Object.keys(awardsItems)
@@ -462,6 +466,11 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
               );
               break;
             }
+            case "services":
+            case "services--modern":
+            case "services--highlight":
+            case "specialty_listings":
+            case "comparison":
             case "features":
             case "services-grid":
             case "project-gallery":
@@ -508,6 +517,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "team--spotlight":
             case "why-choose-me":
               sectionContent = (
                 <WhyChooseMe
@@ -525,6 +535,8 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "service_detail":
+            case "service_detail--split":
             case "feature-highlight":
             case "why-choose-us":
               sectionContent = (
@@ -536,6 +548,8 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "process":
+            case "process--timeline":
             case "how-it-works":
             case "delivery-coverage":
             case "enrollment-process":
@@ -548,6 +562,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "testimonials--bar":
             case "testimonials":
               sectionContent = (
                 <TrustBar
@@ -579,6 +594,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "testimonials--grid":
             case "reviews-grid":
               sectionContent = (
                 <ReviewsGrid
@@ -589,6 +605,8 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "team":
+            case "team--carousel":
             case "team-carousel":
               sectionContent = (
                 <TeamCarousel
@@ -600,6 +618,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "team--grid":
             case "team-grid":
               sectionContent = (
                 <TeamGrid
@@ -621,6 +640,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "team--profile":
             case "attorney-profile":
               sectionContent = (
                 <AttorneyProfile
@@ -635,6 +655,10 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "free_consultation":
+            case "booking":
+            case "lead_capture":
+            case "lead_capture--multi-step":
             case "free-consultation":
             case "booking-cta":
               sectionContent = (
@@ -651,6 +675,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "contact--standard":
             case "contact":
               sectionContent = (
                 <ContactForm
@@ -671,6 +696,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "contact--minimal":
             case "contact-minimal":
               sectionContent = (
                 <ContactMinimal
@@ -689,6 +715,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "contact--visual":
             case "contact-visual":
               sectionContent = (
                 <ContactVisual
@@ -705,6 +732,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "contact--with-map":
             case "contact-with-map":
               sectionContent = (
                 <ContactWithMap
@@ -722,6 +750,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "contact--split":
             case "contact-split":
               sectionContent = (
                 <ContactSplit
@@ -742,6 +771,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "contact--columns":
             case "contact-columns":
               sectionContent = (
                 <ContactColumns
@@ -759,6 +789,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "faq--two-column":
             case "patient-faq":
               sectionContent = (
                 <PatientFaq
@@ -779,6 +810,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "blog_preview":
             case "blog":
               sectionContent = (
                 <BlogGrid
@@ -821,6 +853,9 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "guarantee":
+            case "guarantee--badge":
+            case "guarantee--safety":
             case "warranty-block":
               sectionContent = (
                 <WarrantyGuaranteeBlock
@@ -833,6 +868,8 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "comparison--table":
+            case "comparison--vs":
             case "ac-types-grid":
               sectionContent = (
                 <ACTypesGrid
@@ -843,6 +880,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "price_preview":
             case "price-preview-strip":
               sectionContent = (
                 <PricePreviewStrip
@@ -854,6 +892,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "cta--emergency":
             case "emergency-cta-strip":
               sectionContent = (
                 <EmergencyCTAStrip
@@ -867,6 +906,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "pricing--subscription":
             case "maintenance-plans":
               sectionContent = (
                 <MaintenancePlans
@@ -878,6 +918,10 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "gallery":
+            case "gallery--grid":
+            case "case_study":
+            case "case_study--detail":
             case "before-after-gallery-grid":
               sectionContent = (
                 <BeforeAfterGalleryGrid
@@ -890,6 +934,8 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "cta":
+            case "cta--banner":
             case "promo-cta-section":
               sectionContent = (
                 <PromoCTASection
@@ -909,6 +955,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "cta--sticky":
             case "messenger-sticky-cta":
               sectionContent = (
                 <MessengerStickyCTA
@@ -922,6 +969,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "service_area":
             case "service-area-map":
               sectionContent = (
                 <ServiceAreaMap
@@ -935,6 +983,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "gallery--slider":
             case "before-after-slider":
               sectionContent = (
                 <BeforeAfterSlider
@@ -948,17 +997,16 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "cta--promo-strip":
+            case "announcement_bar":
+            case "announcement_bar--promo":
+            case "announcement_bar--emergency":
+            case "announcement_bar--offer":
             case "promo-banner-strip":
-              sectionContent = (
-                <PromoBannerStrip
-                  key={key}
-                  text={promoBannerStrip?.text}
-                  countdownDate={promoBannerStrip?.countdownDate}
-                  buttonText={promoBannerStrip?.buttonText}
-                  buttonHref={promoBannerStrip?.buttonHref}
-                />
-              );
+              // Rendered above <Header> — skip here to avoid duplicate
+              sectionContent = null;
               break;
+            case "payment_options":
             case "payment-options-strip":
               sectionContent = (
                 <PaymentOptionsStrip
@@ -968,6 +1016,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "testimonials--facebook":
             case "facebook-review-embed":
               sectionContent = (
                 <FacebookReviewEmbed
@@ -981,6 +1030,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "service_area--radius":
             case "coverage-radius-block":
               sectionContent = (
                 <CoverageRadiusBlock
@@ -995,6 +1045,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "stats":
             case "stats-section":
               sectionContent = (
                 <StatsSection
@@ -1006,6 +1057,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "faq":
             case "faq-accordion":
               sectionContent = (
                 <FAQAccordion
@@ -1016,6 +1068,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "logo_cloud":
             case "logo-cloud":
               sectionContent = (
                 <LogoCloud
@@ -1026,6 +1079,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                 />
               );
               break;
+            case "trust_badges":
             case "trust-badges-grid":
               sectionContent = (
                 <TrustBadgesGrid

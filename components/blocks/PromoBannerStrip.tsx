@@ -10,6 +10,8 @@ export type PromoBannerStripProps = {
   buttonText?: string;
   buttonHref?: string;
   isVisible?: boolean;
+  expiredText?: string;
+  dismissKey?: string;
 };
 
 export default function PromoBannerStrip({
@@ -18,9 +20,23 @@ export default function PromoBannerStrip({
   buttonText,
   buttonHref = "#contact",
   isVisible: initialIsVisible = true,
+  expiredText = "This offer has ended.",
+  dismissKey,
 }: PromoBannerStripProps) {
+  const storageKey = `promo-banner-dismissed-${dismissKey || "default"}`;
   const [timeLeft, setTimeLeft] = useState<{ hours: string; minutes: string; seconds: string } | null>(null);
-  const [isVisible, setIsVisible] = useState(initialIsVisible);
+  const [expired, setExpired] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+
+  // Restore dismissed state from localStorage on mount
+  useEffect(() => {
+    if (!initialIsVisible) { setIsVisible(false); return; }
+    try {
+      if (typeof window !== "undefined" && localStorage.getItem(storageKey) === "1") {
+        setIsVisible(false);
+      }
+    } catch {}
+  }, [storageKey, initialIsVisible]);
 
   useEffect(() => {
     if (!countdownDate) return;
@@ -28,6 +44,7 @@ export default function PromoBannerStrip({
     const calculateTime = () => {
       const difference = +new Date(countdownDate) - +new Date();
       if (difference > 0) {
+        setExpired(false);
         setTimeLeft({
           hours: Math.floor(difference / (1000 * 60 * 60)).toString().padStart(2, "0"),
           minutes: Math.floor((difference / 1000 / 60) % 60).toString().padStart(2, "0"),
@@ -35,6 +52,7 @@ export default function PromoBannerStrip({
         });
       } else {
         setTimeLeft(null);
+        setExpired(true);
       }
     };
 
@@ -42,6 +60,11 @@ export default function PromoBannerStrip({
     calculateTime();
     return () => clearInterval(timer);
   }, [countdownDate]);
+
+  const handleDismiss = () => {
+    setIsVisible(false);
+    try { if (typeof window !== "undefined") localStorage.setItem(storageKey, "1"); } catch {}
+  };
 
   if (!isVisible) return null;
 
@@ -76,8 +99,12 @@ export default function PromoBannerStrip({
         </a>
       )}
 
+      {expired && countdownDate && (
+        <span className="text-[11px] font-semibold opacity-70 italic">{expiredText}</span>
+      )}
+
       <button 
-        onClick={() => setIsVisible(false)}
+        onClick={handleDismiss}
         className="absolute right-2 sm:right-4 p-1 hover:bg-white/10 rounded-full transition-colors"
       >
         <X className="w-4 h-4 opacity-60" />

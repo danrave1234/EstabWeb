@@ -1,6 +1,7 @@
 "use client";
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import { dynamicGridCols } from "@/lib/utils/grid-cols";
 
 export type StatItem = {
   label: string;
@@ -37,10 +38,10 @@ export default function StatsSection({
           </div>
         )}
 
-        <div className={`grid gap-2 sm:gap-8 ${
-          variant === "bar" 
-            ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x border-y border-border py-4 sm:py-12" 
-            : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+        <div className={`grid gap-2 sm:gap-8 ${dynamicGridCols(items.length, 4)} ${
+          variant === "bar"
+            ? "divide-y sm:divide-y-0 sm:divide-x border-y border-border py-4 sm:py-12"
+            : ""
         }`}>
           {items.map((stat, i) => (
             <div key={i} className={`flex flex-col items-center text-center p-3 sm:p-6 ${

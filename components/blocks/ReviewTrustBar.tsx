@@ -1,6 +1,7 @@
 "use client";
 
 import { StarIcon, SealCheckIcon } from "@phosphor-icons/react";
+import { dynamicGridCols } from "@/lib/utils/grid-cols";
 
 export type ReviewItem = {
   quoteTitle: string;
@@ -55,13 +56,11 @@ export default function ReviewTrustBar({
             />
           )}
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 items-start">
+        <div className={`grid ${dynamicGridCols(testimonials.length, 3)} gap-4 sm:gap-8 items-start`}>
           {testimonials.slice(0, 3).map((review, index) => (
             <div
               key={index}
-              className={`bg-muted/50 rounded-xl p-4 sm:p-6 border border-border flex flex-col ${
-                index === 2 ? "sm:col-span-2 lg:col-span-1" : ""
-              }`}
+              className="bg-muted/50 rounded-xl p-4 sm:p-6 border border-border flex flex-col"
             >
               <p className="font-semibold text-foreground text-sm sm:text-lg mb-1.5 sm:mb-2 leading-tight">
                 &ldquo;{review.quoteTitle}&rdquo;

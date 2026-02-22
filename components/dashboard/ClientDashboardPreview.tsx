@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/Dialog"
 import { GENRE_LABELS } from "@/config/presets"
 import { slugify, PAGE_CATEGORY_LABELS, categoryLabelForSection } from "@/lib/utils/blocks"
+import { BLOCK_MAP } from "@/lib/utils/block-registry"
 import { SectionLivePreview } from "@/components/dashboard/SectionLivePreview"
 import { AddSectionModal } from "@/components/dashboard/AddSectionModal"
 import { VersionHistoryModal } from "@/components/dashboard/VersionHistoryModal"
@@ -68,7 +69,7 @@ import {
 
 // SECTION_CATEGORIES moved to @/lib/utils/block-registry
 
-const formatSectionLabel = (id: string) => id.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
+const formatSectionLabel = (id: string) => BLOCK_MAP[id]?.label ?? id.replace(/[-_]/g, " ").replace(/--/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
 
 // slugify, PAGE_CATEGORY_LABELS, categoryLabelForSection imported from @/lib/utils/blocks
 
@@ -84,8 +85,32 @@ const normalizeArrayItems = <T,>(value: unknown, fallback: T[]): T[] => {
 }
 
 const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
-  'awards': DEFAULT_AWARDS_STRIP,
+  // ── canonical IDs (new architecture) ──────────────────────────────────────
   'certifications': DEFAULT_AWARDS_STRIP,
+  'testimonials': DEFAULT_REVIEW_TRUST_BAR,
+  'testimonials--grid': DEFAULT_REVIEW_TRUST_BAR,
+  'testimonials--facebook': DEFAULT_FACEBOOK_REVIEW_EMBED,
+  'logo_cloud': DEFAULT_LOGO_CLOUD,
+  'faq': DEFAULT_FAQ_ACCORDION,
+  'faq--two-column': DEFAULT_PRACTICE_AREAS,
+  'blog_preview': DEFAULT_BLOG,
+  'gallery': DEFAULT_BEFORE_AFTER_GALLERY,
+  'gallery--slider': DEFAULT_BEFORE_AFTER_GALLERY,
+  'process': DEFAULT_HOW_IT_WORKS,
+  'process--timeline': DEFAULT_TREATMENT_PROCESS,
+  'specialty_listings': DEFAULT_FEATURED_LISTINGS,
+  'comparison': DEFAULT_AC_TYPES,
+  'pricing': DEFAULT_PRICING_TABLE,
+  'pricing--subscription': DEFAULT_MAINTENANCE_PLANS,
+  'price_preview': DEFAULT_PRICE_PREVIEW,
+  'service_area': DEFAULT_SERVICE_AREA_MAP,
+  'service_area--radius': DEFAULT_DELIVERY_COVERAGE,
+  'announcement_bar': { text: 'Limited Promo: Get 20% off on all services this month!', buttonText: 'Book Now', buttonHref: '#contact', countdownDate: '' },
+  'announcement_bar--promo': { text: 'Limited Promo: Get 20% off on all services this month!', buttonText: 'Book Now', buttonHref: '#contact', countdownDate: '' },
+  'announcement_bar--emergency': { text: '24/7 Emergency Service Available — Call Now!', buttonText: 'Call Now', buttonHref: 'tel:+18005551234', countdownDate: '' },
+  'announcement_bar--offer': { text: 'Free Inspection with Every Service — Limited Time!', buttonText: 'Claim Offer', buttonHref: '#contact', countdownDate: '' },
+  // ── legacy IDs (kept for backward-compat) ─────────────────────────────────
+  'awards': DEFAULT_AWARDS_STRIP,
   'faq-accordion': DEFAULT_FAQ_ACCORDION,
   'blog': DEFAULT_BLOG,
   'before-after-gallery-grid': DEFAULT_BEFORE_AFTER_GALLERY,
@@ -99,7 +124,6 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
   'financing-section': DEFAULT_FINANCING,
   'ac-types-grid': DEFAULT_AC_TYPES,
   'price-preview-strip': DEFAULT_PRICE_PREVIEW,
-  'pricing': DEFAULT_PRICING_TABLE,
   'maintenance-plans': DEFAULT_MAINTENANCE_PLANS,
   'facebook-review-embed': DEFAULT_FACEBOOK_REVIEW_EMBED,
   'why-choose-me': DEFAULT_WHY_CHOOSE_ME,
@@ -358,11 +382,10 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
       const firstSection = typeof rawSections[0] === 'string' ? rawSections[0] : ''
       const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : ''
       const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim())
-      const fallbackLabel = categoryLabel || (slug ? slug.replace(/-/g, ' ') : `Page ${index + 1}`)
+      const isGenericSlug = !slug || /^page-\d+$/i.test(slug)
+      const fallbackLabel = categoryLabel || (slug && !isGenericSlug ? slug.replace(/-/g, ' ') : `Page ${index + 1}`)
       const label = isGenericLabel ? fallbackLabel : rawLabel
-      const autoSlugFromLabel = slugify(rawLabel || `Page ${index + 1}`)
-      const shouldUseDefaultSlug = !slug || (isGenericLabel && (!rawSlug || slug === autoSlugFromLabel))
-      const nextSlug = label.toLowerCase() === 'home' ? '' : (shouldUseDefaultSlug ? slugify(label) : slug)
+      const nextSlug = label.toLowerCase() === 'home' ? '' : (slug || slugify(label))
       return {
         slug: nextSlug,
         label,
@@ -661,11 +684,10 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
           const firstSection = typeof rawSections[0] === 'string' ? rawSections[0] : ''
           const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : ''
           const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim())
-          const fallbackLabel = categoryLabel || (slug ? slug.replace(/-/g, ' ') : `Page ${index + 1}`)
-          const label = isGenericLabel ? fallbackLabel : rawLabel
-          const autoSlugFromLabel = slugify(rawLabel || `Page ${index + 1}`)
-          const shouldUseDefaultSlug = !slug || (isGenericLabel && (!rawSlug || slug === autoSlugFromLabel))
-          const nextSlug = label.toLowerCase() === 'home' ? '' : (shouldUseDefaultSlug ? slugify(label) : slug)
+          const isGenericSlug = !slug || /^page-\d+$/i.test(slug)
+          const fallbackLabel = categoryLabel || (slug && !isGenericSlug ? slug.replace(/-/g, ' ') : `Page ${index + 1}`)
+          const label = (isGenericLabel || categoryLabel) ? fallbackLabel : rawLabel
+          const nextSlug = label.toLowerCase() === 'home' ? '' : (isGenericSlug ? slugify(label) : (slug || slugify(label)))
           return {
             slug: nextSlug,
             label,
@@ -1046,7 +1068,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
 
               {activeSections.map((section: string, sectionIndex: number) => {
                 if (section === 'hero') return null
-                if (sectionSearchQuery && !section.replace(/-/g, ' ').toLowerCase().includes(sectionSearchQuery.toLowerCase())) return null
+                const sectionDisplayLabel = BLOCK_MAP[section]?.label ?? section.replace(/[-_]/g, ' ')
+                if (sectionSearchQuery && !sectionDisplayLabel.toLowerCase().includes(sectionSearchQuery.toLowerCase())) return null
 
                 const isDragging = dragSectionIndex === sectionIndex
                 const isDropTarget = dropSectionIndex === sectionIndex
@@ -1088,8 +1111,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                       }}
                       className="flex-1 min-w-0 text-left py-1"
                     >
-                      <p className="text-sm font-bold truncate capitalize">{section.replace(/-/g, ' ')}</p>
-                      <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Block Edit</p>
+                      <p className="text-sm font-bold truncate">{BLOCK_MAP[section]?.label ?? section.replace(/[-_]/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</p>
+                      <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">{BLOCK_MAP[section]?.variant ?? 'Block'}</p>
                     </button>
                     <button
                       type="button"
@@ -1871,7 +1894,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                     .map(([key, value]) => {
                       const isPageLinkUrl = ['privacyurl', 'termsurl', 'cookieurl'].includes(key.toLowerCase());
                       const isImage = !isPageLinkUrl && (key.toLowerCase().includes('url') || key.toLowerCase().includes('image') || key.toLowerCase().includes('logo'));
-                      const isTextarea = typeof value === 'string' && value.length > 80;
+                      const isDatetime = typeof value === 'string' && (key.toLowerCase().includes('countdown') || key.toLowerCase().includes('enddate'));
+                      const isTextarea = !isDatetime && typeof value === 'string' && value.length > 80;
                       const isBoolean = typeof value === 'boolean';
                       const isObject = typeof value === 'object' && value !== null && !Array.isArray(value);
 
@@ -2053,6 +2077,22 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                                   return next
                                 })
                               }}
+                            />
+                          ) : isDatetime ? (
+                            <input
+                              type="datetime-local"
+                              value={value ? (value as string).slice(0, 16) : ''}
+                              onChange={(e) => {
+                                const val = e.target.value ? new Date(e.target.value).toISOString() : ''
+                                const sectionKey = sectionIdToKey(selectedSection!)
+                                setFormValues(prev => {
+                                  const next = { ...prev, [key]: val }
+                                  setModified(m => ({ ...m, [sectionKey]: next }))
+                                  autoSaveSection(selectedSection!, next)
+                                  return next
+                                })
+                              }}
+                              className="w-full px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20"
                             />
                           ) : isTextarea ? (
                             <textarea
