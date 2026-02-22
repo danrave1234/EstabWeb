@@ -542,9 +542,35 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
             afterLabel={DEFAULT_BEFORE_AFTER_GALLERY.afterLabel}
           />
         )
+      case "gallery":
+      case "gallery--grid":
+        return (
+          <div className="py-16 px-8 bg-background">
+            <div className="max-w-5xl mx-auto">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl font-bold text-foreground mb-3">Our Gallery</h2>
+                <p className="text-muted-foreground">A showcase of our work.</p>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                {[
+                  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80",
+                  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&q=80",
+                  "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=400&q=80",
+                  "https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=400&q=80",
+                  "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400&q=80",
+                  "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80",
+                ].map((src, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <div key={i} className="aspect-square rounded-xl overflow-hidden bg-muted">
+                    <img src={src} alt={`Gallery ${i + 1}`} className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
       case "case_study":
       case "case_study--detail":
-      case "gallery":
       case "before-after-gallery-grid":
         return (
           <LivePreviewBeforeAfterGallery
@@ -587,15 +613,39 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
       case "pricing--subscription":
       case "maintenance-plans":
         return (
-          <LivePreviewMaintenancePlans
-            title="Maintenance Plans"
-            subtitle="Keep your system running all year round with our scheduled programs."
-            plans={[
-              { name: "Basic", price: "₱999", period: "/ month", description: "Essential maintenance for small setups.", features: ["Monthly check-up", "Filter cleaning", "Email support"], isPopular: false },
-              { name: "Standard", price: "₱1,999", period: "/ month", description: "Comprehensive care for most homes.", features: ["Bi-monthly visits", "Parts discount", "Priority scheduling", "Phone support"], isPopular: true },
-              { name: "Premium", price: "₱3,499", period: "/ month", description: "Full-coverage plan with unlimited visits.", features: ["Unlimited visits", "Free parts replacement", "24/7 emergency line", "Annual deep clean"], isPopular: false },
-            ]}
-          />
+          <div className="py-16 px-8 bg-muted/30">
+            <div className="max-w-5xl mx-auto">
+              <div className="text-center mb-4">
+                <h2 className="text-3xl font-bold text-foreground mb-2">Subscription Plans</h2>
+                <p className="text-muted-foreground mb-6">Recurring coverage that keeps you protected all year.</p>
+                <div className="inline-flex items-center gap-1 bg-muted rounded-full p-1 text-sm mb-8">
+                  <span className="px-4 py-1.5 rounded-full bg-background shadow font-semibold text-foreground">Monthly</span>
+                  <span className="px-4 py-1.5 rounded-full text-muted-foreground">Annual <span className="text-primary font-semibold text-xs ml-1">Save 20%</span></span>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {[
+                  { name: "Starter", price: "₱799", features: ["1 service visit / month", "Email support", "Basic reporting"], popular: false },
+                  { name: "Growth", price: "₱1,599", features: ["3 service visits / month", "Priority support", "Advanced reporting", "Parts discount"], popular: true },
+                  { name: "Enterprise", price: "₱2,999", features: ["Unlimited visits", "Dedicated account manager", "Custom SLA", "24/7 hotline", "Free replacements"], popular: false },
+                ].map((plan, i) => (
+                  <div key={i} className={`flex items-center justify-between p-5 rounded-2xl border ${plan.popular ? "border-primary bg-primary/5 shadow-md" : "border-border bg-background"}`}>
+                    <div className="flex items-center gap-4">
+                      {plan.popular && <span className="text-xs font-bold bg-primary text-white px-2 py-0.5 rounded-full">Most Popular</span>}
+                      <div>
+                        <p className="font-bold text-foreground">{plan.name}</p>
+                        <p className="text-xs text-muted-foreground">{plan.features.join(" · ")}</p>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0 ml-4">
+                      <p className="text-2xl font-black text-primary">{plan.price}</p>
+                      <p className="text-xs text-muted-foreground">/ month</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )
       case "comparison--table":
         return (
