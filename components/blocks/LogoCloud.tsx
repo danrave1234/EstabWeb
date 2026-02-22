@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import { dynamicGridCols } from "@/lib/utils/grid-cols";
 
 export type LogoItem = {
   name: string;
@@ -30,8 +31,8 @@ export default function LogoCloud({
         )}
         
         <div className={
-          variant === "grid" 
-            ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 md:gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500" 
+          variant === "grid"
+            ? `grid ${dynamicGridCols(items.length, 6)} gap-8 md:gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500`
             : "flex flex-wrap items-center justify-center gap-12 sm:gap-20 opacity-50"
         }>
           {items.map((logo, i) => (

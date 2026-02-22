@@ -1,6 +1,7 @@
 "use client";
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import { dynamicGridCols } from "@/lib/utils/grid-cols";
 
 export type TrustBadge = {
   label: string;
@@ -34,7 +35,7 @@ export default function TrustBadgesGrid({ title, subtitle, items }: TrustBadgesG
           </div>
         )}
         
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-8">
+          <div className={`grid ${dynamicGridCols(items.length, 5)} gap-3 sm:gap-8`}>
             {items.map((item, index) => {
               const hasImage = Boolean(item.imageUrl);
               return (

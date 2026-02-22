@@ -85,15 +85,11 @@ export default function LegalPageTemplate({ title, lastUpdated, content, serverD
           const rawSections = Array.isArray(page?.activeSections) ? page.activeSections : [];
           const firstSection = typeof rawSections[0] === "string" ? rawSections[0] : "";
           const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : "";
-          const fallbackLabel = categoryLabel
-            ? categoryLabel
-            : slug
-              ? slug.replace(/-/g, " ")
-              : "Home";
           const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim());
-          const label = rawLabel && !isGenericLabel ? rawLabel : fallbackLabel;
-          const autoSlugFromLabel = slugify(rawLabel || `Page ${index + 1}`);
-          const shouldUseDefaultSlug = !slug || (isGenericLabel && (!rawSlug || slug === autoSlugFromLabel));
+          const isGenericSlug = !slug || /^page-\d+$/i.test(slug);
+          const fallbackLabel = categoryLabel || (slug && !isGenericSlug ? slug.replace(/-/g, " ") : `Page ${index + 1}`);
+          const label = (isGenericLabel || categoryLabel) ? fallbackLabel : rawLabel;
+          const shouldUseDefaultSlug = isGenericSlug;
           if (label.toLowerCase() === "home") {
             slug = "";
           } else if (shouldUseDefaultSlug) {

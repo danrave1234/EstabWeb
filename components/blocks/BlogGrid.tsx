@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRightIcon } from "@phosphor-icons/react";
+import { dynamicGridCols } from "@/lib/utils/grid-cols";
 
 export type BlogPost = {
   title: string;
@@ -44,7 +45,7 @@ export default function BlogGrid({
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
+        <div className={`grid ${dynamicGridCols(posts.length, 3)} gap-4 sm:gap-8`}>
           {posts.map((post, index) => (
             <article
               key={index}

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Reveal from "@/components/shared/Reveal";
+import { dynamicGridCols } from "@/lib/utils/grid-cols";
 
 export type TeamMember = {
   imageUrl: string;
@@ -35,7 +36,7 @@ export default function TeamGrid({
           </p>
         </Reveal>
 
-        <Reveal as="div" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
+        <Reveal as="div" className={`grid ${dynamicGridCols(members.length, 4)} gap-4 sm:gap-8`}>
           {members.map((member, index) => (
             <div key={index} className="group relative flex flex-col items-center">
               <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden mb-6 shadow-lg bg-muted">

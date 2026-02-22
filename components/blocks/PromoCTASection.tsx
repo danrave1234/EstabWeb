@@ -34,31 +34,30 @@ export default function PromoCTASection({
   minsLabel = "Mins",
   secsLabel = "Secs",
 }: PromoCTASectionProps) {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+  const [expired, setExpired] = useState(false);
 
   useEffect(() => {
     if (!countdownEndDate) return;
 
-    const targetDate = new Date(countdownEndDate).getTime();
-
-    const interval = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
-
-      if (distance < 0) {
-        clearInterval(interval);
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+    const calculate = () => {
+      const distance = new Date(countdownEndDate).getTime() - Date.now();
+      if (distance <= 0) {
+        setTimeLeft(null);
+        setExpired(true);
         return;
       }
-
+      setExpired(false);
       setTimeLeft({
         days: Math.floor(distance / (1000 * 60 * 60 * 24)),
         hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
         minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
         seconds: Math.floor((distance % (1000 * 60)) / 1000),
       });
-    }, 1000);
+    };
 
+    calculate();
+    const interval = setInterval(calculate, 1000);
     return () => clearInterval(interval);
   }, [countdownEndDate]);
 
@@ -95,7 +94,7 @@ export default function PromoCTASection({
             {subtitle}
           </p>
 
-          {countdownEndDate && (
+          {countdownEndDate && !expired && timeLeft && (
             <div className="flex justify-center gap-4 sm:gap-8">
               {[
                 { label: daysLabel, value: timeLeft.days },
@@ -110,6 +109,12 @@ export default function PromoCTASection({
                   <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/60 mt-2">{item.label}</span>
                 </div>
               ))}
+            </div>
+          )}
+
+          {countdownEndDate && expired && (
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 border border-white/20 rounded-full">
+              <span className="text-sm font-bold text-white/70 uppercase tracking-widest">This offer has ended</span>
             </div>
           )}
 
