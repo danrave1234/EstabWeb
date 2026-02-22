@@ -13,6 +13,7 @@ import PreviewFrame from "@/components/dashboard/PreviewFrame"
 import AwardIconPicker from "@/components/dashboard/AwardIconPicker"
 import { createClient } from "@/lib/supabase/client"
 import ImageUpload from "@/components/shared/ImageUpload"
+import MapPinPicker from "@/components/dashboard/MapPinPicker"
 import {
   Dialog,
   DialogContent,
@@ -55,6 +56,7 @@ import {
   DEFAULT_SERVICE_AREA_MAP,
   DEFAULT_LOGO_CLOUD,
   DEFAULT_DELIVERY_COVERAGE,
+  DEFAULT_CONTACT_WITH_MAP,
   DEFAULT_BLUEPRINT_CONFIG,
   fieldLabel,
   ensureStringArray,
@@ -105,6 +107,8 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
   'price_preview': DEFAULT_PRICE_PREVIEW,
   'service_area': DEFAULT_SERVICE_AREA_MAP,
   'service_area--radius': DEFAULT_DELIVERY_COVERAGE,
+  'contact_with_map': DEFAULT_CONTACT_WITH_MAP,
+  'contact-with-map': DEFAULT_CONTACT_WITH_MAP,
   'announcement_bar': { text: 'Limited Promo: Get 20% off on all services this month!', buttonText: 'Book Now', buttonHref: '#contact', countdownDate: '' },
   'announcement_bar--promo': { text: 'Limited Promo: Get 20% off on all services this month!', buttonText: 'Book Now', buttonHref: '#contact', countdownDate: '' },
   'announcement_bar--emergency': { text: '24/7 Emergency Service Available — Call Now!', buttonText: 'Call Now', buttonHref: 'tel:+18005551234', countdownDate: '' },
@@ -130,6 +134,7 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
   'service-area-map': DEFAULT_SERVICE_AREA_MAP,
   'logo-cloud': DEFAULT_LOGO_CLOUD,
   'delivery-coverage': DEFAULT_DELIVERY_COVERAGE,
+  'contact-with-map': DEFAULT_CONTACT_WITH_MAP,
 }
 
 // prefetchSectionPreview, MinimalSectionPreview, SectionLivePreview moved to @/components/dashboard/SectionLivePreview
@@ -826,6 +831,10 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
         const baseS = (base || {}) as Record<string, any>
         let cities = Array.isArray(baseS.cities) ? baseS.cities : (Array.isArray(baseS.areas) ? baseS.areas : DEFAULT_SERVICE_AREA_MAP.cities)
         const merged = { ...DEFAULT_SERVICE_AREA_MAP, ...baseS, cities }
+        setFormWithCollapsed(merged)
+      } else if (sectionKey === 'contactWithMap') {
+        const baseCM = (base || {}) as Record<string, any>
+        const merged = { ...DEFAULT_CONTACT_WITH_MAP, ...baseCM }
         setFormWithCollapsed(merged)
       } else if (sectionKey === 'logoCloud') {
         const baseL = (base || {}) as Record<string, any>
@@ -2065,6 +2074,19 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                                 </label>
                               </div>
                             </div>
+                          ) : key === 'googleMapsEmbedUrl' ? (
+                            <MapPinPicker
+                              value={value as string}
+                              onChange={(url) => {
+                                const sectionKey = sectionIdToKey(selectedSection!)
+                                setFormValues(prev => {
+                                  const next = { ...prev, [key]: url }
+                                  setModified(m => ({ ...m, [sectionKey]: next }))
+                                  autoSaveSection(selectedSection!, next)
+                                  return next
+                                })
+                              }}
+                            />
                           ) : isImage ? (
                             <ImageUpload
                               value={value as string}
