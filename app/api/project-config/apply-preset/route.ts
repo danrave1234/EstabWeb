@@ -7,7 +7,7 @@ import { addSubdomainToVercel } from '@/lib/utils/vercel-domains'
 
 export async function POST(req: Request) {
   try {
-    const { presetKey, projectId } = await req.json()
+    const { presetKey, projectId, customSections } = await req.json()
     console.log('[apply-preset] Request:', { presetKey, projectId })
     
     if (!presetKey) return NextResponse.json({ error: 'Missing preset key' }, { status: 400 })
@@ -47,7 +47,9 @@ export async function POST(req: Request) {
       colorTheme: preset.colorTheme,
       typographyStyle: preset.typographyStyle || 'elegant',
       footerStyle: 'minimal',
-      activeSections: preset.activeSections,
+      activeSections: Array.isArray(customSections) && customSections.length > 0
+        ? customSections
+        : preset.activeSections,
       ...preset.content
     }
 

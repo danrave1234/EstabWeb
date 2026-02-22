@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { dynamicGridCols } from "@/lib/utils/grid-cols";
 
 export type TeamMember = {
   imageUrl: string;
@@ -39,7 +40,7 @@ export default function TeamCarousel({
             </p>
           )}
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        <div className={`grid gap-4 sm:gap-6 ${dynamicGridCols(members.length, 4)}`}>
           {members.map((member, index) => {
             const isExternal = member.imageUrl.startsWith("http");
             return (

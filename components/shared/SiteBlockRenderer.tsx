@@ -1,4 +1,5 @@
 import { dynamicWithSkeleton } from "@/lib/utils/dynamic";
+import { DEFAULT_FAQ_ACCORDION } from "@/config/dashboard-config";
 import React from "react";
 import { SECTION_NAV_MAP, slugify, categoryLabelForSection } from "@/lib/utils/blocks";
 
@@ -69,6 +70,7 @@ const SafetySection = dynamicWithSkeleton(() => import("@/components/blocks/Safe
 const WarrantyGuaranteeBlock = dynamicWithSkeleton(() => import("@/components/blocks/WarrantyGuaranteeBlock"), { className: "h-[400px]" });
 
 const BeforeAfterGalleryGrid = dynamicWithSkeleton(() => import("@/components/blocks/BeforeAfterGalleryGrid"), { className: "h-[600px]" });
+const PhotoGalleryGrid = dynamicWithSkeleton(() => import("@/components/blocks/PhotoGalleryGrid"), { className: "h-[600px]" });
 const PromoCTASection = dynamicWithSkeleton(() => import("@/components/blocks/PromoCTASection"), { className: "h-[500px]" });
 
 // Real Estate Specific Blocks
@@ -148,7 +150,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     facebookReviewEmbed = {},
     coverageRadiusBlock = {},
     statsSection = {},
-    faqAccordion = {},
+    faqAccordion = DEFAULT_FAQ_ACCORDION,
     logoCloud = {},
     navigation = [],
   } = data;
@@ -920,6 +922,15 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
               break;
             case "gallery":
             case "gallery--grid":
+              sectionContent = (
+                <PhotoGalleryGrid
+                  key={key}
+                  title={beforeAfterGallery.title}
+                  subtitle={beforeAfterGallery.subtitle}
+                  items={(beforeAfterGallery as { items?: { imageUrl?: string; caption?: string; alt?: string }[] }).items}
+                />
+              );
+              break;
             case "case_study":
             case "case_study--detail":
             case "before-after-gallery-grid":
