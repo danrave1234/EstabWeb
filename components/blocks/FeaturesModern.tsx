@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
 import { CheckCircleIcon } from "@phosphor-icons/react";
@@ -66,7 +66,7 @@ export default function FeaturesModern({
                     </div>
                   </div>
                   <h3 className="text-xs sm:text-xl font-bold mb-1 sm:mb-3 leading-tight">{feature.title}</h3>
-                  <p className={`text-[9px] sm:text-sm leading-relaxed line-clamp-3 sm:line-clamp-none ${index === 1 ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                  <p className={`text-xs sm:text-sm leading-relaxed line-clamp-3 sm:line-clamp-none ${index === 1 ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
                     {feature.description}
                   </p>
                 </div>
@@ -78,3 +78,4 @@ export default function FeaturesModern({
     </section>
   );
 }
+

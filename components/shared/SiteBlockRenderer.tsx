@@ -321,7 +321,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
           const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim());
           const isGenericSlug = !slug || /^page-\d+$/i.test(slug);
           const fallbackLabel = categoryLabel || (slug && !isGenericSlug ? slug.replace(/-/g, " ") : `Page ${index + 1}`);
-          const label = isGenericLabel ? fallbackLabel : rawLabel;
+          const label = categoryLabel || (isGenericLabel ? fallbackLabel : rawLabel);
           const shouldUseDefaultSlug = isGenericSlug;
           if (label.toLowerCase() === "home") {
             slug = "";

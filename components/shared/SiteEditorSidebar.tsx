@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import useSWR from "swr";
 import { Settings, X, ChevronRight, ChevronLeft, Download, Moon, Sun, Type, Layout, Palette, PanelTop, PanelBottom, Layers, Copy, Check, Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import { GENRE_PRESETS, GENRE_LABELS } from "@/config/presets";
 import { toast } from "sonner";
@@ -151,10 +152,16 @@ function SectionToggle({ id, label, activeSections, onToggle }: { id: string, la
 
 type SectionId = (typeof SECTIONS)[number]["id"];
 
+const configFetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export default function SiteEditorSidebar() {
   const [isOpen, setIsVisible] = useState(false);
+  const { data: swrData, isLoading: loading } = useSWR<any>("/api/config", configFetcher);
   const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (swrData) setData(swrData);
+  }, [swrData]);
   const [activeTab, setActiveTab] = useState<"presets" | "design" | "layout" | "content" | "brand" | "team" | "contact">("presets");
   const [prefix, setPrefix] = useState("");
   const [maxUses, setMaxUses] = useState<number>(1);
@@ -163,15 +170,6 @@ export default function SiteEditorSidebar() {
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [generatedCode, setGeneratedCode] = useState("");
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/config")
-      .then((res) => res.json())
-      .then((json) => {
-        setData(json);
-        setLoading(false);
-      });
-  }, []);
 
   const updateData = async (newData: any) => {
     setData(newData);

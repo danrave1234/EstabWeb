@@ -89,7 +89,7 @@ export function applyPageDefaults(pages: SitePageConfig[]): SitePageConfig[] {
     const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : "";
     const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim());
     const fallbackLabel = categoryLabel || (slug ? slug.replace(/-/g, " ") : `Page ${index + 1}`);
-    const label = isGenericLabel ? fallbackLabel : rawLabel;
+    const label = categoryLabel || (isGenericLabel ? fallbackLabel : rawLabel);
     const nextSlug = label.toLowerCase() === "home" ? "" : (slug || slugify(label));
     return {
       ...page,

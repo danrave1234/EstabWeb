@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -75,7 +75,7 @@ export default function ContactVisual({
                   <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="text-center sm:text-left">
-                  <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-0.5 sm:mb-1">Call Us Now</p>
+                  <p className="text-[10px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-0.5 sm:mb-1">Call Us Now</p>
                   <p className="text-[10px] sm:text-xl font-bold">{phone}</p>
                 </div>
               </div>
@@ -85,7 +85,7 @@ export default function ContactVisual({
                   <EnvelopeIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="text-center sm:text-left overflow-hidden w-full">
-                  <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-0.5 sm:mb-1">Email Inquiry</p>
+                  <p className="text-[10px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-0.5 sm:mb-1">Email Inquiry</p>
                   <p className="text-[10px] sm:text-xl font-bold truncate">{email}</p>
                 </div>
               </div>
@@ -95,7 +95,7 @@ export default function ContactVisual({
                   <MapPinIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="text-center sm:text-left">
-                  <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-0.5 sm:mb-1">Our Location</p>
+                  <p className="text-[10px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-0.5 sm:mb-1">Our Location</p>
                   <p className="text-[10px] sm:text-xl font-bold leading-tight">{address}</p>
                 </div>
               </div>
@@ -156,3 +156,4 @@ export default function ContactVisual({
     </section>
   );
 }
+

@@ -14,6 +14,8 @@ interface SubscriptionSettingsProps {
     subscription_ends_at?: string | null
     auto_renew?: boolean
     has_paid_initial?: boolean
+    renewal_link?: string | null
+    renewal_link_created_at?: string | null
   }
 }
 
@@ -53,8 +55,28 @@ export default function SubscriptionSettings({ project }: SubscriptionSettingsPr
     }
   }
 
+  const renewalLink = project.renewal_link
+
   return (
     <div className="space-y-6">
+      {renewalLink && (
+        <div className="p-4 border border-blue-500/30 bg-blue-500/5 rounded-xl flex gap-3 items-start">
+          <RefreshCw className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-2">
+            <p className="text-sm font-bold text-blue-700">Your subscription is expiring soon</p>
+            <p className="text-xs text-blue-600/80 leading-relaxed">
+              Your auto-renew payment link is ready. Click below to complete your monthly renewal and keep your site active.
+            </p>
+            <button
+              onClick={() => { window.location.href = `/subscribe/${project.id}` }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-blue-700 transition-colors"
+            >
+              <RefreshCw className="w-3 h-3" />
+              Renew Subscription
+            </button>
+          </div>
+        </div>
+      )}
       <div className="p-4 bg-muted/20 border border-border rounded-xl space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

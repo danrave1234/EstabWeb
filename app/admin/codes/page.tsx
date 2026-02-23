@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import useSWR from "swr";
 import { 
   Plus, 
   Trash2, 
@@ -29,32 +30,12 @@ interface TemplateCode {
   status: 'active' | 'revoked' | 'expired';
 }
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export default function AdminCodesPage() {
-  const [codes, setCodes] = useState<TemplateCode[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: codes = [], isLoading: loading, mutate } = useSWR<TemplateCode[]>("/api/codes", fetcher);
   const [search, setSearch] = useState("");
   const [editingCode, setEditingCode] = useState<TemplateCode | null>(null);
-
-  const fetchCodes = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/codes");
-      const data = await res.json();
-      if (res.ok) {
-        setCodes(data);
-      } else {
-        toast.error(data.error || "Failed to fetch codes");
-      }
-    } catch (err) {
-      toast.error("An error occurred while fetching codes");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCodes();
-  }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this code? This action cannot be undone.")) return;
@@ -63,7 +44,7 @@ export default function AdminCodesPage() {
       const res = await fetch(`/api/codes?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         toast.success("Code deleted successfully");
-        fetchCodes();
+        mutate();
       } else {
         const data = await res.json();
         toast.error(data.error || "Failed to delete code");
@@ -82,7 +63,7 @@ export default function AdminCodesPage() {
       });
       if (res.ok) {
         toast.success(`Code ${newStatus === 'active' ? 'activated' : 'revoked'} successfully`);
-        fetchCodes();
+        mutate();
       } else {
         const data = await res.json();
         toast.error(data.error || "Failed to update status");
@@ -109,7 +90,7 @@ export default function AdminCodesPage() {
       if (res.ok) {
         toast.success("Limits updated successfully");
         setEditingCode(null);
-        fetchCodes();
+        mutate();
       } else {
         const data = await res.json();
         toast.error(data.error || "Failed to update limits");
@@ -167,7 +148,7 @@ export default function AdminCodesPage() {
           <p className="text-muted-foreground mt-1">Manage and track generated project codes.</p>
         </div>
         <button 
-          onClick={fetchCodes}
+          onClick={() => mutate()}
           className="flex items-center gap-2 px-4 py-2 text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />

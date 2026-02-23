@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ChevronRight } from "lucide-react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
@@ -80,7 +80,7 @@ export default function PracticeAreasGrid({
                 </p>
                 <a
                   href={href}
-                  className="text-primary font-medium inline-flex items-center gap-1 text-[9px] sm:text-sm hover:gap-2 transition-all group"
+                  className="text-primary font-medium inline-flex items-center gap-1 text-xs sm:text-sm hover:gap-2 transition-all group"
                 >
                   {linkText}
                   <ChevronRight className="w-2.5 h-2.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5" />
@@ -93,3 +93,4 @@ export default function PracticeAreasGrid({
     </section>
   );
 }
+

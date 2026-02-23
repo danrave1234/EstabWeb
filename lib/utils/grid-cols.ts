@@ -19,7 +19,7 @@ export function dynamicGridCols(count: number, max: 2 | 3 | 4 | 5 | 6 = 4): stri
     case 5:
       return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5";
     case 6:
-      return "grid-cols-2 sm:grid-cols-3 md:grid-cols-6";
+      return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6";
     default:
       return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4";
   }

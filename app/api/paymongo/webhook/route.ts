@@ -85,7 +85,14 @@ export async function POST(req: Request) {
 
     const body = JSON.parse(raw)
     const eventType = body?.data?.attributes?.type || body?.type
-    if (eventType !== 'link.payment.paid' && eventType !== 'payment.paid' && eventType !== 'payment_intent.succeeded') {
+    const HANDLED_EVENTS = [
+      'link.payment.paid',
+      'payment.paid',
+      'payment_intent.succeeded',
+      'subscription.invoice.paid',
+      'subscription.unpaid',
+    ]
+    if (!HANDLED_EVENTS.includes(eventType)) {
       return NextResponse.json({ received: true })
     }
 
@@ -96,6 +103,14 @@ export async function POST(req: Request) {
       console.error('[paymongo webhook] Failed to initialize Supabase service client:', e.message)
       return NextResponse.json({ error: 'Internal configuration error' }, { status: 500 })
     }
+    // Handle subscription lifecycle events separately
+    if (eventType === 'subscription.invoice.paid') {
+      return await handleSubscriptionInvoicePaid(body, supabase)
+    }
+    if (eventType === 'subscription.unpaid') {
+      return await handleSubscriptionUnpaid(body, supabase)
+    }
+
     const projectId = await extractProjectId(body, supabase)
     console.log('[paymongo webhook] Extracted projectId:', projectId, 'from event:', eventType)
     
@@ -132,7 +147,10 @@ export async function POST(req: Request) {
         trial_ends_at: null,
         auto_renew: true, // Reset auto-renew on successful payment
         subscription_plan_id: body?.data?.attributes?.data?.attributes?.metadata?.plan_id || body?.data?.attributes?.metadata?.plan_id,
-        has_paid_initial: true // Mark as initial paid regardless of which link was used
+        has_paid_initial: true, // Mark as initial paid regardless of which link was used
+        renewal_link: null,
+        renewal_link_id: null,
+        renewal_link_created_at: null,
       })
       .eq('id', projectId)
 
@@ -171,5 +189,101 @@ export async function POST(req: Request) {
   } catch (e: any) {
     console.error('[paymongo webhook]', e)
     return NextResponse.json({ error: e?.message || 'Webhook error' }, { status: 500 })
+  }
+}
+
+async function handleSubscriptionInvoicePaid(
+  body: any,
+  supabase: ReturnType<typeof createServiceClient>
+): Promise<Response> {
+  try {
+    const invoice = body?.data?.attributes?.data
+    const subscriptionId = invoice?.attributes?.resource_id || invoice?.attributes?.subscription_id
+    const amount = invoice?.attributes?.amount ? invoice.attributes.amount / 100 : 0
+    const currency = invoice?.attributes?.currency || 'PHP'
+
+    if (!subscriptionId) {
+      console.warn('[webhook] subscription.invoice.paid: no subscription_id in payload')
+      return NextResponse.json({ received: true })
+    }
+
+    const { data: proj } = await supabase
+      .from('projects')
+      .select('id, client_id')
+      .eq('paymongo_subscription_id', subscriptionId)
+      .single()
+
+    if (!proj) {
+      console.warn('[webhook] subscription.invoice.paid: no project for subscription', subscriptionId)
+      return NextResponse.json({ received: true })
+    }
+
+    const now = new Date()
+    const periodEnd = new Date(now)
+    periodEnd.setMonth(periodEnd.getMonth() + 1)
+
+    await supabase.from('projects').update({
+      subscription_status: 'active',
+      subscription_ends_at: periodEnd.toISOString(),
+      has_paid_initial: true,
+      auto_renew: true,
+      renewal_link: null,
+      renewal_link_id: null,
+      renewal_link_created_at: null,
+      publish_limit: DEFAULT_PUBLISH_LIMIT,
+      publish_limit_daily: DEFAULT_PUBLISH_LIMIT_DAILY,
+    }).eq('id', proj.id)
+
+    // Log payment
+    try {
+      await supabase.from('payments').insert({
+        project_id: proj.id,
+        amount,
+        currency,
+        status: 'paid',
+        paymongo_payment_id: invoice?.id,
+        paymongo_link_id: subscriptionId,
+        metadata: { event_type: 'subscription.invoice.paid', subscription_id: subscriptionId },
+      })
+    } catch (logErr) {
+      console.error('[webhook] Failed to log subscription payment:', logErr)
+    }
+
+    console.log('[webhook] subscription.invoice.paid: renewed project', proj.id)
+    return NextResponse.json({ received: true })
+  } catch (e: any) {
+    console.error('[webhook] handleSubscriptionInvoicePaid error:', e)
+    return NextResponse.json({ error: e?.message }, { status: 500 })
+  }
+}
+
+async function handleSubscriptionUnpaid(
+  body: any,
+  supabase: ReturnType<typeof createServiceClient>
+): Promise<Response> {
+  try {
+    const subscription = body?.data?.attributes?.data
+    const subscriptionId = subscription?.id
+
+    if (!subscriptionId) return NextResponse.json({ received: true })
+
+    const { data: proj } = await supabase
+      .from('projects')
+      .select('id')
+      .eq('paymongo_subscription_id', subscriptionId)
+      .single()
+
+    if (!proj) return NextResponse.json({ received: true })
+
+    await supabase.from('projects').update({
+      subscription_status: 'expired',
+      auto_renew: false,
+    }).eq('id', proj.id)
+
+    console.log('[webhook] subscription.unpaid: expired project', proj.id)
+    return NextResponse.json({ received: true })
+  } catch (e: any) {
+    console.error('[webhook] handleSubscriptionUnpaid error:', e)
+    return NextResponse.json({ error: e?.message }, { status: 500 })
   }
 }

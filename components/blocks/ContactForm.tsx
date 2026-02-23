@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -118,7 +118,7 @@ export default function ContactForm({
                   <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-[8px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">{callLabel}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">{callLabel}</p>
                   <p className="text-[10px] sm:text-lg font-bold text-foreground">{phone}</p>
                 </div>
               </a>
@@ -128,8 +128,8 @@ export default function ContactForm({
                   <MapPinIcon weight="duotone" className="w-3 h-3 sm:w-5 sm:h-5" />
                 </div>
                 <div>
-                  <p className="text-[8px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5 sm:mb-1">{locationLabel}</p>
-                  <p className="text-[9px] sm:text-sm text-foreground leading-relaxed whitespace-pre-line line-clamp-2 sm:line-clamp-none">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5 sm:mb-1">{locationLabel}</p>
+                  <p className="text-xs sm:text-sm text-foreground leading-relaxed whitespace-pre-line line-clamp-2 sm:line-clamp-none">
                     {address}
                   </p>
                 </div>
@@ -143,8 +143,8 @@ export default function ContactForm({
                   <EnvelopeIcon weight="duotone" className="w-3 h-3 sm:w-5 sm:h-5" />
                 </div>
                 <div className="overflow-hidden">
-                  <p className="text-[8px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">{emailUsLabel}</p>
-                  <span className="text-[9px] sm:text-sm text-foreground group-hover:text-primary transition-colors font-medium truncate block">{email}</span>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">{emailUsLabel}</p>
+                  <span className="text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors font-medium truncate block">{email}</span>
                 </div>
               </a>
             </div>
@@ -154,3 +154,4 @@ export default function ContactForm({
     </section>
   );
 }
+

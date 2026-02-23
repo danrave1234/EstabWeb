@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
@@ -57,7 +57,7 @@ export default function AwardsStrip({ title, items }: AwardsStripProps) {
                       {label}
                     </p>
                     {sublabel && (
-                      <p className="text-[7px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium line-clamp-1">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium line-clamp-1">
                         {sublabel}
                       </p>
                     )}
@@ -70,3 +70,4 @@ export default function AwardsStrip({ title, items }: AwardsStripProps) {
     </section>
   );
 }
+

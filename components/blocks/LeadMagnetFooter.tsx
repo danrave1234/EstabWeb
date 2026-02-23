@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Image from "next/image";
@@ -220,8 +220,8 @@ export default function LeadMagnetFooter({
                     <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
                   <div className="overflow-hidden">
-                    <p className="text-[7px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{callUsNowLabel}</p>
-                    <p className="text-[9px] sm:text-base font-bold text-foreground truncate">{contact.phone}</p>
+                    <p className="text-[10px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{callUsNowLabel}</p>
+                    <p className="text-xs sm:text-base font-bold text-foreground truncate">{contact.phone}</p>
                   </div>
                 </a>
 
@@ -230,8 +230,8 @@ export default function LeadMagnetFooter({
                     <EnvelopeIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
                   <div className="overflow-hidden">
-                    <p className="text-[7px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Email us</p>
-                    <p className="text-[9px] sm:text-base font-bold text-foreground truncate">{contact.email}</p>
+                    <p className="text-[10px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Email us</p>
+                    <p className="text-xs sm:text-base font-bold text-foreground truncate">{contact.email}</p>
                   </div>
                 </a>
 
@@ -240,8 +240,8 @@ export default function LeadMagnetFooter({
                     <MapPinIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
                   </div>
                   <div className="overflow-hidden">
-                    <p className="text-[7px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Our office</p>
-                    <p className="text-[9px] sm:text-sm font-medium text-foreground line-clamp-1">{contact.address}</p>
+                    <p className="text-[10px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Our office</p>
+                    <p className="text-xs sm:text-sm font-medium text-foreground line-clamp-1">{contact.address}</p>
                   </div>
                 </div>
               </div>
@@ -253,7 +253,7 @@ export default function LeadMagnetFooter({
         <div className="mt-16 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-muted-foreground text-sm">
-              © {new Date().getFullYear()} {brandName}. All rights reserved.
+              Â© {new Date().getFullYear()} {brandName}. All rights reserved.
             </p>
             <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
               <a
@@ -281,3 +281,4 @@ export default function LeadMagnetFooter({
     </footer>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { CheckCircleIcon } from "@phosphor-icons/react";
 import { X } from "lucide-react";
@@ -60,7 +60,7 @@ export default function PricingTable({
               }`}
             >
               {plan.isPopular && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-primary text-primary-foreground text-[8px] sm:text-xs font-bold rounded-full uppercase tracking-widest whitespace-nowrap">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-widest whitespace-nowrap">
                   {mostPopularLabel}
                 </div>
               )}
@@ -68,13 +68,13 @@ export default function PricingTable({
               <div className="mb-3 sm:mb-8">
                 <h3 className="text-xs sm:text-xl font-bold text-foreground mb-0.5 sm:mb-2">{plan.name}</h3>
                 <div className="flex flex-col gap-0.5 mb-2">
-                  <span className="text-[7px] sm:text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{startingAtLabel}</span>
+                  <span className="text-[10px] sm:text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{startingAtLabel}</span>
                   <div className="flex items-baseline gap-0.5 sm:gap-1">
-                    <span className="text-base sm:text-4xl font-bold text-foreground">{plan.price.includes("₱") || plan.price.toLowerCase().includes("php") ? plan.price : `₱${plan.price}`}</span>
-                    <span className="text-muted-foreground text-[8px] sm:text-sm">{periodLabel}</span>
+                    <span className="text-base sm:text-4xl font-bold text-foreground">{plan.price.includes("â‚±") || plan.price.toLowerCase().includes("php") ? plan.price : `â‚±${plan.price}`}</span>
+                    <span className="text-muted-foreground text-[10px] sm:text-sm">{periodLabel}</span>
                   </div>
                 </div>
-                <p className="text-[9px] sm:text-sm text-muted-foreground leading-relaxed line-clamp-2 sm:line-clamp-none">
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2 sm:line-clamp-none">
                   {plan.description}
                 </p>
               </div>
@@ -87,7 +87,7 @@ export default function PricingTable({
                     ) : (
                       <X className="w-2.5 h-2.5 sm:w-5 sm:h-5 text-muted-foreground/40 shrink-0 mt-0.5" />
                     )}
-                    <span className={`text-[9px] sm:text-sm ${feature.included ? "text-foreground" : "text-muted-foreground/60"} line-clamp-1 sm:line-clamp-none`}>
+                    <span className={`text-xs sm:text-sm ${feature.included ? "text-foreground" : "text-muted-foreground/60"} line-clamp-1 sm:line-clamp-none`}>
                       {feature.text}
                     </span>
                   </li>
@@ -96,7 +96,7 @@ export default function PricingTable({
 
               <a
                 href={plan.href ?? "#"}
-                className={`w-full py-1.5 sm:py-3 px-3 sm:px-6 rounded-lg sm:rounded-xl font-bold text-center transition-all duration-200 min-h-[32px] sm:min-h-[48px] flex items-center justify-center text-[9px] sm:text-base ${
+                className={`w-full py-1.5 sm:py-3 px-3 sm:px-6 rounded-lg sm:rounded-xl font-bold text-center transition-all duration-200 min-h-[32px] sm:min-h-[48px] flex items-center justify-center text-xs sm:text-base ${
                   plan.isPopular
                     ? "bg-primary text-primary-foreground hover:opacity-90 shadow-lg"
                     : "bg-muted text-foreground hover:bg-muted/80"
@@ -111,3 +111,4 @@ export default function PricingTable({
     </section>
   );
 }
+

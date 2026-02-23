@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { dynamicGridCols } from "@/lib/utils/grid-cols";
@@ -67,7 +67,7 @@ export default function TeamCarousel({
                       />
                     )
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[8px] sm:text-[10px]">
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[10px] sm:text-[10px]">
                       Photo
                     </div>
                   )}
@@ -75,12 +75,12 @@ export default function TeamCarousel({
                 <h3 className="font-bold text-[11px] sm:text-lg text-foreground mb-0.5 sm:mb-1 leading-tight line-clamp-1">
                   {member.name}
                 </h3>
-                <p className="text-[9px] sm:text-sm text-muted-foreground mb-2 sm:mb-4 flex-grow line-clamp-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-4 flex-grow line-clamp-1">
                   {member.specialty}
                 </p>
                 <a
                   href={member.bioUrl ?? "#"}
-                  className="w-full py-1.5 sm:py-2 text-[9px] sm:text-sm font-semibold text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors"
+                  className="w-full py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors"
                 >
                   {linkText}
                 </a>
@@ -92,3 +92,4 @@ export default function TeamCarousel({
     </section>
   );
 }
+

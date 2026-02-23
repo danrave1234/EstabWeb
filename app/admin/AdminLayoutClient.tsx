@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import useSWR from "swr";
 import MainHeader from "@/components/shared/MainHeader";
 import ScrollReveal from "@/components/shared/ScrollReveal";
 import { Toaster } from "sonner";
@@ -18,24 +19,21 @@ export default function AdminLayoutClient({
   const pathname = usePathname();
   const isPreview = pathname === "/admin/preview" || pathname === "/admin/template";
 
+  const { data: configData } = useSWR(
+    isPreview ? "/api/config" : null,
+    (url: string) => fetch(url).then((res) => res.json())
+  );
+
   useEffect(() => {
     const root = document.documentElement;
-    if (isPreview) {
-      (async () => {
-        try {
-          const res = await fetch('/api/config');
-          const data = await res.json();
-          const theme = data.colorTheme || 'partner';
-          const mode = data.darkMode ? 'dark' : 'light';
-          const typo = data.typographyStyle || 'elegant';
-          root.setAttribute('data-theme', theme);
-          root.setAttribute('data-mode', mode);
-          root.setAttribute('data-typography', typo);
-        } catch {
-          // ignore
-        }
-      })();
-    } else {
+    if (isPreview && configData) {
+      const theme = configData.colorTheme || 'partner';
+      const mode = configData.darkMode ? 'dark' : 'light';
+      const typo = configData.typographyStyle || 'elegant';
+      root.setAttribute('data-theme', theme);
+      root.setAttribute('data-mode', mode);
+      root.setAttribute('data-typography', typo);
+    } else if (!isPreview) {
       // Reset to main site defaults when not in preview
       root.setAttribute('data-theme', mainSiteConfig.colorTheme);
       root.setAttribute('data-mode', mainSiteConfig.darkMode ? 'dark' : 'light');
@@ -48,7 +46,7 @@ export default function AdminLayoutClient({
       root.setAttribute('data-mode', mainSiteConfig.darkMode ? 'dark' : 'light');
       root.setAttribute('data-typography', mainSiteConfig.typographyStyle);
     };
-  }, [isPreview]);
+  }, [isPreview, configData]);
 
   return (
     <AuthProvider initialUser={user ?? null}>

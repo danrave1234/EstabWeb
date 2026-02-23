@@ -62,6 +62,10 @@ export async function updateSession(request: NextRequest) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
+    // Block unverified email users from accessing protected features
+    if (!user.email_confirmed_at) {
+      return NextResponse.redirect(new URL('/auth/verify-email', request.url))
+    }
     return response
   }
 

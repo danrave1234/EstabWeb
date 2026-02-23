@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { MapPinIcon, BedIcon, BathtubIcon, SquareIcon } from "@phosphor-icons/react";
@@ -77,7 +77,7 @@ export default function FeaturedListingsGrid({
                 <div className="space-y-1">
                   <div className="flex items-center gap-1 text-muted-foreground">
                     <MapPinIcon weight="duotone" className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                    <span className="text-[9px] sm:text-xs font-medium uppercase tracking-wider line-clamp-1">{property.location}</span>
+                    <span className="text-xs sm:text-xs font-medium uppercase tracking-wider line-clamp-1">{property.location}</span>
                   </div>
                   <h3 className="text-sm sm:text-xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
                     {property.title}
@@ -103,7 +103,7 @@ export default function FeaturedListingsGrid({
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-1 sm:pt-2 gap-1 sm:gap-2">
                   <p className="text-base sm:text-2xl font-black text-primary">
-                    {property.price.includes("₱") ? property.price : /^[\d,.\s]+$/.test(property.price.replace(/\s/g, "")) ? `₱${property.price}` : property.price}
+                    {property.price.includes("â‚±") ? property.price : /^[\d,.\s]+$/.test(property.price.replace(/\s/g, "")) ? `â‚±${property.price}` : property.price}
                   </p>
                   <button className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-foreground hover:text-primary transition-colors underline underline-offset-4 text-left sm:text-right">
                     {viewDetailsLabel}
@@ -117,3 +117,4 @@ export default function FeaturedListingsGrid({
     </section>
   );
 }
+

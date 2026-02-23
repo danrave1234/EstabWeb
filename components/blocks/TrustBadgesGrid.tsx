@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
 import { dynamicGridCols } from "@/lib/utils/grid-cols";
@@ -57,7 +57,7 @@ export default function TrustBadgesGrid({ title, subtitle, items }: TrustBadgesG
                     {item.label}
                   </h3>
                   {item.sublabel && (
-                    <p className="text-[7px] sm:text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-wider">
                       {item.sublabel}
                     </p>
                   )}
@@ -69,3 +69,4 @@ export default function TrustBadgesGrid({ title, subtitle, items }: TrustBadgesG
     </section>
   );
 }
+
