@@ -233,6 +233,41 @@ export async function setProjectSubscription(
   return { success: true }
 }
 
+const setCustomDomainSchema = z.object({
+  projectId: z.string().uuid(),
+  customDomain: z.string().max(253).nullable(),
+})
+
+export async function setCustomDomain(projectId: string, customDomain: string | null) {
+  const validated = setCustomDomainSchema.safeParse({ projectId, customDomain })
+  if (!validated.success) return { error: 'Invalid input' }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') return { error: 'Forbidden' }
+
+  const { error } = await supabase
+    .from('projects')
+    .update({ custom_domain: customDomain || null })
+    .eq('id', projectId)
+
+  if (error) return { error: error.message }
+
+  // Register with Vercel if a domain was set
+  if (customDomain) {
+    addDomainToVercel(customDomain).catch((e) =>
+      console.error('[admin] Vercel custom domain registration error:', e)
+    )
+  }
+
+  revalidatePath('/admin/clients')
+  revalidatePath('/dashboard')
+  return { success: true }
+}
+
 export async function setPlanLimits(input: { proMaxPages: number; freeMaxPages?: number }) {
   const validated = setPlanLimitsSchema.safeParse(input)
   if (!validated.success) return { error: 'Invalid input' }

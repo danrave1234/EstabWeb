@@ -6,6 +6,7 @@ import MainHeader from "@/components/shared/MainHeader";
 import ScrollReveal from "@/components/shared/ScrollReveal";
 import { Toaster } from "sonner";
 import { mainSiteConfig } from "@/config/main-site-config";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 
 export default function AdminLayoutClient({
   children,
@@ -50,6 +51,7 @@ export default function AdminLayoutClient({
   }, [isPreview]);
 
   return (
+    <AuthProvider initialUser={user ?? null}>
     <div className="min-h-screen flex flex-col">
       {!isPreview && <MainHeader variant="admin" initialUser={user} />}
       <main className={`flex-1 ${!isPreview ? 'pt-16' : ''}`}>
@@ -58,5 +60,6 @@ export default function AdminLayoutClient({
       <ScrollReveal />
       <Toaster position="top-right" richColors />
     </div>
+    </AuthProvider>
   );
 }

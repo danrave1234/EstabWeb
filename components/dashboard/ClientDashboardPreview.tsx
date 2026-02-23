@@ -4,11 +4,12 @@ import * as React from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
-import { ChevronRight, FileText, Settings, Eye, Layout, Send, Plus, Trash2, GripVertical, Image as ImageIcon, History, RotateCcw, Zap, CreditCard, Palette, X, BarChart3, Phone, MessageSquare, FormInput } from "lucide-react"
+import { ChevronRight, FileText, Settings, Eye, Layout, Send, Plus, Trash2, GripVertical, Image as ImageIcon, History, RotateCcw, Zap, CreditCard, Palette, X, BarChart3, Phone, MessageSquare, FormInput, Globe } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import UpgradeButton from "@/components/dashboard/UpgradeButton"
 import SubscriptionSettings from "@/components/dashboard/SubscriptionSettings"
+import ClientDomainSettings from "@/components/dashboard/ClientDomainSettings"
 import PreviewFrame from "@/components/dashboard/PreviewFrame"
 import AwardIconPicker from "@/components/dashboard/AwardIconPicker"
 import { createClient } from "@/lib/supabase/client"
@@ -1495,6 +1496,20 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
               </button>
 
               <button
+                onClick={() => setSelectedSection('domain')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'domain' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate">Domain</p>
+                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Subdomain & Custom</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+
+              <button
                 onClick={() => setSelectedSection('legal')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'legal' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
               >
@@ -1797,6 +1812,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                 <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                   {selectedSection === 'subscription' ? (
                     <CreditCard className="w-6 h-6 text-primary" />
+                  ) : selectedSection === 'domain' ? (
+                    <Globe className="w-6 h-6 text-primary" />
                   ) : (
                     <Layout className="w-6 h-6 text-primary" />
                   )}
@@ -1805,6 +1822,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   <h2 className="capitalize flex items-center gap-2 text-base sm:text-lg font-bold tracking-tight">
                     {selectedSection === 'subscription' ? (
                       <>Subscription & Plan</>
+                    ) : selectedSection === 'domain' ? (
+                      <>Domain Settings</>
                     ) : (
                       <div className="flex items-center gap-2">
                         <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] uppercase tracking-tighter">Editor</span>
@@ -1815,6 +1834,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm leading-relaxed line-clamp-1 sm:line-clamp-none text-muted-foreground">
                     {selectedSection === 'subscription'
                       ? "View plan and auto-renewal."
+                      : selectedSection === 'domain'
+                      ? "Manage your subdomain and connect a custom domain."
                       : "Customize content and images."}
                   </p>
                 </div>
@@ -1830,6 +1851,12 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
           >
             {selectedSection === 'subscription' ? (
               <SubscriptionSettings project={project as any} />
+            ) : selectedSection === 'domain' ? (
+              <ClientDomainSettings
+                projectId={project.id}
+                subdomain={project.subdomain ?? null}
+                customDomain={(project as any).custom_domain ?? null}
+              />
             ) : (
               <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
                 <div className="flex items-center justify-between mb-4">

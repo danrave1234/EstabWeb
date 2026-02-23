@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table'
-import { Globe } from 'lucide-react'
+import { Globe, Users, ExternalLink, Building2 } from 'lucide-react'
 import SubscriptionManage from '@/components/admin/SubscriptionManage'
+import DomainManage from '@/components/admin/DomainManage'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +17,7 @@ interface ProjectRow {
   id: string
   client_id: string | null
   subdomain: string | null
+  custom_domain?: string | null
   created_at?: string | null
   subscription_status?: string | null
   trial_ends_at?: string | null
@@ -24,12 +25,25 @@ interface ProjectRow {
   publish_count?: number | null
 }
 
+const STATUS_COLORS: Record<string, string> = {
+  free: 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20',
+  trial: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+  active: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+  admin_granted: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  free: 'Free',
+  trial: 'Trial',
+  active: 'Paid',
+  admin_granted: 'Granted',
+}
+
 export default async function AdminClientsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return redirect('/login')
 
-  // Admin check
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
@@ -38,7 +52,6 @@ export default async function AdminClientsPage() {
 
   if (profile?.role !== 'admin') return redirect('/dashboard')
 
-  // Fetch clients (profiles) and all projects (may require admin RLS policies)
   const { data: profiles, error: profilesErr } = await supabase
     .from('profiles')
     .select('id,email,role')
@@ -46,10 +59,9 @@ export default async function AdminClientsPage() {
 
   const { data: projects, error: projectsErr } = await supabase
     .from('projects')
-    .select('id,client_id,subdomain,created_at,subscription_status,trial_ends_at,publish_limit,publish_limit_daily,publish_count,publish_count_today,publish_date')
+    .select('id,client_id,subdomain,custom_domain,created_at,subscription_status,trial_ends_at,publish_limit,publish_limit_daily,publish_count,publish_count_today,publish_date')
     .order('created_at', { ascending: false })
 
-  // Group projects by owner
   const byOwner = new Map<string, ProjectRow[]>()
   for (const p of (projects ?? []) as ProjectRow[]) {
     if (!p.client_id) continue
@@ -64,95 +76,145 @@ export default async function AdminClientsPage() {
   }))
 
   const hadRlsIssue = !!projectsErr || !!profilesErr
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com'
+
+  const totalClients = rows.length
+  const totalProjects = (projects ?? []).length
+  const activeProjects = (projects ?? []).filter((p: any) => p.subscription_status === 'active' || p.subscription_status === 'admin_granted').length
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <div className="container mx-auto py-10 px-4">
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Clients & Websites</h1>
-            <p className="text-muted-foreground mt-2">
-              View all client accounts and their websites. {hadRlsIssue && 'Some data may be hidden due to database policies.'}
-            </p>
+      <div className="container mx-auto py-10 px-4 max-w-6xl">
+
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight">Clients & Websites</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage client accounts, domains, and subscriptions.
+            {hadRlsIssue && <span className="text-amber-600 ml-1">Some data may be hidden due to database policies.</span>}
+          </p>
+        </div>
+
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Users className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{totalClients}</p>
+              <p className="text-xs text-muted-foreground">Total Clients</p>
+            </div>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-500/10">
+              <Globe className="w-4 h-4 text-blue-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{totalProjects}</p>
+              <p className="text-xs text-muted-foreground">Total Websites</p>
+            </div>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-emerald-500/10">
+              <Building2 className="w-4 h-4 text-emerald-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{activeProjects}</p>
+              <p className="text-xs text-muted-foreground">Active / Granted</p>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Client</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Websites</TableHead>
-                <TableHead>Sites</TableHead>
-                <TableHead>Subscription</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
-                    No clients found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                rows.map(({ profile, projects }) => (
-                  <TableRow key={profile.id}>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{profile.email || profile.id}</span>
-                        <span className="text-xs text-muted-foreground">{profile.id}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="capitalize">{profile.role || 'user'}</TableCell>
-                    <TableCell>{projects.length}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-2">
-                        {projects.map((proj) => {
-                          const domain = proj.subdomain || 'no-subdomain'
-                          const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com'
-                          const href = proj.subdomain ? `https://${proj.subdomain}.${rootDomain}` : '#'
-                          return (
-                            <Link
-                              key={proj.id}
-                              href={href}
-                              target={href.startsWith('http') ? '_blank' : undefined}
-                              rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs border ${proj.subdomain ? 'hover:bg-muted' : 'opacity-50 pointer-events-none'}`}
-                              title={proj.id}
-                            >
-                              <Globe className="w-3 h-3" />
-                              {domain}
-                            </Link>
-                          )
-                        })}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-3">
-                        {projects.map((proj) => (
-                          <SubscriptionManage key={proj.id} project={proj as any} />
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {/* Placeholder for future admin tools (impersonate, reset, etc.) */}
-                        <span className="text-xs text-muted-foreground">{projects.length > 0 ? 'Open site links' : '—'}</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        {/* Client cards */}
+        {rows.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card py-20 text-center text-muted-foreground">
+            No clients found.
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {rows.map(({ profile, projects: clientProjects }) => (
+              <div key={profile.id} className="rounded-xl border border-border bg-card overflow-hidden">
+                {/* Client header */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/30">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
+                      {(profile.email || profile.id)[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{profile.email || profile.id}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{profile.id}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {clientProjects.length} {clientProjects.length === 1 ? 'website' : 'websites'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium border bg-background capitalize">
+                      {profile.role || 'user'}
+                    </span>
+                  </div>
+                </div>
 
-        {hadRlsIssue && (
-          <p className="text-xs text-amber-600 mt-3">
-            Note: To allow admins to view all clients and projects, add RLS policies granting select access to role = 'admin' on the profiles and projects tables.
-          </p>
+                {/* Projects */}
+                {clientProjects.length === 0 ? (
+                  <div className="px-5 py-6 text-sm text-muted-foreground italic">
+                    No websites yet.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border">
+                    {clientProjects.map((proj, idx) => {
+                      const href = proj.subdomain ? `https://${proj.subdomain}.${rootDomain}` : '#'
+                      const status = proj.subscription_status || 'free'
+                      const statusColor = STATUS_COLORS[status] || STATUS_COLORS.free
+                      const statusLabel = STATUS_LABELS[status] || status
+
+                      return (
+                        <div key={proj.id} className="px-5 py-4 grid grid-cols-[1fr_auto] gap-4 items-start">
+                          {/* Left: site info + domain manage */}
+                          <div className="flex flex-col gap-3">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs text-muted-foreground">#{idx + 1}</span>
+                              <Link
+                                href={href}
+                                target={href.startsWith('http') ? '_blank' : undefined}
+                                rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border bg-background ${proj.subdomain ? 'hover:bg-muted' : 'opacity-40 pointer-events-none'}`}
+                              >
+                                <Globe className="w-3 h-3" />
+                                {proj.subdomain || 'no-subdomain'}
+                                {proj.subdomain && <ExternalLink className="w-2.5 h-2.5 opacity-50" />}
+                              </Link>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusColor}`}>
+                                {statusLabel}
+                                {proj.trial_ends_at && status === 'trial' && (
+                                  <span className="ml-1 opacity-70">· {new Date(proj.trial_ends_at).toLocaleDateString()}</span>
+                                )}
+                              </span>
+                              {proj.custom_domain && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] border border-blue-500/20 bg-blue-500/10 text-blue-600">
+                                  <Globe className="w-2.5 h-2.5" />
+                                  {proj.custom_domain}
+                                </span>
+                              )}
+                            </div>
+                            <div className="pl-1">
+                              <DomainManage project={proj as any} />
+                            </div>
+                          </div>
+
+                          {/* Right: subscription manage */}
+                          <div className="min-w-[160px]">
+                            <SubscriptionManage project={proj as any} />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
