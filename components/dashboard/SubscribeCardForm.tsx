@@ -12,6 +12,7 @@ interface Props {
 
 interface CardState {
   number: string
+  expiry: string
   expMonth: string
   expYear: string
   cvc: string
@@ -22,14 +23,20 @@ function formatCardNumber(value: string) {
   return value.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim()
 }
 
-function formatExpiry(value: string) {
-  const digits = value.replace(/\D/g, '').slice(0, 4)
-  if (digits.length >= 3) return digits.slice(0, 2) + '/' + digits.slice(2)
-  return digits
+function formatExpiry(raw: string, prev: string): string {
+  // Allow backspace: if shrinking, just strip trailing slash
+  const digits = raw.replace(/\D/g, '').slice(0, 4)
+  if (digits.length === 0) return ''
+  if (digits.length <= 2) {
+    // Auto-insert slash after 2 digits unless user is deleting
+    if (digits.length === 2 && raw.length > prev.length) return digits + '/'
+    return digits
+  }
+  return digits.slice(0, 2) + '/' + digits.slice(2)
 }
 
 export default function SubscribeCardForm({ projectId, subdomain, isInitial }: Props) {
-  const [card, setCard] = useState<CardState>({ number: '', expMonth: '', expYear: '', cvc: '', name: '' })
+  const [card, setCard] = useState<CardState>({ number: '', expiry: '', expMonth: '', expYear: '', cvc: '', name: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [step, setStep] = useState<'form' | 'processing' | 'redirect'>('form')
@@ -42,12 +49,13 @@ export default function SubscribeCardForm({ projectId, subdomain, isInitial }: P
   }
 
   function handleExpiry(e: React.ChangeEvent<HTMLInputElement>) {
-    const formatted = formatExpiry(e.target.value)
+    const formatted = formatExpiry(e.target.value, card.expiry)
     const parts = formatted.split('/')
     setCard(c => ({
       ...c,
+      expiry: formatted,
       expMonth: parts[0] || '',
-      expYear: parts[1] ? '20' + parts[1] : '',
+      expYear: parts[1] && parts[1].length === 2 ? '20' + parts[1] : '',
     }))
   }
 
@@ -153,9 +161,6 @@ export default function SubscribeCardForm({ projectId, subdomain, isInitial }: P
     )
   }
 
-  const expiryDisplay = card.expMonth
-    ? card.expMonth + (card.expYear ? '/' + card.expYear.slice(-2) : '')
-    : ''
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -236,7 +241,7 @@ export default function SubscribeCardForm({ projectId, subdomain, isInitial }: P
                 required
                 inputMode="numeric"
                 placeholder="MM/YY"
-                value={expiryDisplay}
+                value={card.expiry}
                 onChange={handleExpiry}
                 className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors"
                 disabled={loading}
