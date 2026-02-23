@@ -134,7 +134,6 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
   'service-area-map': DEFAULT_SERVICE_AREA_MAP,
   'logo-cloud': DEFAULT_LOGO_CLOUD,
   'delivery-coverage': DEFAULT_DELIVERY_COVERAGE,
-  'contact-with-map': DEFAULT_CONTACT_WITH_MAP,
 }
 
 // prefetchSectionPreview, MinimalSectionPreview, SectionLivePreview moved to @/components/dashboard/SectionLivePreview
