@@ -64,7 +64,7 @@ export async function POST(req: Request) {
           currency: 'PHP',
           description,
           statement_descriptor: 'ESTABWEB',
-          setup_future_usage: 'off_session',
+          setup_future_usage: { session: 'off_session' },
           metadata: {
             project_id: projectId,
             user_id: user.id,
