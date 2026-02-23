@@ -22,7 +22,7 @@ export default function PreviewFrame({ previewPath, iframeRef, className }: Prev
           </div>
           <div className="flex-1 flex justify-center">
             <div className="bg-background border border-border rounded px-3 py-0.5 text-[10px] text-muted-foreground min-w-[200px] text-center truncate">
-              {`${siteUrl}${previewPath}`}
+              {previewPath.startsWith('http') ? previewPath : `${siteUrl}${previewPath}`}
             </div>
           </div>
         </div>

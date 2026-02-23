@@ -92,3 +92,9 @@ export function canPublishNow(project: ProjectSubscription): boolean {
   const { remaining, remainingToday } = getPublishStats(project)
   return remaining > 0 && remainingToday > 0
 }
+
+/** Whether the project is on a paid/active plan (custom domain + multipage allowed) */
+export function isProPlan(project: ProjectSubscription | null | undefined): boolean {
+  if (!project) return false
+  return canPublishDirectly(project)
+}

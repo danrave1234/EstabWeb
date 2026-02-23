@@ -420,8 +420,10 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const isHomePage = !activePage?.slug
   const activeSections = ensureStringArray(activePage?.activeSections ?? globalConfig.activeSections)
     .filter((section) => isHomePage || !section.startsWith('hero'))
-  // Use the project's subdomain for preview; always include projectId so the page can fetch by ID when subdomain/custom domain isn't set.
-  const basePath = project?.subdomain ? `/${project.subdomain}` : '/preview'
+  // Use custom domain if available, otherwise fall back to subdomain path for preview.
+  const basePath = project?.custom_domain
+    ? `https://${project.custom_domain}`
+    : project?.subdomain ? `/${project.subdomain}` : '/preview'
   const activeSlug = activePage?.slug ? `/${activePage.slug}` : ''
   const previewPath = `${basePath}${activeSlug}?preview=true&projectId=${project.id}`
 
@@ -1856,6 +1858,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                 projectId={project.id}
                 subdomain={project.subdomain ?? null}
                 customDomain={(project as any).custom_domain ?? null}
+                subscriptionStatus={project.subscription_status ?? null}
+                subscriptionEnd={(project as any).subscription_end ?? null}
               />
             ) : (
               <form onSubmit={(e) => e.preventDefault()} className="space-y-6">

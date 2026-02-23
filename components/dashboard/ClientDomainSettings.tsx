@@ -3,13 +3,15 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Globe, Loader2, ExternalLink, Info, CheckCircle2, XCircle, Clock, RefreshCw } from "lucide-react"
+import { Globe, Loader2, ExternalLink, Info, CheckCircle2, XCircle, Clock, RefreshCw, Lock } from "lucide-react"
 
 interface ClientDomainSettingsProps {
   projectId: string
   subdomain: string | null
   customDomain: string | null
   rootDomain?: string
+  subscriptionStatus?: string | null
+  subscriptionEnd?: string | null
 }
 
 export default function ClientDomainSettings({
@@ -17,7 +19,12 @@ export default function ClientDomainSettings({
   subdomain,
   customDomain,
   rootDomain = "estabweb.com",
+  subscriptionStatus,
+  subscriptionEnd,
 }: ClientDomainSettingsProps) {
+  const isPro = subscriptionStatus === 'active' || subscriptionStatus === 'trial'
+  const isExpired = subscriptionEnd ? new Date(subscriptionEnd) < new Date() : false
+  const hasProAccess = isPro && !isExpired
   const [value, setValue] = useState("")
   const [loading, setLoading] = useState(false)
   const [activated, setActivated] = useState(false)
@@ -179,7 +186,14 @@ export default function ClientDomainSettings({
             </p>
           </div>
 
-          {activated ? (
+          {!hasProAccess ? (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400">
+              <Lock className="w-4 h-4 shrink-0" />
+              <p className="text-xs font-medium">
+                Custom domains require an active paid plan. Upgrade to connect your own domain.
+              </p>
+            </div>
+          ) : activated ? (
             <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400">
               <Info className="w-4 h-4 shrink-0" />
               <p className="text-xs font-medium">
@@ -208,7 +222,7 @@ export default function ClientDomainSettings({
             </div>
           )}
 
-          <div className="p-3 rounded-xl bg-muted/40 border border-border space-y-2">
+          {hasProAccess && <div className="p-3 rounded-xl bg-muted/40 border border-border space-y-2">
             <div className="flex items-center gap-1.5">
               <Info className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <p className="text-[11px] font-semibold text-muted-foreground">DNS Records to add at your domain provider</p>
@@ -235,7 +249,7 @@ export default function ClientDomainSettings({
               </tbody>
             </table>
             <p className="text-[10px] text-muted-foreground">Use the <span className="font-mono font-semibold">CNAME</span> for subdomains (e.g. www) and the <span className="font-mono font-semibold">A</span> record for apex/root domains (e.g. yourdomain.com).</p>
-          </div>
+          </div>}
         </div>
       )}
 

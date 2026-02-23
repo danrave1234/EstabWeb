@@ -131,3 +131,45 @@ export async function addSubdomainToVercel(subdomain: string): Promise<AddDomain
   const fullDomain = `${subdomain}.${rootDomain}`
   return addDomainToVercel(fullDomain)
 }
+
+export type RemoveDomainResult =
+  | { ok: true; domain: string }
+  | { ok: false; domain: string; error: string }
+
+/**
+ * Removes `domain` from the Vercel project via the Vercel REST API.
+ * Safe to call even if the domain is not registered (404 treated as success).
+ */
+export async function removeDomainFromVercel(domain: string): Promise<RemoveDomainResult> {
+  const token = process.env.VERCEL_API_TOKEN
+  const projectId = process.env.VERCEL_PROJECT_ID
+  const teamId = process.env.VERCEL_TEAM_ID
+
+  if (!token || !projectId) {
+    console.warn('[vercel-domains] VERCEL_API_TOKEN or VERCEL_PROJECT_ID not set – skipping domain removal.')
+    return { ok: false, domain, error: 'VERCEL_API_TOKEN or VERCEL_PROJECT_ID not configured' }
+  }
+
+  const url = new URL(`https://api.vercel.com/v9/projects/${projectId}/domains/${domain}`)
+  if (teamId) url.searchParams.set('teamId', teamId)
+
+  try {
+    const res = await fetch(url.toString(), {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    if (res.ok || res.status === 404) {
+      console.log(`[vercel-domains] Domain "${domain}" removed (status ${res.status}).`)
+      return { ok: true, domain }
+    }
+
+    const json = await res.json().catch(() => ({})) as any
+    const errMsg = json?.error?.message || `HTTP ${res.status}`
+    console.error(`[vercel-domains] Failed to remove "${domain}": ${errMsg}`)
+    return { ok: false, domain, error: errMsg }
+  } catch (err: any) {
+    console.error(`[vercel-domains] Network error removing "${domain}":`, err)
+    return { ok: false, domain, error: err?.message || 'Network error' }
+  }
+}
