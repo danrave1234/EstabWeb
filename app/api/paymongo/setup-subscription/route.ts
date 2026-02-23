@@ -42,12 +42,28 @@ export async function POST(req: Request) {
 
     const { data: proj } = await supabase
       .from('projects')
-      .select('id, client_id, subscription_status, has_paid_initial')
+      .select('id, client_id, subscription_status, has_paid_initial, paymongo_customer_id')
       .eq('id', projectId)
       .single()
 
     if (!proj || proj.client_id !== user.id) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+    }
+
+    // Get or create a PayMongo Customer (required for setup_future_usage)
+    let customerId: string = proj.paymongo_customer_id || ''
+    if (!customerId) {
+      const email = user.email
+      const custJson = await pmPost('/customers', {
+        data: {
+          attributes: {
+            email: email || `${user.id}@estabweb.com`,
+            metadata: { project_id: projectId, user_id: user.id },
+          },
+        },
+      })
+      customerId = custJson.data.id
+      await supabase.from('projects').update({ paymongo_customer_id: customerId }).eq('id', projectId)
     }
 
     const amount = proj.has_paid_initial ? MONTHLY_AMOUNT : INITIAL_AMOUNT
@@ -64,7 +80,7 @@ export async function POST(req: Request) {
           currency: 'PHP',
           description,
           statement_descriptor: 'ESTABWEB',
-          setup_future_usage: { session: 'off_session' },
+          setup_future_usage: { session: 'off_session', customer_id: customerId },
           metadata: {
             project_id: projectId,
             user_id: user.id,
