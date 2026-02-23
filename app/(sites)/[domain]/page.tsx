@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import SiteTemplate from "@/components/shared/SiteTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
 import { getSiteConfigWithProject } from "@/lib/utils/site-config";
 import { getPageBySlug, normalizePages, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
+import { isProPlan } from "@/lib/subscription";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -99,6 +101,15 @@ export default async function Home({
   const preview = heads.get('x-preview-mode') === 'true';
 
   const { config: initialData, project } = await getSiteConfigWithProject(domain, heads);
+
+  // If accessed via custom domain but subscription is lapsed, redirect to subdomain
+  if (!preview && project && project.custom_domain && !isProPlan(project)) {
+    const host = heads.get("host")?.split(":")[0]?.toLowerCase() || ""
+    if (host === project.custom_domain.toLowerCase()) {
+      const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase()
+      redirect(`https://${project.subdomain}.${ROOT_DOMAIN}/`)
+    }
+  }
 
   // Final fallback to error UI if nothing found
   if (!initialData) {

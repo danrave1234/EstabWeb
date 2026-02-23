@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { removeDomainFromVercel } from '@/lib/utils/vercel-domains'
 
 const PAYMONGO_API = 'https://api.paymongo.com/v1'
 const RECURRING_AMOUNT = 50000 // ₱500 in centavos
@@ -127,11 +128,67 @@ export async function GET(req: Request) {
   const succeeded = results.filter(r => r.status === 'ok').length
   const failed = results.filter(r => r.status === 'error').length
 
+  // --- Downgrade expired subscriptions ---
+  // Find active/trial projects whose subscription has already expired
+  const now = new Date().toISOString()
+  const { data: expiredProjects, error: expiredError } = await supabase
+    .from('projects')
+    .select('id, subdomain, custom_domain, subscription_status, subscription_ends_at, trial_ends_at')
+    .in('subscription_status', ['active', 'trial'])
+    .or(`subscription_ends_at.lt.${now},trial_ends_at.lt.${now}`)
+
+  const downgradeResults: { projectId: string; status: string; domain?: string; error?: string }[] = []
+
+  if (!expiredError && expiredProjects && expiredProjects.length > 0) {
+    for (const proj of expiredProjects) {
+      // Double-check: only downgrade if the relevant expiry date has passed
+      const isActiveExpired =
+        proj.subscription_status === 'active' &&
+        proj.subscription_ends_at &&
+        new Date(proj.subscription_ends_at) < new Date()
+      const isTrialExpired =
+        proj.subscription_status === 'trial' &&
+        proj.trial_ends_at &&
+        new Date(proj.trial_ends_at) < new Date()
+
+      if (!isActiveExpired && !isTrialExpired) continue
+
+      try {
+        // Remove custom domain from Vercel if set
+        if (proj.custom_domain) {
+          await removeDomainFromVercel(proj.custom_domain)
+        }
+
+        // Downgrade project: set status to free, clear custom_domain
+        const { error: downgradeError } = await supabase
+          .from('projects')
+          .update({
+            subscription_status: 'free',
+            custom_domain: null,
+          })
+          .eq('id', proj.id)
+
+        if (downgradeError) {
+          console.error(`[cron/renew-subscriptions] Downgrade error for project ${proj.id}:`, downgradeError)
+          downgradeResults.push({ projectId: proj.id, status: 'error', error: downgradeError.message })
+        } else {
+          console.log(`[cron/renew-subscriptions] Downgraded project ${proj.id} (${proj.subdomain}) to free`)
+          downgradeResults.push({ projectId: proj.id, status: 'downgraded', domain: proj.custom_domain || undefined })
+        }
+      } catch (e: any) {
+        console.error(`[cron/renew-subscriptions] Exception downgrading project ${proj.id}:`, e)
+        downgradeResults.push({ projectId: proj.id, status: 'error', error: e?.message || 'Unknown error' })
+      }
+    }
+  }
+
   return NextResponse.json({
-    message: `Processed ${projects.length} projects: ${succeeded} succeeded, ${failed} failed`,
+    message: `Processed ${projects.length} projects: ${succeeded} succeeded, ${failed} failed. Downgraded ${downgradeResults.filter(r => r.status === 'downgraded').length} expired projects.`,
     processed: projects.length,
     succeeded,
     failed,
     results,
+    downgraded: downgradeResults.filter(r => r.status === 'downgraded').length,
+    downgradeResults,
   })
 }
