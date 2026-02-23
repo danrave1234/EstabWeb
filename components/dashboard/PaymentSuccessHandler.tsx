@@ -71,13 +71,13 @@ export default function PaymentSuccessHandler() {
         router.refresh()
       }, 2000)
 
-      // Safety timeout: stop polling but keep UX informative.
+      // Safety timeout: stop polling after 20s and show manual dismiss button
       const timeout = window.setTimeout(() => {
         if (doneRef.current) return
         window.clearInterval(interval)
         setIsVerifying(false)
         setTookTooLong(true)
-      }, 60000)
+      }, 20000)
 
       return () => {
         window.clearInterval(interval)

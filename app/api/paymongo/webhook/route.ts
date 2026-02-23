@@ -204,19 +204,36 @@ async function handleCheckoutSessionPaid(
 ): Promise<Response> {
   try {
     const sessionData = body?.data?.attributes?.data
-    const meta = sessionData?.attributes?.metadata
+    // metadata can be on the session itself or nested under attributes
+    const meta = sessionData?.attributes?.metadata || body?.data?.attributes?.metadata
     let projectId: string | null = meta?.project_id || null
 
     // Fallback: look up by session ID in paymongo_links
     if (!projectId) {
-      const sessionId = sessionData?.id
+      const sessionId = sessionData?.id || body?.data?.attributes?.data?.id
       if (sessionId) {
         const { data: row } = await supabase
           .from('paymongo_links')
           .select('project_id')
           .eq('link_id', sessionId)
-          .single()
+          .maybeSingle()
         projectId = row?.project_id || null
+      }
+    }
+
+    // Second fallback: look up by payment reference in paymongo_links
+    if (!projectId) {
+      const payments = sessionData?.attributes?.payments || []
+      for (const p of payments) {
+        const payId = p?.id || p?.data?.id
+        if (payId) {
+          const { data: row } = await supabase
+            .from('paymongo_links')
+            .select('project_id')
+            .eq('link_id', payId)
+            .maybeSingle()
+          if (row?.project_id) { projectId = row.project_id; break }
+        }
       }
     }
 

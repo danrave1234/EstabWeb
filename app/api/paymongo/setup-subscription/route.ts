@@ -96,11 +96,15 @@ export async function POST(req: Request) {
     const sessionId: string = json.data.id
 
     // Store session ID so webhook can identify the project
-    await supabase.from('paymongo_links').upsert({
-      link_id: sessionId,
-      project_id: projectId,
-      plan_id: 'ph_monthly',
-    }, { onConflict: 'link_id' })
+    try {
+      await supabase.from('paymongo_links').insert({
+        link_id: sessionId,
+        project_id: projectId,
+        plan_id: 'ph_monthly',
+      })
+    } catch {
+      // ignore duplicate key errors
+    }
 
     return NextResponse.json({ checkoutUrl })
   } catch (e: any) {
