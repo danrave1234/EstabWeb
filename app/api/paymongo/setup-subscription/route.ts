@@ -11,26 +11,12 @@ function authHeader() {
   return `Basic ${Buffer.from(`${secret}:`).toString('base64')}`
 }
 
-async function pmPost(path: string, body: object) {
-  const res = await fetch(`${PAYMONGO_API}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: authHeader() },
-    body: JSON.stringify(body),
-  })
-  const json = await res.json()
-  if (!res.ok) {
-    const msg = json?.errors?.[0]?.detail || json?.errors?.[0]?.title || 'PayMongo error'
-    throw new Error(String(msg))
-  }
-  return json
-}
-
 export async function POST(req: Request) {
   try {
     const secret = process.env.PAYMONGO_SECRET_KEY
     if (!secret) return NextResponse.json({ error: 'PayMongo not configured' }, { status: 503 })
 
-    const { projectId, successUrl } = await req.json()
+    const { projectId } = await req.json()
     if (!projectId) return NextResponse.json({ error: 'Missing projectId' }, { status: 400 })
 
     // Auth check – must be the project owner
@@ -42,7 +28,7 @@ export async function POST(req: Request) {
 
     const { data: proj } = await supabase
       .from('projects')
-      .select('id, client_id, subscription_status, has_paid_initial, paymongo_customer_id')
+      .select('id, client_id, subscription_status, has_paid_initial, subdomain')
       .eq('id', projectId)
       .single()
 
@@ -50,65 +36,73 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
-    // Get or create a PayMongo Customer (required for setup_future_usage)
-    let customerId: string = proj.paymongo_customer_id || ''
-    if (!customerId) {
-      const email = user.email
-      const custJson = await pmPost('/customers', {
-        data: {
-          attributes: {
-            email: email || `${user.id}@estabweb.com`,
-            metadata: { project_id: projectId, user_id: user.id },
-          },
-        },
-      })
-      customerId = custJson.data.id
-      await supabase.from('projects').update({ paymongo_customer_id: customerId }).eq('id', projectId)
-    }
-
     const amount = proj.has_paid_initial ? MONTHLY_AMOUNT : INITIAL_AMOUNT
     const description = proj.has_paid_initial
-      ? 'EstabWeb: Monthly Subscription'
-      : 'EstabWeb: Initial Setup + First Month'
+      ? 'EstabWeb Monthly Subscription'
+      : 'EstabWeb Initial Setup + First Month'
 
-    // Create a PaymentIntent — setup_future_usage saves the card for future off-session charges
-    const piJson = await pmPost('/payment_intents', {
-      data: {
-        attributes: {
-          amount,
-          payment_method_allowed: ['card'],
-          currency: 'PHP',
-          description,
-          statement_descriptor: 'ESTABWEB',
-          setup_future_usage: { session: 'off_session', customer_id: customerId },
-          metadata: {
-            project_id: projectId,
-            user_id: user.id,
-            is_initial: String(!proj.has_paid_initial),
-            plan_id: 'ph_monthly',
+    const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://subscribe.estabweb.com'
+    const successUrl = `${origin}/dashboard?projectId=${projectId}&payment_success=true`
+    const cancelUrl = `${origin}/subscribe/${projectId}`
+
+    // Create a Checkout Session — PayMongo hosts the payment page, handles 3DS, etc.
+    const res = await fetch(`${PAYMONGO_API}/checkout_sessions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: authHeader(),
+      },
+      body: JSON.stringify({
+        data: {
+          attributes: {
+            billing: {
+              email: user.email,
+            },
+            send_email_receipt: true,
+            show_description: true,
+            show_line_items: true,
+            cancel_url: cancelUrl,
+            success_url: successUrl,
+            description,
+            line_items: [
+              {
+                currency: 'PHP',
+                amount,
+                description,
+                name: proj.has_paid_initial ? 'Monthly Subscription' : 'Initial Setup + First Month',
+                quantity: 1,
+              },
+            ],
+            payment_method_types: ['card', 'gcash', 'paymaya'],
+            metadata: {
+              project_id: projectId,
+              user_id: user.id,
+              is_initial: String(!proj.has_paid_initial),
+              plan_id: 'ph_monthly',
+            },
           },
         },
-      },
+      }),
     })
 
-    const paymentIntentId: string = piJson.data.id
-    const clientKey: string = piJson.data.attributes.client_key
+    const json = await res.json()
+    if (!res.ok) {
+      const msg = json?.errors?.[0]?.detail || json?.errors?.[0]?.title || 'PayMongo error'
+      console.error('[setup-subscription] PayMongo error:', JSON.stringify(json))
+      return NextResponse.json({ error: String(msg) }, { status: 502 })
+    }
 
-    // Store the payment intent link so webhook can identify the project
+    const checkoutUrl: string = json.data.attributes.checkout_url
+    const sessionId: string = json.data.id
+
+    // Store session ID so webhook can identify the project
     await supabase.from('paymongo_links').upsert({
-      link_id: paymentIntentId,
+      link_id: sessionId,
       project_id: projectId,
       plan_id: 'ph_monthly',
     }, { onConflict: 'link_id' })
 
-    const returnUrl = successUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'https://subscribe.estabweb.com'}/dashboard?projectId=${projectId}&payment_success=true`
-
-    return NextResponse.json({
-      paymentIntentId,
-      clientKey,
-      publicKey: process.env.NEXT_PUBLIC_PAYMONGO_PUBLIC_KEY,
-      returnUrl,
-    })
+    return NextResponse.json({ checkoutUrl })
   } catch (e: any) {
     console.error('[setup-subscription]', e)
     return NextResponse.json({ error: e?.message || 'Internal error' }, { status: 500 })
