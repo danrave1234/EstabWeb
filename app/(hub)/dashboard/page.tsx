@@ -228,6 +228,7 @@ export default async function DashboardPage({
           })}
         </div>
 
+
         {/* Desktop View: Table */}
         <div className="hidden sm:block bg-card border border-border rounded-xl shadow-sm overflow-hidden">
           <Table>

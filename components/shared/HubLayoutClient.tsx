@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import MainHeader from "@/components/shared/MainHeader";
 import MainFooter from "@/components/shared/MainFooter";
 import { User } from "@supabase/supabase-js";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 
 interface HubLayoutClientProps {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ export default function HubLayoutClient({ children, initialUser }: HubLayoutClie
   const isAuthPage = pathname === "/login" || pathname === "/signup" || pathname.startsWith("/auth/") || isOnboarding;
 
   return (
+    <AuthProvider initialUser={initialUser}>
     <div className="flex flex-col min-h-screen">
       {!isAuthPage && (
         <MainHeader 
@@ -31,5 +33,6 @@ export default function HubLayoutClient({ children, initialUser }: HubLayoutClie
       
       {!isAuthPage && !isDashboard && <MainFooter />}
     </div>
+    </AuthProvider>
   );
 }

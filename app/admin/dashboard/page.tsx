@@ -1,15 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/Table"
-import AdminDashboardRequests from './AdminDashboardRequests'
-import MainHeader from '@/components/shared/MainHeader'
+import AdminDashboardRequests from '@/components/admin/AdminDashboardRequests'
 
 export default async function AdminRequestsPage() {
   const supabase = await createClient()
