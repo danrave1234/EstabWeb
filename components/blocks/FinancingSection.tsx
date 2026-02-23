@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
 
@@ -52,7 +52,7 @@ export default function FinancingSection({
               </p>
               <ul className="space-y-2 sm:space-y-3">
                 {option.features.map((feature, fIdx) => (
-                  <li key={fIdx} className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-xs font-bold text-foreground/80 uppercase tracking-tight">
+                  <li key={fIdx} className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold text-foreground/80 uppercase tracking-tight">
                     <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-primary shrink-0" />
                     <span className="truncate">{feature}</span>
                   </li>
@@ -65,3 +65,4 @@ export default function FinancingSection({
     </section>
   );
 }
+

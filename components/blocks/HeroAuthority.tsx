@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { useState } from "react";
@@ -338,7 +338,7 @@ export default function HeroAuthority({
                 {/* Academic seal/badge overlay */}
                 <div className="absolute bottom-6 right-6 w-24 h-24 bg-background rounded-full shadow-xl flex items-center justify-center p-2 border border-border">
                   <div className="w-full h-full rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center">
-                    <span className="text-[8px] font-black uppercase tracking-tighter text-center text-primary leading-tight">{benefitText || <>SY 2026<br/>2027</>}</span>
+                    <span className="text-[10px] font-black uppercase tracking-tighter text-center text-primary leading-tight">{benefitText || <>SY 2026<br/>2027</>}</span>
                   </div>
                 </div>
               </div>
@@ -544,7 +544,7 @@ export default function HeroAuthority({
                 <div className="absolute top-8 right-8 w-20 h-20 bg-background rounded-full shadow-xl flex items-center justify-center border border-border animate-float">
                   <DynamicIcon name="Sparkles" className="w-10 h-10 text-primary opacity-20" />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-[9px] font-black uppercase text-primary text-center leading-tight">{benefitText || <>100%<br/>Safe</>}</span>
+                    <span className="text-xs font-black uppercase text-primary text-center leading-tight">{benefitText || <>100%<br/>Safe</>}</span>
                   </div>
                 </div>
               </div>
@@ -686,3 +686,4 @@ function BeforeAfterHeroSlider({ beforeImage, afterImage }: { beforeImage: strin
     </div>
   );
 }
+

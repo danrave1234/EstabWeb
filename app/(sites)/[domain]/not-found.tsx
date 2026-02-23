@@ -15,7 +15,7 @@ export default function SiteNotFound() {
         href="/"
         className="px-8 py-3 bg-primary text-primary-foreground rounded-full font-bold hover:scale-105 transition-transform shadow-lg shadow-primary/20"
       >
-        Go to EstabWeb
+        Go to Homepage
       </Link>
     </div>
   )

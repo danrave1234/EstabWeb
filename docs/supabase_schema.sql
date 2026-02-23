@@ -40,6 +40,12 @@ create table if not exists projects (
   subscription_ends_at timestamptz,
   auto_renew boolean default true,
   has_paid_initial boolean default false,
+  renewal_link text,
+  renewal_link_id text,
+  renewal_link_created_at timestamptz,
+  paymongo_customer_id text,
+  paymongo_subscription_id text,
+  paymongo_plan_id text,
   publish_limit int default 10,
   publish_limit_daily int default 3,
   publish_count int default 0,
@@ -122,18 +128,22 @@ create table if not exists profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   email text,
   role text default 'client' check (role in ('admin', 'client')),
+  avatar_url text,
   created_at timestamptz default now()
 );
 
 -- Trigger to create profile on signup
 create or replace function public.handle_new_user()
-returns trigger as $$
+returns trigger language plpgsql security definer as $$
 begin
-  insert into public.profiles (id, email, role)
-  values (new.id, new.email, 'client');
+  insert into public.profiles (id, email, role, avatar_url)
+  values (new.id, new.email, 'client', new.raw_user_meta_data->>'avatar_url')
+  on conflict (id) do update set
+    email = excluded.email,
+    avatar_url = excluded.avatar_url;
   return new;
 end;
-$$ language plpgsql security definer;
+$$;
 
 create or replace trigger on_auth_user_created
   after insert on auth.users

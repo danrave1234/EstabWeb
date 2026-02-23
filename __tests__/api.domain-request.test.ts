@@ -1,7 +1,7 @@
 /**
  * Unit tests for POST /api/domain/request
  *
- * Mocks: @/lib/supabase/server (no real DB/network calls)
+ * Mocks: @/lib/supabase/server, @/lib/utils/vercel-domains
  */
 
 import { NextResponse } from 'next/server'
@@ -19,30 +19,36 @@ function makeRequest(body: unknown): Request {
 // ─── mocks ───────────────────────────────────────────────────────────────────
 
 const mockGetUser = jest.fn()
-const mockProfileSingle = jest.fn()
 const mockProjectSingle = jest.fn()
 const mockExistingSingle = jest.fn()
-const mockInsert = jest.fn()
+const mockUpdate = jest.fn()
+const mockAddDomainToVercel = jest.fn()
 
 jest.mock('@/lib/supabase/server', () => ({
   createClient: jest.fn(() => ({
     auth: { getUser: mockGetUser },
     from: jest.fn((table: string) => {
-      if (table === 'change_requests') {
-        return { insert: mockInsert }
-      }
-      // projects table — returns different singles depending on call order
-      return {
-        select: jest.fn(() => ({
-          eq: jest.fn((col: string, val: string) => ({
-            single: col === 'id' ? mockProjectSingle : mockExistingSingle,
-            neq: jest.fn(() => ({ maybeSingle: mockExistingSingle })),
-            maybeSingle: mockExistingSingle,
+      if (table === 'projects') {
+        return {
+          select: jest.fn(() => ({
+            eq: jest.fn((col: string) => ({
+              single: col === 'id' ? mockProjectSingle : mockExistingSingle,
+              neq: jest.fn(() => ({ maybeSingle: mockExistingSingle })),
+              maybeSingle: mockExistingSingle,
+            })),
           })),
-        })),
+          update: jest.fn(() => ({
+            eq: jest.fn(() => mockUpdate()),
+          })),
+        }
       }
+      return {}
     }),
   })),
+}))
+
+jest.mock('@/lib/utils/vercel-domains', () => ({
+  addDomainToVercel: mockAddDomainToVercel,
 }))
 
 // ─── tests ───────────────────────────────────────────────────────────────────
@@ -52,7 +58,9 @@ describe('POST /api/domain/request', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    jest.resetModules()
     POST = require('@/app/api/domain/request/route').POST
+    mockAddDomainToVercel.mockResolvedValue({ ok: true, domain: 'myrestaurant.com' })
   })
 
   it('returns 401 when user is not authenticated', async () => {
@@ -102,7 +110,7 @@ describe('POST /api/domain/request', () => {
       error: null,
     })
     mockExistingSingle.mockResolvedValue({ data: null, error: null })
-    mockInsert.mockResolvedValue({ error: null })
+    mockUpdate.mockResolvedValue({ error: null })
 
     const res = await POST(makeRequest({ projectId: 'proj-1', customDomain: 'https://acme.com' }))
     const json = await res.json()
@@ -151,14 +159,14 @@ describe('POST /api/domain/request', () => {
     expect(json.error).toMatch(/already in use/i)
   })
 
-  it('returns 200 and inserts a change_request on success', async () => {
+  it('returns 200 and immediately updates the project domain on success', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
     mockProjectSingle.mockResolvedValue({
       data: { id: 'proj-1', client_id: 'user-1', custom_domain: null },
       error: null,
     })
     mockExistingSingle.mockResolvedValue({ data: null, error: null })
-    mockInsert.mockResolvedValue({ error: null })
+    mockUpdate.mockResolvedValue({ error: null })
 
     const res = await POST(makeRequest({ projectId: 'proj-1', customDomain: 'myrestaurant.com' }))
     const json = await res.json()
@@ -166,29 +174,40 @@ describe('POST /api/domain/request', () => {
     expect(res.status).toBe(200)
     expect(json.success).toBe(true)
     expect(json.domain).toBe('myrestaurant.com')
-    expect(mockInsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        project_id: 'proj-1',
-        section_id: 'custom_domain',
-        status: 'pending',
-        requested_changes: { custom_domain: 'myrestaurant.com' },
-      })
-    )
+    expect(mockUpdate).toHaveBeenCalled()
+    expect(mockAddDomainToVercel).toHaveBeenCalledWith('myrestaurant.com')
   })
 
-  it('returns 500 when change_request insert fails', async () => {
+  it('returns 500 when project update fails', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
     mockProjectSingle.mockResolvedValue({
       data: { id: 'proj-1', client_id: 'user-1', custom_domain: null },
       error: null,
     })
     mockExistingSingle.mockResolvedValue({ data: null, error: null })
-    mockInsert.mockResolvedValue({ error: { message: 'DB write failed' } })
+    mockUpdate.mockResolvedValue({ error: { message: 'DB write failed' } })
 
     const res = await POST(makeRequest({ projectId: 'proj-1', customDomain: 'myrestaurant.com' }))
     const json = await res.json()
 
     expect(res.status).toBe(500)
     expect(json.error).toMatch(/DB write failed/i)
+  })
+
+  it('returns 200 even when Vercel registration fails', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    mockProjectSingle.mockResolvedValue({
+      data: { id: 'proj-1', client_id: 'user-1', custom_domain: null },
+      error: null,
+    })
+    mockExistingSingle.mockResolvedValue({ data: null, error: null })
+    mockUpdate.mockResolvedValue({ error: null })
+    mockAddDomainToVercel.mockResolvedValue({ ok: false, domain: 'myrestaurant.com', error: 'Vercel error' })
+
+    const res = await POST(makeRequest({ projectId: 'proj-1', customDomain: 'myrestaurant.com' }))
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.success).toBe(true)
   })
 })

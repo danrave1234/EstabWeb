@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
 
@@ -49,7 +49,7 @@ export default function ACTypesGrid({
                   )}
                 </div>
                 <h3 className="text-xs sm:text-base font-bold text-foreground mb-1">{item.name}</h3>
-                <p className="text-[9px] sm:text-xs text-muted-foreground">{item.description}</p>
+                <p className="text-xs sm:text-xs text-muted-foreground">{item.description}</p>
               </div>
             );
           })}
@@ -58,3 +58,5 @@ export default function ACTypesGrid({
     </section>
   );
 }
+
+

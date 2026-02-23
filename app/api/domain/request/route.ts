@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { addDomainToVercel } from '@/lib/utils/vercel-domains'
 
 /**
  * POST /api/domain/request
  *
- * Allows an authenticated client to request a custom domain for their project.
- * Stores the requested domain in a pending change_request so the admin can review it.
+ * Allows an authenticated client to set a custom domain for their project.
+ * Immediately updates the project and registers the domain with Vercel.
  *
  * Body: { projectId: string, customDomain: string }
  */
@@ -59,19 +60,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Domain is already in use by another project' }, { status: 409 })
     }
 
-    // Insert a change_request so the admin can review it
-    const { error: crError } = await supabase
-      .from('change_requests')
-      .insert({
-        project_id: projectId,
-        requested_by: user.id,
-        section_id: 'custom_domain',
-        requested_changes: { custom_domain: domain },
-        status: 'pending',
-      })
+    // Immediately update the project's custom_domain
+    const { error: updateError } = await supabase
+      .from('projects')
+      .update({ custom_domain: domain })
+      .eq('id', projectId)
 
-    if (crError) {
-      return NextResponse.json({ error: crError.message }, { status: 500 })
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 })
+    }
+
+    // Register the domain with Vercel (non-blocking on failure)
+    const vercelResult = await addDomainToVercel(domain)
+    if (!vercelResult.ok) {
+      console.warn(`[domain/request] Vercel registration failed for "${domain}": ${vercelResult.error}`)
     }
 
     return NextResponse.json({ success: true, domain })

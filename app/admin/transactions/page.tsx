@@ -32,6 +32,8 @@ interface PaymentWithProject {
   projects: {
     id: string
     subdomain: string
+    custom_domain: string | null
+    auto_renew: boolean
     profiles: {
       email: string
     }
@@ -60,6 +62,8 @@ export default async function AdminTransactionsPage() {
       projects (
         id,
         subdomain,
+        custom_domain,
+        auto_renew,
         profiles:client_id (
           email
         )
@@ -170,6 +174,7 @@ export default async function AdminTransactionsPage() {
                     <TableHead>Date</TableHead>
                     <TableHead>Project / Client</TableHead>
                     <TableHead>Amount</TableHead>
+                    <TableHead>Auto Subscribe</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Reference</TableHead>
                     <TableHead className="text-right">Action</TableHead>
@@ -178,7 +183,7 @@ export default async function AdminTransactionsPage() {
                 <TableBody>
                   {typedPayments.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
                         No transactions recorded yet.
                       </TableCell>
                     </TableRow>
@@ -196,12 +201,30 @@ export default async function AdminTransactionsPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="font-medium">{p.projects?.subdomain || 'Unknown Project'}</span>
+                            <div className="flex items-center gap-1.5">
+                              {p.projects?.custom_domain && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">Custom</span>
+                              )}
+                              <span className={p.projects?.custom_domain ? "font-medium text-foreground" : "font-medium"}>
+                                {p.projects?.custom_domain || p.projects?.subdomain || 'Unknown Project'}
+                              </span>
+                            </div>
                             <span className="text-xs text-muted-foreground">{p.projects?.profiles?.email || 'Unknown Client'}</span>
                           </div>
                         </TableCell>
                         <TableCell className="font-semibold">
                           {p.currency} {Number(p.amount).toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          {p.projects?.auto_renew ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                              Yes
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200">
+                              No
+                            </span>
+                          )}
                         </TableCell>
                         <TableCell>
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
 import { dynamicGridCols } from "@/lib/utils/grid-cols";
@@ -59,7 +59,7 @@ export default function StatsSection({
               <div className="text-lg sm:text-4xl font-black text-foreground mb-0.5 tracking-tight">
                 {stat.value}
               </div>
-              <div className="text-[8px] sm:text-sm font-bold uppercase tracking-widest text-muted-foreground">
+              <div className="text-[10px] sm:text-sm font-bold uppercase tracking-widest text-muted-foreground">
                 {stat.label}
               </div>
             </div>
@@ -69,3 +69,4 @@ export default function StatsSection({
     </section>
   );
 }
+

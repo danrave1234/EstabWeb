@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { useState } from "react";
@@ -74,7 +74,7 @@ export default function BeforeAfterGalleryGrid({
                     <ArrowsOutIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6" />
                   </button>
                 </div>
-                <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-primary text-primary-foreground px-2 py-0.5 sm:px-3 sm:py-1 rounded text-[8px] sm:text-[10px] font-bold uppercase tracking-widest shadow-lg">
+                <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-primary text-primary-foreground px-2 py-0.5 sm:px-3 sm:py-1 rounded text-[10px] sm:text-[10px] font-bold uppercase tracking-widest shadow-lg">
                   {afterLabel}
                 </div>
               </div>
@@ -171,3 +171,4 @@ function BeforeAfterCompare({ beforeImage, afterImage, beforeLabel, afterLabel }
     </div>
   );
 }
+

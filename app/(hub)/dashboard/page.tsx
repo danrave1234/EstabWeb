@@ -35,11 +35,13 @@ export default async function DashboardPage({
   // Fetch ALL projects for this client
   const { data: projects, error } = await supabase
     .from('projects')
-    .select('id, subdomain, custom_domain, current_config, draft_config, created_at, subscription_status, trial_ends_at, subscription_ends_at, auto_renew, has_paid_initial, publish_limit, publish_limit_daily, publish_count, publish_count_today, publish_date, publish_period_start')
+    .select('id, subdomain, custom_domain, current_config, draft_config, created_at, subscription_status, trial_ends_at, subscription_ends_at, auto_renew, has_paid_initial, publish_limit, publish_limit_daily, publish_count, publish_count_today, publish_date, publish_period_start, renewal_link, renewal_link_created_at')
     .eq('client_id', user.id)
     .order('created_at', { ascending: false })
 
   if (error) console.error('Dashboard Fetch Error:', error)
+
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com'
   
   // Fetch lead counts for all user's projects
   const projectIds = projects?.map(p => p.id) || []
@@ -162,7 +164,6 @@ export default async function DashboardPage({
         <div className="grid grid-cols-1 gap-4 sm:hidden mb-8">
           {projects.map((project) => {
             const siteName = (project.current_config as any)?.brand?.name || "My Website"
-            const rootDomain = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '').replace(/^dashboard\./, '') : 'estabweb.com'
             const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.${rootDomain}` : "Not set")
             const previewUrl = project.custom_domain
               ? `https://${project.custom_domain}`
@@ -184,7 +185,12 @@ export default async function DashboardPage({
                       <h3 className="font-bold text-foreground truncate">{siteName}</h3>
                       <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} variant="badge" />
                     </div>
-                    <p className="text-[10px] text-muted-foreground truncate">{domain}</p>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      {project.custom_domain ? (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[9px] font-black uppercase tracking-widest shrink-0">Custom</span>
+                      ) : null}
+                      <p className="text-[10px] text-muted-foreground truncate">{domain}</p>
+                    </div>
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-black text-green-600 leading-none">{getLeadCount(project.id)}</p>
@@ -244,7 +250,6 @@ export default async function DashboardPage({
             <TableBody>
               {projects.map((project) => {
                 const siteName = (project.current_config as any)?.brand?.name || "My Website"
-                const rootDomain = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '').replace(/^dashboard\./, '') : 'estabweb.com'
                 const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.${rootDomain}` : "Not set")
                 const previewUrl = project.custom_domain
                   ? `https://${project.custom_domain}`
@@ -279,8 +284,11 @@ export default async function DashboardPage({
                       </div>
                     </TableCell>
                     <TableCell className="py-4">
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        {domain}
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        {project.custom_domain ? (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[9px] font-black uppercase tracking-widest shrink-0">Custom</span>
+                        ) : null}
+                        <span className={project.custom_domain ? "text-foreground font-medium" : ""}>{domain}</span>
                       </div>
                     </TableCell>
                     <TableCell className="py-4 text-sm text-muted-foreground">

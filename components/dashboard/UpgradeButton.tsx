@@ -1,8 +1,6 @@
 "use client"
 
-import { useState } from "react"
 import { Zap } from "lucide-react"
-import { toast } from "sonner"
 
 interface UpgradeButtonProps {
   projectId: string
@@ -25,34 +23,14 @@ const STATUS_BADGE: Record<string, { label: string; color: string }> = {
 }
 
 export default function UpgradeButton({ projectId, subscriptionStatus = "free", variant = "inline" }: UpgradeButtonProps) {
-  const [loading, setLoading] = useState(false)
   const status = ((subscriptionStatus || "free").toLowerCase() as keyof typeof STATUS_LABELS)
   const currentStatus = STATUS_LABELS[status] || STATUS_LABELS.free
 
   const isUpgradable = status === "free" || status === "trial"
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = () => {
     if (!isUpgradable) return
-    setLoading(true)
-    try {
-      const res = await fetch("/api/paymongo/create-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          projectId, 
-          planId: "ph_monthly",
-          successUrl: window.location.origin + `/dashboard?projectId=${projectId}&payment_success=true`
-        }),
-      })
-      const json = await res.json()
-      if (!res.ok) throw new Error(json.error || "Failed to create payment link")
-      if (json.checkoutUrl) window.open(json.checkoutUrl, '_blank')
-      else toast.error("No checkout URL received")
-    } catch (e: any) {
-      toast.error(e?.message || "Upgrade failed")
-    } finally {
-      setLoading(false)
-    }
+    window.location.href = `/subscribe/${projectId}`
   }
 
   if (variant === "badge") {
@@ -69,11 +47,11 @@ export default function UpgradeButton({ projectId, subscriptionStatus = "free", 
     return (
       <button
         onClick={handleUpgrade}
-        disabled={loading || !isUpgradable}
+        disabled={!isUpgradable}
         className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors disabled:opacity-50 border ${currentStatus.color}`}
       >
         <Zap className="w-3.5 h-3.5" />
-        {loading ? "Redirecting…" : currentStatus.label}
+        {currentStatus.label}
       </button>
     )
   }
@@ -81,8 +59,7 @@ export default function UpgradeButton({ projectId, subscriptionStatus = "free", 
   return (
     <button
       onClick={handleUpgrade}
-      disabled={loading}
-      className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+      className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors"
     >
       <span className="flex items-center gap-2">
         <Zap className="w-4 h-4" />

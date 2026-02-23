@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Star, Quote } from "lucide-react";
 
@@ -17,7 +17,7 @@ export type ReviewsGridProps = {
 
 export default function ReviewsGrid({
   title = "Client Success Stories",
-  subtitle = "Don't just take our word for it—see what our clients have to say.",
+  subtitle = "Don't just take our word for itâ€”see what our clients have to say.",
   testimonials = [],
 }: ReviewsGridProps) {
   if (!testimonials?.length) return null;
@@ -59,7 +59,7 @@ export default function ReviewsGrid({
                 <div>
                   <p className="font-bold text-foreground text-[10px] sm:text-sm">{t.customerName}</p>
                   {t.verified && (
-                    <p className="text-[8px] sm:text-[10px] text-primary font-bold uppercase tracking-widest">
+                    <p className="text-[10px] sm:text-[10px] text-primary font-bold uppercase tracking-widest">
                       Verified
                     </p>
                   )}
@@ -72,3 +72,4 @@ export default function ReviewsGrid({
     </section>
   );
 }
+

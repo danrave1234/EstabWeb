@@ -67,6 +67,61 @@ export async function addDomainToVercel(domain: string): Promise<AddDomainResult
   }
 }
 
+export type DomainVerificationStatus =
+  | { ok: true; domain: string; verified: boolean; configured: boolean; status: 'verified' | 'pending' | 'invalid' }
+  | { ok: false; domain: string; error: string }
+
+/**
+ * Fetches the verification/configuration status of a domain from Vercel.
+ * Returns whether the domain is verified and properly configured.
+ */
+export async function getDomainStatus(domain: string): Promise<DomainVerificationStatus> {
+  const token = process.env.VERCEL_API_TOKEN
+  const projectId = process.env.VERCEL_PROJECT_ID
+  const teamId = process.env.VERCEL_TEAM_ID
+
+  if (!token || !projectId) {
+    return { ok: false, domain, error: 'VERCEL_API_TOKEN or VERCEL_PROJECT_ID not configured' }
+  }
+
+  const url = new URL(`https://api.vercel.com/v9/projects/${projectId}/domains/${domain}`)
+  if (teamId) url.searchParams.set('teamId', teamId)
+
+  try {
+    const res = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    if (res.status === 404) {
+      return { ok: false, domain, error: 'Domain not found on Vercel project' }
+    }
+
+    const json = await res.json().catch(() => ({})) as any
+
+    if (!res.ok) {
+      return { ok: false, domain, error: json?.error?.message || `HTTP ${res.status}` }
+    }
+
+    // Vercel returns `verified` as a boolean (true = verified).
+    // `misconfigured` may be present when DNS is wrong.
+    const verified: boolean = json.verified === true
+    const configured: boolean = json.misconfigured !== true
+
+    let status: 'verified' | 'pending' | 'invalid'
+    if (verified) {
+      status = 'verified'
+    } else if (json.misconfigured === true) {
+      status = 'invalid'
+    } else {
+      status = 'pending'
+    }
+
+    return { ok: true, domain, verified, configured, status }
+  } catch (err: any) {
+    return { ok: false, domain, error: err?.message || 'Network error' }
+  }
+}
+
 /**
  * Builds the full hostname for a subdomain and registers it.
  * e.g. addSubdomainToVercel("acme") → registers "acme.estabweb.com"

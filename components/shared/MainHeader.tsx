@@ -112,7 +112,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
         </div>
 
         {/* Desktop Navigation - Centered */}
-        <nav className="hidden lg:flex items-center gap-1 bg-muted/50 p-1 rounded-full border border-border/50 backdrop-blur-sm mx-4">
+        <nav className="hidden md:flex items-center gap-1 bg-muted/50 p-1 rounded-full border border-border/50 backdrop-blur-sm mx-4">
           {navLinks.map((link) => {
             const Icon = (link as any).icon
             return (
@@ -134,7 +134,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
 
         {/* Action Buttons Area */}
         <div className="flex-1 flex items-center justify-end gap-2 sm:gap-4">
-          <div className="hidden md:flex items-center gap-2 lg:gap-4">
+          <div className="hidden md:flex items-center gap-2 lg:gap-4 shrink-0">
             {loading ? (
               <div className="flex items-center gap-2">
                 <div className="w-20 h-9 bg-muted animate-pulse rounded-full" />
@@ -197,14 +197,24 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
                           </Link>
                         )}
                         {variant === "client" && (
-                          <Link
-                            href="/admin/approvals"
-                            className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all cursor-pointer"
-                            onClick={() => setUserMenuOpen(false)}
-                          >
-                            <Settings className="w-4 h-4 text-primary" />
-                            My Requests
-                          </Link>
+                          <>
+                            <Link
+                              href="/dashboard/profile"
+                              className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all cursor-pointer"
+                              onClick={() => setUserMenuOpen(false)}
+                            >
+                              <User className="w-4 h-4 text-primary" />
+                              Profile & Settings
+                            </Link>
+                            <Link
+                              href="/admin/approvals"
+                              className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all cursor-pointer"
+                              onClick={() => setUserMenuOpen(false)}
+                            >
+                              <Settings className="w-4 h-4 text-primary" />
+                              My Requests
+                            </Link>
+                          </>
                         )}
                         <button
                           onClick={handleSignOut}
@@ -239,7 +249,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-muted/50 text-foreground transition-colors hover:bg-muted"
+            className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-muted/50 text-foreground transition-colors hover:bg-muted"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -248,7 +258,7 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="lg:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border animate-in slide-in-from-top duration-300 overflow-hidden shadow-xl">
+        <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border animate-in slide-in-from-top duration-300 overflow-hidden shadow-xl">
           <nav className="flex flex-col p-4 gap-1 max-h-[80vh] overflow-y-auto">
             {navLinks.map((link) => (
               <Link
@@ -288,14 +298,24 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
                   </Link>
                 )}
                 {variant === "client" && (
-                  <Link
-                    href="/admin/approvals"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-muted-foreground"
-                  >
-                    <Settings className="w-4 h-4" />
-                    My Requests
-                  </Link>
+                  <>
+                    <Link
+                      href="/dashboard/profile"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-muted-foreground"
+                    >
+                      <User className="w-4 h-4" />
+                      Profile & Settings
+                    </Link>
+                    <Link
+                      href="/admin/approvals"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-muted-foreground"
+                    >
+                      <Settings className="w-4 h-4" />
+                      My Requests
+                    </Link>
+                  </>
                 )}
                 <button
                   onClick={handleSignOut}

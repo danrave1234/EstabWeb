@@ -13,7 +13,7 @@ function Shimmer({ className = "" }: { className?: string }) {
 }
 
 // ─── Admin Clients (/admin/clients) ───────────────────────────────────────────
-// Layout: page title + subtitle → 3-stat cards → N client cards (header + project rows)
+// Layout: page title + subtitle → 3-stat cards → search bar + filter pills → results count → accordion client rows
 function AdminClientsSkeleton() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -37,40 +37,38 @@ function AdminClientsSkeleton() {
           ))}
         </div>
 
-        {/* Client cards */}
-        <div className="flex flex-col gap-4">
-          {[...Array(3)].map((_, i) => (
+        {/* Search bar + filter pills */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-2">
+          <Shimmer className="h-9 flex-1 rounded-lg" />
+          <div className="flex gap-2">
+            {[...Array(5)].map((_, i) => (
+              <Shimmer key={i} className="h-9 w-14 rounded-lg" />
+            ))}
+          </div>
+        </div>
+
+        {/* Results count */}
+        <Shimmer className="h-3 w-36 mb-5" />
+
+        {/* Accordion client rows (collapsed) */}
+        <div className="flex flex-col gap-3">
+          {[...Array(5)].map((_, i) => (
             <div key={i} className="rounded-xl border border-border bg-card overflow-hidden">
-              {/* Client header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/30">
+              <div className="flex items-center justify-between px-5 py-4 bg-muted/30">
                 <div className="flex items-center gap-3">
                   <Shimmer className="h-8 w-8 rounded-full shrink-0" />
                   <div className="space-y-1.5">
                     <Shimmer className="h-4 w-44" />
-                    <Shimmer className="h-3 w-64" />
+                    <Shimmer className="h-3 w-56" />
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Shimmer className="h-3 w-16" />
+                <div className="flex items-center gap-3 shrink-0">
+                  <Shimmer className="h-5 w-24 rounded-full hidden sm:block" />
+                  <Shimmer className="h-3 w-10" />
                   <Shimmer className="h-5 w-12 rounded-full" />
+                  <Shimmer className="h-4 w-4 rounded" />
                 </div>
               </div>
-              {/* Project rows */}
-              {[...Array(i === 1 ? 2 : 1)].map((_, j) => (
-                <div key={j} className="px-5 py-4 grid grid-cols-[1fr_auto] gap-4 items-start border-t border-border first:border-t-0">
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2">
-                      <Shimmer className="h-3 w-4" />
-                      <Shimmer className="h-6 w-28 rounded-full" />
-                      <Shimmer className="h-5 w-14 rounded-full" />
-                    </div>
-                    <Shimmer className="h-8 w-48 rounded-lg" />
-                  </div>
-                  <div className="min-w-[160px]">
-                    <Shimmer className="h-20 w-40 rounded-xl" />
-                  </div>
-                </div>
-              ))}
             </div>
           ))}
         </div>

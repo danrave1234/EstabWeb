@@ -3,6 +3,12 @@
   "framework": "nextjs",
   "regions": ["sfo1"],
   "cleanUrls": true,
+  "crons": [
+    {
+      "path": "/api/cron/renew-subscriptions",
+      "schedule": "0 2 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
