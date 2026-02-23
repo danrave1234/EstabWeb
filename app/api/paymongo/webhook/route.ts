@@ -89,6 +89,7 @@ export async function POST(req: Request) {
       'link.payment.paid',
       'payment.paid',
       'payment_intent.succeeded',
+      'checkout_session.payment.paid',
       'subscription.invoice.paid',
       'subscription.unpaid',
     ]
@@ -103,6 +104,11 @@ export async function POST(req: Request) {
       console.error('[paymongo webhook] Failed to initialize Supabase service client:', e.message)
       return NextResponse.json({ error: 'Internal configuration error' }, { status: 500 })
     }
+    // Handle checkout session payment
+    if (eventType === 'checkout_session.payment.paid') {
+      return await handleCheckoutSessionPaid(body, supabase)
+    }
+
     // Handle subscription lifecycle events separately
     if (eventType === 'subscription.invoice.paid') {
       return await handleSubscriptionInvoicePaid(body, supabase)
@@ -189,6 +195,79 @@ export async function POST(req: Request) {
   } catch (e: any) {
     console.error('[paymongo webhook]', e)
     return NextResponse.json({ error: e?.message || 'Webhook error' }, { status: 500 })
+  }
+}
+
+async function handleCheckoutSessionPaid(
+  body: any,
+  supabase: ReturnType<typeof createServiceClient>
+): Promise<Response> {
+  try {
+    const sessionData = body?.data?.attributes?.data
+    const meta = sessionData?.attributes?.metadata
+    let projectId: string | null = meta?.project_id || null
+
+    // Fallback: look up by session ID in paymongo_links
+    if (!projectId) {
+      const sessionId = sessionData?.id
+      if (sessionId) {
+        const { data: row } = await supabase
+          .from('paymongo_links')
+          .select('project_id')
+          .eq('link_id', sessionId)
+          .single()
+        projectId = row?.project_id || null
+      }
+    }
+
+    if (!projectId) {
+      console.warn('[webhook] checkout_session.payment.paid: no project_id found')
+      return NextResponse.json({ received: true })
+    }
+
+    const now = new Date()
+    const periodEnd = new Date(now)
+    periodEnd.setMonth(periodEnd.getMonth() + 1)
+
+    await supabase.from('projects').update({
+      subscription_status: 'active',
+      subscription_ends_at: periodEnd.toISOString(),
+      has_paid_initial: true,
+      auto_renew: true,
+      renewal_link: null,
+      renewal_link_id: null,
+      renewal_link_created_at: null,
+      publish_limit: DEFAULT_PUBLISH_LIMIT,
+      publish_limit_daily: DEFAULT_PUBLISH_LIMIT_DAILY,
+      publish_count: 0,
+      publish_count_today: 0,
+      publish_date: null,
+      publish_period_start: now.toISOString(),
+      trial_ends_at: null,
+    }).eq('id', projectId)
+
+    // Log payment
+    try {
+      const payment = sessionData?.attributes?.payments?.[0]
+      const amount = payment?.attributes?.amount ? payment.attributes.amount / 100 : 0
+      await supabase.from('payments').insert({
+        project_id: projectId,
+        amount,
+        currency: 'PHP',
+        status: 'paid',
+        paymongo_payment_id: payment?.id,
+        paymongo_link_id: sessionData?.id,
+        metadata: { event_type: 'checkout_session.payment.paid' },
+      })
+    } catch (logErr) {
+      console.error('[webhook] Failed to log checkout payment:', logErr)
+    }
+
+    console.log('[webhook] checkout_session.payment.paid: activated project', projectId)
+    return NextResponse.json({ received: true })
+  } catch (e: any) {
+    console.error('[webhook] handleCheckoutSessionPaid error:', e)
+    return NextResponse.json({ error: e?.message }, { status: 500 })
   }
 }
 
