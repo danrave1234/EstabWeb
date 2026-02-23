@@ -68,7 +68,7 @@ export async function POST(req: Request) {
           metadata: {
             project_id: projectId,
             user_id: user.id,
-            is_initial: !proj.has_paid_initial,
+            is_initial: String(!proj.has_paid_initial),
             plan_id: 'ph_monthly',
           },
         },
