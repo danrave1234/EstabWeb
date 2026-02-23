@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       ? 'EstabWeb Monthly Subscription'
       : 'EstabWeb Initial Setup + First Month'
 
-    const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://subscribe.estabweb.com'
+    const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://estabweb.com'
     const successUrl = `${origin}/dashboard?projectId=${projectId}&payment_success=true`
     const cancelUrl = `${origin}/subscribe/${projectId}`
 
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
           attributes: {
             billing: {
               email: user.email,
+              name: 'EstabWeb',
             },
             send_email_receipt: true,
             show_description: true,
