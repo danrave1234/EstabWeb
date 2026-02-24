@@ -240,6 +240,85 @@ function HubDashboardSkeleton() {
   );
 }
 
+// ─── Onboarding (/onboarding) ───────────────────────────────────────────────
+// Layout: fixed header (logo + buttons) → step indicators → title + subtitle → grid of industry cards → CTA button → footer
+function OnboardingSkeleton() {
+  return (
+    <div className="h-screen bg-background flex flex-col relative overflow-hidden">
+      {/* Header */}
+      <header className="container mx-auto px-6 py-4 flex justify-between items-center shrink-0">
+        <div className="flex items-center gap-3">
+          <Shimmer className="w-8 h-8 rounded-lg shrink-0" />
+          <Shimmer className="h-5 w-24" />
+        </div>
+        <div className="flex items-center gap-4">
+          <Shimmer className="h-4 w-24" />
+          <Shimmer className="h-8 w-8 rounded-full" />
+        </div>
+      </header>
+
+      <main className="flex-1 overflow-hidden">
+        <div className="container mx-auto px-6 h-full flex flex-col">
+          <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full pt-6">
+
+            {/* Step indicators */}
+            <div className="flex items-center gap-3 mb-8 justify-center shrink-0">
+              {[1, 2, 3].map((n) => (
+                <React.Fragment key={n}>
+                  <div className="flex flex-col items-center gap-1">
+                    <Shimmer className="w-8 h-8 rounded-full" />
+                    <Shimmer className="h-2 w-12" />
+                  </div>
+                  {n < 3 && <Shimmer className="h-1 w-12 rounded-full mb-4" />}
+                </React.Fragment>
+              ))}
+            </div>
+
+            {/* Title + subtitle */}
+            <div className="space-y-3 text-center mb-6 shrink-0">
+              <Shimmer className="h-9 w-72 mx-auto" />
+              <Shimmer className="h-4 w-80 mx-auto" />
+            </div>
+
+            {/* AI description box */}
+            <div className="shrink-0 max-w-2xl mx-auto w-full mb-6">
+              <Shimmer className="h-3 w-48 mb-2" />
+              <div className="flex gap-2">
+                <Shimmer className="flex-1 h-16 rounded-xl" />
+                <Shimmer className="w-24 h-16 rounded-xl shrink-0" />
+              </div>
+            </div>
+
+            {/* Industry grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 flex-1 content-start overflow-hidden py-2 px-1">
+              {[...Array(15)].map((_, i) => (
+                <Shimmer key={i} className="h-[88px] rounded-[14px]" />
+              ))}
+            </div>
+
+            {/* CTA button */}
+            <div className="pt-4 flex justify-center shrink-0 pb-6">
+              <Shimmer className="h-14 w-64 rounded-2xl" />
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="py-4 border-t border-border/50 shrink-0">
+        <div className="container mx-auto px-6 flex justify-between items-center">
+          <Shimmer className="h-3 w-32" />
+          <div className="flex gap-6">
+            <Shimmer className="h-3 w-12" />
+            <Shimmer className="h-3 w-10" />
+            <Shimmer className="h-3 w-14" />
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
 // ─── Generic fallback ─────────────────────────────────────────────────────────
 function FullPageSkeleton({ message, className }: { message?: string; className?: string }) {
   return (
@@ -264,11 +343,12 @@ export default function SkeletonLoading({
   type = "full",
   message,
   variant,
-}: SkeletonLoadingProps & { variant?: "admin-clients" | "admin-approvals" | "admin-dashboard" | "hub-dashboard" }) {
+}: SkeletonLoadingProps & { variant?: "admin-clients" | "admin-approvals" | "admin-dashboard" | "hub-dashboard" | "onboarding" }) {
   if (variant === "admin-clients") return <AdminClientsSkeleton />;
   if (variant === "admin-approvals") return <AdminApprovalsSkeleton />;
   if (variant === "admin-dashboard") return <AdminDashboardSkeleton />;
   if (variant === "hub-dashboard") return <HubDashboardSkeleton />;
+  if (variant === "onboarding") return <OnboardingSkeleton />;
 
   if (type === "circle") return <div className={`animate-pulse bg-muted rounded-full ${className}`} />;
   if (type === "text") return <div className={`animate-pulse bg-muted rounded h-4 w-full ${className}`} />;
