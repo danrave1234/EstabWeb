@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Image from 'next/image'
 
 export default async function VerifyEmailPage() {
   const supabase = await createClient()
@@ -14,7 +15,10 @@ export default async function VerifyEmailPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-md p-8 text-center space-y-4">
-        <div className="text-5xl">📧</div>
+        <div className="flex flex-col items-center gap-2 mb-2">
+          <Image src="/Logo.png" alt="EstabWeb" width={48} height={48} className="rounded-xl" />
+          <span className="text-lg font-bold text-gray-900">EstabWeb</span>
+        </div>
         <h1 className="text-2xl font-bold text-gray-900">Verify your email</h1>
         <p className="text-gray-600">
           We sent a verification link to{' '}
