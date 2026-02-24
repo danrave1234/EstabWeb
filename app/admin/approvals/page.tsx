@@ -42,17 +42,31 @@ export default async function AdminApprovalsPage() {
 
   if (profile?.role !== 'admin') return redirect('/dashboard')
 
-  const { data: requests } = await supabase
+  const { data: rawRequests } = await supabase
     .from('change_requests')
     .select(`
-      id, section_id, status, created_at,
-      projects ( id, subdomain, current_config ),
-      profiles ( email )
+      id, section_id, status, created_at, requested_by,
+      projects ( id, subdomain, current_config )
     `)
     .order('created_at', { ascending: false })
 
-  const pending = (requests ?? []).filter((r) => r.status === 'pending')
-  const others = (requests ?? []).filter((r) => r.status !== 'pending')
+  // Fetch emails from profiles (profiles.id = auth.users.id = requested_by)
+  let requests: any[] = rawRequests ?? []
+  if (requests.length > 0) {
+    const userIds = [...new Set(requests.map((r: any) => r.requested_by).filter(Boolean))]
+    const { data: profileRows } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .in('id', userIds as string[])
+    const profileMap = Object.fromEntries((profileRows ?? []).map((p: any) => [p.id, p]))
+    requests = requests.map((r: any) => ({
+      ...r,
+      profiles: profileMap[r.requested_by] ?? null,
+    }))
+  }
+
+  const pending = requests.filter((r) => r.status === 'pending')
+  const others = requests.filter((r) => r.status !== 'pending')
 
   const renderCard = (r: any) => {
     const subdomain = r.projects?.subdomain || 'no-subdomain'

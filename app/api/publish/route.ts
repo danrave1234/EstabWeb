@@ -115,27 +115,16 @@ export async function POST(req: Request) {
       snapshot: newConfig,
     })
 
-    if (proj.subdomain) revalidateTag(`site:${proj.subdomain}`, 'max')
-    if (proj.custom_domain) revalidateTag(`site:${proj.custom_domain}`, 'max')
+    if (proj.subdomain) revalidateTag(`site:${proj.subdomain}`)
+    if (proj.custom_domain) revalidateTag(`site:${proj.custom_domain}`)
 
-    const domainParam = proj.subdomain || proj.custom_domain
-    if (domainParam) {
-      revalidatePath(`/${domainParam}`)
-      const configPages = normalizePagesWithDefaults((newConfig as any)?.pages)
-      if (configPages.length > 0) {
-        const planLimits = await getPlanLimits(supabase)
-        const maxPages = getMaxPagesForProject(proj, planLimits)
-        const paidPages = configPages
-          .filter((page) => page.slug && !isLegalPageSlug(page.slug))
-          .slice(0, maxPages)
-        paidPages.forEach((page) => {
-          revalidatePath(`/${domainParam}/${page.slug}`)
-        })
-      }
-      ;["privacy", "terms", "cookies"].forEach((slug) => {
-        revalidatePath(`/${domainParam}/${slug}`)
-      })
-    }
+    // revalidatePath uses Next.js route segment patterns, not domain URLs.
+    // The sites group is at app/(sites)/[domain]/... so we target those segments.
+    revalidatePath('/(sites)/[domain]', 'page')
+    revalidatePath('/(sites)/[domain]/[slug]', 'page')
+    ;['privacy', 'terms', 'cookies'].forEach((slug) => {
+      revalidatePath(`/(sites)/[domain]/${slug}`, 'page')
+    })
 
     const newCount = (updatePayload as any).publish_count as number
     const newCountToday = (updatePayload as any).publish_count_today as number

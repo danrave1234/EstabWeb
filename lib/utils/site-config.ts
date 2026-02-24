@@ -386,7 +386,27 @@ export async function getSiteConfigWithProject(domain: string, headersList?: Hea
 // Cache is keyed per domain with tag `site:{domain}` and a 120s TTL.
 // Preview mode, projectId overrides, and requestId previews always bypass
 // the cache and call getSiteConfigWithProject directly.
+//
+// The per-domain cached fetcher is memoized at module level in a Map so that
+// `unstable_cache` is only created once per domain (not on every request).
 // ---------------------------------------------------------------------------
+const _domainFetcherCache = new Map<string, (d: string) => Promise<{ config: any | null; project: any | null }>>();
+
+function getDomainFetcher(domain: string) {
+  if (!_domainFetcherCache.has(domain)) {
+    const fetcher = unstable_cache(
+      async (d: string) => getSiteConfigWithProject(d),
+      [`site:${domain}`],
+      {
+        tags: [`site:${domain}`],
+        revalidate: 120,
+      }
+    );
+    _domainFetcherCache.set(domain, fetcher);
+  }
+  return _domainFetcherCache.get(domain)!;
+}
+
 export async function getCachedSiteConfig(
   domain: string,
   headersList?: Headers
@@ -400,14 +420,5 @@ export async function getCachedSiteConfig(
     return getSiteConfigWithProject(domain, headersList);
   }
 
-  const fetcher = unstable_cache(
-    async (d: string) => getSiteConfigWithProject(d),
-    [`site:${domain}`],
-    {
-      tags: [`site:${domain}`],
-      revalidate: 120,
-    }
-  );
-
-  return fetcher(domain);
+  return getDomainFetcher(domain)(domain);
 }

@@ -24,8 +24,8 @@ export default async function AdminRequestsPage() {
     return redirect('/dashboard')
   }
 
-  // Fetch pending requests with project and profile data
-  const { data: requests, error } = await supabase
+  // Fetch pending requests with project data
+  const { data: rawRequests, error } = await supabase
     .from('change_requests')
     .select(`
       *,
@@ -33,9 +33,6 @@ export default async function AdminRequestsPage() {
         id,
         subdomain,
         current_config
-      ),
-      profiles (
-        email
       )
     `)
     .eq('status', 'pending')
@@ -43,6 +40,21 @@ export default async function AdminRequestsPage() {
 
   if (error) {
     console.error('Error fetching requests:', error)
+  }
+
+  // Fetch emails from profiles (profiles.id = auth.users.id = requested_by)
+  let requests = rawRequests ?? []
+  if (requests.length > 0) {
+    const userIds = [...new Set(requests.map((r: any) => r.requested_by).filter(Boolean))]
+    const { data: profileRows } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .in('id', userIds as string[])
+    const profileMap = Object.fromEntries((profileRows ?? []).map((p: any) => [p.id, p]))
+    requests = requests.map((r: any) => ({
+      ...r,
+      profiles: profileMap[r.requested_by] ?? null,
+    }))
   }
 
   return (

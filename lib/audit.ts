@@ -1,6 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 
-export type AuditAction = 'publish' | 'rollback' | 'preset_change' | 'domain_change'
+export type AuditAction = 'publish' | 'rollback' | 'preset_change' | 'domain_change' | 'change_request_submit' | 'change_request_approve' | 'change_request_reject'
 
 export async function logAudit(
   supabase: SupabaseClient,

@@ -40,6 +40,7 @@ export default async function AdminClientsPage() {
   const { data: profiles, error: profilesErr } = await supabase
     .from('profiles')
     .select('id,email,role,avatar_url')
+    .neq('role', 'admin')
     .order('email', { ascending: true })
 
   const { data: projects, error: projectsErr } = await supabase

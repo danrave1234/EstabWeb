@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { getSectionKey } from '@/lib/utils/config-mapping'
 import { generateSubdomain } from '@/lib/codes'
@@ -142,21 +143,17 @@ export async function processChangeRequest(
     .eq('id', request.project_id)
     .single()
 
-  const domainParam = latestProj?.subdomain || latestProj?.custom_domain
-  if (domainParam) {
-    revalidatePath(`/${domainParam}`)
-  }
-
-  // Also revalidate the old domain if it was different
-  const oldProject = Array.isArray(request.projects) ? request.projects[0] : request.projects
-  const oldDomainParam = oldProject?.subdomain || oldProject?.custom_domain
-  if (oldDomainParam && oldDomainParam !== domainParam) {
-    revalidatePath(`/${oldDomainParam}`)
-  }
+  if (latestProj?.subdomain) revalidateTag(`site:${latestProj.subdomain}`)
+  if (latestProj?.custom_domain) revalidateTag(`site:${latestProj.custom_domain}`)
+  revalidatePath('/(sites)/[domain]', 'page')
+  revalidatePath('/(sites)/[domain]/[slug]', 'page')
 
   // Revalidate the admin dashboard and approvals page
   revalidatePath('/admin/dashboard', 'page')
   revalidatePath('/admin/approvals', 'page')
+
+  const auditAction = action === 'approved' ? 'change_request_approve' : 'change_request_reject'
+  await logAudit(supabase, auditAction, user.id, request.project_id, { requestId, adminNote })
 
   return { success: true }
 }
