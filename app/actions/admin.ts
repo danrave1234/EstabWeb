@@ -143,8 +143,8 @@ export async function processChangeRequest(
     .eq('id', request.project_id)
     .single()
 
-  if (latestProj?.subdomain) revalidateTag(`site:${latestProj.subdomain}`)
-  if (latestProj?.custom_domain) revalidateTag(`site:${latestProj.custom_domain}`)
+  if (latestProj?.subdomain) revalidateTag(`site:${latestProj.subdomain}`, 'max')
+  if (latestProj?.custom_domain) revalidateTag(`site:${latestProj.custom_domain}`, 'max')
   revalidatePath('/(sites)/[domain]', 'page')
   revalidatePath('/(sites)/[domain]/[slug]', 'page')
 
