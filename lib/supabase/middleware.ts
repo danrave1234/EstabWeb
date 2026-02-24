@@ -46,7 +46,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (profile?.role !== 'admin') {
+    if (profile?.role !== 'admin' && profile?.role !== 'sub_admin') {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 
@@ -74,7 +74,7 @@ export async function updateSession(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-      if (profile?.role === 'admin') {
+      if (profile?.role === 'admin' || profile?.role === 'sub_admin') {
         return NextResponse.redirect(new URL('/admin', request.url))
       }
       return NextResponse.redirect(new URL('/dashboard', request.url))

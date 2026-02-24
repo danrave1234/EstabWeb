@@ -1599,7 +1599,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   const res = await fetch('/api/project-config', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ projectId: project.id, patch: modified })
+                    body: JSON.stringify({ projectId: project.id, fullConfig: mergedConfig })
                   })
                   const json = await res.json()
                   if (!res.ok) throw new Error(json.error || 'Failed to save draft')
@@ -1678,7 +1678,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                         const saveRes = await fetch('/api/project-config', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ projectId: project.id, patch: modified })
+                          body: JSON.stringify({ projectId: project.id, fullConfig: mergedConfig })
                         })
                         const saveJson = await saveRes.json()
                         if (!saveRes.ok) throw new Error(saveJson.error || 'Failed to save draft')
@@ -1735,7 +1735,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                         const saveRes = await fetch('/api/project-config', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ projectId: project.id, patch: modified })
+                          body: JSON.stringify({ projectId: project.id, fullConfig: mergedConfig })
                         })
                         const saveJson = await saveRes.json()
                         if (!saveRes.ok) throw new Error(saveJson.error || 'Failed to auto-save draft before submission')

@@ -3,12 +3,11 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import SiteTemplate from "@/components/shared/SiteTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
-import { getSiteConfigWithProject } from "@/lib/utils/site-config";
+import { getCachedSiteConfig } from "@/lib/utils/site-config";
 import { getPageBySlug, normalizePages, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
 import { isProPlan } from "@/lib/subscription";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 120;
 
 function pickFirstText(...values: Array<unknown>): string {
   const found = values.find((value) => typeof value === "string" && value.trim().length > 0);
@@ -30,7 +29,7 @@ export async function generateMetadata({
   const { domain } = await params;
   const heads = await headers();
   const host = heads.get("host") || domain;
-  const { config } = await getSiteConfigWithProject(domain, heads);
+  const { config } = await getCachedSiteConfig(domain, heads);
 
   const pages = normalizePagesWithDefaults(config?.pages);
   const homePage = getPageBySlug(pages, "");
@@ -100,7 +99,7 @@ export default async function Home({
   const heads = await headers();
   const preview = heads.get('x-preview-mode') === 'true';
 
-  const { config: initialData, project } = await getSiteConfigWithProject(domain, heads);
+  const { config: initialData, project } = await getCachedSiteConfig(domain, heads);
 
   // If accessed via custom domain but subscription is lapsed, redirect to subdomain
   if (!preview && project && project.custom_domain && !isProPlan(project)) {

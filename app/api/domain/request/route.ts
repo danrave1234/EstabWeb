@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { addDomainToVercel } from '@/lib/utils/vercel-domains'
+import { logAudit } from '@/lib/audit'
 
 /**
  * POST /api/domain/request
@@ -76,6 +77,7 @@ export async function POST(req: Request) {
       console.warn(`[domain/request] Vercel registration failed for "${domain}": ${vercelResult.error}`)
     }
 
+    await logAudit(supabase, 'domain_change', user.id, projectId, { domain })
     return NextResponse.json({ success: true, domain })
   } catch (e: any) {
     console.error('[domain/request] Error:', e)

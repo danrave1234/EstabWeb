@@ -43,12 +43,25 @@ export async function signup(formData: FormData) {
   const { email, password } = validatedFields.data
   const supabase = await createClient()
 
-  const { data: { user }, error } = await supabase.auth.signUp({ email, password })
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const { data: { user }, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${siteUrl}/api/auth/callback`,
+    },
+  })
   if (error) {
     if (error.message.toLowerCase().includes('already registered') || error.message.toLowerCase().includes('already exists')) {
       return { error: 'An account with this email already exists. Try logging in instead.' }
     }
     return { error: error.message }
+  }
+
+  // Supabase silently returns a fake user with empty identities for duplicate emails
+  // (to prevent email enumeration). Detect and surface it as a proper error.
+  if (user && (!user.identities || user.identities.length === 0)) {
+    return { error: 'An account with this email already exists. Try logging in instead.' }
   }
 
   if (user) {

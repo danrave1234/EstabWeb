@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
 import path from "path";
 import fs from "fs/promises";
 import { getSectionKey } from "./config-mapping";
@@ -378,4 +379,35 @@ export async function getSiteConfigWithProject(domain: string, headersList?: Hea
     console.error("Error reading site-data.json:", error);
     return { config: null, project };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Cached version for public (non-preview) routes
+// Cache is keyed per domain with tag `site:{domain}` and a 120s TTL.
+// Preview mode, projectId overrides, and requestId previews always bypass
+// the cache and call getSiteConfigWithProject directly.
+// ---------------------------------------------------------------------------
+export async function getCachedSiteConfig(
+  domain: string,
+  headersList?: Headers
+): Promise<{ config: any | null; project: any | null }> {
+  const isPreview = headersList?.get("x-preview-mode") === "true";
+  const projectId = headersList?.get("x-project-id") || undefined;
+  const requestId = headersList?.get("x-request-id") || undefined;
+
+  // Never cache preview, projectId, or requestId requests — always live
+  if (isPreview || projectId || requestId) {
+    return getSiteConfigWithProject(domain, headersList);
+  }
+
+  const fetcher = unstable_cache(
+    async (d: string) => getSiteConfigWithProject(d),
+    [`site:${domain}`],
+    {
+      tags: [`site:${domain}`],
+      revalidate: 120,
+    }
+  );
+
+  return fetcher(domain);
 }

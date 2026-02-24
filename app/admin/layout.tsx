@@ -24,12 +24,16 @@ export default async function AdminLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
+  const { data: profile } = user
+    ? await supabase.from('profiles').select('role').eq('id', user.id).single()
+    : { data: null };
+
   const mode = mainSiteConfig.darkMode ? "dark" : "light";
 
   return (
     <html lang="en" data-theme={mainSiteConfig.colorTheme} data-mode={mode} data-typography={mainSiteConfig.typographyStyle} className={fontVariables}>
       <body className="antialiased bg-muted/30">
-        <AdminLayoutClient user={user}>
+        <AdminLayoutClient user={user} role={profile?.role ?? 'admin'}>
           {children}
         </AdminLayoutClient>
       </body>

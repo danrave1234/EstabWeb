@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getSectionKey } from '@/lib/utils/config-mapping'
 import { generateSubdomain } from '@/lib/codes'
-import { deepMerge } from '@/lib/utils'
 import { addSubdomainToVercel, addDomainToVercel } from '@/lib/utils/vercel-domains'
 
 const processChangeRequestSchema = z.object({
@@ -57,27 +56,24 @@ export async function processChangeRequest(
     const sectionId = request.section_id
     const requestedChanges = request.requested_changes
 
-    // Deep clone current config for update
-    let newConfig = JSON.parse(JSON.stringify(project.current_config || {}))
+    // Snapshot-based: requested_changes must be a full config snapshot for full-site requests
+    let newConfig: Record<string, any>
 
     if (!sectionId || sectionId === 'full-site') {
-      // Merge the requested changes (draft) into the current config instead of replacing it
-      newConfig = deepMerge(newConfig, requestedChanges)
+      // Full snapshot replace — no merging
+      newConfig = JSON.parse(JSON.stringify(requestedChanges || {}))
     } else {
-      // Map section_id to config key
-      const sectionKey = getSectionKey(sectionId);
-
-      // Update the specific section
-      newConfig[sectionKey] = {
-        ...(newConfig[sectionKey] || {}),
-        ...requestedChanges
-      }
+      // Section-only update: apply section onto current config
+      const base = JSON.parse(JSON.stringify(project.current_config || {}))
+      const sectionKey = getSectionKey(sectionId)
+      base[sectionKey] = { ...(base[sectionKey] || {}), ...requestedChanges }
+      newConfig = base
     }
 
     const nextVersion = (project.config_version || 0) + 1
     const updatePayload: any = { 
       current_config: newConfig,
-      draft_config: {}, // Clear draft once approved
+      draft_config: null, // Clear draft once approved
       config_version: nextVersion
     }
 

@@ -15,7 +15,8 @@ import {
   Layout,
   Settings,
   KeyRound,
-  CreditCard
+  CreditCard,
+  ClipboardList
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { User as SupabaseUser } from "@supabase/supabase-js"
@@ -25,9 +26,10 @@ interface MainHeaderProps {
   initialUser?: SupabaseUser | null
   variant?: "admin" | "client"
   userEmail?: string // For compatibility when initialUser isn't passed directly
+  role?: string
 }
 
-export default function MainHeader({ initialUser, variant, userEmail }: MainHeaderProps) {
+export default function MainHeader({ initialUser, variant, userEmail, role }: MainHeaderProps) {
   const { user, loading } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = React.useState(false)
   const [mobileOpen, setMobileOpen] = React.useState(false)
@@ -58,6 +60,9 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
   const displayEmail = user?.email || userEmail
   const userInitials = displayEmail?.split('@')[0].slice(0, 2).toUpperCase() || 'U'
 
+  const isSubAdmin = role === 'sub_admin'
+  const adminRestrictedLinks = ['Transactions', 'Codes', 'Settings', 'Audit Logs']
+
   const navLinks = React.useMemo(() => isDashboard 
     ? (variant === "admin" 
         ? [
@@ -67,13 +72,14 @@ export default function MainHeader({ initialUser, variant, userEmail }: MainHead
             { name: "Template", href: "/admin/template", icon: Layout },
             { name: "Codes", href: "/admin/codes", icon: KeyRound },
             { name: "Settings", href: "/admin/settings", icon: Settings },
-          ] 
+            { name: "Audit Logs", href: "/admin/audit-logs", icon: ClipboardList },
+          ].filter(link => !isSubAdmin || !adminRestrictedLinks.includes(link.name))
         : [])
     : [
         { name: "Home", href: "/" },
         { name: "Pricing", href: "/pricing" },
         { name: "Contact", href: "/contact" },
-      ], [isDashboard, variant])
+      ], [isDashboard, variant, isSubAdmin])
 
   return (
     <header 

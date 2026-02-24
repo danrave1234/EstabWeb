@@ -536,7 +536,7 @@ export default function EditorSidebar({
                 const res = await fetch('/api/project-config', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ projectId: project.id, patch: modified })
+                  body: JSON.stringify({ projectId: project.id, fullConfig: globalConfig })
                 })
                 const json = await res.json()
                 if (!res.ok) throw new Error(json.error || 'Failed to save')

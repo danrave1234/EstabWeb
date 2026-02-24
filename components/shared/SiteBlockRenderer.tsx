@@ -1109,6 +1109,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
             <div
               key={key}
               id={`section-${sectionId}-${index}`}
+              data-section={sectionId}
               data-section-id={sectionId}
               data-section-index={index}
               className="scroll-mt-24"

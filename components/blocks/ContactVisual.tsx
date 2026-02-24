@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -35,7 +35,7 @@ export default function ContactVisual({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    trackLead('form', undefined, { name: formData.name, email: formData.email });
+    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
     setIsSubmitted(true);
     setTimeout(() => {
       router.push("/success");

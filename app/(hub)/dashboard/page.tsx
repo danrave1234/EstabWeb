@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Layout, Globe, ChevronRight, ExternalLink, Sparkles, Plus, BarChart3 } from 'lucide-react'
+import { Layout, Globe, ChevronRight, ExternalLink, Sparkles, Plus, BarChart3, Users } from 'lucide-react'
 import UpgradeButton from '@/components/dashboard/UpgradeButton'
 import ClientDashboardPreview from '@/components/dashboard/ClientDashboardPreview'
 import MainHeader from '@/components/shared/MainHeader'
@@ -219,6 +219,13 @@ export default async function DashboardPage({
                     <BarChart3 className="w-3.5 h-3.5" />
                     Analytics
                   </Link>
+                  <Link
+                    href={`/dashboard/leads?projectId=${project.id}`}
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-muted hover:bg-muted/80 text-foreground rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex-1"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    Leads
+                  </Link>
                   <a 
                     href={previewUrl} 
                     target="_blank" 
@@ -303,6 +310,14 @@ export default async function DashboardPage({
                         >
                           <BarChart3 className="w-4 h-4" />
                           Analytics
+                        </Link>
+                        <Link
+                          href={`/dashboard/leads?projectId=${project.id}`}
+                          className="flex items-center gap-1 px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-lg text-xs font-bold transition-all"
+                          title="Leads"
+                        >
+                          <Users className="w-4 h-4" />
+                          Leads
                         </Link>
                         <Link
                           href={`/dashboard?projectId=${project.id}`}

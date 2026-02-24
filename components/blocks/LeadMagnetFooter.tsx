@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Image from "next/image";
@@ -66,7 +66,7 @@ export default function LeadMagnetFooter({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitted(true);
-    trackLead('form', undefined, { name: formData.name, email: formData.email });
+    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
     setTimeout(() => {
       setIsSubmitted(false);
       setFormData({ name: "", email: "" });
@@ -253,7 +253,7 @@ export default function LeadMagnetFooter({
         <div className="mt-16 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-muted-foreground text-sm">
-              Â© {new Date().getFullYear()} {brandName}. All rights reserved.
+              © {new Date().getFullYear()} {brandName}. All rights reserved.
             </p>
             <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
               <a

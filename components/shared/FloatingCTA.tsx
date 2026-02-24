@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Phone, Calendar, ArrowUp } from "lucide-react";
+import { trackEvent } from "@/components/shared/Analytics";
+import { useProjectId } from "@/components/shared/Analytics";
 
 export type FloatingCTAProps = {
   phone?: string;
@@ -16,10 +18,10 @@ export default function FloatingCTA({
 }: FloatingCTAProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const projectId = useProjectId();
 
   useEffect(() => {
     const toggleVisibility = () => {
-      // Show after scrolling 300px
       if (window.pageYOffset > 300) {
         setIsVisible(true);
         setShowScrollTop(true);
@@ -32,6 +34,15 @@ export default function FloatingCTA({
     window.addEventListener("scroll", toggleVisibility);
     return () => window.removeEventListener("scroll", toggleVisibility);
   }, []);
+
+  function handleCtaClick(section: string, ctaId: string) {
+    trackEvent({
+      type: "cta_click",
+      project_id: projectId,
+      section_key: section,
+      cta_id: ctaId,
+    });
+  }
 
   return (
     <div className={`fixed bottom-6 right-6 z-50 flex flex-col gap-3 transition-all duration-500 transform ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0 pointer-events-none"}`}>
@@ -50,6 +61,7 @@ export default function FloatingCTA({
         {phone && (
           <a
             href={`tel:${phone}`}
+            onClick={() => handleCtaClick("sticky", "phone")}
             className="flex h-12 w-12 items-center justify-center rounded-full bg-background border-2 border-primary shadow-xl text-primary hover:bg-primary hover:text-primary-foreground transition-all group"
           >
             <Phone className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -57,6 +69,7 @@ export default function FloatingCTA({
         )}
         <a
           href={ctaHref}
+          onClick={() => handleCtaClick("sticky", "primary")}
           className="flex h-12 items-center gap-2 rounded-full bg-primary px-6 font-bold text-primary-foreground shadow-2xl hover:scale-105 active:scale-95 transition-all"
         >
           <Calendar className="w-5 h-5" />

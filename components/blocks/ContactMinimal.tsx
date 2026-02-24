@@ -39,7 +39,7 @@ export default function ContactMinimal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitted(true);
-    trackLead('form', undefined, { name: formData.name, email: formData.email });
+    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
     setTimeout(() => {
       router.push("/success");
     }, 1000);

@@ -43,7 +43,7 @@ export default function FreeConsultationForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
-    trackLead('form', undefined, { name: formData.name, email: formData.email });
+    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
     setTimeout(() => {
       setSubmitted(false);
       setFormData({ name: "", email: "", issue: dropdownOptions[0] ?? "" });

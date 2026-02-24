@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateSubdomain } from '@/lib/codes'
-import { deepMerge } from '@/lib/utils'
+import { normalizeConfig } from '@/lib/utils'
 import { TRIAL_DAYS, DEFAULT_PUBLISH_LIMIT, DEFAULT_PUBLISH_LIMIT_DAILY } from '@/lib/subscription'
 import { addSubdomainToVercel } from '@/lib/utils/vercel-domains'
 
@@ -85,9 +85,8 @@ export async function POST(req: Request) {
       project = newProj
     }
 
-    // 3) Merge payload into current_config (live baseline)
-    const existing = (project.current_config ?? {}) as Record<string, unknown>
-    const next = deepMerge(existing, (c.payload ?? {}) as Record<string, unknown>)
+    // 3) Payload is the full config snapshot — no merging
+    const next = normalizeConfig((c.payload ?? {}) as Record<string, any>)
 
     const isNewProject = !projectId
     const trialEnds = new Date()

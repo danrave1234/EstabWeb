@@ -10,6 +10,11 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 const AnalyticsContext = createContext<string | undefined>(undefined);
 
+function PageViewTrackerInner({ projectId }: { projectId?: string }) {
+  usePageViewTracker(projectId);
+  return null;
+}
+
 export function AnalyticsProvider({
   projectId,
   children,
@@ -17,8 +22,16 @@ export function AnalyticsProvider({
   projectId?: string;
   children: React.ReactNode;
 }) {
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   return (
     <AnalyticsContext.Provider value={projectId}>
+      <PageViewTrackerInner projectId={projectId} />
+      {siteKey && (
+        <Script
+          src={`https://www.google.com/recaptcha/api.js?render=${siteKey}`}
+          strategy="afterInteractive"
+        />
+      )}
       {children}
     </AnalyticsContext.Provider>
   );
@@ -26,6 +39,92 @@ export function AnalyticsProvider({
 
 export function useProjectId() {
   return useContext(AnalyticsContext);
+}
+
+// ---------------------------------------------------------------------------
+// Traffic source resolver
+// ---------------------------------------------------------------------------
+export function resolveTrafficSource(): string {
+  if (typeof window === "undefined") return "direct";
+  const params = new URLSearchParams(window.location.search);
+  const utm = params.get("utm_source");
+  if (utm) return utm;
+  if (document.referrer) {
+    try {
+      return new URL(document.referrer).hostname;
+    } catch {
+      return document.referrer;
+    }
+  }
+  return "direct";
+}
+
+// ---------------------------------------------------------------------------
+// trackEvent – fire-and-forget event to /api/track-event
+// ---------------------------------------------------------------------------
+export type EventType =
+  | 'page_view'
+  | 'cta_click'
+  | 'lead_submit'
+  | 'lead_form'
+  | 'lead_call'
+  | 'lead_messenger'
+  | 'lead_viber';
+
+export function trackEvent(payload: {
+  type: EventType;
+  project_id?: string;
+  page_slug?: string;
+  section_key?: string;
+  cta_id?: string;
+  source?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  if (typeof window === "undefined") return;
+  const resolvedProjectId = payload.project_id ?? window.PROJECT_ID;
+  if (!resolvedProjectId) return;
+  const body = JSON.stringify({
+    ...payload,
+    project_id: resolvedProjectId,
+    source: payload.source ?? resolveTrafficSource(),
+  });
+  const sent =
+    typeof navigator.sendBeacon === "function" &&
+    navigator.sendBeacon(
+      "/api/track-event",
+      new Blob([body], { type: "application/json" })
+    );
+  if (!sent) {
+    fetch("/api/track-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      keepalive: true,
+    }).catch(() => {});
+  }
+}
+
+// ---------------------------------------------------------------------------
+// usePageViewTracker – call inside a client component to track page views
+// ---------------------------------------------------------------------------
+export function usePageViewTracker(projectId?: string) {
+  const pathname = usePathname();
+  const tracked = useRef<string | null>(null);
+  useEffect(() => {
+    const key = `${projectId}:${pathname}`;
+    if (tracked.current === key) return;
+    // Deduplicate within the same session
+    const ssKey = `pv-${pathname}`;
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(ssKey)) return;
+    tracked.current = key;
+    if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(ssKey, '1');
+    const slug = pathname === "/" ? "" : pathname.replace(/^\//, "");
+    trackEvent({
+      type: "page_view",
+      project_id: projectId,
+      page_slug: slug,
+    });
+  }, [pathname, projectId]);
 }
 
 // ---------------------------------------------------------------------------
@@ -115,7 +214,9 @@ export function FacebookPixel({ id }: { id: string }) {
 export function trackLead(
   type: "messenger" | "call" | "form" | "viber",
   projectId?: string,
-  extraMetadata?: Record<string, string>
+  extraMetadata?: Record<string, string>,
+  sectionKey?: string,
+  pageSlug?: string
 ) {
   if (typeof window === "undefined") return;
 
@@ -139,6 +240,8 @@ export function trackLead(
     });
   }
 
+  if (!resolvedProjectId) return;
+
   // Auto-capture UTM params from URL
   const urlParams = new URLSearchParams(window.location.search);
   const utmFields: Record<string, string> = {};
@@ -147,34 +250,52 @@ export function trackLead(
     if (val) utmFields[key] = val;
   });
 
-  // Server-side persistence via sendBeacon (survives tab close)
-  if (resolvedProjectId) {
-    const payload = JSON.stringify({
-      type,
-      project_id: resolvedProjectId,
-      metadata: {
-        url: window.location.href,
-        path: window.location.pathname,
-        referrer: document.referrer || undefined,
-        ua: navigator.userAgent,
-        ...utmFields,
-        ...extraMetadata,
-      },
-    });
+  const basePayload = {
+    type,
+    project_id: resolvedProjectId,
+    page_slug: pageSlug ?? window.location.pathname.replace(/^\//, '') ?? undefined,
+    section_key: sectionKey ?? undefined,
+    honeypot: "", // always empty for real users; bots may fill this
+    metadata: {
+      url: window.location.href,
+      path: window.location.pathname,
+      referrer: document.referrer || undefined,
+      ua: navigator.userAgent,
+      ...utmFields,
+      ...extraMetadata,
+    },
+  };
 
-    const sent =
-      typeof navigator.sendBeacon === "function" &&
-      navigator.sendBeacon("/api/track-lead", new Blob([payload], { type: "application/json" }));
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
-    if (!sent) {
-      // Fallback for environments where sendBeacon is unavailable
-      fetch("/api/track-lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: payload,
-        keepalive: true,
+  // For form leads: get reCAPTCHA v3 token first, then POST via fetch
+  if (type === "form" && siteKey && typeof window.grecaptcha !== "undefined") {
+    window.grecaptcha.ready(() => {
+      window.grecaptcha.execute(siteKey, { action: "lead_form" }).then((token) => {
+        fetch("/api/track-lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...basePayload, recaptchaToken: token }),
+          keepalive: true,
+        }).catch(() => {});
       }).catch(() => {});
-    }
+    });
+    return;
+  }
+
+  // For non-form leads (call, messenger, viber): fire-and-forget via sendBeacon
+  const payload = JSON.stringify(basePayload);
+  const sent =
+    typeof navigator.sendBeacon === "function" &&
+    navigator.sendBeacon("/api/track-lead", new Blob([payload], { type: "application/json" }));
+
+  if (!sent) {
+    fetch("/api/track-lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      keepalive: true,
+    }).catch(() => {});
   }
 }
 
@@ -188,5 +309,9 @@ declare global {
     dataLayer: any[];
     fbq: (...args: any[]) => void;
     PROJECT_ID?: string; // kept for backward-compat; prefer AnalyticsContext
+    grecaptcha: {
+      ready: (cb: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+    };
   }
 }

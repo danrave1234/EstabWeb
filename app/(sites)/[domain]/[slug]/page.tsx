@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import SiteTemplate from "@/components/shared/SiteTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
-import { getSiteConfigWithProject } from "@/lib/utils/site-config";
+import { getCachedSiteConfig } from "@/lib/utils/site-config";
 import {
   canUseMultiPage,
   getMaxPagesForProject,
@@ -14,8 +14,7 @@ import {
 } from "@/lib/utils/site-pages";
 import { isProPlan } from "@/lib/subscription";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 120;
 
 function pickFirstText(...values: Array<unknown>): string {
   const found = values.find((v) => typeof v === "string" && v.trim().length > 0);
@@ -37,7 +36,7 @@ export async function generateMetadata({
   const { domain, slug } = await params;
   const heads = await headers();
   const host = heads.get("host") || domain;
-  const { config } = await getSiteConfigWithProject(domain, heads);
+  const { config } = await getCachedSiteConfig(domain, heads);
 
   const pages = normalizePagesWithDefaults(config?.pages);
   const page = getPageBySlug(pages, slug);
@@ -106,7 +105,7 @@ export default async function SubPage({
     notFound();
   }
 
-  const { config: initialData, project } = await getSiteConfigWithProject(domain, heads);
+  const { config: initialData, project } = await getCachedSiteConfig(domain, heads);
 
   if (!initialData) {
     return (

@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { generateSubdomain } from '@/lib/codes'
-import { deepMerge } from '@/lib/utils'
+import { normalizeConfig } from '@/lib/utils'
 import { canPublishDirectly, canPublishNow, getPublishStats, DEFAULT_PUBLISH_LIMIT, DEFAULT_PUBLISH_LIMIT_DAILY } from '@/lib/subscription'
 import { getMaxPagesForProject, getPlanLimits, isLegalPageSlug, normalizePagesWithDefaults } from '@/lib/utils/site-pages'
+import { logAudit } from '@/lib/audit'
 
 const PERIOD_DAYS = 30
 
@@ -47,13 +48,12 @@ export async function POST(req: Request) {
       )
     }
 
-    const draft = (proj.draft_config ?? {}) as Record<string, unknown>
-    if (Object.keys(draft).length === 0) {
+    const draft = proj.draft_config as Record<string, unknown> | null
+    if (!draft || Object.keys(draft).length === 0) {
       return NextResponse.json({ error: 'No draft changes to publish' }, { status: 400 })
     }
 
-    const current = (proj.current_config ?? {}) as Record<string, unknown>
-    const newConfig = deepMerge(current, draft)
+    const newConfig = normalizeConfig(draft) as Record<string, unknown>
     const pages = normalizePagesWithDefaults((newConfig as any)?.pages)
     if (pages.length > 0) {
       const planLimits = await getPlanLimits(supabase)
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
 
     const updatePayload: Record<string, unknown> = {
       current_config: newConfig,
-      draft_config: {},
+      draft_config: null,
       config_version: nextVersion,
     }
 
@@ -115,6 +115,9 @@ export async function POST(req: Request) {
       snapshot: newConfig,
     })
 
+    if (proj.subdomain) revalidateTag(`site:${proj.subdomain}`, 'max')
+    if (proj.custom_domain) revalidateTag(`site:${proj.custom_domain}`, 'max')
+
     const domainParam = proj.subdomain || proj.custom_domain
     if (domainParam) {
       revalidatePath(`/${domainParam}`)
@@ -136,6 +139,7 @@ export async function POST(req: Request) {
 
     const newCount = (updatePayload as any).publish_count as number
     const newCountToday = (updatePayload as any).publish_count_today as number
+    await logAudit(supabase, 'publish', user.id, projectId, { version: nextVersion })
     return NextResponse.json({
       success: true,
       version: nextVersion,

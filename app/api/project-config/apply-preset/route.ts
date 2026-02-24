@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { revalidateTag } from 'next/cache'
 import { generateSubdomain } from '@/lib/codes'
 import { GENRE_PRESETS } from '@/config/presets'
-import { deepMerge } from '@/lib/utils'
+import { normalizeConfig } from '@/lib/utils'
 import { addSubdomainToVercel } from '@/lib/utils/vercel-domains'
+import { logAudit } from '@/lib/audit'
 
 export async function POST(req: Request) {
   try {
@@ -58,7 +60,7 @@ export async function POST(req: Request) {
     if (projectId) {
       const { data: p, error: pErr } = await supabase
         .from('projects')
-        .select('id,current_config,subdomain')
+        .select('id,current_config,subdomain,custom_domain')
         .eq('id', projectId)
         .single()
       
@@ -77,7 +79,7 @@ export async function POST(req: Request) {
           client_id: user.id,
           subdomain
         })
-        .select('id,current_config,subdomain')
+        .select('id,current_config,subdomain,custom_domain')
         .single()
       
     if (newErr || !newProj) {
@@ -92,9 +94,8 @@ export async function POST(req: Request) {
     project = newProj
   }
 
-  // 3) Merge preset config
-  const existing = (project.current_config ?? {}) as Record<string, unknown>
-  const next = deepMerge(existing, presetConfig as any)
+  // 3) Preset is the full new config snapshot — no merging
+  const next = normalizeConfig(presetConfig as Record<string, any>)
 
   const updatePayload: any = {
     current_config: next,
@@ -130,6 +131,10 @@ export async function POST(req: Request) {
     }, { status: 400 })
   }
 
+    const finalDomain = updatePayload.subdomain || project.subdomain
+    if (finalDomain) revalidateTag(`site:${finalDomain}`, 'max')
+    if (project.custom_domain) revalidateTag(`site:${project.custom_domain}`, 'max')
+    await logAudit(supabase, 'preset_change', user.id, project.id, { presetKey })
     return NextResponse.json({ success: true, applied: next, projectId: project.id })
   } catch (e: any) {
     console.error('[apply-preset] Critical error:', e)

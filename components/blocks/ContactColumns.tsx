@@ -36,7 +36,7 @@ export default function ContactColumns({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    trackLead('form', undefined, { name: formData.name, email: formData.email });
+    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
     setIsSubmitted(true);
     setTimeout(() => {
       router.push("/success");

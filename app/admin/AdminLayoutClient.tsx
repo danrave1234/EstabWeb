@@ -12,9 +12,11 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 export default function AdminLayoutClient({
   children,
   user,
+  role,
 }: {
   children: React.ReactNode;
   user?: any;
+  role?: string;
 }) {
   const pathname = usePathname();
   const isPreview = pathname === "/admin/preview" || pathname === "/admin/template";
@@ -51,7 +53,7 @@ export default function AdminLayoutClient({
   return (
     <AuthProvider initialUser={user ?? null}>
     <div className="min-h-screen flex flex-col">
-      {!isPreview && <MainHeader variant="admin" initialUser={user} />}
+      {!isPreview && <MainHeader variant="admin" initialUser={user} role={role} />}
       <main className={`flex-1 ${!isPreview ? 'pt-16' : ''}`}>
         {children}
       </main>
