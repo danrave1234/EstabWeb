@@ -2104,7 +2104,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                                 </label>
                               </div>
                             </div>
-                          ) : key === 'googleMapsEmbedUrl' ? (
+                          ) : key === 'mapEmbedUrl' ? (
                             <MapPinPicker
                               value={value as string}
                               onChange={(url) => {

@@ -11,7 +11,7 @@ export type ContactWithMapProps = {
   email: string;
   phone: string;
   address: string;
-  googleMapsEmbedUrl?: string;
+  mapEmbedUrl?: string;
   businessHours?: { day: string; hours: string }[];
   formHeading?: string;
   formSubmitText?: string;
@@ -24,7 +24,7 @@ export default function ContactWithMap({
   email,
   phone,
   address,
-  googleMapsEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3861.1896053744943!2d121.0416973!3d14.5408669!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397c8eb44f2d373%3A0x1d35a83a44838634!2sBGC!5e0!3m2!1sen!2sph!4v1700000000000!5m2!1sen!2sph",
+  mapEmbedUrl = "https://www.openstreetmap.org/export/embed.html?bbox=120.9716,14.5308,121.0516,14.5508&layer=mapnik&marker=14.5408,121.0117",
   businessHours = [
     { day: "Mon - Fri", hours: "9:00 AM - 6:00 PM" },
     { day: "Saturday", hours: "10:00 AM - 4:00 PM" },
@@ -134,14 +134,13 @@ export default function ContactWithMap({
           {/* Map Side */}
           <div className="relative h-[500px] lg:h-auto min-h-[400px] rounded-3xl overflow-hidden shadow-2xl border border-border">
              <iframe
-               src={googleMapsEmbedUrl}
+               src={mapEmbedUrl}
                width="100%"
                height="100%"
                style={{ border: 0 }}
                allowFullScreen
                loading="lazy"
-               referrerPolicy="no-referrer-when-downgrade"
-               className="absolute inset-0 grayscale contrast-125"
+               className="absolute inset-0"
              />
              <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-black/10" />
           </div>

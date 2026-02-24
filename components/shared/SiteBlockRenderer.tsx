@@ -744,7 +744,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   address={contact.address}
                   title={contact.title ?? "Visit Our Office"}
                   subtitle={contact.tagline ?? contact.subtitle ?? ""}
-                  googleMapsEmbedUrl={contact.googleMapsEmbedUrl}
+                  mapEmbedUrl={contact.mapEmbedUrl}
                   businessHours={contact.businessHours}
                   formHeading={contact.formHeading ?? "Send us a Message"}
                   formSubmitText={contact.formSubmitText ?? "Send Message"}
@@ -988,7 +988,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
                   title={serviceAreaMap?.title}
                   subtitle={serviceAreaMap?.subtitle}
                   cities={serviceAreaMap?.cities ?? []}
-                  googleMapsEmbedUrl={serviceAreaMap?.googleMapsEmbedUrl}
+                  mapEmbedUrl={serviceAreaMap?.mapEmbedUrl}
                   cantFindCityTitle={serviceAreaMap?.cantFindCityTitle}
                   cantFindCityDescription={serviceAreaMap?.cantFindCityDescription}
                 />

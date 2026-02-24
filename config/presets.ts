@@ -303,7 +303,7 @@ const GENERIC_CONTENT: PresetContent = {
     title: "Our Service Areas",
     subtitle: "We proudly serve the following locations across Metro Cebu",
     cities: ["Cebu City", "Mandaue", "Lapu-Lapu", "Talisay", "Liloan", "Consolacion"],
-    googleMapsEmbedUrl: "",
+    mapEmbedUrl: "",
   },
   beforeAfterSlider: {
     title: "Seeing is Believing",

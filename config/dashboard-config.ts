@@ -312,7 +312,7 @@ export const DEFAULT_SERVICE_AREA_MAP = {
   title: "Our Service Areas",
   subtitle: "We serve the following locations.",
   cities: ["City 1", "City 2", "City 3"],
-  googleMapsEmbedUrl: "",
+  mapEmbedUrl: "",
 };
 
 export const DEFAULT_CONTACT_WITH_MAP = {
@@ -321,7 +321,7 @@ export const DEFAULT_CONTACT_WITH_MAP = {
   email: "",
   phone: "",
   address: "",
-  googleMapsEmbedUrl: "",
+  mapEmbedUrl: "",
   formHeading: "Send us a Message",
   formSubmitText: "Send Message",
   formThankYouText: "Message Sent!",

@@ -805,7 +805,7 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
             title={DEFAULT_SERVICE_AREA_MAP.title}
             subtitle={DEFAULT_SERVICE_AREA_MAP.subtitle}
             cities={(DEFAULT_SERVICE_AREA_MAP.cities ?? []) as any}
-            googleMapsEmbedUrl={(DEFAULT_SERVICE_AREA_MAP as any).googleMapsEmbedUrl}
+            mapEmbedUrl={(DEFAULT_SERVICE_AREA_MAP as any).mapEmbedUrl}
           />
         )
       case "service_area--radius":
