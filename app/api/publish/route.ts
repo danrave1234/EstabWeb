@@ -6,6 +6,7 @@ import { normalizeConfig } from '@/lib/utils'
 import { canPublishDirectly, canPublishNow, getPublishStats, DEFAULT_PUBLISH_LIMIT, DEFAULT_PUBLISH_LIMIT_DAILY } from '@/lib/subscription'
 import { getMaxPagesForProject, getPlanLimits, isLegalPageSlug, normalizePagesWithDefaults } from '@/lib/utils/site-pages'
 import { logAudit } from '@/lib/audit'
+import { onProjectPublished } from '@/lib/cache/invalidation'
 
 const PERIOD_DAYS = 30
 
@@ -117,6 +118,7 @@ export async function POST(req: Request) {
 
     if (proj.subdomain) revalidateTag(`site:${proj.subdomain}`, 'max')
     if (proj.custom_domain) revalidateTag(`site:${proj.custom_domain}`, 'max')
+    await onProjectPublished({ projectId, subdomain: proj.subdomain, customDomain: proj.custom_domain })
 
     // revalidatePath uses Next.js route segment patterns, not domain URLs.
     // The sites group is at app/(sites)/[domain]/... so we target those segments.
