@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { unstable_cache } from "next/cache";
 import path from "path";
 import fs from "fs/promises";
@@ -393,6 +394,64 @@ export async function getSiteConfigWithProject(domain: string, headersList?: Hea
 // because the old stale closure would persist in the same process instance.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Service-client-based DB fetch — safe to use inside unstable_cache because
+// it does NOT call cookies() or headers() (those are banned in cache context).
+// ---------------------------------------------------------------------------
+async function fetchSiteConfigFromDB(domain: string): Promise<{ config: any | null; project: any | null }> {
+  try {
+    const supabase = createServiceClient();
+
+    const { data } = await supabase
+      .from("projects")
+      .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+      .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`)
+      .limit(1);
+
+    let dbRow = data?.[0];
+
+    if (!dbRow) {
+      const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com').toLowerCase();
+      if (domain.endsWith(`.${ROOT_DOMAIN}`)) {
+        const sub = domain.slice(0, -(ROOT_DOMAIN.length + 1));
+        const { data: subData } = await supabase
+          .from("projects")
+          .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+          .eq("subdomain", sub)
+          .limit(1);
+        dbRow = subData?.[0];
+      }
+    }
+
+    if (!dbRow) {
+      const { data: ciData } = await supabase
+        .from("projects")
+        .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+        .ilike("subdomain", domain)
+        .limit(1);
+      dbRow = ciData?.[0];
+    }
+
+    if (dbRow) {
+      const hasCurrent = dbRow.current_config && Object.keys(dbRow.current_config).length > 0;
+      const config = hasCurrent ? dbRow.current_config : dbRow.draft_config;
+      if (config && Object.keys(config).length > 0) {
+        return { config, project: dbRow };
+      }
+    }
+  } catch (error) {
+    console.error("[fetchSiteConfigFromDB] Error:", error);
+  }
+
+  // Fallback to site-data.json
+  try {
+    const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
+    return { config: JSON.parse(raw), project: null };
+  } catch {
+    return { config: null, project: null };
+  }
+}
+
 export async function getCachedSiteConfig(
   domain: string,
   headersList?: Headers
@@ -407,7 +466,7 @@ export async function getCachedSiteConfig(
   }
 
   const fetcher = unstable_cache(
-    async (d: string) => getSiteConfigWithProject(d),
+    async (d: string) => fetchSiteConfigFromDB(d),
     [`site:${domain}`],
     {
       tags: [`site:${domain}`],
