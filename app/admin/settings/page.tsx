@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { getPlanLimits } from "@/lib/utils/site-pages"
 import PlanLimitsForm from "@/components/admin/PlanLimitsForm"
+import ClearCacheButton from "@/components/admin/ClearCacheButton"
 
 export const dynamic = "force-dynamic"
 
@@ -32,6 +33,7 @@ export default async function AdminSettingsPage() {
       </div>
 
       <PlanLimitsForm freeMaxPages={freeMaxPages} proMaxPages={proMaxPages} />
+      <ClearCacheButton />
     </div>
   )
 }
