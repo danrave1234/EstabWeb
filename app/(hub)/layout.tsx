@@ -89,7 +89,8 @@ export default async function HubLayout({
   return (
     <html lang="en" data-theme={colorTheme} data-mode={mode} data-typography={typography} className={fontVariables}>
       <head>
-        <StructuredData 
+        <meta charSet="utf-8" />
+        <StructuredData
           data={{
             "@context": "https://schema.org",
             "@type": "WebSite",

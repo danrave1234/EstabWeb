@@ -5,6 +5,7 @@ import MainHeader from "@/components/shared/MainHeader";
 import MainFooter from "@/components/shared/MainFooter";
 import { User } from "@supabase/supabase-js";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import NetworkOfflineBanner from "@/components/shared/NetworkOfflineBanner";
 
 interface HubLayoutClientProps {
   children: React.ReactNode;
@@ -20,6 +21,7 @@ export default function HubLayoutClient({ children, initialUser }: HubLayoutClie
 
   return (
     <AuthProvider initialUser={initialUser}>
+    <NetworkOfflineBanner />
     <div className="flex flex-col min-h-screen">
       {!isAuthPage && (
         <MainHeader 

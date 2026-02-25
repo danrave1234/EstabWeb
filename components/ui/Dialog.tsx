@@ -34,23 +34,6 @@ const DialogContent = React.forwardRef<
   // the dialog content and releases outside.
   const pointerDownInsideRef = React.useRef(false)
 
-  React.useEffect(() => {
-    // If the pointer starts inside the dialog and ends outside, we may never
-    // receive `onPointerUpCapture` on the dialog content. Clear the flag via
-    // global listeners so future outside clicks can close normally.
-    const clear = () => {
-      pointerDownInsideRef.current = false
-    }
-    window.addEventListener("pointerup", clear)
-    window.addEventListener("pointercancel", clear)
-    window.addEventListener("blur", clear)
-    return () => {
-      window.removeEventListener("pointerup", clear)
-      window.removeEventListener("pointercancel", clear)
-      window.removeEventListener("blur", clear)
-    }
-  }, [])
-
   return (
     <DialogPortal>
       {showOverlay && <DialogOverlay />}

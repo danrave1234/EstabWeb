@@ -175,7 +175,7 @@ create table if not exists payments (
 create table if not exists project_events (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references projects(id) on delete cascade,
-  event_type text not null check (event_type in ('page_view', 'cta_click', 'lead_submit')),
+  event_type text not null check (event_type in ('page_view', 'section_view', 'cta_click', 'lead_submit', 'lead_form', 'lead_call', 'lead_messenger', 'lead_viber')),
   page_slug text,
   section_key text,
   cta_id text,

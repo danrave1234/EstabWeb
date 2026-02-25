@@ -32,6 +32,9 @@ export default async function AdminLayout({
 
   return (
     <html lang="en" data-theme={mainSiteConfig.colorTheme} data-mode={mode} data-typography={mainSiteConfig.typographyStyle} className={fontVariables}>
+      <head>
+        <meta charSet="utf-8" />
+      </head>
       <body className="antialiased bg-muted/30">
         <AdminLayoutClient user={user} role={profile?.role ?? 'admin'}>
           {children}

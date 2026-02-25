@@ -61,22 +61,36 @@ export async function generateMetadata({
     : buildKeywords([brand.name, pageLabel, theme, hero.benefitText, hero.badgeText, features.title, practiceAreas.title]);
   const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
 
+  const ogTitle = pickFirstText(seo.og?.title, title);
+  const ogDescription = pickFirstText(seo.og?.description, description);
+  const ogImage = seo.og?.image || brand.logoUrl;
+  // Canonical: only allow a path override (e.g. "/about"), never a full external URL.
+  // This prevents cross-domain SEO poisoning when a client enters a wrong canonical.
+  const canonicalPath = typeof seo.canonical === 'string' && seo.canonical.startsWith('/')
+    ? seo.canonical
+    : '/';
+  const canonical = `https://${host}${canonicalPath}`;
+
   return {
     title,
     description,
     keywords,
     openGraph: {
-      title,
-      description,
+      title: ogTitle,
+      description: ogDescription,
       type: "website",
       siteName: brand.name,
-      images: brand.logoUrl ? [{ url: brand.logoUrl }] : [],
+      images: ogImage ? [{ url: ogImage }] : [],
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
-      images: brand.logoUrl ? [brand.logoUrl] : [],
+      title: ogTitle,
+      description: ogDescription,
+      images: ogImage ? [ogImage] : [],
+    },
+    robots: {
+      index: !seo.robots?.noindex,
+      follow: !seo.robots?.nofollow,
     },
     icons: {
       icon: iconUrl,
@@ -85,7 +99,7 @@ export async function generateMetadata({
     },
     metadataBase: new URL(`https://${host}`),
     alternates: {
-      canonical: "/",
+      canonical,
     },
   };
 }

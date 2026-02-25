@@ -1,35 +1,23 @@
-import { runSeoAudit, SeoAuditResult, AuditIssue, PageAuditResult } from '@/lib/seo/seoAudit'
+import {
+  runSeoAudit,
+  SeoAuditResult,
+  AuditIssue,
+  PageAuditResult,
+  scoreColor,
+  scoreBg,
+  scoreBarColor,
+  scoreLabel,
+} from '@/lib/seo/seoAudit'
 import { Search, AlertCircle, AlertTriangle, CheckCircle, Info } from 'lucide-react'
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-function scoreColor(pct: number): string {
-  if (pct >= 90) return 'text-green-600'
-  if (pct >= 75) return 'text-lime-600'
-  if (pct >= 50) return 'text-orange-500'
-  return 'text-red-500'
-}
-
-function scoreBg(pct: number): string {
-  if (pct >= 90) return 'bg-green-500/10 border-green-500/30'
-  if (pct >= 75) return 'bg-lime-500/10 border-lime-500/30'
-  if (pct >= 50) return 'bg-orange-500/10 border-orange-500/30'
-  return 'bg-red-500/10 border-red-500/30'
-}
-
-function scoreLabel(pct: number): string {
-  if (pct >= 90) return 'Excellent'
-  if (pct >= 75) return 'Good'
-  if (pct >= 50) return 'Needs Improvement'
-  return 'Poor'
-}
-
 function SeverityIcon({ severity }: { severity: AuditIssue['severity'] }) {
   if (severity === 'high')
     return <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
   if (severity === 'medium')
-    return <AlertTriangle className="w-4 h-4 text-orange-400 shrink-0" />
+    return <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
   return <Info className="w-4 h-4 text-blue-400 shrink-0" />
 }
 
@@ -41,7 +29,7 @@ function severityLabel(severity: AuditIssue['severity']): string {
 
 function severityBadge(severity: AuditIssue['severity']): string {
   if (severity === 'high') return 'bg-red-500/10 text-red-600'
-  if (severity === 'medium') return 'bg-orange-500/10 text-orange-600'
+  if (severity === 'medium') return 'bg-amber-500/10 text-amber-600'
   return 'bg-blue-500/10 text-blue-600'
 }
 
@@ -51,7 +39,7 @@ function pageScoreBar(score: number, maxScore: number) {
     <div className="flex items-center gap-2 min-w-0">
       <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
         <div
-          className={`h-full rounded-full ${pct >= 90 ? 'bg-green-500' : pct >= 75 ? 'bg-lime-500' : pct >= 50 ? 'bg-orange-400' : 'bg-red-500'}`}
+          className={`h-full rounded-full ${scoreBarColor(pct)}`}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -70,7 +58,7 @@ interface SeoAuditPanelProps {
 
 export default function SeoAuditPanel({ config }: SeoAuditPanelProps) {
   const audit: SeoAuditResult = runSeoAudit(config)
-  const { percentage, score, maxScore, issues, pageResults } = audit
+  const { percentage, issues, pageResults } = audit
 
   const highCount = issues.filter((i) => i.severity === 'high').length
   const medCount = issues.filter((i) => i.severity === 'medium').length
@@ -95,9 +83,6 @@ export default function SeoAuditPanel({ config }: SeoAuditPanelProps) {
           </div>
           <div className="flex-1 min-w-0">
             <div className={`text-base font-black ${scoreColor(percentage)}`}>{scoreLabel(percentage)}</div>
-            <div className="text-xs text-muted-foreground mt-0.5">
-              {score} / {maxScore} points
-            </div>
             <div className="flex flex-wrap gap-3 mt-2">
               {highCount > 0 && (
                 <span className="flex items-center gap-1 text-[10px] font-bold text-red-600">
@@ -105,12 +90,12 @@ export default function SeoAuditPanel({ config }: SeoAuditPanelProps) {
                 </span>
               )}
               {medCount > 0 && (
-                <span className="flex items-center gap-1 text-[10px] font-bold text-orange-500">
+                <span className="flex items-center gap-1 text-[10px] font-bold text-amber-500">
                   <AlertTriangle className="w-3 h-3" /> {medCount} warnings
                 </span>
               )}
               {issues.length === 0 && (
-                <span className="flex items-center gap-1 text-[10px] font-bold text-green-600">
+                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-500">
                   <CheckCircle className="w-3 h-3" /> No issues
                 </span>
               )}
@@ -173,7 +158,7 @@ export default function SeoAuditPanel({ config }: SeoAuditPanelProps) {
         {/* All clear */}
         {issues.length === 0 && (
           <div className="flex flex-col items-center py-6 text-center">
-            <CheckCircle className="w-10 h-10 text-green-500 mb-3" />
+            <CheckCircle className="w-10 h-10 text-emerald-500 mb-3" />
             <p className="text-sm font-bold text-foreground">SEO looks great!</p>
             <p className="text-xs text-muted-foreground mt-1">No issues detected across your pages.</p>
           </div>

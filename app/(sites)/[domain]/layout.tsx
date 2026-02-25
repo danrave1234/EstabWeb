@@ -7,7 +7,14 @@ import { headers } from "next/headers";
 import { getSiteConfigWithProject } from "@/lib/utils/site-config";
 import StructuredData from "@/components/shared/StructuredData";
 import { GoogleAnalytics, FacebookPixel, AnalyticsProvider } from "@/components/shared/Analytics";
+import { generateSchema } from "@/lib/utils/schema";
+import NetworkOfflineBanner from "@/components/shared/NetworkOfflineBanner";
 
+/**
+ * Layout-level metadata provides sensible defaults and shared fields.
+ * Page-level generateMetadata() (in page.tsx / [slug]/page.tsx) overrides
+ * title, description, keywords, openGraph, twitter, and robots per-page.
+ */
 export async function generateMetadata({
   params,
 }: {
@@ -18,43 +25,22 @@ export async function generateMetadata({
   const host = heads.get("host") || domain;
   const { config } = await getSiteConfigWithProject(domain, heads);
 
-  const seo = config?.seo || {};
   const brand = config?.brand || {};
-
-  const title = seo.title || `${brand.name || domain} | Professional Website`;
-  const description = seo.description || `Welcome to ${brand.name || domain}. Built with EstabWeb.`;
-  const keywords = seo.keywords || [];
-
+  const seo = config?.seo || {};
   const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
 
   return {
-    title,
-    description,
-    keywords,
-    openGraph: {
-      title,
-      description,
-      type: "website",
-      siteName: brand.name,
-      images: brand.logoUrl ? [{ url: brand.logoUrl }] : [],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: brand.logoUrl ? [brand.logoUrl] : [],
-    },
+    // Fallback title — page.tsx always overrides with a proper page-specific title
+    title: seo.title || brand.name || domain,
+    description: seo.description || `Welcome to ${brand.name || domain}`,
+    metadataBase: new URL(`https://${host}`),
     icons: {
       icon: iconUrl,
       shortcut: iconUrl,
       apple: iconUrl,
     },
-    metadataBase: new URL(`https://${host}`),
     alternates: {
       canonical: "/",
-    },
-    other: {
-      "sitemap": `https://${host}/sitemap.xml`,
     },
   };
 }
@@ -116,8 +102,10 @@ export default async function SiteLayout({
   return (
     <html lang="en" data-theme={colorTheme} data-mode={mode} data-typography={typography} className={fontVariables}>
       <head>
+        <meta charSet="utf-8" />
         {dbConf && (
           <>
+            {/* Site-wide WebSite schema — always present */}
             <StructuredData 
               data={{
                 "@context": "https://schema.org",
@@ -127,26 +115,40 @@ export default async function SiteLayout({
                 "description": dbConf.seo?.description || `Welcome to ${dbConf.brand?.name || domain}`,
               }}
             />
-            <StructuredData 
-              data={{
-                "@context": "https://schema.org",
-                "@type": dbConf.theme === 'lawyer' ? 'LegalService' : 
-                        dbConf.theme === 'dentist' ? 'Dentist' : 
-                        dbConf.theme === 'chiropractor' ? 'HealthAndBeautyBusiness' :
-                        dbConf.theme === 'clinic' ? 'MedicalBusiness' :
-                        ['cleaning', 'pool', 'pest-control'].includes(dbConf.theme) ? 'HomeAndConstructionBusiness' :
-                        'LocalBusiness',
-                "name": dbConf.brand?.name || domain,
-                "url": `https://${host}`,
-                "image": dbConf.brand?.logoUrl || "",
-                "email": dbConf.contact?.email || "",
-                "telephone": dbConf.contact?.phone || "",
-                "address": {
-                  "@type": "PostalAddress",
-                  "streetAddress": dbConf.contact?.address || "",
+            {(() => {
+              const homeSeo = dbConf.seo || {}
+              const customType = homeSeo.structuredData?.enabled ? homeSeo.structuredData?.type : null
+              // Only inject default LocalBusiness if client hasn't enabled a custom localbusiness schema
+              // (prevents duplicate LocalBusiness JSON-LD blocks)
+              if (customType !== 'localbusiness') {
+                const schemaType = dbConf.theme === 'lawyer' ? 'LegalService' :
+                  dbConf.theme === 'dentist' ? 'Dentist' :
+                  dbConf.theme === 'chiropractor' ? 'HealthAndBeautyBusiness' :
+                  dbConf.theme === 'clinic' ? 'MedicalBusiness' :
+                  ['cleaning', 'pool', 'pest-control'].includes(dbConf.theme) ? 'HomeAndConstructionBusiness' :
+                  'LocalBusiness'
+                const defaultSchema: Record<string, unknown> = {
+                  "@context": "https://schema.org",
+                  "@type": schemaType,
+                  "name": dbConf.brand?.name || domain,
+                  "url": `https://${host}`,
                 }
-              }}
-            />
+                if (dbConf.brand?.logoUrl) defaultSchema["image"] = dbConf.brand.logoUrl
+                if (dbConf.contact?.email) defaultSchema["email"] = dbConf.contact.email
+                if (dbConf.contact?.phone) defaultSchema["telephone"] = dbConf.contact.phone
+                if (dbConf.contact?.address) defaultSchema["address"] = { "@type": "PostalAddress", "streetAddress": dbConf.contact.address }
+                return <StructuredData data={defaultSchema} />
+              }
+              return null
+            })()}
+            {(() => {
+              const homeSeo = dbConf.seo || {}
+              if (homeSeo.structuredData?.enabled) {
+                const schema = generateSchema(homeSeo.structuredData.type, dbConf)
+                if (schema) return <StructuredData data={schema} />
+              }
+              return null
+            })()}
           </>
         )}
       </head>
@@ -154,6 +156,7 @@ export default async function SiteLayout({
         <AnalyticsProvider projectId={projectId || dbConf?.projectId}>
           {dbConf?.analytics?.ga4Id && <GoogleAnalytics id={dbConf.analytics.ga4Id} />}
           {dbConf?.analytics?.pixelId && <FacebookPixel id={dbConf.analytics.pixelId} />}
+          <NetworkOfflineBanner />
           <ScrollReveal />
           {children}
           <Toaster position="top-right" richColors />

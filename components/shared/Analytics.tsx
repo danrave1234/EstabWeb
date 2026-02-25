@@ -64,6 +64,7 @@ export function resolveTrafficSource(): string {
 // ---------------------------------------------------------------------------
 export type EventType =
   | 'page_view'
+  | 'section_view'
   | 'cta_click'
   | 'lead_submit'
   | 'lead_form'

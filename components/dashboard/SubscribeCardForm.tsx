@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { CreditCard, Lock, Loader2, ShieldCheck, AlertCircle, ExternalLink } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { CreditCard, Lock, Loader2, ShieldCheck, AlertCircle, ExternalLink, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function SubscribeCardForm({ projectId, subdomain, isInitial }: Props) {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -98,6 +100,15 @@ export default function SubscribeCardForm({ projectId, subdomain, isInitial }: P
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
             Your payment is processed securely by PayMongo.
           </div>
+
+          <button
+            onClick={() => router.push(`/dashboard?projectId=${projectId}`)}
+            disabled={loading}
+            className="w-full py-2.5 rounded-xl border border-border bg-background hover:bg-muted text-sm text-muted-foreground font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </button>
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import * as React from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
-import { ChevronRight, FileText, Settings, Eye, Layout, Send, Plus, Trash2, GripVertical, Image as ImageIcon, History, RotateCcw, Zap, CreditCard, Palette, X, BarChart3, Phone, MessageSquare, FormInput, Globe } from "lucide-react"
+import { ChevronRight, FileText, Settings, Eye, Layout, Send, Plus, Trash2, GripVertical, Image as ImageIcon, History, RotateCcw, Zap, CreditCard, Palette, X, BarChart3, Phone, MessageSquare, FormInput, Globe, Search, Sparkles, Loader2, CheckCircle2, AlertTriangle, ChevronDown, ChevronUp, Lightbulb } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import UpgradeButton from "@/components/dashboard/UpgradeButton"
@@ -28,6 +28,9 @@ import { BLOCK_MAP } from "@/lib/utils/block-registry"
 import { SectionLivePreview } from "@/components/dashboard/SectionLivePreview"
 import { AddSectionModal } from "@/components/dashboard/AddSectionModal"
 import { VersionHistoryModal } from "@/components/dashboard/VersionHistoryModal"
+import { AiEditorModal } from "@/components/dashboard/AiEditorModal"
+import { AiSeoModal } from "@/components/dashboard/AiSeoModal"
+import { runSeoAudit, scoreColor, scoreBarColor, scoreLabel, TITLE_MAX, DESC_MAX } from "@/lib/seo/seoAudit"
 import { canPublishDirectly, canPublishNow, getPublishStats, isTrialExpired } from "@/lib/subscription"
 import { 
   COLOR_THEME_SWATCHES, 
@@ -164,6 +167,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const [typographyOpen, setTypographyOpen] = React.useState(false)
   const [colorPaletteQuery, setColorPaletteQuery] = React.useState("")
   const [historyOpen, setHistoryOpen] = React.useState(false)
+  const [aiEditorOpen, setAiEditorOpen] = React.useState(false)
+  const [aiHasPending, setAiHasPending] = React.useState(false)
   const [versions, setVersions] = React.useState<{ id: string; version: number; createdAt: string; isCurrent: boolean }[]>([])
   const [versionsLoading, setVersionsLoading] = React.useState(false)
   const [rollbackLoading, setRollbackLoading] = React.useState<number | null>(null)
@@ -174,7 +179,11 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const [sectionSearchQuery, setSectionSearchQuery] = React.useState("")
   const [activeTab, setActiveTab] = React.useState<"content" | "design" | "advanced">("content")
   const [selectedPageIndex, setSelectedPageIndex] = React.useState(0)
-  const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>({})
+  const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>({ 'seo-og': true, 'seo-robots': true, 'seo-schema': true })
+  const [aiSeoOpen, setAiSeoOpen] = React.useState(false)
+  const [aiAuditLoading, setAiAuditLoading] = React.useState(false)
+  const [aiAuditResult, setAiAuditResult] = React.useState<{ summary: string; strengths: string[]; improvements: { priority: string; action: string; impact: string }[]; quickWins: string[] } | null>(null)
+  const [aiAuditExpanded, setAiAuditExpanded] = React.useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false)
   const [globalSettingsModalTab, setGlobalSettingsModalTab] = React.useState<"theme" | "sections">("theme")
   const colorPaletteRef = React.useRef<HTMLButtonElement>(null)
@@ -515,6 +524,25 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
     if (discardInProgressRef.current) return
     if (saveTimer.current) clearTimeout(saveTimer.current)
     setIsSaving(true)
+
+    // SEO is stored per-page inside pages[n].seo, not at the top-level config
+    if (sectionId === 'seo') {
+      setModified((prev) => {
+        const currentPages: any[] = Array.isArray((prev as any).pages)
+          ? (prev as any).pages
+          : pages
+        const nextPages = currentPages.map((page: any, idx: number) =>
+          idx === selectedPageIndex ? { ...page, seo: values } : page
+        )
+        const next = { ...prev, pages: nextPages }
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(LOCAL_KEY, JSON.stringify(next))
+        }
+        return next
+      })
+      saveTimer.current = setTimeout(() => setIsSaving(false), 300)
+      return
+    }
     
     const key = sectionIdToKey(sectionId)
     
@@ -535,7 +563,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
 
     // Small delay to show saving state
     saveTimer.current = setTimeout(() => setIsSaving(false), 300)
-  }, [sectionIdToKey, LOCAL_KEY])
+  }, [sectionIdToKey, LOCAL_KEY, pages, selectedPageIndex])
 
   const updatePages = React.useCallback((nextPages: any[]) => {
     const sanitizedPages = nextPages.map((page) => {
@@ -640,18 +668,32 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
     return () => clearTimeout(timer)
   }, [modified, mergedConfig, sendFullPreview, buildPreviewData])
 
+  // Track the last section for which we reset collapsed groups
+  const lastCollapsedSectionRef = React.useRef<string | null>(null)
+
   // Load full section object for the selected section (including arrays like items/steps)
   React.useEffect(() => {
     if (selectedSection) {
+      const sectionChanged = lastCollapsedSectionRef.current !== selectedSection
       const setFormWithCollapsed = (values: Record<string, any>) => {
         setFormValues(values)
-        const nextCollapsed: Record<string, boolean> = {}
-        Object.entries(values).forEach(([key, value]) => {
-          if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-            nextCollapsed[`${selectedSection}-${key}`] = true
+        // Only reset collapsed groups when the section actually changes, not on every modified update
+        if (sectionChanged) {
+          lastCollapsedSectionRef.current = selectedSection
+          const nextCollapsed: Record<string, boolean> = {}
+          Object.entries(values).forEach(([key, value]) => {
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+              nextCollapsed[`${selectedSection}-${key}`] = true
+            }
+          })
+          // Always keep SEO advanced sections collapsed by default
+          if (selectedSection === 'seo') {
+            nextCollapsed['seo-og'] = true
+            nextCollapsed['seo-robots'] = true
+            nextCollapsed['seo-schema'] = true
           }
-        })
-        setCollapsedGroups(nextCollapsed)
+          setCollapsedGroups(nextCollapsed)
+        }
       }
 
       if (selectedSection === 'global_settings') {
@@ -838,6 +880,10 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
         const baseCM = (base || {}) as Record<string, any>
         const merged = { ...DEFAULT_CONTACT_WITH_MAP, ...baseCM }
         setFormWithCollapsed(merged)
+      } else if (sectionKey === 'seo') {
+        const pageSeo = (activePage?.seo || {}) as Record<string, any>
+        const merged = { title: '', description: '', keywords: [], ...pageSeo }
+        setFormWithCollapsed(merged)
       } else if (sectionKey === 'logoCloud') {
         const baseL = (base || {}) as Record<string, any>
         const items = normalizeArrayItems(baseL.items, DEFAULT_LOGO_CLOUD.items)
@@ -852,7 +898,7 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
         setFormWithCollapsed(base as Record<string, any>)
       }
     }
-  }, [selectedSection, baseConfig, modified, sectionIdToKey])
+  }, [selectedSection, baseConfig, modified, sectionIdToKey, activePage])
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background pt-16 lg:pt-16">
@@ -907,6 +953,32 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
         <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
           {activeTab === "content" && (
             <div className="space-y-4">
+              {/* AI Editor Banner */}
+              <button
+                onClick={() => setAiEditorOpen(true)}
+                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all text-left group shadow-sm ${
+                  aiHasPending
+                    ? 'bg-gradient-to-r from-amber-500/15 to-amber-500/5 border border-amber-500/40 hover:border-amber-500/60'
+                    : 'bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 hover:from-primary/15 hover:to-primary/10'
+                }`}
+              >
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-primary-foreground shrink-0 group-hover:scale-110 transition-transform shadow-sm ${
+                  aiHasPending ? 'bg-amber-500' : 'bg-primary'
+                }`}>
+                  <Zap className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-bold truncate ${aiHasPending ? 'text-amber-600 dark:text-amber-400' : 'text-primary'}`}>AI Editor</p>
+                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-80">
+                    {aiHasPending ? 'Pending changes — tap to apply' : 'Edit your site with AI'}
+                  </p>
+                </div>
+                {aiHasPending
+                  ? <span className="text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 bg-amber-500/15 px-2 py-1 rounded-full shrink-0 animate-pulse">Pending</span>
+                  : <span className="text-[9px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-1 rounded-full shrink-0">New</span>
+                }
+              </button>
+
               <div className="px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
                 Core Identity
               </div>
@@ -924,6 +996,20 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                 <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
               
+              <button
+                onClick={() => setSelectedSection('seo')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'seo' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                  <Search className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate">SEO</p>
+                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Title, Description, Keywords</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+
               <button
                 onClick={() => setSelectedSection('navigation')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'navigation' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
@@ -1816,6 +1902,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                     <CreditCard className="w-6 h-6 text-primary" />
                   ) : selectedSection === 'domain' ? (
                     <Globe className="w-6 h-6 text-primary" />
+                  ) : selectedSection === 'seo' ? (
+                    <Search className="w-6 h-6 text-primary" />
                   ) : (
                     <Layout className="w-6 h-6 text-primary" />
                   )}
@@ -1838,6 +1926,8 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                       ? "View plan and auto-renewal."
                       : selectedSection === 'domain'
                       ? "Manage your subdomain and connect a custom domain."
+                      : selectedSection === 'seo'
+                      ? "Set your page title, meta description, and keywords for search engines."
                       : "Customize content and images."}
                   </p>
                 </div>
@@ -1921,8 +2011,381 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                   </div>
                 )}
 
+                {/* ── Full SEO Editor ── */}
+                {selectedSection === 'seo' && (() => {
+                  const seoTitle = (formValues.title as string) || ''
+                  const seoDesc = (formValues.description as string) || ''
+                  const titleLen = seoTitle.length
+                  const descLen = seoDesc.length
+                  const titleTooLong = titleLen > TITLE_MAX
+                  const descTooLong = descLen > DESC_MAX
+
+                  // SEO score — unified with the audit engine so dashboard and audit panel agree
+                  const pageSlug = (activePage?.slug as string) || ''
+                  const auditConfig = {
+                    ...mergedConfig,
+                    pages: (mergedConfig as any).pages?.map((p: any, idx: number) =>
+                      idx === selectedPageIndex ? { ...p, seo: { ...formValues } } : p
+                    ),
+                  }
+                  const seoScore = runSeoAudit(auditConfig).percentage
+
+                  const RESERVED_SLUGS = ['privacy', 'terms', 'cookies']
+                  // Normalize: lowercase, strip spaces/uppercase/trailing slash, collapse dashes
+                  const slugifyLocal = (v: string) => v.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-').replace(/\/$/, '')
+
+                  const updateSeo = (patch: Record<string, any>) => {
+                    const next = { ...formValues, ...patch }
+                    setFormValues(next)
+                    autoSaveSection('seo', next)
+                  }
+
+                  const updateSlug = (newSlug: string) => {
+                    const normalized = slugifyLocal(newSlug).slice(0, 60)
+                    const isDuplicate = pages.some((p: any, idx: number) => idx !== selectedPageIndex && p.slug === normalized)
+                    const isReserved = RESERVED_SLUGS.includes(normalized)
+                    if (isDuplicate || isReserved) {
+                      toast.error(isReserved ? `"/${normalized}" is a reserved URL` : `Slug "/${normalized}" is already used by another page`)
+                      return
+                    }
+                    const nextPages = pages.map((p: any, idx: number) => idx === selectedPageIndex ? { ...p, slug: normalized } : p)
+                    autoSaveSection('pages', nextPages)
+                  }
+
+                  const ogOpen = !collapsedGroups['seo-og']
+                  const robotsOpen = !collapsedGroups['seo-robots']
+                  const schemaOpen = !collapsedGroups['seo-schema']
+
+                  return (
+                    <div className="space-y-5">
+                      {/* SEO Score */}
+                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border">
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">SEO Score</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${scoreBarColor(seoScore)}`}
+                              style={{ width: `${seoScore}%` }}
+                            />
+                          </div>
+                          <span className={`text-sm font-black ${scoreColor(seoScore)}`}>{seoScore}/100</span>
+                          <span className={`text-[10px] font-bold ${scoreColor(seoScore)}`}>{scoreLabel(seoScore)}</span>
+                        </div>
+                      </div>
+
+                      {/* AI Analysis Panel */}
+                      {(() => {
+                        const runAiAudit = async () => {
+                          setAiAuditLoading(true)
+                          setAiAuditExpanded(true)
+                          try {
+                            const auditIssues = runSeoAudit(auditConfig).issues
+                            const res = await fetch('/api/ai/seo/audit', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                projectId: project.id,
+                                pageIndex: selectedPageIndex,
+                                businessType: (modified as any).theme || (baseConfig as any).theme || 'local business',
+                                currentSeo: { title: seoTitle, description: seoDesc, keywords: formValues.keywords },
+                                ruleScore: seoScore,
+                                issues: auditIssues,
+                              }),
+                            })
+                            if (!res.ok) throw new Error('AI audit failed')
+                            const data = await res.json()
+                            setAiAuditResult(data)
+                          } catch {
+                            toast.error('AI analysis failed. Please try again.')
+                          } finally {
+                            setAiAuditLoading(false)
+                          }
+                        }
+                        return (
+                          <div className="rounded-xl border border-primary/20 bg-primary/5 overflow-hidden">
+                            <button
+                              type="button"
+                              onClick={() => aiAuditResult ? setAiAuditExpanded(v => !v) : runAiAudit()}
+                              className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-xs font-bold text-primary transition-all hover:bg-primary/10"
+                            >
+                              <span className="flex items-center gap-2">
+                                <Sparkles className="w-3.5 h-3.5" />
+                                AI SEO Analysis
+                                {aiAuditResult && !aiAuditLoading && (
+                                  <span className="text-[9px] font-black uppercase tracking-widest bg-primary/15 text-primary px-1.5 py-0.5 rounded-full">Done</span>
+                                )}
+                              </span>
+                              {aiAuditLoading ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : aiAuditResult ? (
+                                aiAuditExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />
+                              ) : null}
+                            </button>
+                            {aiAuditExpanded && aiAuditResult && !aiAuditLoading && (
+                              <div className="px-4 pb-4 space-y-3 border-t border-primary/10">
+                                {/* Summary */}
+                                <p className="text-xs text-muted-foreground leading-relaxed pt-3">{aiAuditResult.summary}</p>
+                                {/* Quick Wins */}
+                                {aiAuditResult.quickWins.length > 0 && (
+                                  <div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1.5 flex items-center gap-1"><Lightbulb className="w-3 h-3" /> Quick Wins</p>
+                                    <ul className="space-y-1">
+                                      {aiAuditResult.quickWins.map((w, i) => (
+                                        <li key={i} className="flex items-start gap-1.5 text-xs text-foreground">
+                                          <span className="text-emerald-500 mt-0.5">✦</span>{w}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                {/* Strengths */}
+                                {aiAuditResult.strengths.length > 0 && (
+                                  <div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1.5 flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-emerald-500" /> Strengths</p>
+                                    <ul className="space-y-1">
+                                      {aiAuditResult.strengths.map((s, i) => (
+                                        <li key={i} className="text-xs text-foreground flex items-start gap-1.5">
+                                          <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>{s}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                {/* Improvements */}
+                                {aiAuditResult.improvements.length > 0 && (
+                                  <div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1.5 flex items-center gap-1"><AlertTriangle className="w-3 h-3 text-amber-500" /> Improvements</p>
+                                    <ul className="space-y-2">
+                                      {aiAuditResult.improvements.map((imp, i) => (
+                                        <li key={i} className="text-xs space-y-0.5">
+                                          <div className="flex items-center gap-1.5">
+                                            <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full ${
+                                              imp.priority === 'high' ? 'bg-red-500/10 text-red-600' :
+                                              imp.priority === 'medium' ? 'bg-amber-500/10 text-amber-600' :
+                                              'bg-blue-500/10 text-blue-600'
+                                            }`}>{imp.priority}</span>
+                                            <span className="font-medium text-foreground">{imp.action}</span>
+                                          </div>
+                                          {imp.impact && <p className="text-[10px] text-muted-foreground pl-8">{imp.impact}</p>}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={runAiAudit}
+                                  className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1 mt-1"
+                                >
+                                  <Sparkles className="w-3 h-3" /> Re-analyze
+                                </button>
+                              </div>
+                            )}
+                            {aiAuditExpanded && aiAuditLoading && (
+                              <div className="px-4 py-5 border-t border-primary/10 flex items-center gap-2 text-xs text-muted-foreground">
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                                Analyzing your SEO with AI...
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
+
+                      {/* AI Optimize Button */}
+                      <button
+                        type="button"
+                        onClick={() => setAiSeoOpen(true)}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-xl text-xs font-bold text-primary transition-all"
+                      >
+                        <Zap className="w-3.5 h-3.5" />
+                        Optimize with AI
+                      </button>
+
+                      {/* AI SEO Modal */}
+                      <AiSeoModal
+                        open={aiSeoOpen}
+                        onOpenChange={setAiSeoOpen}
+                        projectId={project.id}
+                        pageIndex={selectedPageIndex}
+                        businessType={(modified as any).theme || (baseConfig as any).theme || 'local business'}
+                        currentSeo={{ title: seoTitle, description: seoDesc }}
+                        onApplied={(title, description, keywords) => updateSeo({ title, description, ...(keywords && keywords.length > 0 ? { keywords } : {}) })}
+                      />
+
+                      {/* Slug (only for non-home pages) */}
+                      {pageSlug !== '' && (
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Page Slug (URL)</label>
+                          <div className="flex items-center gap-2 p-3 bg-muted/20 border border-border rounded-lg">
+                            <span className="text-xs text-muted-foreground shrink-0">/</span>
+                            <input
+                              type="text"
+                              defaultValue={pageSlug}
+                              className="flex-1 bg-transparent text-sm outline-none"
+                              onBlur={(e) => updateSlug(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); updateSlug((e.target as HTMLInputElement).value) } }}
+                            />
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">Auto-generated from page label. Changing this updates the page URL.</p>
+                        </div>
+                      )}
+
+                      {/* Title */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">SEO Title</label>
+                          </div>
+                          <span className={`text-[10px] font-bold tabular-nums ${titleTooLong ? 'text-red-500' : titleLen >= 30 ? 'text-emerald-500' : 'text-muted-foreground'}`}>{titleLen} / {TITLE_MAX}</span>
+                        </div>
+                        <input
+                          type="text"
+                          value={seoTitle}
+                          maxLength={TITLE_MAX + 10}
+                          onChange={(e) => updateSeo({ title: e.target.value })}
+                          placeholder="e.g. Expert Pest Control | Fast & Reliable"
+                          className={`w-full p-3 text-sm bg-muted/20 border rounded-lg outline-none focus:ring-2 focus:ring-primary/30 transition-colors ${titleTooLong ? 'border-red-400' : 'border-border'}`}
+                        />
+                        {titleTooLong && <p className="text-[10px] text-red-500">Title is too long — keep it under {TITLE_MAX} characters for best results.</p>}
+                      </div>
+
+                      {/* Description */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Meta Description</label>
+                          </div>
+                          <span className={`text-[10px] font-bold tabular-nums ${descTooLong ? 'text-red-500' : descLen >= 80 ? 'text-emerald-500' : 'text-muted-foreground'}`}>{descLen} / {DESC_MAX}</span>
+                        </div>
+                        <textarea
+                          value={seoDesc}
+                          maxLength={DESC_MAX + 10}
+                          rows={3}
+                          onChange={(e) => updateSeo({ description: e.target.value })}
+                          placeholder="e.g. Get rid of pests fast with our certified exterminators. Same-day service available."
+                          className={`w-full p-3 text-sm bg-muted/20 border rounded-lg outline-none focus:ring-2 focus:ring-primary/30 transition-colors resize-none ${descTooLong ? 'border-red-400' : 'border-border'}`}
+                        />
+                        {descTooLong && <p className="text-[10px] text-red-500">Description is too long — keep it under {DESC_MAX} characters for best results.</p>}
+                      </div>
+
+                      {/* Keywords */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Keywords <span className="normal-case font-normal opacity-60">(optional)</span></label>
+                        </div>
+                        <div className="flex flex-wrap gap-2 p-3 bg-muted/20 border border-border rounded-lg min-h-[48px]">
+                          {(Array.isArray(formValues.keywords) ? formValues.keywords as string[] : []).map((kw: string, i: number) => (
+                            <span key={i} className="flex items-center gap-1 bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
+                              {kw}
+                              <button type="button" onClick={() => updateSeo({ keywords: (formValues.keywords as string[]).filter((_: string, j: number) => j !== i) })} className="ml-1 text-primary/60 hover:text-primary">×</button>
+                            </span>
+                          ))}
+                          <input
+                            type="text"
+                            placeholder="Add keyword, press Enter"
+                            className="flex-1 min-w-[140px] bg-transparent text-xs outline-none"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ',') {
+                                e.preventDefault()
+                                const val = (e.target as HTMLInputElement).value.trim()
+                                if (!val) return
+                                updateSeo({ keywords: [...(Array.isArray(formValues.keywords) ? formValues.keywords as string[] : []), val] });
+                                (e.target as HTMLInputElement).value = ''
+                              }
+                            }}
+                          />
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">Press Enter or comma to add. Keywords have minimal direct ranking impact.</p>
+                      </div>
+
+                      {/* Open Graph — collapsible */}
+                      <div className="rounded-xl border border-border/80 overflow-hidden">
+                        <button type="button" onClick={() => setCollapsedGroups(prev => ({ ...prev, 'seo-og': !prev['seo-og'] }))} className="w-full px-4 py-3 bg-muted/10 flex items-center justify-between hover:bg-muted/20 transition-colors">
+                          <span className="text-xs font-bold uppercase tracking-widest text-primary">Open Graph (Social Sharing)</span>
+                          <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${ogOpen ? 'rotate-90' : ''}`} />
+                        </button>
+                        {ogOpen && (
+                          <div className="p-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <p className="text-[10px] text-muted-foreground">Controls how your page looks when shared on social media. Leave blank to use your SEO title/description.</p>
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">OG Title</label>
+                              </div>
+                              <input type="text" value={(formValues.og as any)?.title || ''} onChange={(e) => updateSeo({ og: { ...((formValues.og as any) || {}), title: e.target.value } })} placeholder="Defaults to SEO Title" className="w-full p-3 text-sm bg-muted/20 border border-border rounded-lg outline-none focus:ring-2 focus:ring-primary/30" />
+                            </div>
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">OG Description</label>
+                              </div>
+                              <textarea rows={2} value={(formValues.og as any)?.description || ''} onChange={(e) => updateSeo({ og: { ...((formValues.og as any) || {}), description: e.target.value } })} placeholder="Defaults to Meta Description" className="w-full p-3 text-sm bg-muted/20 border border-border rounded-lg outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">OG Image</label>
+                              <ImageUpload value={(formValues.og as any)?.image || ''} onChange={(url) => updateSeo({ og: { ...((formValues.og as any) || {}), image: url } })} />
+                              <p className="text-[10px] text-muted-foreground">Defaults to your brand logo if empty.</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Robots — collapsible */}
+                      <div className="rounded-xl border border-border/80 overflow-hidden">
+                        <button type="button" onClick={() => setCollapsedGroups(prev => ({ ...prev, 'seo-robots': !prev['seo-robots'] }))} className="w-full px-4 py-3 bg-muted/10 flex items-center justify-between hover:bg-muted/20 transition-colors">
+                          <span className="text-xs font-bold uppercase tracking-widest text-primary">Robots / Indexing</span>
+                          <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${robotsOpen ? 'rotate-90' : ''}`} />
+                        </button>
+                        {robotsOpen && (
+                          <div className="p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <label className="flex items-start gap-3 cursor-pointer group">
+                              <input type="checkbox" checked={!!(formValues.robots as any)?.noindex} onChange={(e) => updateSeo({ robots: { ...((formValues.robots as any) || {}), noindex: e.target.checked } })} className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary" />
+                              <div>
+                                <p className="text-sm font-medium">Prevent search engines from indexing this page</p>
+                                <p className="text-[10px] text-muted-foreground">Page won't appear in Google search results.</p>
+                              </div>
+                            </label>
+                            <label className="flex items-start gap-3 cursor-pointer group">
+                              <input type="checkbox" checked={!!(formValues.robots as any)?.nofollow} onChange={(e) => updateSeo({ robots: { ...((formValues.robots as any) || {}), nofollow: e.target.checked } })} className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary" />
+                              <div>
+                                <p className="text-sm font-medium">Prevent search engines from following links</p>
+                                <p className="text-[10px] text-muted-foreground">Links on this page won't pass SEO value.</p>
+                              </div>
+                            </label>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Structured Data — collapsible */}
+                      <div className="rounded-xl border border-border/80 overflow-hidden">
+                        <button type="button" onClick={() => setCollapsedGroups(prev => ({ ...prev, 'seo-schema': !prev['seo-schema'] }))} className="w-full px-4 py-3 bg-muted/10 flex items-center justify-between hover:bg-muted/20 transition-colors">
+                          <span className="text-xs font-bold uppercase tracking-widest text-primary">Structured Data (Schema)</span>
+                          <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${schemaOpen ? 'rotate-90' : ''}`} />
+                        </button>
+                        {schemaOpen && (
+                          <div className="p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <p className="text-[10px] text-muted-foreground">Inject structured data to help Google understand your page. Only enable one type per page.</p>
+                            <label className="flex items-center gap-3 cursor-pointer">
+                              <input type="checkbox" checked={!!(formValues.structuredData as any)?.enabled} onChange={(e) => updateSeo({ structuredData: { ...((formValues.structuredData as any) || {}), enabled: e.target.checked } })} className="h-4 w-4 rounded border-border text-primary focus:ring-primary" />
+                              <span className="text-sm font-medium">Enable structured data for this page</span>
+                            </label>
+                            {(formValues.structuredData as any)?.enabled && (
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Schema Type</label>
+                                <select value={(formValues.structuredData as any)?.type || 'localbusiness'} onChange={(e) => updateSeo({ structuredData: { ...((formValues.structuredData as any) || {}), type: e.target.value } })} className="w-full p-2.5 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/30">
+                                  <option value="localbusiness">Local Business</option>
+                                  <option value="faq">FAQ Page</option>
+                                  <option value="article">Article</option>
+                                </select>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
+
                 {/* 1) Text, Boolean, and Nested Object fields - use grid for horizontal layout */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {selectedSection !== 'seo' && (<div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {Object.entries(formValues)
                     .filter(([key]) => {
                       if (selectedSection === 'hero') {
@@ -2181,10 +2644,10 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
                         </div>
                       )
                     })}
-                </div>
+                </div>)}
 
                 {/* 2) Array Items detection (the powerful part) */}
-                {Object.entries(formValues)
+                {selectedSection !== 'seo' && Object.entries(formValues)
                   .filter(([key, v]) => {
                     if (selectedSection === 'hero') {
                       return Array.isArray(v) && !['trustbadges', 'trustsignals'].includes(key.toLowerCase());
@@ -3011,6 +3474,28 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
         </div>,
         document.body
       )}
+
+      {/* AI Editor Modal */}
+      <AiEditorModal
+        open={aiEditorOpen}
+        onOpenChange={setAiEditorOpen}
+        projectId={project.id}
+        currentConfig={mergedConfig}
+        isPro={!showUpgrade}
+        onPendingChange={setAiHasPending}
+        onApplied={(newDraft) => {
+          setLocalDraftConfig(newDraft)
+          setModified({})
+          setAiHasPending(false)
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem(LOCAL_KEY)
+          }
+          setTimeout(() => refreshPreview(), 100)
+        }}
+        onPreview={(previewConfig) => {
+          sendFullPreview(previewConfig)
+        }}
+      />
 
       {/* Version History / Rollback Modal */}
       <VersionHistoryModal

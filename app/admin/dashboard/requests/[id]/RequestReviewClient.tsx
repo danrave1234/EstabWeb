@@ -162,7 +162,7 @@ export default function RequestReviewClient({ request }: RequestReviewClientProp
                 value={adminNote}
                 onChange={(e) => setAdminNote(e.target.value)}
                 placeholder="e.g. Please provide a higher quality image or check the spelling."
-                className="w-full min-h-[80px] p-3 text-sm border border-red-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500/20 bg-white"
+                className="w-full min-h-[80px] p-3 text-sm border border-red-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500/20 bg-card text-foreground"
                 autoFocus
               />
             </div>
@@ -216,7 +216,7 @@ export default function RequestReviewClient({ request }: RequestReviewClientProp
                     <div className="text-[10px] font-bold uppercase text-primary/60 transition-colors group-hover:text-primary">
                       {key}
                     </div>
-                    <div className="p-4 bg-white rounded-lg border border-primary/20 shadow-sm text-sm font-medium">
+                    <div className="p-4 bg-card rounded-lg border border-primary/20 shadow-sm text-sm font-medium">
                       <RenderValue value={value} />
                     </div>
                   </div>
