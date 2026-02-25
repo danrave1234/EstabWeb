@@ -115,8 +115,8 @@ export async function POST(req: Request) {
       snapshot: newConfig,
     })
 
-    if (proj.subdomain) revalidateTag(`site:${proj.subdomain}`, 'max')
-    if (proj.custom_domain) revalidateTag(`site:${proj.custom_domain}`, 'max')
+    if (proj.subdomain) revalidateTag(`site:${proj.subdomain}`)
+    if (proj.custom_domain) revalidateTag(`site:${proj.custom_domain}`)
 
     // revalidatePath uses Next.js route segment patterns, not domain URLs.
     // The sites group is at app/(sites)/[domain]/... so we target those segments.
