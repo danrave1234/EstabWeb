@@ -486,31 +486,25 @@ export function sectionIdToKey(id: string) {
     'programs-grid': 'features',
     'faculty-grid': 'features',
     // canonical IDs — trust & social proof
-    'trust_badges': 'trustBadgesGrid',
     // canonical IDs — team
     'team': 'teamCarousel',
     'team--carousel': 'teamCarousel',
     'team--profile': 'attorneyProfile',
     'team--spotlight': 'whyChooseMe',
     // canonical IDs — comparison
-    'comparison': 'acTypes',
     'comparison--table': 'acTypes',
     'comparison--vs': 'acTypes',
     // canonical IDs — gallery / case study
-    'case_study': 'beforeAfterGallery',
-    'case_study--detail': 'beforeAfterGallery',
+    // (canonical IDs for case_study already defined above)
     // canonical IDs — CTA
-    'cta': 'promoCTA',
     'cta--emergency': 'emergencyCTA',
     'cta--promo-strip': 'promoBannerStrip',
-    'cta--sticky': 'messengerStickyCTA',
     // canonical IDs — booking / lead / consultation
     'booking': 'bookingCTA',
     'lead_capture': 'freeConsultation',
     'lead_capture--multi-step': 'freeConsultation',
     'free_consultation': 'freeConsultation',
     // canonical IDs — payment / guarantee / contact
-    'payment_options': 'paymentOptionsStrip',
     'guarantee': 'warranty',
     'guarantee--badge': 'warranty',
     'guarantee--safety': 'warranty',
@@ -522,7 +516,6 @@ export function sectionIdToKey(id: string) {
     // canonical IDs — hero variant
     'hero--emergency': 'heroEmergency',
     // canonical IDs — stats
-    'stats': 'statsSection',
     'delivery-coverage': 'deliveryCoverage',
     'booking-cta': 'bookingCTA',
     'footer': 'footer',
