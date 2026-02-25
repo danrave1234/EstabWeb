@@ -111,6 +111,14 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     revalidatePath('/(sites)/[domain]', 'page')
     revalidatePath('/(sites)/[domain]/[slug]', 'page')
 
+    // Also revalidate using the actual subdomain/custom_domain values so Vercel's
+    // edge cache is busted for the specific domain paths.
+    const approvedDomains = [proj?.subdomain, proj?.custom_domain].filter(Boolean) as string[]
+    for (const d of approvedDomains) {
+      revalidatePath(`/${d}`, 'page')
+      revalidatePath(`/${d}/[slug]`, 'page')
+    }
+
     await logAudit(supabase, 'change_request_approve', user.id, cr.project_id, { requestId: id, version: nextVersion })
     return NextResponse.json({ success: true })
   } catch (e: any) {

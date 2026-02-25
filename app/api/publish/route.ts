@@ -128,6 +128,14 @@ export async function POST(req: Request) {
       revalidatePath(`/(sites)/[domain]/${slug}`, 'page')
     })
 
+    // Also revalidate using the actual subdomain/custom_domain values so Vercel's
+    // edge cache is busted for the specific domain paths.
+    const domains = [proj.subdomain, proj.custom_domain].filter(Boolean) as string[]
+    for (const d of domains) {
+      revalidatePath(`/${d}`, 'page')
+      revalidatePath(`/${d}/[slug]`, 'page')
+    }
+
     const newCount = (updatePayload as any).publish_count as number
     const newCountToday = (updatePayload as any).publish_count_today as number
     await logAudit(supabase, 'publish', user.id, projectId, { version: nextVersion })
