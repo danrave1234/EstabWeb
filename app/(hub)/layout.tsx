@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "../globals.css";
 import { fontVariables } from "@/lib/fonts";
 import { mainSiteConfig } from "@/config/main-site-config";
@@ -115,6 +117,8 @@ export default async function HubLayout({
           </HubLayoutClient>
           <Toaster position="top-right" richColors />
         </AuthProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

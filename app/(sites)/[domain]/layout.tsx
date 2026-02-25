@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "@/app/globals.css";
 import { fontVariables } from "@/lib/fonts";
 import ScrollReveal from "@/components/shared/ScrollReveal";
@@ -161,6 +163,8 @@ export default async function SiteLayout({
           {children}
           <Toaster position="top-right" richColors />
         </AnalyticsProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

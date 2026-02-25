@@ -46,6 +46,10 @@ export default function LegalPageTemplate({ title, lastUpdated, content, serverD
     .replace(/-+/g, "-");
 
   const pageCategoryLabels: Record<string, string> = {
+    "hero": "Home",
+    "hero--emergency": "Home",
+    "hero--video": "Home",
+    "hero--split": "Home",
     "review-trust-bar": "Reviews",
     "reviews-grid": "Reviews",
     "facebook-review-embed": "Reviews",
@@ -75,7 +79,10 @@ export default function LegalPageTemplate({ title, lastUpdated, content, serverD
     "contact-columns": "Contact",
   };
 
-  const categoryLabelForSection = (sectionId: string) => pageCategoryLabels[sectionId] || "";
+  const categoryLabelForSection = (sectionId: string) => {
+    if (sectionId === "hero" || sectionId.startsWith("hero--") || sectionId === "hero-emergency") return "Home";
+    return pageCategoryLabels[sectionId] || "";
+  };
   const pagesNav = Array.isArray((data as any)?.pages)
     ? (data as any).pages
         .map((page: any, index: number) => {

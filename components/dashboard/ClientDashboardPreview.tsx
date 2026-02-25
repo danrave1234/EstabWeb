@@ -62,6 +62,7 @@ import {
   DEFAULT_DELIVERY_COVERAGE,
   DEFAULT_CONTACT_WITH_MAP,
   DEFAULT_BLUEPRINT_CONFIG,
+  DEFAULT_FEATURES,
   fieldLabel,
   ensureStringArray,
   navigationToArray,
@@ -138,6 +139,13 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
   'service-area-map': DEFAULT_SERVICE_AREA_MAP,
   'logo-cloud': DEFAULT_LOGO_CLOUD,
   'delivery-coverage': DEFAULT_DELIVERY_COVERAGE,
+  'features': DEFAULT_FEATURES,
+  'features-modern': DEFAULT_FEATURES,
+  'services-grid': DEFAULT_FEATURES,
+  'product_grid': DEFAULT_FEATURES,
+  'project-gallery': DEFAULT_FEATURES,
+  'programs-grid': DEFAULT_FEATURES,
+  'faculty-grid': DEFAULT_FEATURES,
 }
 
 // prefetchSectionPreview, MinimalSectionPreview, SectionLivePreview moved to @/components/dashboard/SectionLivePreview
@@ -893,6 +901,11 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
         const baseD = (base || {}) as Record<string, any>
         let areas = Array.isArray(baseD.areas) ? baseD.areas : DEFAULT_DELIVERY_COVERAGE.areas
         const merged = { ...DEFAULT_DELIVERY_COVERAGE, ...baseD, areas }
+        setFormWithCollapsed(merged)
+      } else if (sectionKey === 'features') {
+        const baseF = (base || {}) as Record<string, any>
+        const features = normalizeArrayItems(baseF.features, DEFAULT_FEATURES.features)
+        const merged = { ...DEFAULT_FEATURES, ...baseF, features }
         setFormWithCollapsed(merged)
       } else {
         setFormWithCollapsed(base as Record<string, any>)

@@ -212,6 +212,16 @@ export const DEFAULT_FINANCING = {
   ],
 };
 
+export const DEFAULT_FEATURES = {
+  title: "Our Services",
+  subtitle: "Everything you need, all in one place.",
+  features: [
+    { title: "Service One", description: "Brief description of your first service.", icon: "Star", imageUrl: "" },
+    { title: "Service Two", description: "Brief description of your second service.", icon: "Zap", imageUrl: "" },
+    { title: "Service Three", description: "Brief description of your third service.", icon: "Shield", imageUrl: "" },
+  ],
+};
+
 export const DEFAULT_BLUEPRINT_CONFIG = {
   privacy: {
     title: "Privacy Policy",
