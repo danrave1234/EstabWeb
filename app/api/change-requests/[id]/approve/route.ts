@@ -104,8 +104,8 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
       .eq('id', cr.project_id)
       .single()
 
-    if (proj?.subdomain) revalidateTag(`site:${proj.subdomain}`)
-    if (proj?.custom_domain) revalidateTag(`site:${proj.custom_domain}`)
+    if (proj?.subdomain) revalidateTag(`site:${proj.subdomain}`, 'max')
+    if (proj?.custom_domain) revalidateTag(`site:${proj.custom_domain}`, 'max')
     revalidatePath('/(sites)/[domain]', 'page')
     revalidatePath('/(sites)/[domain]/[slug]', 'page')
 
