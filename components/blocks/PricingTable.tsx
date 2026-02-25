@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { CheckCircleIcon } from "@phosphor-icons/react";
 import { X } from "lucide-react";
@@ -25,7 +25,7 @@ export type PricingTableProps = {
 
 export default function PricingTable({
   title = "Simple, Transparent Pricing",
-  subtitle = "Simply create a project and apply a subscription to it.",
+  subtitle = "Simply create a project and apply a subscription to it. For fully custom designs and complex builds, you can contact us to scope a bespoke project.",
   plans,
   mostPopularLabel = "Most Popular",
   startingAtLabel = "Starting at",

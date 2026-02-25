@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import * as React from "react"
 import { createPortal } from "react-dom"
@@ -49,6 +49,7 @@ import {
   DEFAULT_COMMON_PESTS,
   DEFAULT_FEATURED_LISTINGS,
   DEFAULT_DEVELOPER_PARTNERS,
+  DEFAULT_TESTIMONIALS,
   DEFAULT_REVIEW_TRUST_BAR,
   DEFAULT_FINANCING,
   DEFAULT_AC_TYPES,
@@ -94,7 +95,7 @@ const normalizeArrayItems = <T,>(value: unknown, fallback: T[]): T[] => {
 const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
   // ── canonical IDs (new architecture) ──────────────────────────────────────
   'certifications': DEFAULT_AWARDS_STRIP,
-  'testimonials': DEFAULT_REVIEW_TRUST_BAR,
+  'testimonials': DEFAULT_TESTIMONIALS,
   'testimonials--grid': DEFAULT_REVIEW_TRUST_BAR,
   'testimonials--facebook': DEFAULT_FACEBOOK_REVIEW_EMBED,
   'logo_cloud': DEFAULT_LOGO_CLOUD,
@@ -142,6 +143,11 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
   'features': DEFAULT_FEATURES,
   'features-modern': DEFAULT_FEATURES,
   'services-grid': DEFAULT_FEATURES,
+  'services': DEFAULT_FEATURES,
+  'services--modern': DEFAULT_FEATURES,
+  'services--highlight': DEFAULT_FEATURES,
+  'service_detail': DEFAULT_FEATURES,
+  'service_detail--split': DEFAULT_FEATURES,
   'product_grid': DEFAULT_FEATURES,
   'project-gallery': DEFAULT_FEATURES,
   'programs-grid': DEFAULT_FEATURES,
@@ -828,6 +834,16 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
         const baseD = (base || {}) as Record<string, any>
         const items = normalizeArrayItems(baseD.items, DEFAULT_DEVELOPER_PARTNERS.items)
         const merged = { ...DEFAULT_DEVELOPER_PARTNERS, ...baseD, items }
+        setFormWithCollapsed(merged)
+      } else if (sectionKey === 'testimonials') {
+        const baseT = (base || {}) as Record<string, any>
+        const label = typeof baseT.label === 'string' ? baseT.label : DEFAULT_TESTIMONIALS.label
+        const logos = Array.isArray(baseT.logos) ? baseT.logos : (DEFAULT_TESTIMONIALS.logos ?? [])
+        const testimonial = {
+          ...DEFAULT_TESTIMONIALS.testimonial,
+          ...(typeof baseT.testimonial === 'object' && baseT.testimonial !== null ? baseT.testimonial : {}),
+        }
+        const merged = { label, logos, testimonial }
         setFormWithCollapsed(merged)
       } else if (sectionKey === 'reviewTrustBar') {
         const baseR = (base || {}) as Record<string, any>

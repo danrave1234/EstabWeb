@@ -696,7 +696,7 @@ The public-facing marketing page for EstabWeb itself. Uses the same block compon
 
 **File:** `app/(hub)/pricing/page.tsx`
 
-Displays plan tiers (Free, Trial, Pro) with feature comparison. CTA buttons link to `/subscribe/[projectId]` for authenticated clients or `/login` for visitors.
+Displays location-aware plan tiers with feature comparison. CTA buttons link to `/subscribe/[projectId]` for authenticated clients or `/login` for visitors. The copy also makes it explicit that if a client needs a fully custom design and end-to-end build (beyond the standard managed plans and templates), they can reach out via the `/contact` page to scope a bespoke project.
 
 ---
 

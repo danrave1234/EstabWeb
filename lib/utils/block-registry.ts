@@ -79,8 +79,8 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
   // ── TRUST ─────────────────────────────────────────────────────────────────
   // type: trust_badges
   { id: "trust_badges",        dataKey: "trustBadgesGrid",     navEntry: undefined,                                     previewKind: "cards-4",  sectionType: "trust_badges",   variant: "standard",      label: "Trust Badges",    purpose: "Quick authority reinforcement above the fold" },
-  // type: testimonials  |  variants: bar (default), grid, carousel, facebook
-  { id: "testimonials",        dataKey: "reviewTrustBar",      navEntry: { name: "Reviews", href: "#reviews" },         previewKind: "strip",    sectionType: "testimonials",   variant: "bar",           label: "Testimonials Bar",    purpose: "Compact social proof strip" },
+  // type: testimonials  |  variants: bar (default), grid, facebook
+  { id: "testimonials",        dataKey: "testimonials",        navEntry: { name: "Testimonials", href: "#testimonials" }, previewKind: "strip",    sectionType: "testimonials",   variant: "bar",           label: "Testimonials Bar",    purpose: "Compact social proof strip" },
   { id: "testimonials--grid",  dataKey: "reviewTrustBar",      navEntry: { name: "Reviews", href: "#reviews" },         previewKind: "cards-3",  sectionType: "testimonials",   variant: "grid",          label: "Testimonials Grid",   purpose: "Best for showcasing multiple reviews" },
   { id: "testimonials--facebook", dataKey: "facebookReviewEmbed", navEntry: undefined,                                  previewKind: "cards-3",  sectionType: "testimonials",   variant: "facebook",      label: "Facebook Reviews",    purpose: "Best for Facebook-heavy audiences" },
   // type: certifications  (awards strip / credentials)

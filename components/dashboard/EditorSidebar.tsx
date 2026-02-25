@@ -64,6 +64,7 @@ import {
   DEFAULT_COMMON_PESTS, 
   DEFAULT_FEATURED_LISTINGS, 
   DEFAULT_DEVELOPER_PARTNERS, 
+  DEFAULT_TESTIMONIALS,
   DEFAULT_REVIEW_TRUST_BAR, 
   DEFAULT_FINANCING, 
   DEFAULT_AC_TYPES, 
@@ -121,6 +122,7 @@ export default function EditorSidebar({
     const defaultDataMap: Record<string, any> = {
       'awards': DEFAULT_AWARDS_STRIP,
       'certifications': DEFAULT_AWARDS_STRIP,
+      'testimonials': DEFAULT_TESTIMONIALS,
       'faq-accordion': DEFAULT_FAQ_ACCORDION,
       'blog': DEFAULT_BLOG,
       'before-after-gallery-grid': DEFAULT_BEFORE_AFTER_GALLERY,

@@ -195,6 +195,19 @@ export const DEFAULT_DEVELOPER_PARTNERS = {
   ],
 };
 
+export const DEFAULT_TESTIMONIALS = {
+  label: "What our customers say",
+  logos: [],
+  testimonial: {
+    quote: "Great service. Professional and reliable. Highly recommend.",
+    author: "Customer Name",
+    role: "Customer",
+    avatar:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=112&h=112&fit=crop&q=80",
+    rating: 5,
+  },
+};
+
 export const DEFAULT_REVIEW_TRUST_BAR = {
   title: "What Our Customers Say",
   subtitle: "Real feedback from real people.",
@@ -441,7 +454,7 @@ export function sectionIdToKey(id: string) {
     'service_area--radius': 'deliveryCoverage',
     'contact_with_map': 'contactWithMap',
     'logo_cloud': 'logoCloud',
-    'testimonials': 'reviewTrustBar',
+    'testimonials': 'testimonials',
     'testimonials--grid': 'reviewTrustBar',
     'testimonials--facebook': 'facebookReviewEmbed',
     'stats': 'statsSection',
@@ -464,9 +477,52 @@ export function sectionIdToKey(id: string) {
     'features': 'features',
     'features-modern': 'features',
     'services-grid': 'features',
+    'services': 'features',
+    'services--modern': 'features',
+    'services--highlight': 'featureHighlight',
+    'service_detail': 'featureHighlight',
+    'service_detail--split': 'featureHighlight',
     'project-gallery': 'features',
     'programs-grid': 'features',
     'faculty-grid': 'features',
+    // canonical IDs — trust & social proof
+    'trust_badges': 'trustBadgesGrid',
+    // canonical IDs — team
+    'team': 'teamCarousel',
+    'team--carousel': 'teamCarousel',
+    'team--profile': 'attorneyProfile',
+    'team--spotlight': 'whyChooseMe',
+    // canonical IDs — comparison
+    'comparison': 'acTypes',
+    'comparison--table': 'acTypes',
+    'comparison--vs': 'acTypes',
+    // canonical IDs — gallery / case study
+    'case_study': 'beforeAfterGallery',
+    'case_study--detail': 'beforeAfterGallery',
+    // canonical IDs — CTA
+    'cta': 'promoCTA',
+    'cta--emergency': 'emergencyCTA',
+    'cta--promo-strip': 'promoBannerStrip',
+    'cta--sticky': 'messengerStickyCTA',
+    // canonical IDs — booking / lead / consultation
+    'booking': 'bookingCTA',
+    'lead_capture': 'freeConsultation',
+    'lead_capture--multi-step': 'freeConsultation',
+    'free_consultation': 'freeConsultation',
+    // canonical IDs — payment / guarantee / contact
+    'payment_options': 'paymentOptionsStrip',
+    'guarantee': 'warranty',
+    'guarantee--badge': 'warranty',
+    'guarantee--safety': 'warranty',
+    'contact--minimal': 'contact',
+    'contact--visual': 'contact',
+    'contact--with-map': 'contactWithMap',
+    'contact--columns': 'contact',
+    'contact--split': 'contact',
+    // canonical IDs — hero variant
+    'hero--emergency': 'heroEmergency',
+    // canonical IDs — stats
+    'stats': 'statsSection',
     'delivery-coverage': 'deliveryCoverage',
     'booking-cta': 'bookingCTA',
     'footer': 'footer',

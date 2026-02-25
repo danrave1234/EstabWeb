@@ -59,6 +59,13 @@ export default async function PricingPage() {
               <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
                 Simply create a project and apply a subscription to it. No hidden fees. A professional, high-performance website managed by experts so you can focus on your business.
               </p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed max-w-md">
+                Need a fully custom design and end-to-end build instead of a template-based setup?{" "}
+                <Link href="/contact" className="font-semibold text-primary underline underline-offset-2">
+                  Contact us
+                </Link>{" "}
+                and we&apos;ll scope a custom project for you.
+              </p>
             </div>
 
             <div className="hidden sm:block">
