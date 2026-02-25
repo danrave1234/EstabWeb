@@ -387,25 +387,11 @@ export async function getSiteConfigWithProject(domain: string, headersList?: Hea
 // Preview mode, projectId overrides, and requestId previews always bypass
 // the cache and call getSiteConfigWithProject directly.
 //
-// The per-domain cached fetcher is memoized at module level in a Map so that
-// `unstable_cache` is only created once per domain (not on every request).
+// NOTE: unstable_cache is intentionally created fresh on every call (no
+// module-level Map memoization). Next.js deduplicates by cache key internally,
+// and a module-level Map would prevent revalidateTag from working correctly
+// because the old stale closure would persist in the same process instance.
 // ---------------------------------------------------------------------------
-const _domainFetcherCache = new Map<string, (d: string) => Promise<{ config: any | null; project: any | null }>>();
-
-function getDomainFetcher(domain: string) {
-  if (!_domainFetcherCache.has(domain)) {
-    const fetcher = unstable_cache(
-      async (d: string) => getSiteConfigWithProject(d),
-      [`site:${domain}`],
-      {
-        tags: [`site:${domain}`],
-        revalidate: 120,
-      }
-    );
-    _domainFetcherCache.set(domain, fetcher);
-  }
-  return _domainFetcherCache.get(domain)!;
-}
 
 export async function getCachedSiteConfig(
   domain: string,
@@ -420,5 +406,14 @@ export async function getCachedSiteConfig(
     return getSiteConfigWithProject(domain, headersList);
   }
 
-  return getDomainFetcher(domain)(domain);
+  const fetcher = unstable_cache(
+    async (d: string) => getSiteConfigWithProject(d),
+    [`site:${domain}`],
+    {
+      tags: [`site:${domain}`],
+      revalidate: 120,
+    }
+  );
+
+  return fetcher(domain);
 }
