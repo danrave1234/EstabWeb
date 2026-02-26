@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type FAQItem = {
   question: string;
@@ -42,7 +43,10 @@ export default function FAQAccordion({
               }`}
             >
               <button
-                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                onClick={() => {
+                  setOpenIndex(openIndex === i ? null : i);
+                  trackEvent({ type: 'cta_click', section_key: 'faq', cta_id: `faq_item_${i}` });
+                }}
                 className="w-full flex items-center justify-between p-6 text-left"
               >
                 <span className="font-bold text-foreground pr-8">{item.question}</span>

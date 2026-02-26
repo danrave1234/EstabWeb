@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import { trackLead, trackEvent } from "@/components/shared/Analytics";
 
 export type WhyChooseMeProps = {
   title?: string;
@@ -84,7 +85,10 @@ export default function WhyChooseMe({
             </div>
 
             <div className="pt-6 flex justify-center lg:justify-start">
-              <button className="w-full sm:w-auto px-10 py-4 bg-primary text-primary-foreground font-black rounded-lg hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-widest text-xs">
+              <button 
+                onClick={() => { trackEvent({ type: 'cta_click', section_key: 'why_choose_me', cta_id: 'agent_inquire' }); trackLead('form'); }}
+                className="w-full sm:w-auto px-10 py-4 bg-primary text-primary-foreground font-black rounded-lg hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-widest text-xs"
+              >
                 {inquireNowLabel}
               </button>
             </div>

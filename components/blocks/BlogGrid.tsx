@@ -2,6 +2,7 @@
 
 import { ArrowRightIcon } from "@phosphor-icons/react";
 import { dynamicGridCols } from "@/lib/utils/grid-cols";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type BlogPost = {
   title: string;
@@ -76,6 +77,7 @@ export default function BlogGrid({
                 </p>
                 <a
                   href={post.href ?? "#"}
+                  onClick={() => trackEvent({ type: 'cta_click', section_key: 'blog', cta_id: `blog_post_${index}` })}
                   className="inline-flex items-center gap-2 text-sm font-bold text-primary group/link"
                 >
                   {linkText}

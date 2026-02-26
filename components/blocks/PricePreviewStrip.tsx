@@ -1,5 +1,7 @@
 "use client";
 
+import { trackEvent } from "@/components/shared/Analytics";
+
 export type PriceItem = {
   service: string;
   price: string;
@@ -44,7 +46,11 @@ export default function PricePreviewStrip({
             ))}
           </div>
           
-          <a href="#contact" className="px-8 py-4 bg-primary text-primary-foreground font-bold rounded-full hover:scale-105 transition-all shadow-lg whitespace-nowrap uppercase tracking-widest text-xs">
+          <a 
+            href="#contact" 
+            onClick={() => trackEvent({ type: 'cta_click', section_key: 'price_preview', cta_id: 'price_preview_book' })}
+            className="px-8 py-4 bg-primary text-primary-foreground font-bold rounded-full hover:scale-105 transition-all shadow-lg whitespace-nowrap uppercase tracking-widest text-xs"
+          >
             {bookNowLabel}
           </a>
         </div>

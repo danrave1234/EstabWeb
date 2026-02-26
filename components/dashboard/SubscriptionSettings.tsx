@@ -11,6 +11,7 @@ interface SubscriptionSettingsProps {
   project: {
     id: string
     subscription_status?: string | null
+    subscription_plan_id?: string | null
     subscription_ends_at?: string | null
     auto_renew?: boolean
     has_paid_initial?: boolean
@@ -85,10 +86,25 @@ export default function SubscriptionSettings({ project }: SubscriptionSettingsPr
             </div>
             <div>
               <p className="text-sm font-bold capitalize">
-                {status === 'active' ? (hasPaidInitial ? 'Pro Monthly Plan' : 'Pro Setup Plan') : status === 'free' ? 'Free Plan' : status.replace('_', ' ')}
+                {status === 'active' ? (
+                  project.subscription_plan_id === 'basic' ? (hasPaidInitial ? 'Basic Monthly Plan' : 'Basic Setup Plan') :
+                  project.subscription_plan_id === 'pro' ? (hasPaidInitial ? 'Pro Monthly Plan' : 'Pro Setup Plan') :
+                  project.subscription_plan_id === 'ecommerce' ? (hasPaidInitial ? 'E-commerce Monthly Plan' : 'E-commerce Setup Plan') :
+                  (hasPaidInitial ? 'Paid Monthly Plan' : 'Paid Setup Plan')
+                ) : status === 'free' ? 'Free Plan' : status.replace('_', ' ')}
               </p>
               <p className="text-[10px] text-muted-foreground">
-                {hasPaidInitial ? '₱500 / month' : '₱5,000 Setup Fee'}
+                {status === 'active' && hasPaidInitial ? (
+                  project.subscription_plan_id === 'basic' ? '₱499 / month' :
+                  project.subscription_plan_id === 'pro' ? '₱999 / month' :
+                  project.subscription_plan_id === 'ecommerce' ? '₱1,499 / month' :
+                  '₱500 / month'
+                ) : status === 'active' ? (
+                  project.subscription_plan_id === 'basic' ? '₱1,500 Setup Fee' :
+                  project.subscription_plan_id === 'pro' ? '₱2,500 Setup Fee' :
+                  project.subscription_plan_id === 'ecommerce' ? '₱3,500 Setup Fee' :
+                  '₱5,000 Setup Fee'
+                ) : '₱0 / month'}
               </p>
             </div>
           </div>
@@ -160,11 +176,11 @@ export default function SubscriptionSettings({ project }: SubscriptionSettingsPr
         <div className="p-6 text-center space-y-4 border border-dashed border-border rounded-xl">
           <Sparkles className="w-8 h-8 text-primary mx-auto opacity-20" />
           <div className="space-y-1">
-            <p className="text-sm font-bold">Unlock Direct Publishing</p>
+            <p className="text-sm font-bold">Unlock Professional Features</p>
             <p className="text-xs text-muted-foreground">
               {hasPaidInitial 
-                ? "Continue with our recurring plan for only ₱500/month." 
-                : "Get started with our Pro plan for ₱5,000 (Initial Setup)."}
+                ? "Continue with our recurring plans starting at only ₱499/month." 
+                : "Get started with our Basic plan for ₱1,500 (Initial Setup + 1 Month Free)."}
             </p>
           </div>
           <UpgradeButton 

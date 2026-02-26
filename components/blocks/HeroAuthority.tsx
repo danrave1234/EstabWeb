@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import { useState } from "react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
 import Reveal from "@/components/shared/Reveal";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type HeroAuthorityProps = {
   title: string;
@@ -73,10 +74,18 @@ export default function HeroAuthority({
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 pt-4">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-              <a href={primaryCTAHref} className="col-span-1 px-10 py-5 bg-white text-black font-black rounded-none hover:bg-white/90 transition-all shadow-2xl uppercase tracking-[0.2em] text-xs flex items-center justify-center text-center">
+              <a 
+                href={primaryCTAHref} 
+                onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_primary' })}
+                className="col-span-1 px-10 py-5 bg-white text-black font-black rounded-none hover:bg-white/90 transition-all shadow-2xl uppercase tracking-[0.2em] text-xs flex items-center justify-center text-center"
+              >
                 {primaryCTA}
               </a>
-              <a href={secondaryCTAHref} className="col-span-1 px-10 py-5 bg-transparent backdrop-blur-md text-white font-black rounded-none border-2 border-white hover:bg-white hover:text-black transition-all uppercase tracking-[0.2em] text-xs flex items-center justify-center text-center">
+              <a 
+                href={secondaryCTAHref} 
+                onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_secondary' })}
+                className="col-span-1 px-10 py-5 bg-transparent backdrop-blur-md text-white font-black rounded-none border-2 border-white hover:bg-white hover:text-black transition-all uppercase tracking-[0.2em] text-xs flex items-center justify-center text-center"
+              >
                 {secondaryCTA}
               </a>
             </div>
@@ -114,10 +123,18 @@ export default function HeroAuthority({
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
-                <a href={primaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-8 py-5 bg-primary text-primary-foreground font-black rounded-none hover:translate-x-1 hover:-translate-y-1 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] uppercase tracking-tighter text-[10px] sm:text-sm text-center">
+                <a 
+                  href={primaryCTAHref} 
+                  onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_primary' })}
+                  className="inline-flex items-center justify-center px-4 sm:px-8 py-5 bg-primary text-primary-foreground font-black rounded-none hover:translate-x-1 hover:-translate-y-1 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] uppercase tracking-tighter text-[10px] sm:text-sm text-center"
+                >
                   {primaryCTA}
                 </a>
-                <a href={secondaryCTAHref} className="inline-flex items-center justify-center px-4 sm:px-8 py-5 bg-muted text-foreground font-bold rounded-none border-2 border-primary/20 hover:bg-primary/5 transition-all uppercase tracking-tighter text-[10px] sm:text-sm text-center">
+                <a 
+                  href={secondaryCTAHref} 
+                  onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_secondary' })}
+                  className="inline-flex items-center justify-center px-4 sm:px-8 py-5 bg-muted text-foreground font-bold rounded-none border-2 border-primary/20 hover:bg-primary/5 transition-all uppercase tracking-tighter text-[10px] sm:text-sm text-center"
+                >
                   {secondaryCTA}
                 </a>
               </div>
@@ -173,11 +190,19 @@ export default function HeroAuthority({
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
-                <a href={primaryCTAHref} className="px-4 sm:px-10 py-5 bg-cyan-500 text-white font-black rounded-full hover:bg-cyan-600 hover:scale-105 transition-all shadow-[0_20px_40px_-10px_rgba(6,182,212,0.3)] uppercase tracking-widest text-[10px] sm:text-xs flex items-center justify-center text-center">
+                <a 
+                  href={primaryCTAHref} 
+                  onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_primary' })}
+                  className="px-4 sm:px-10 py-5 bg-cyan-500 text-white font-black rounded-full hover:bg-cyan-600 hover:scale-105 transition-all shadow-[0_20px_40px_-10px_rgba(6,182,212,0.3)] uppercase tracking-widest text-[10px] sm:text-xs flex items-center justify-center text-center"
+                >
                   {primaryCTA}
                 </a>
                 {secondaryCTA && (
-                  <a href={secondaryCTAHref} className="px-4 sm:px-10 py-5 bg-background text-cyan-900 font-bold rounded-full border-2 border-cyan-100 hover:border-cyan-200 transition-all uppercase tracking-widest text-[10px] sm:text-xs flex items-center justify-center text-center">
+                  <a 
+                    href={secondaryCTAHref} 
+                    onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_secondary' })}
+                    className="px-4 sm:px-10 py-5 bg-background text-cyan-900 font-bold rounded-full border-2 border-cyan-100 hover:border-cyan-200 transition-all uppercase tracking-widest text-[10px] sm:text-xs flex items-center justify-center text-center"
+                  >
                     {secondaryCTA}
                   </a>
                 )}

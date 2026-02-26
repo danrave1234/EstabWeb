@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
 import { dynamicGridCols } from "@/lib/utils/grid-cols";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type FeatureItem = {
   title: string;
@@ -67,6 +68,7 @@ export default function FeaturesGrid({
                 </p>
                 <a
                   href="#contact"
+                  onClick={() => trackEvent({ type: 'cta_click', section_key: 'services', cta_id: `service_learn_more_${index}` })}
                   className="mt-2 sm:mt-4 text-primary text-[10px] sm:text-sm font-medium inline-flex items-center gap-1 hover:gap-2 transition-all duration-200 group"
                 >
                   Learn more

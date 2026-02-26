@@ -1,9 +1,9 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PhoneIcon, EnvelopeIcon, MapPinIcon } from "@phosphor-icons/react";
-import { trackLead } from "@/components/shared/Analytics";
+import { trackLead, trackEvent } from "@/components/shared/Analytics";
 
 export type ContactFormProps = {
   tagline: string;
@@ -96,6 +96,7 @@ export default function ContactForm({
               <button
                 type="submit"
                 disabled={isSubmitted}
+                onClick={() => trackEvent({ type: 'cta_click', section_key: 'contact', cta_id: 'contact_form_submit' })}
                 className="w-full min-h-[40px] sm:min-h-[44px] px-6 py-2 sm:py-3 mt-2 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity touch-manipulation text-xs sm:text-base"
               >
                 {isSubmitted ? formThankYouText : formSubmitText}

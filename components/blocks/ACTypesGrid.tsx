@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type ACType = {
   name: string;
@@ -39,7 +40,8 @@ export default function ACTypesGrid({
             return (
               <div 
                 key={index} 
-                className="group p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-border bg-muted/20 hover:border-primary/30 transition-all text-center"
+                className="group p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-border bg-muted/20 hover:border-primary/30 transition-all text-center cursor-pointer"
+                onClick={() => trackEvent({ type: 'cta_click', section_key: 'ac_types', cta_id: `ac_type_${index}` })}
               >
                 <div className={`${hasImage ? "w-12 h-12 sm:w-20 sm:h-20" : "w-8 h-8 sm:w-12 sm:h-12"} mx-auto bg-primary/10 rounded-lg sm:rounded-xl overflow-hidden flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform`}>
                   {item.imageUrl ? (

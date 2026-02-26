@@ -1,6 +1,7 @@
 "use client";
 
 import { MapPinIcon } from "@phosphor-icons/react";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type ServiceAreaMapProps = {
   title?: string;
@@ -52,7 +53,10 @@ export default function ServiceAreaMap({
             </div>
           </div>
 
-          <div className="aspect-video w-full rounded-2xl overflow-hidden border border-border bg-muted shadow-lg">
+          <div 
+            className="aspect-video w-full rounded-2xl overflow-hidden border border-border bg-muted shadow-lg cursor-pointer group"
+            onClick={() => trackEvent({ type: 'map_interact', section_key: 'service_area', metadata: { action: 'map_click' } })}
+          >
             {mapEmbedUrl ? (
               <iframe
                 src={mapEmbedUrl}

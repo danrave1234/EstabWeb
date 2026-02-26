@@ -1,5 +1,6 @@
 import Image from "next/image";
 import TrustSignals from "@/components/shared/TrustSignals";
+import { trackEvent, trackLead } from "@/components/shared/Analytics";
 
 export type HeroCleaningProps = {
   title: string;
@@ -49,6 +50,11 @@ export default function HeroCleaning({
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-md px-4 sm:px-0">
               <a
                 href={primaryCTAHref}
+                onClick={() => {
+                  trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_primary' });
+                  if (primaryCTAHref === '#contact' || primaryCTAHref === '#quote') trackLead('form');
+                  else if (primaryCTAHref.startsWith('tel:')) trackLead('call');
+                }}
                 className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[56px] px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-full hover:scale-105 transition-transform shadow-xl text-[10px] sm:text-base touch-manipulation text-center"
               >
                 {primaryCTA}
@@ -56,6 +62,7 @@ export default function HeroCleaning({
               {secondaryCTA && (
                 <a
                   href={secondaryCTAHref}
+                  onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_secondary' })}
                   className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[56px] px-4 sm:px-8 py-2 sm:py-4 bg-background text-primary font-bold rounded-full border-2 border-primary/10 hover:bg-primary/5 transition-colors text-[10px] sm:text-base touch-manipulation text-center"
                 >
                   {secondaryCTA}

@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
 import { ChevronRight } from "lucide-react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type PracticeAreaItem = {
   title: string;
@@ -80,6 +81,7 @@ export default function PracticeAreasGrid({
                 </p>
                 <a
                   href={href}
+                  onClick={() => trackEvent({ type: 'cta_click', section_key: 'practice_areas', cta_id: `practice_area_${index}` })}
                   className="text-primary font-medium inline-flex items-center gap-1 text-xs sm:text-sm hover:gap-2 transition-all group"
                 >
                   {linkText}

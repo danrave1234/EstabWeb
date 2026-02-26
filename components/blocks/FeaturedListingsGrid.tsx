@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import { MapPinIcon, BedIcon, BathtubIcon, SquareIcon } from "@phosphor-icons/react";
 import DynamicIcon from "@/components/shared/DynamicIcon";
 import { dynamicGridCols } from "@/lib/utils/grid-cols";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type PropertyListing = {
   title: string;
@@ -105,7 +106,10 @@ export default function FeaturedListingsGrid({
                   <p className="text-base sm:text-2xl font-black text-primary">
                     {property.price.includes("â‚±") ? property.price : /^[\d,.\s]+$/.test(property.price.replace(/\s/g, "")) ? `â‚±${property.price}` : property.price}
                   </p>
-                  <button className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-foreground hover:text-primary transition-colors underline underline-offset-4 text-left sm:text-right">
+                  <button 
+                    onClick={() => trackEvent({ type: 'cta_click', section_key: 'listings', cta_id: `listing_${index}_details` })}
+                    className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-foreground hover:text-primary transition-colors underline underline-offset-4 text-left sm:text-right"
+                  >
                     {viewDetailsLabel}
                   </button>
                 </div>

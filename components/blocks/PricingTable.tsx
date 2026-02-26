@@ -3,6 +3,7 @@
 import { CheckCircleIcon } from "@phosphor-icons/react";
 import { X } from "lucide-react";
 import { dynamicGridCols } from "@/lib/utils/grid-cols";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type PricingPlan = {
   name: string;
@@ -96,6 +97,7 @@ export default function PricingTable({
 
               <a
                 href={plan.href ?? "#"}
+                onClick={() => trackEvent({ type: 'cta_click', section_key: 'pricing', cta_id: `plan_${plan.name.toLowerCase()}` })}
                 className={`w-full py-1.5 sm:py-3 px-3 sm:px-6 rounded-lg sm:rounded-xl font-bold text-center transition-all duration-200 min-h-[32px] sm:min-h-[48px] flex items-center justify-center text-xs sm:text-base ${
                   plan.isPopular
                     ? "bg-primary text-primary-foreground hover:opacity-90 shadow-lg"

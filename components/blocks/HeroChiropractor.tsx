@@ -2,6 +2,7 @@
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
 import TrustSignals from "@/components/shared/TrustSignals";
+import { trackEvent, trackLead } from "@/components/shared/Analytics";
 
 export type HeroChiropractorProps = {
   title: string;
@@ -102,12 +103,18 @@ export default function HeroChiropractor({
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 reveal">
             <a
               href={primaryCTAHref}
+              onClick={() => {
+                trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_primary' });
+                if (primaryCTAHref === '#contact') trackLead('form');
+                else if (primaryCTAHref.startsWith('tel:')) trackLead('call');
+              }}
               className="inline-flex items-center justify-center min-h-[56px] px-4 sm:px-8 py-4 bg-primary text-primary-foreground font-bold rounded-full hover:scale-105 transition-all shadow-xl shadow-primary/20 text-[10px] sm:text-base text-center"
             >
               {primaryCTA}
             </a>
             <a
               href={secondaryCTAHref}
+              onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_secondary' })}
               className="inline-flex items-center justify-center min-h-[56px] gap-1.5 sm:gap-2 px-4 sm:px-8 py-4 bg-background/50 backdrop-blur-md text-foreground font-bold rounded-full border border-border hover:bg-background transition-all text-[10px] sm:text-base text-center"
             >
               {secondaryCTAImageUrl ? (

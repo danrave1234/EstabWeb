@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { trackLead } from "@/components/shared/Analytics";
+import { trackLead, trackEvent } from "@/components/shared/Analytics";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon, ChatCircleDotsIcon, GlobeIcon, ClockIcon } from "@phosphor-icons/react";
 
 export type ContactColumnsProps = {
@@ -70,8 +70,11 @@ export default function ContactColumns({
             <a href={`mailto:${email}`} onClick={() => trackLead('form')} className="text-primary font-bold hover:underline text-[10px] sm:text-sm break-all">{email}</a>
           </div>
 
-          <div className="bg-background p-4 sm:p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center">
-            <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 sm:mb-6">
+          <div 
+            className="bg-background p-4 sm:p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center flex flex-col items-center cursor-pointer group"
+            onClick={() => trackEvent({ type: 'map_interact', metadata: { action: 'visit_us_click' } })}
+          >
+            <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 sm:mb-6 group-hover:bg-primary/20 transition-colors">
               <MapPinIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
             </div>
             <h3 className="font-bold mb-1 sm:mb-2 text-[10px] sm:text-base">Visit Us</h3>

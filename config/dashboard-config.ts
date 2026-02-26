@@ -294,8 +294,9 @@ export const DEFAULT_PRICING_TABLE = {
   title: "Simple Pricing",
   subtitle: "Choose the plan that fits.",
   plans: [
-    { name: "Basic", price: "₱0", description: "Get started for free.", features: [{ text: "Core features", included: true }, { text: "Support", included: true }], buttonText: "Get Started", isPopular: false },
-    { name: "Pro", price: "₱999", description: "For growing teams.", features: [{ text: "Everything in Basic", included: true }, { text: "Priority support", included: true }], buttonText: "Get Pro", isPopular: true },
+    { name: "Free", price: "₱0", description: "Get started for free.", features: [{ text: "Core features", included: true }, { text: "Analytics", included: false }], buttonText: "Get Started", isPopular: false },
+    { name: "Basic", price: "₱499", description: "Standard business presence.", features: [{ text: "Everything in Free", included: true }, { text: "Analytics summary", included: true }, { text: "Custom Domain", included: true }], buttonText: "Choose Basic", isPopular: true },
+    { name: "Pro", price: "₱999", description: "Advanced analytics & SEO.", features: [{ text: "Everything in Basic", included: true }, { text: "Advanced Analytics", included: true }, { text: "SEO Audit", included: true }], buttonText: "Get Pro", isPopular: false },
   ],
 };
 

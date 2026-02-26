@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import { dynamicGridCols } from "@/lib/utils/grid-cols";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type TeamMember = {
   imageUrl: string;
@@ -80,6 +81,7 @@ export default function TeamCarousel({
                 </p>
                 <a
                   href={member.bioUrl ?? "#"}
+                  onClick={() => trackEvent({ type: 'cta_click', section_key: 'team', cta_id: `team_member_${index}_bio` })}
                   className="w-full py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors"
                 >
                   {linkText}

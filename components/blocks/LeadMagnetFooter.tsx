@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { PhoneIcon, MapPinIcon, EnvelopeIcon } from "@phosphor-icons/react";
 import { SocialIcon } from "@/components/shared/SocialIcon";
-import { trackLead } from "@/components/shared/Analytics";
+import { trackLead, trackEvent } from "@/components/shared/Analytics";
 
 export type FooterSocial = {
   facebook?: string;
@@ -196,6 +196,7 @@ export default function LeadMagnetFooter({
               <button
                 type="submit"
                 disabled={isSubmitted}
+                onClick={() => trackEvent({ type: 'cta_click', section_key: 'footer', cta_id: 'footer_form_submit' })}
                 className="w-full min-h-[36px] sm:min-h-[44px] px-6 py-2 sm:py-3 bg-primary hover:opacity-90 text-primary-foreground rounded-lg font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation text-xs sm:text-base"
               >
                 {isSubmitted ? formThankYouText : formSubmitText}

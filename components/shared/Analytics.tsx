@@ -70,7 +70,8 @@ export type EventType =
   | 'lead_form'
   | 'lead_call'
   | 'lead_messenger'
-  | 'lead_viber';
+  | 'lead_viber'
+  | 'map_interact';
 
 export function trackEvent(payload: {
   type: EventType;

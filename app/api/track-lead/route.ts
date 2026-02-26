@@ -60,6 +60,11 @@ export async function POST(request: Request) {
       hdrs.get("x-real-ip") ||
       "unknown";
 
+    // Capture geolocation from Vercel headers
+    const city = hdrs.get("x-vercel-ip-city");
+    const region = hdrs.get("x-vercel-ip-country-region");
+    const country = hdrs.get("x-vercel-ip-country");
+
     // Rate limit check
     if (isRateLimited(ip)) {
       return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
@@ -117,7 +122,12 @@ export async function POST(request: Request) {
     const { error: leadError } = await supabase.from("project_leads").insert({
       project_id,
       type,
-      metadata: metadata ?? {},
+      metadata: {
+        ...(metadata ?? {}),
+        geo_city: city,
+        geo_region: region,
+        geo_country: country,
+      },
     });
 
     if (leadError) {
@@ -134,7 +144,12 @@ export async function POST(request: Request) {
       section_key: section_key ?? null,
       cta_id: null,
       source: source ?? null,
-      metadata: metadata ?? {},
+      metadata: {
+        ...(metadata ?? {}),
+        geo_city: city,
+        geo_region: region,
+        geo_country: country,
+      },
     });
 
     if (eventError) {

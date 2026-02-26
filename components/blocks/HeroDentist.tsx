@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import TrustSignals from "@/components/shared/TrustSignals";
+import { trackEvent, trackLead } from "@/components/shared/Analytics";
 
 export type HeroDentistProps = {
   title: string;
@@ -63,6 +64,11 @@ export default function HeroDentist({
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <a
                   href={primaryCTAHref}
+                  onClick={() => {
+                    trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_primary' });
+                    if (primaryCTAHref === '#contact') trackLead('form');
+                    else if (primaryCTAHref.startsWith('tel:')) trackLead('call');
+                  }}
                   className="inline-flex items-center justify-center min-h-[48px] sm:min-h-[56px] px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-xl sm:rounded-2xl hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/20 text-[10px] sm:text-base touch-manipulation text-center"
                 >
                   {primaryCTA}
@@ -70,6 +76,7 @@ export default function HeroDentist({
                 {secondaryCTA && (
                   <a
                     href={secondaryCTAHref}
+                    onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_secondary' })}
                     className="inline-flex items-center justify-center min-h-[48px] sm:min-h-[56px] px-4 sm:px-8 py-2 sm:py-4 bg-transparent text-foreground font-semibold rounded-xl sm:rounded-2xl border-2 border-border hover:bg-muted/50 transition-colors text-[10px] sm:text-base touch-manipulation text-center"
                   >
                     {secondaryCTA}

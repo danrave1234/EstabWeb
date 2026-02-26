@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Reveal from "@/components/shared/Reveal";
 import { dynamicGridCols } from "@/lib/utils/grid-cols";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type TeamMember = {
   imageUrl: string;
@@ -51,6 +52,7 @@ export default function TeamGrid({
                   {member.bioUrl && (
                     <a
                       href={member.bioUrl}
+                      onClick={() => trackEvent({ type: 'cta_click', section_key: 'team', cta_id: `team_member_${index}` })}
                       className="text-white text-sm font-bold flex items-center gap-2"
                     >
                       {linkText} &rarr;

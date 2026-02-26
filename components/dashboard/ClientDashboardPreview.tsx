@@ -169,6 +169,15 @@ export default function ClientDashboardPreview({ project, user }: DashboardClien
   const saveTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null)
   
   const [selectedSection, setSelectedSection] = React.useState<string | null>(null)
+  
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const section = params.get('section') || params.get('tab')
+    if (section) {
+      setSelectedSection(section)
+    }
+  }, [])
   const [activePreviewSection, setActivePreviewSection] = React.useState<string | null>(null)
   const [formValues, setFormValues] = React.useState<Record<string, any>>({})
   const [isSubmitting, setIsSubmitting] = React.useState(false)

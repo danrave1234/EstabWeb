@@ -10,9 +10,11 @@ export const DEFAULT_PUBLISH_LIMIT_DAILY = 3
 export const TRIAL_DAYS = 14
 
 export type SubscriptionStatus = 'free' | 'trial' | 'active' | 'admin_granted'
+export type PlanType = 'free' | 'basic' | 'pro' | 'ecommerce' | 'custom'
 
 export interface ProjectSubscription {
   subscription_status?: string | null
+  subscription_plan_id?: PlanType | string | null
   trial_ends_at?: string | null
   subscription_ends_at?: string | null
   publish_limit?: number | null
@@ -25,6 +27,28 @@ export interface ProjectSubscription {
 
 /** Statuses that allow direct publish (no admin approval) */
 const CAN_PUBLISH_DIRECTLY: SubscriptionStatus[] = ['trial', 'active', 'admin_granted']
+
+export function getPlanType(project: ProjectSubscription): PlanType {
+  return (project?.subscription_plan_id || 'free') as PlanType
+}
+
+export function isAnalyticsAllowed(project: ProjectSubscription): boolean {
+  const plan = getPlanType(project)
+  const status = (project?.subscription_status || 'free').toLowerCase() as SubscriptionStatus
+  
+  // Admin granted always has access
+  if (status === 'admin_granted') return true
+  
+  // Only basic, pro, and ecommerce have analytics. Free does not.
+  // Trial users also get analytics if they are on a trial of a paid plan.
+  return ['basic', 'pro', 'ecommerce', 'custom'].includes(plan)
+}
+
+/** Whether the plan has advanced analytics (Pro and above) */
+export function hasAdvancedAnalytics(project: ProjectSubscription): boolean {
+  const plan = getPlanType(project)
+  return ['pro', 'ecommerce', 'custom'].includes(plan)
+}
 
 export function canPublishDirectly(project: ProjectSubscription): boolean {
   const status = (project?.subscription_status || 'free').toLowerCase() as SubscriptionStatus

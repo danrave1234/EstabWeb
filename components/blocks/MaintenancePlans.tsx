@@ -2,6 +2,7 @@
 
 import { CheckCircleIcon } from "@phosphor-icons/react";
 import { dynamicGridCols } from "@/lib/utils/grid-cols";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type MaintenancePlan = {
   name: string;
@@ -79,6 +80,7 @@ export default function MaintenancePlans({
               
               <a 
                 href="#contact" 
+                onClick={() => trackEvent({ type: 'cta_click', section_key: 'maintenance', cta_id: `maintenance_plan_${plan.name.toLowerCase()}` })}
                 className={`w-full py-2.5 sm:py-4 px-4 sm:px-6 rounded-lg sm:rounded-xl font-bold text-center transition-all text-xs sm:text-base ${
                   plan.isPopular 
                     ? "bg-primary text-primary-foreground hover:opacity-90" 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { trackLead } from "@/components/shared/Analytics";
+import { trackLead, trackEvent } from "@/components/shared/Analytics";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon, PaperPlaneRightIcon } from "@phosphor-icons/react";
 import Image from "next/image";
 
@@ -90,7 +90,10 @@ export default function ContactVisual({
                 </div>
               </div>
 
-              <div className="col-span-2 lg:col-span-1 flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-6 group">
+              <div 
+                className="col-span-2 lg:col-span-1 flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-6 group cursor-pointer"
+                onClick={() => trackEvent({ type: 'map_interact', metadata: { action: 'location_view' } })}
+              >
                 <div className="w-8 h-8 sm:w-14 sm:h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/20 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
                   <MapPinIcon weight="duotone" className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>

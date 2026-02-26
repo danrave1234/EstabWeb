@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { trackLead } from "@/components/shared/Analytics";
+import { trackLead, trackEvent } from "@/components/shared/Analytics";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon, ClockIcon } from "@phosphor-icons/react";
 
 export type ContactWithMapProps = {
@@ -132,7 +132,10 @@ export default function ContactWithMap({
           </div>
 
           {/* Map Side */}
-          <div className="relative h-[500px] lg:h-auto min-h-[400px] rounded-3xl overflow-hidden shadow-2xl border border-border">
+          <div 
+            className="relative h-[500px] lg:h-auto min-h-[400px] rounded-3xl overflow-hidden shadow-2xl border border-border group cursor-pointer"
+            onClick={() => trackEvent({ type: 'map_interact', metadata: { action: 'map_click' } })}
+          >
              <iframe
                src={mapEmbedUrl}
                width="100%"
