@@ -1,13 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import path from "path";
 import fs from "fs/promises";
 import { getSectionKey } from "./config-mapping";
 
 const SITE_DATA_PATH = path.join(process.cwd(), "config", "site-data.json");
 
-export async function getSiteConfig(domain: string, headersList?: Headers) {
+export const getSiteConfig = cache(async (domain: string, headersList?: Headers) => {
   const isPreview = headersList?.get('x-preview-mode') === 'true';
   const projectId = headersList?.get('x-project-id') || undefined;
   const requestId = headersList?.get('x-request-id') || undefined;
@@ -23,7 +24,7 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
         .select('*, projects(*)')
         .eq('id', requestId)
         .single();
-      
+
       if (reqError) {
         console.error(`[getSiteConfig] Error fetching change request:`, reqError);
       }
@@ -59,13 +60,13 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
         dbRow = data?.[0];
       } else {
         console.log(`[getSiteConfig] Searching by domain: "${domain}"`);
-        
+
         // 1. Try exact match
         const { data, error, count } = await supabase
           .from("projects")
           .select("id,subdomain,custom_domain,current_config,draft_config", { count: 'exact' })
           .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`);
-        
+
         dbRow = data?.[0];
 
         // 2. If no match, and it looks like a subdomain of our root domains, try just the subdomain part
@@ -115,7 +116,7 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           .select("payload")
           .eq("key", "template_master")
           .single();
-        
+
         if (data) {
           dbConf = data.payload;
         }
@@ -127,15 +128,15 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           .select("payload")
           .eq("key", "global")
           .single();
-        
+
         if (data) {
           dbConf = data.payload;
         }
       } else {
-      console.log(`[getSiteConfig] No project found for domain: ${domain}`);
+        console.log(`[getSiteConfig] No project found for domain: ${domain}`);
+      }
     }
-    }
-    
+
     if (dbConf && Object.keys(dbConf).length > 0) {
       return dbConf;
     }
@@ -147,7 +148,7 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
   try {
     const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
     const fileData = JSON.parse(raw);
-    
+
     console.log(`[getSiteConfig] Using file fallback for domain: "${domain}"`);
     if (domain === 'master') {
       try {
@@ -159,11 +160,11 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           .single();
 
         if (!templateConfig) {
-           await supabase.from("site_config").insert({
-             key: "template_master",
-             payload: fileData
-           });
-           console.log("Auto-migrated site-data.json to template_master in DB");
+          await supabase.from("site_config").insert({
+            key: "template_master",
+            payload: fileData
+          });
+          console.log("Auto-migrated site-data.json to template_master in DB");
         }
       } catch (migrateErr) {
         console.error("Auto-migration failed for master:", migrateErr);
@@ -178,11 +179,11 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           .single();
 
         if (!globalConfig) {
-           await supabase.from("site_config").insert({
-             key: "global",
-             payload: fileData
-           });
-           console.log("Auto-migrated site-data.json to site_config table in DB");
+          await supabase.from("site_config").insert({
+            key: "global",
+            payload: fileData
+          });
+          console.log("Auto-migrated site-data.json to site_config table in DB");
         }
       } catch (migrateErr) {
         console.error("Auto-migration failed:", migrateErr);
@@ -194,9 +195,9 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
     console.error("Error reading site-data.json:", error);
     return null;
   }
-}
+});
 
-export async function getSiteConfigWithProject(domain: string, headersList?: Headers): Promise<{ config: any | null; project: any | null }> {
+export const getSiteConfigWithProject = cache(async (domain: string, headersList?: Headers): Promise<{ config: any | null; project: any | null }> => {
   const isPreview = headersList?.get('x-preview-mode') === 'true';
   const projectId = headersList?.get('x-project-id') || undefined;
   const requestId = headersList?.get('x-request-id') || undefined;
@@ -380,7 +381,7 @@ export async function getSiteConfigWithProject(domain: string, headersList?: Hea
     console.error("Error reading site-data.json:", error);
     return { config: null, project };
   }
-}
+});
 
 // ---------------------------------------------------------------------------
 // Cached version for public (non-preview) routes

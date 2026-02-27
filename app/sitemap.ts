@@ -34,7 +34,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const planLimits = await getPlanLimits()
   const maxPages = getMaxPagesForProject(project, planLimits)
   const paidPages = canUseMultiPage(project)
-    ? pages.filter((page) => page.slug && !isLegalPageSlug(page.slug)).slice(0, maxPages)
+    ? pages
+        .filter((page) => page.slug && !isLegalPageSlug(page.slug) && !page?.seo?.robots?.noindex)
+        .slice(0, maxPages)
     : []
 
   const routes = [

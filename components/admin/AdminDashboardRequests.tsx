@@ -1,12 +1,8 @@
-"use client"
 import * as React from "react"
 import { format } from "date-fns"
 import { Eye, Clock, User, FileText } from "lucide-react"
 import Link from "next/link"
-
-interface AdminRequestsClientProps {
-  initialRequests: any[]
-}
+import { createClient } from "@/lib/supabase/server"
 
 const sectionLabel = (section: string | null) => {
   if (!section) return "Full Site Snapshot"
@@ -25,8 +21,40 @@ const sectionColor = (section: string | null) => {
   return map[section] ?? "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
 }
 
-export default function AdminDashboardRequests({ initialRequests }: AdminRequestsClientProps) {
-  const [requests] = React.useState(initialRequests)
+export default async function AdminDashboardRequests() {
+  const supabase = await createClient()
+
+  const { data: rawRequests, error } = await supabase
+    .from('change_requests')
+    .select(`
+      *,
+      projects (
+        id,
+        subdomain,
+        current_config
+      )
+    `)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching requests:', error)
+  }
+
+  // Fetch emails from profiles
+  let requests = rawRequests ?? []
+  if (requests.length > 0) {
+    const userIds = [...new Set(requests.map((r: any) => r.requested_by).filter(Boolean))]
+    const { data: profileRows } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .in('id', userIds as string[])
+    const profileMap = Object.fromEntries((profileRows ?? []).map((p: any) => [p.id, p]))
+    requests = requests.map((r: any) => ({
+      ...r,
+      profiles: profileMap[r.requested_by] ?? null,
+    }))
+  }
 
   if (requests.length === 0) {
     return (

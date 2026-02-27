@@ -13,7 +13,21 @@ import { toast } from "sonner"
 interface SeoVariant {
   title: string
   description: string
-  keywords?: string[]
+  keywords: string[]
+  canonical?: string
+  og?: {
+    title?: string
+    description?: string
+    image?: string
+  }
+  robots?: {
+    noindex?: boolean
+    nofollow?: boolean
+  }
+  structuredData?: {
+    enabled?: boolean
+    type?: "localbusiness" | "faq" | "article"
+  }
 }
 
 interface AiSeoModalProps {
@@ -22,9 +36,9 @@ interface AiSeoModalProps {
   projectId: string
   pageIndex: number
   businessType: string
-  currentSeo: { title: string; description: string }
-  /** Called with the chosen title, description, and keywords when user clicks Apply */
-  onApplied: (title: string, description: string, keywords?: string[]) => void
+  currentSeo: { title: string; description: string; keywords?: string[] }
+  /** Called with the chosen variant when user clicks Apply */
+  onApplied: (variant: SeoVariant) => void
 }
 
 export function AiSeoModal({
@@ -66,17 +80,32 @@ export function AiSeoModal({
           projectId,
           pageIndex,
           businessType,
-          currentContent: { title: currentSeo.title, description: currentSeo.description },
+          currentContent: {
+            title: currentSeo.title,
+            description: currentSeo.description,
+            keywords: currentSeo.keywords,
+          },
         }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "AI request failed.")
-      const result: SeoVariant[] =
+      const rawVariants: any[] =
         Array.isArray(data.variants) && data.variants.length > 0
           ? data.variants
           : data.title
-          ? [{ title: data.title, description: data.description }]
+          ? [data]
           : []
+      const result: SeoVariant[] = rawVariants
+        .map((variant) => ({
+          title: typeof variant?.title === "string" ? variant.title : "",
+          description: typeof variant?.description === "string" ? variant.description : "",
+          keywords: Array.isArray(variant?.keywords) ? variant.keywords.filter((k: unknown) => typeof k === "string") : [],
+          canonical: typeof variant?.canonical === "string" ? variant.canonical : undefined,
+          og: variant?.og && typeof variant.og === "object" ? variant.og : undefined,
+          robots: variant?.robots && typeof variant.robots === "object" ? variant.robots : undefined,
+          structuredData: variant?.structuredData && typeof variant.structuredData === "object" ? variant.structuredData : undefined,
+        }))
+        .filter((variant) => variant.title && variant.description)
       if (result.length === 0) throw new Error("No suggestions returned.")
       setVariants(result)
     } catch (e: any) {
@@ -89,7 +118,7 @@ export function AiSeoModal({
   function handleApply() {
     if (selected === null || !variants[selected]) return
     const v = variants[selected]
-    onApplied(v.title, v.description, v.keywords)
+    onApplied(v)
     toast.success("AI SEO suggestion applied!")
     handleClose(false)
   }
@@ -110,7 +139,7 @@ export function AiSeoModal({
             AI SEO Optimizer
           </DialogTitle>
           <DialogDescription>
-            Generate optimized SEO title and meta description suggestions for this page.
+            Generate optimized SEO suggestions for title, description, keywords, and sharing metadata.
           </DialogDescription>
         </DialogHeader>
 
@@ -184,6 +213,31 @@ export function AiSeoModal({
                             ))}
                           </div>
                         )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                          {v.canonical && (
+                            <span className="text-[10px] text-muted-foreground">
+                              Canonical: <span className="font-semibold text-foreground">{v.canonical}</span>
+                            </span>
+                          )}
+                          {v.structuredData?.type && (
+                            <span className="text-[10px] text-muted-foreground">
+                              Schema: <span className="font-semibold text-foreground">{v.structuredData.type}</span>
+                            </span>
+                          )}
+                          {v.robots && (
+                            <span className="text-[10px] text-muted-foreground">
+                              Robots:{" "}
+                              <span className="font-semibold text-foreground">
+                                {v.robots.noindex ? "noindex" : "index"}, {v.robots.nofollow ? "nofollow" : "follow"}
+                              </span>
+                            </span>
+                          )}
+                          {v.og?.title && (
+                            <span className="text-[10px] text-muted-foreground truncate">
+                              OG: <span className="font-semibold text-foreground">{v.og.title}</span>
+                            </span>
+                          )}
+                        </div>
                       </button>
                     </li>
                   )

@@ -40,8 +40,8 @@ export async function POST(req: NextRequest) {
         const activeSections: string[] = Array.isArray(activePage?.activeSections)
           ? activePage.activeSections
           : Array.isArray(config.activeSections)
-          ? config.activeSections
-          : []
+            ? config.activeSections
+            : []
 
         const colorTheme = typeof config.colorTheme === "string" ? config.colorTheme : "partner"
         const typographyStyle = typeof config.typographyStyle === "string" ? config.typographyStyle : "elegant"
@@ -92,6 +92,7 @@ Current SEO description: "${currentContent?.description || "(none)"}"
 
 Rules:
 - MUST be between 30 and 60 characters. Count every character carefully.
+- Ensure the primary service keyword appears as close to the beginning of the title as possible for maximum ranking weight.
 - Do NOT use generic filler like "Welcome to" or "Built with"
 - Do NOT invent services or claims not present in the content
 - Return raw JSON only, no markdown, no code fences
@@ -125,6 +126,7 @@ Current OG title: "${currentContent?.og_title || "(none)"}"
 
 Rules:
 - MUST be between 30 and 60 characters. Count every character carefully.
+- Ensure the primary service keyword appears as close to the beginning of the title as possible for maximum ranking weight.
 - Should be engaging and click-worthy for social media (Facebook, Twitter, LinkedIn)
 - Do NOT use generic filler like "Welcome to" or "Built with"
 - Do NOT invent services or claims not present in the content

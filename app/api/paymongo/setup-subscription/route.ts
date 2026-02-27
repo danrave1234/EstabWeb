@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getPlansConfig } from '@/lib/plans-config-server'
+import { resolveAmountFromPlans, resolveDescriptionFromPlans } from '@/lib/plans-config'
 
 const PAYMONGO_API = 'https://api.paymongo.com/v1'
-const MONTHLY_AMOUNT = 50000   // ₱500 in centavos
-const INITIAL_AMOUNT = 500000  // ₱5,000 in centavos
 
 function authHeader() {
   const secret = process.env.PAYMONGO_SECRET_KEY!
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const secret = process.env.PAYMONGO_SECRET_KEY
     if (!secret) return NextResponse.json({ error: 'PayMongo not configured' }, { status: 503 })
 
-    const { projectId } = await req.json()
+    const { projectId, planId = 'ph_monthly', interval = 'monthly' } = await req.json()
     if (!projectId) return NextResponse.json({ error: 'Missing projectId' }, { status: 400 })
 
     // Auth check – must be the project owner
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     const { data: proj } = await supabase
       .from('projects')
-      .select('id, client_id, subscription_status, has_paid_initial, subdomain')
+      .select('id, client_id, subscription_status, has_paid_initial, subdomain, subscription_plan_id')
       .eq('id', projectId)
       .single()
 
@@ -36,10 +36,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
-    const amount = proj.has_paid_initial ? MONTHLY_AMOUNT : INITIAL_AMOUNT
-    const description = proj.has_paid_initial
-      ? 'EstabWeb Monthly Subscription'
-      : 'EstabWeb Initial Setup + First Month'
+    // ── PLAN LOCKING ────────────────────────────────────────────────────────
+    let activePlanId = proj.subscription_plan_id || planId
+    if (planId && !proj.subscription_plan_id) {
+      await supabase.from('projects').update({ subscription_plan_id: planId }).eq('id', projectId)
+      activePlanId = planId
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
+    const { PLANS } = await getPlansConfig()
+    const plan = PLANS[activePlanId as keyof typeof PLANS] || PLANS.basic
+    const isInitial = !proj.has_paid_initial
+    const amount = resolveAmountFromPlans(PLANS, activePlanId, !isInitial, interval)
+    const description = resolveDescriptionFromPlans(PLANS, activePlanId, !isInitial, interval)
+
+
+
+
 
     const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://estabweb.com'
     const successUrl = `${origin}/dashboard?projectId=${projectId}&payment_success=true`
@@ -57,7 +70,7 @@ export async function POST(req: Request) {
           attributes: {
             billing: {
               email: user.email,
-              name: 'EstabWeb',
+              name: user.user_metadata?.full_name || 'EstabWeb Customer',
             },
             send_email_receipt: true,
             show_description: true,
@@ -67,10 +80,10 @@ export async function POST(req: Request) {
             description,
             line_items: [
               {
-                currency: 'PHP',
+                currency: plan.currency,
                 amount,
                 description,
-                name: proj.has_paid_initial ? 'Monthly Subscription' : 'Initial Setup + First Month',
+                name: plan.name,
                 quantity: 1,
               },
             ],
@@ -78,8 +91,9 @@ export async function POST(req: Request) {
             metadata: {
               project_id: projectId,
               user_id: user.id,
-              is_initial: String(!proj.has_paid_initial),
-              plan_id: 'ph_monthly',
+              plan_id: planId,
+              is_initial: String(isInitial),
+              interval: interval,
             },
           },
         },
@@ -101,13 +115,14 @@ export async function POST(req: Request) {
       await supabase.from('paymongo_links').insert({
         link_id: sessionId,
         project_id: projectId,
-        plan_id: 'ph_monthly',
+        plan_id: planId,
       })
     } catch {
       // ignore duplicate key errors
     }
 
     return NextResponse.json({ checkoutUrl })
+
   } catch (e: any) {
     console.error('[setup-subscription]', e)
     return NextResponse.json({ error: e?.message || 'Internal error' }, { status: 500 })

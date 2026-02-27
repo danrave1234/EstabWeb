@@ -77,18 +77,18 @@ export default function SimpleFooter({
                   />
                 )
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                  <span className="text-xl font-bold text-primary-foreground">{initials}</span>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-primary/20">
+                  <span className="text-xl font-bold text-primary">{initials}</span>
                 </div>
               )}
-              <span className="text-xl font-bold tracking-tight text-foreground">
+              <span className="font-serif text-xl font-bold tracking-tight text-foreground">
                 {brandName}
               </span>
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground max-w-xs">
               {tagline}
             </p>
-            <nav className="flex flex-wrap justify-center gap-x-6 gap-y-2 md:justify-start">
+            <nav aria-label="Footer" className="flex flex-wrap justify-center gap-x-6 gap-y-2 md:justify-start">
               {navigation?.map((item) => (
                 <a
                   key={item.href}
@@ -105,7 +105,7 @@ export default function SimpleFooter({
           <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:col-span-8 md:gap-8">
             {social.showContact !== false && (
               <div className="flex flex-col items-center text-center sm:items-start sm:text-left space-y-4">
-                <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
+                <h3 className="font-serif text-sm font-bold uppercase tracking-widest text-foreground">
                   {contactLabel}
                 </h3>
                 <div className="space-y-3 text-sm text-muted-foreground">
@@ -123,7 +123,7 @@ export default function SimpleFooter({
             <div className="flex flex-col items-center text-center sm:items-start sm:text-left space-y-4">
               {social.showSocial !== false && (
                 <>
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
+                  <h3 className="font-serif text-sm font-bold uppercase tracking-widest text-foreground">
                     {followLabel}
                   </h3>
                   <div className="flex flex-wrap justify-center gap-4 sm:justify-start">
@@ -151,7 +151,7 @@ export default function SimpleFooter({
                 </>
               )}
 
-              <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground sm:justify-start">
+              <nav aria-label="Legal" className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground sm:justify-start">
                 <a href={privacyUrl} className="hover:text-foreground transition-colors">
                   {privacyLabel}
                 </a>
@@ -161,7 +161,7 @@ export default function SimpleFooter({
                 <a href={cookieUrl} className="hover:text-foreground transition-colors">
                   {cookieLabel}
                 </a>
-              </div>
+              </nav>
             </div>
           </div>
         </div>
@@ -173,4 +173,3 @@ export default function SimpleFooter({
     </footer>
   );
 }
-

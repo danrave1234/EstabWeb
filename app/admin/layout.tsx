@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "@/app/globals.css";
-import { fontVariables } from "@/lib/fonts";
+import { allFontVariables } from "@/lib/fonts";
 import { mainSiteConfig } from "@/config/main-site-config";
 import { createClient } from "@/lib/supabase/server";
 import AdminLayoutClient from "./AdminLayoutClient";
@@ -33,7 +33,13 @@ export default async function AdminLayout({
   const mode = mainSiteConfig.darkMode ? "dark" : "light";
 
   return (
-    <html lang="en" data-theme={mainSiteConfig.colorTheme} data-mode={mode} data-typography={mainSiteConfig.typographyStyle} className={fontVariables}>
+    <html
+      lang="en"
+      data-theme={mainSiteConfig.colorTheme}
+      data-mode={mode}
+      data-typography={mainSiteConfig.typographyStyle}
+      className={`${allFontVariables} app-shell-fonts`}
+    >
       <head>
         <meta charSet="utf-8" />
       </head>

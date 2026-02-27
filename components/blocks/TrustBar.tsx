@@ -52,9 +52,9 @@ export default function TrustBar({
   return (
     <section id="testimonials" className="bg-background reveal">
       {/* Trusted By strip — subtle, matches light theme */}
-      <div className="bg-muted/50 border-y border-border py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+      <div className="bg-transparent border-y border-border py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <p className="text-center text-xs sm:text-sm text-muted-foreground mb-8 tracking-widest uppercase">
+          <p className="font-serif text-center text-xs sm:text-sm text-muted-foreground mb-8 tracking-widest uppercase">
             {label}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4 sm:gap-x-16 sm:gap-y-8">
@@ -97,50 +97,50 @@ export default function TrustBar({
       <div className="py-10 sm:py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl w-full mx-auto">
 
-        <div className="bg-muted/50 rounded-2xl p-6 sm:p-8 md:p-12 max-w-4xl mx-auto">
-          <div className="flex justify-center gap-1 mb-6">
-            {[...Array(testimonial.rating)].map((_, i) => (
-              <i
-                key={i}
-                className="fa-solid fa-star text-primary text-xl w-5 h-5 opacity-90"
-                aria-hidden
-              />
-            ))}
-          </div>
+          <div className="bg-transparent border border-border rounded-2xl p-6 sm:p-8 md:p-12 max-w-4xl mx-auto">
+            <div className="flex justify-center gap-1 mb-6">
+              {[...Array(testimonial.rating)].map((_, i) => (
+                <i
+                  key={i}
+                  className="fa-solid fa-star text-primary text-xl w-5 h-5 opacity-90"
+                  aria-hidden
+                />
+              ))}
+            </div>
 
-          <blockquote className="text-center mb-8">
-            <p className="text-lg sm:text-xl md:text-2xl text-foreground leading-relaxed">
-              &ldquo;{testimonial.quote}&rdquo;
-            </p>
-          </blockquote>
+            <blockquote className="text-center mb-8">
+              <p className="font-serif text-lg sm:text-xl md:text-2xl text-foreground leading-relaxed">
+                &ldquo;{testimonial.quote}&rdquo;
+              </p>
+            </blockquote>
 
-          <div className="flex items-center justify-center gap-4">
-            {isExternalAvatar ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={testimonial.avatar}
-                alt={testimonial.author}
-                className="w-14 h-14 rounded-full object-cover"
-              />
-            ) : (
-              <Image
-                src={testimonial.avatar}
-                alt={testimonial.author}
-                width={56}
-                height={56}
-                className="rounded-full object-cover"
-              />
-            )}
-            <div className="text-left">
-              <div className="font-semibold text-foreground">
-                {testimonial.author}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {testimonial.role}
+            <div className="flex items-center justify-center gap-4">
+              {isExternalAvatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={testimonial.avatar}
+                  alt={testimonial.author}
+                  className="w-14 h-14 rounded-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={testimonial.avatar}
+                  alt={testimonial.author}
+                  width={56}
+                  height={56}
+                  className="rounded-full object-cover"
+                />
+              )}
+              <div className="text-left">
+                <div className="font-serif font-semibold text-foreground">
+                  {testimonial.author}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {testimonial.role}
+                </div>
               </div>
             </div>
           </div>
-        </div>
         </div>
       </div>
     </section>

@@ -41,7 +41,7 @@ export default function ReviewTrustBar({
               />
             ))}
           </div>
-          <span className="font-bold text-foreground text-sm sm:text-xl">{ratingLabel}</span>
+          <span className="font-serif font-bold text-foreground text-sm sm:text-xl">{ratingLabel}</span>
           {sourceLabel && !sourceLogoUrl && (
             <span className="text-muted-foreground text-sm mt-1">
               {sourceLabel}
@@ -60,16 +60,16 @@ export default function ReviewTrustBar({
           {testimonials.slice(0, 3).map((review, index) => (
             <div
               key={index}
-              className="bg-muted/50 rounded-xl p-4 sm:p-6 border border-border flex flex-col"
+              className="bg-transparent rounded-xl p-4 sm:p-6 border border-border flex flex-col"
             >
-              <p className="font-semibold text-foreground text-sm sm:text-lg mb-1.5 sm:mb-2 leading-tight">
+              <p className="font-serif font-semibold text-foreground text-sm sm:text-lg mb-1.5 sm:mb-2 leading-tight">
                 &ldquo;{review.quoteTitle}&rdquo;
               </p>
               <p className="text-muted-foreground text-[11px] sm:text-sm leading-relaxed flex-grow mb-3 sm:mb-4">
                 {review.body}
               </p>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-foreground text-[11px] sm:text-sm">
+                <span className="font-serif font-semibold text-foreground text-[11px] sm:text-sm">
                   {review.customerName}
                 </span>
                 {review.verified !== false && (

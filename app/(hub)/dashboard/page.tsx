@@ -13,6 +13,8 @@ import PaymentSuccessHandler from '@/components/dashboard/PaymentSuccessHandler'
 import { Suspense } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table'
 
+import { getPlansConfig } from '@/lib/plans-config-server'
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -42,7 +44,7 @@ export default async function DashboardPage({
   if (error) console.error('Dashboard Fetch Error:', error)
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com'
-  
+
   // Fetch lead counts for all user's projects
   const projectIds = projects?.map(p => p.id) || []
   let leadsData: any[] = []
@@ -51,13 +53,15 @@ export default async function DashboardPage({
       .from('project_leads')
       .select('project_id')
       .in('project_id', projectIds)
-    
+
     if (leadsError) console.error('Leads Fetch Error:', leadsError)
     else leadsData = leads || []
   }
 
   // Helper to count leads for a project
   const getLeadCount = (id: string) => leadsData.filter(l => l.project_id === id).length
+
+  const plansConfig = await getPlansConfig()
 
   // If a specific project is selected, show the preview
   if (projectId && projects?.some(p => p.id === projectId)) {
@@ -67,10 +71,11 @@ export default async function DashboardPage({
         <Suspense fallback={null}>
           <PaymentSuccessHandler />
         </Suspense>
-        <ClientDashboardPreview project={selectedProject} user={user} />
+        <ClientDashboardPreview project={selectedProject} user={user} initialPlansConfig={plansConfig} />
       </>
     )
   }
+
 
   // If no projects at all, show the redeem/empty state
   if (!projects || projects.length === 0) {
@@ -79,23 +84,23 @@ export default async function DashboardPage({
         <div className="relative mb-6 sm:mb-12">
           <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
           <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-primary rounded-[1.5rem] sm:rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-primary/40 rotate-6 hover:rotate-0 transition-transform duration-500 overflow-hidden">
-            <Image 
-              src="/Logo.svg" 
-              alt="EstabWeb Logo" 
-              width={64} 
-              height={64} 
+            <Image
+              src="/Logo.svg"
+              alt="EstabWeb Logo"
+              width={64}
+              height={64}
               className="w-12 h-12 sm:w-16 sm:h-16 object-contain invert brightness-0"
             />
           </div>
         </div>
-        
+
         <h1 className="text-3xl sm:text-7xl font-black text-foreground mb-3 sm:mb-6 tracking-tight leading-none">
           Build something <span className="text-primary">extraordinary</span>.
         </h1>
         <p className="text-sm sm:text-xl text-muted-foreground max-w-xl mb-6 sm:mb-12 leading-relaxed font-medium px-4">
           Your journey to a world-class online presence starts here. Let&apos;s craft your perfect website together.
         </p>
-        
+
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 w-full max-w-md sm:max-w-none px-4">
           <Link
             href="/onboarding"
@@ -104,9 +109,9 @@ export default async function DashboardPage({
             Start Building Now
             <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" />
           </Link>
-          
+
           <div className="h-px w-full sm:h-12 sm:w-px bg-border my-2 sm:my-0" />
-          
+
           <div className="w-full sm:w-auto">
             <NoProjectRedeem />
           </div>
@@ -146,7 +151,7 @@ export default async function DashboardPage({
             <p className="text-xs sm:text-base text-muted-foreground mt-0.5 sm:mt-2 font-medium">Manage and optimize your digital assets.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3 sm:gap-6">
-            <Link 
+            <Link
               href="/onboarding"
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
             >
@@ -197,7 +202,7 @@ export default async function DashboardPage({
                     <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mt-1">Leads</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground pt-2 border-t border-border">
                   <span>Created: {new Date(project.created_at).toLocaleDateString()}</span>
                 </div>
@@ -226,9 +231,9 @@ export default async function DashboardPage({
                     <Users className="w-3.5 h-3.5" />
                     Leads
                   </Link>
-                  <a 
-                    href={previewUrl} 
-                    target="_blank" 
+                  <a
+                    href={previewUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 bg-muted hover:bg-muted/80 rounded-xl text-foreground transition-colors"
                     title="Visit Live Site"
@@ -326,9 +331,9 @@ export default async function DashboardPage({
                           Edit Site
                           <ChevronRight className="w-3 h-3" />
                         </Link>
-                        <a 
-                          href={previewUrl} 
-                          target="_blank" 
+                        <a
+                          href={previewUrl}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="p-2 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-foreground"
                           title="Visit Live Site"

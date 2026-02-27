@@ -4,20 +4,32 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { CreditCard, Lock, Loader2, ShieldCheck, AlertCircle, ExternalLink, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
+import { resolveAmountFromPlans } from "@/lib/plans-config"
 
 interface Props {
   projectId: string
   subdomain: string
   isInitial: boolean
+  planId: string
+  interval?: string
+  initialPlansConfig: {
+    PLANS: any
+    ENABLE_ANNUAL_PLANS: boolean
+  }
 }
 
-export default function SubscribeCardForm({ projectId, subdomain, isInitial }: Props) {
+export default function SubscribeCardForm({ projectId, subdomain, isInitial, planId, interval = 'monthly', initialPlansConfig }: Props) {
+  const { PLANS } = initialPlansConfig
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const amount = isInitial ? '₱5,000' : '₱500'
-  const label = isInitial ? 'Initial Setup + First Month' : 'Monthly Renewal'
+  // Resolve pricing from shared config
+  const plan = PLANS[planId] || PLANS.basic
+  const amountVal = resolveAmountFromPlans(PLANS, planId, !isInitial, interval as any)
+  const amount = `₱${(amountVal / 100).toLocaleString()}`
+  const label = isInitial ? `Initial Setup + 1 ${interval === 'yearly' ? 'Year' : 'Month'}` : `${interval === 'yearly' ? 'Annual' : 'Monthly'} Renewal`
+
 
   async function handleSubscribe() {
     setError(null)
@@ -26,8 +38,10 @@ export default function SubscribeCardForm({ projectId, subdomain, isInitial }: P
       const res = await fetch('/api/paymongo/setup-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectId }),
+        body: JSON.stringify({ projectId, planId, interval }),
       })
+
+
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to create checkout session')
       window.location.href = data.checkoutUrl

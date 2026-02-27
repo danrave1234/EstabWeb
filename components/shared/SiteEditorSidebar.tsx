@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import useSWR from "swr";
-import { Settings, X, ChevronRight, ChevronLeft, Download, Moon, Sun, Type, Layout, Palette, PanelTop, PanelBottom, Layers, Copy, Check, Plus, Trash2, Image as ImageIcon } from "lucide-react";
+import { Settings, X, ChevronRight, ChevronLeft, Download, Moon, Sun, Type, Layout, Palette, PanelTop, PanelBottom, Layers, Copy, Check, Plus, Trash2, Image as ImageIcon, Wand2 } from "lucide-react";
 import { GENRE_PRESETS, GENRE_LABELS } from "@/config/presets";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/Dialog";
@@ -162,7 +162,7 @@ export default function SiteEditorSidebar() {
   useEffect(() => {
     if (swrData) setData(swrData);
   }, [swrData]);
-  const [activeTab, setActiveTab] = useState<"presets" | "design" | "layout" | "content" | "brand" | "team" | "contact">("presets");
+  const [activeTab, setActiveTab] = useState<"presets" | "design" | "layout" | "content" | "brand" | "team" | "contact" | "ai">("presets");
   const [prefix, setPrefix] = useState("");
   const [maxUses, setMaxUses] = useState<number>(1);
   const [expireDays, setExpireDays] = useState<number>(7);
@@ -170,6 +170,8 @@ export default function SiteEditorSidebar() {
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [generatedCode, setGeneratedCode] = useState("");
   const [copied, setCopied] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
 
   const updateData = async (newData: any) => {
     setData(newData);
@@ -184,7 +186,7 @@ export default function SiteEditorSidebar() {
   const toggleSection = (id: SectionId) => {
     if (!data) return;
     const current = [...(data.activeSections || [])];
-    
+
     if (current.includes(id)) {
       // Find the index of the first occurrence and remove it
       const idx = current.indexOf(id);
@@ -212,9 +214,9 @@ export default function SiteEditorSidebar() {
 
       {/* Sidebar Overlay */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[110]" 
-          onClick={() => setIsVisible(false)} 
+        <div
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[110]"
+          onClick={() => setIsVisible(false)}
         />
       )}
 
@@ -231,14 +233,14 @@ export default function SiteEditorSidebar() {
               <p className="text-xs text-muted-foreground mt-0.5">Live configuration & DNA</p>
             </div>
             <div className="flex items-center gap-2">
-              <Link 
+              <Link
                 href="/admin"
                 className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground"
                 title="Back to Admin"
               >
                 <ChevronLeft className="w-5 h-5" />
               </Link>
-              <button 
+              <button
                 onClick={() => setIsVisible(false)}
                 className="p-2 hover:bg-muted rounded-full transition-colors"
               >
@@ -254,6 +256,7 @@ export default function SiteEditorSidebar() {
               { id: "layout", label: "Layout", icon: Layers },
               { id: "design", label: "Design", icon: Palette },
               { id: "content", label: "Content", icon: Type },
+              { id: "ai", label: "AI Tools", icon: Wand2 },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -268,7 +271,72 @@ export default function SiteEditorSidebar() {
 
           {/* Scrollable Body */}
           <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
-            
+
+            {activeTab === "ai" && (
+              <div className="space-y-6">
+                <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Wand2 className="w-4 h-4 text-primary" /> Auto-Populate Content
+                  </h3>
+                  <p className="text-[10px] text-muted-foreground">
+                    Describe the client and let AI fill in the brand name, hero section, contact info, and location.
+                  </p>
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Business Description</label>
+                      <textarea
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        placeholder="e.g. A dentist in Seattle named SmilExperts. Phone is 555-0199..."
+                        rows={6}
+                        className="w-full p-2 text-xs border rounded bg-background resize-none focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <button
+                      disabled={isAiGenerating || aiPrompt.trim().length < 5}
+                      onClick={async () => {
+                        setIsAiGenerating(true);
+                        try {
+                          const res = await fetch('/api/ai/populate-template', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ prompt: aiPrompt })
+                          });
+                          const result = await res.json();
+                          if (result.error) throw new Error(result.error);
+
+                          const newData = { ...data };
+                          if (!newData.brand) newData.brand = {};
+                          if (!newData.hero) newData.hero = {};
+                          if (!newData.contact) newData.contact = {};
+
+                          if (result.brandName) newData.brand.name = result.brandName;
+                          if (result.heroTitle) newData.hero.title = result.heroTitle;
+                          if (result.heroSubtitle) newData.hero.subtitle = result.heroSubtitle;
+                          if (result.contactEmail) newData.contact.email = result.contactEmail;
+                          if (result.contactPhone) newData.contact.phone = result.contactPhone;
+                          if (result.location) newData.hero.localCoverage = result.location;
+
+                          updateData(newData);
+                          toast.success('Template populated with AI');
+                          setAiPrompt("");
+                        } catch (err: any) {
+                          console.error(err);
+                          toast.error(err?.message || 'Failed to populate template');
+                        } finally {
+                          setIsAiGenerating(false);
+                        }
+                      }}
+                      className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold disabled:opacity-50 shadow-md flex items-center justify-center gap-2"
+                    >
+                      {isAiGenerating ? <Wand2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                      {isAiGenerating ? "Generating..." : "Generate Content"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === "content" && (
               <div className="space-y-8">
                 {/* Brand & Hero */}
@@ -725,7 +793,7 @@ export default function SiteEditorSidebar() {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <label className="text-[9px] font-bold uppercase text-muted-foreground block">Prefix</label>
-                          <input 
+                          <input
                             value={prefix}
                             onChange={(e) => setPrefix(e.target.value)}
                             placeholder="e.g. ACME"
@@ -743,7 +811,7 @@ export default function SiteEditorSidebar() {
                           />
                         </div>
                       </div>
-                      
+
                       <div className="flex items-end gap-3">
                         <div className="flex-1 space-y-1">
                           <label className="text-[9px] font-bold uppercase text-muted-foreground block">Expires (days)</label>
@@ -765,7 +833,7 @@ export default function SiteEditorSidebar() {
                               const res = await fetch('/api/codes', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ 
+                                body: JSON.stringify({
                                   prefix,
                                   payload: data,
                                   max_uses: Math.max(1, Number(maxUses) || 1),
@@ -774,8 +842,8 @@ export default function SiteEditorSidebar() {
                               });
                               const { code, error } = await res.json();
                               if (error) throw new Error(error);
-                              
-                              try { await navigator.clipboard.writeText(code); } catch {}
+
+                              try { await navigator.clipboard.writeText(code); } catch { }
                               setGeneratedCode(code);
                               setCopied(true);
                               setIsCodeModalOpen(true);
@@ -987,9 +1055,9 @@ export default function SiteEditorSidebar() {
                   <div className="space-y-3">
                     <h4 className="text-[10px] font-bold uppercase text-primary/70 tracking-widest px-2 py-1 bg-primary/5 rounded border-l-2 border-primary">Visuals & Others</h4>
                     <div className="grid gap-1.5">
-                      {SECTIONS.filter(s => 
-                        s.id.includes('gallery') || 
-                        s.id === 'before-after-slider' || 
+                      {SECTIONS.filter(s =>
+                        s.id.includes('gallery') ||
+                        s.id === 'before-after-slider' ||
                         s.id === 'before-after-gallery-grid' ||
                         s.id === 'common-pests' ||
                         s.id === 'safety-section'

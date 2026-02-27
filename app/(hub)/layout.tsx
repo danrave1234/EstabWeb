@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "../globals.css";
-import { fontVariables } from "@/lib/fonts";
+import { allFontVariables } from "@/lib/fonts";
 import { mainSiteConfig } from "@/config/main-site-config";
-import ScrollReveal from "@/components/shared/ScrollReveal";
 import { Toaster } from "sonner";
 import StructuredData from "@/components/shared/StructuredData";
 import { createClient } from "@/lib/supabase/server";
@@ -89,7 +88,13 @@ export default async function HubLayout({
   const typography = mainSiteConfig.typographyStyle;
 
   return (
-    <html lang="en" data-theme={colorTheme} data-mode={mode} data-typography={typography} className={fontVariables}>
+    <html
+      lang="en"
+      data-theme={colorTheme}
+      data-mode={mode}
+      data-typography={typography}
+      className={`${allFontVariables} app-shell-fonts`}
+    >
       <head>
         <meta charSet="utf-8" />
         <StructuredData
@@ -110,10 +115,7 @@ export default async function HubLayout({
       <body className="antialiased">
         <AuthProvider initialUser={sessionUser}>
           <HubLayoutClient initialUser={sessionUser}>
-            <div className="flex-1">
-              <ScrollReveal />
-              {children}
-            </div>
+            {children}
           </HubLayoutClient>
           <Toaster position="top-right" richColors />
         </AuthProvider>

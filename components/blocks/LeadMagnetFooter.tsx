@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
-import { PhoneIcon, MapPinIcon, EnvelopeIcon } from "@phosphor-icons/react";
+import { MapPinIcon, EnvelopeIcon, PhoneIcon } from "@phosphor-icons/react";
 import { SocialIcon } from "@/components/shared/SocialIcon";
-import { trackLead, trackEvent } from "@/components/shared/Analytics";
+import { trackLead } from "@/components/shared/Analytics";
+import dynamic from "next/dynamic";
+
+const LeadCaptureForm = dynamic(() => import("./forms/LeadCaptureForm"), {
+  ssr: false,
+});
 
 export type FooterSocial = {
   facebook?: string;
@@ -60,19 +64,6 @@ export default function LeadMagnetFooter({
   termsLabel = "Terms of Service",
   cookieLabel = "Cookie Policy",
 }: LeadMagnetFooterProps) {
-  const [formData, setFormData] = useState({ name: "", email: "" });
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitted(true);
-    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({ name: "", email: "" });
-    }, 3000);
-  };
-
   const initials = brandName
     .split(" ")
     .map((w) => w[0])
@@ -109,13 +100,11 @@ export default function LeadMagnetFooter({
                   />
                 )
               ) : (
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-lg">
-                    {initials}
-                  </span>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-primary/20 rounded-lg flex items-center justify-center">
+                  <span className="text-primary font-bold text-xs sm:text-sm">{initials}</span>
                 </div>
               )}
-              <span className="text-lg sm:text-2xl font-bold tracking-tight text-foreground">
+              <span className="font-serif text-lg sm:text-2xl font-bold tracking-tight text-foreground">
                 {brandName}
               </span>
             </div>
@@ -167,53 +156,22 @@ export default function LeadMagnetFooter({
           </div>
 
           {/* Center - Lead form */}
-          <div className="flex flex-col space-y-4 sm:space-y-5 bg-muted/30 p-4 sm:p-5 rounded-2xl lg:bg-transparent lg:p-0">
-            <h3 className="text-base sm:text-lg font-bold tracking-tight text-foreground text-center lg:text-left uppercase tracking-widest text-xs">
-              {formHeading}
-            </h3>
-
-            <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-3 w-full max-w-sm mx-auto lg:mx-0">
-              <input
-                type="text"
-                placeholder="Name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                required
-                className="w-full min-h-[36px] sm:min-h-[44px] px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-base bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-all duration-200"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                required
-                className="w-full min-h-[36px] sm:min-h-[44px] px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-base bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-all duration-200"
-              />
-              <button
-                type="submit"
-                disabled={isSubmitted}
-                onClick={() => trackEvent({ type: 'cta_click', section_key: 'footer', cta_id: 'footer_form_submit' })}
-                className="w-full min-h-[36px] sm:min-h-[44px] px-6 py-2 sm:py-3 bg-primary hover:opacity-90 text-primary-foreground rounded-lg font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation text-xs sm:text-base"
-              >
-                {isSubmitted ? formThankYouText : formSubmitText}
-              </button>
-            </form>
-          </div>
+          <LeadCaptureForm
+            formHeading={formHeading}
+            formSubmitText={formSubmitText}
+            formThankYouText={formThankYouText}
+          />
 
           {/* Right - Contact (Font Awesome icons) */}
           {social.showContact !== false && (
             <div className="flex flex-col space-y-6 sm:space-y-8">
-              <h3 className="text-base sm:text-xl font-bold tracking-tight text-foreground text-center lg:text-left uppercase tracking-widest text-xs">
+              <h3 className="font-serif text-base sm:text-xl font-bold tracking-tight text-foreground text-center lg:text-left uppercase tracking-widest text-xs">
                 {contactUsLabel}
               </h3>
 
               <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-6">
-                <a 
-                  href={`tel:${phoneHref}`} 
+                <a
+                  href={`tel:${phoneHref}`}
                   onClick={() => trackLead('call')}
                   className="group flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-xl bg-muted/20 border border-border hover:border-primary transition-all"
                 >
@@ -256,7 +214,7 @@ export default function LeadMagnetFooter({
             <p className="text-muted-foreground text-sm">
               © {new Date().getFullYear()} {brandName}. All rights reserved.
             </p>
-            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+            <nav aria-label="Legal" className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
               <a
                 href={privacyUrl}
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -275,11 +233,10 @@ export default function LeadMagnetFooter({
               >
                 {cookieLabel}
               </a>
-            </div>
+            </nav>
           </div>
         </div>
       </div>
     </footer>
   );
 }
-

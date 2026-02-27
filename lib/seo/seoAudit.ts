@@ -1,3 +1,5 @@
+import { BLOCK_MAP } from "@/lib/utils/block-registry"
+
 // ---------------------------------------------------------------------------
 // SEO Audit Engine
 // Pure computation — no DB, no side effects.
@@ -228,6 +230,88 @@ function auditSeoBlock(
   return { score: Math.max(0, score), maxScore, issues }
 }
 
+const NON_CONTENT_SECTION_TYPES = new Set([
+  "announcement_bar",
+  "cta",
+])
+
+const NON_CONTENT_SECTION_IDS = new Set([
+  "hero",
+  "hero--emergency",
+  "hero-emergency",
+  "cta--sticky",
+  "messenger-sticky-cta",
+  "cta--promo-strip",
+  "announcement_bar",
+  "announcement_bar--promo",
+  "announcement_bar--emergency",
+  "announcement_bar--offer",
+  "promo-banner-strip",
+  "payment_options",
+  "payment-options-strip",
+  "logo_cloud",
+  "logo-cloud",
+  "trust_badges",
+  "trust-badges-grid",
+])
+
+function resolveSectionData(config: AnyConfig, page: AnyConfig, sectionId: string): AnyConfig {
+  const dataKey = BLOCK_MAP[sectionId]?.dataKey
+  if (!dataKey) return {}
+  const pageValue = page?.[dataKey]
+  if (pageValue && typeof pageValue === "object") return pageValue
+  const globalValue = config?.[dataKey]
+  if (globalValue && typeof globalValue === "object") return globalValue
+  return {}
+}
+
+function hasSectionHeading(sectionData: AnyConfig): boolean {
+  const title = typeof sectionData?.title === "string" ? sectionData.title.trim() : ""
+  const heading = typeof sectionData?.heading === "string" ? sectionData.heading.trim() : ""
+  return title.length > 0 || heading.length > 0
+}
+
+function auditSectionHeadingCoverage(config: AnyConfig, page: AnyConfig, pageName: string): { penalty: number; issues: AuditIssue[] } {
+  const issues: AuditIssue[] = []
+  const activeSections: string[] = Array.isArray(page?.activeSections)
+    ? page.activeSections
+    : Array.isArray(config?.activeSections)
+      ? config.activeSections
+      : []
+
+  if (activeSections.length === 0) {
+    return { penalty: 0, issues }
+  }
+
+  const targetSections = activeSections.filter((sectionId) => {
+    if (typeof sectionId !== "string") return false
+    if (NON_CONTENT_SECTION_IDS.has(sectionId)) return false
+    const definition = BLOCK_MAP[sectionId]
+    if (!definition) return false
+    if (definition.sectionType && NON_CONTENT_SECTION_TYPES.has(definition.sectionType)) return false
+    return true
+  })
+
+  const missingHeadingSections = targetSections.filter((sectionId) => {
+    const sectionData = resolveSectionData(config, page, sectionId)
+    return !hasSectionHeading(sectionData)
+  })
+
+  if (missingHeadingSections.length === 0) {
+    return { penalty: 0, issues }
+  }
+
+  const missingLabels = missingHeadingSections.map((sectionId) => BLOCK_MAP[sectionId]?.label || sectionId)
+  issues.push({
+    severity: missingHeadingSections.length >= 2 ? "medium" : "low",
+    message: `Missing section heading/title content in: ${missingLabels.join(", ")}`,
+    page: pageName,
+  })
+
+  const penalty = Math.min(10, missingHeadingSections.length * 2)
+  return { penalty, issues }
+}
+
 // ---------------------------------------------------------------------------
 // Main export
 // ---------------------------------------------------------------------------
@@ -247,13 +331,16 @@ export function runSeoAudit(config: AnyConfig): SeoAuditResult {
       const seo: AnyConfig = page?.seo ?? {}
       const hero: AnyConfig = page?.hero ?? {}
       const result = auditSeoBlock(seo, hero, brand, pageName)
+      const sectionCoverage = auditSectionHeadingCoverage(config, page, pageName)
+      const pageScore = Math.max(0, result.score - sectionCoverage.penalty)
+      const pageIssues = [...result.issues, ...sectionCoverage.issues]
       pageResults.push({
         page: pageName,
-        score: result.score,
+        score: pageScore,
         maxScore: result.maxScore,
-        issues: result.issues,
+        issues: pageIssues,
       })
-      allIssues.push(...result.issues)
+      allIssues.push(...pageIssues)
     }
 
     // Check page SEO coverage — penalize the overall average
@@ -293,12 +380,15 @@ export function runSeoAudit(config: AnyConfig): SeoAuditResult {
 
   // Single-page project — audit global config
   const result = auditSeoBlock(globalSeo, globalHero, brand, 'Home')
+  const sectionCoverage = auditSectionHeadingCoverage(config, config, "Home")
+  const finalScore = Math.max(0, result.score - sectionCoverage.penalty)
+  const finalIssues = [...result.issues, ...sectionCoverage.issues]
 
   return {
-    score: result.score,
+    score: finalScore,
     maxScore: 100,
-    percentage: result.score,
-    issues: result.issues,
-    pageResults: [{ page: 'Home', score: result.score, maxScore: 100, issues: result.issues }],
+    percentage: finalScore,
+    issues: finalIssues,
+    pageResults: [{ page: 'Home', score: finalScore, maxScore: 100, issues: finalIssues }],
   }
 }

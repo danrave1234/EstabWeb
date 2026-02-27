@@ -73,6 +73,12 @@ export function validateOperations(
           errors.push(`Unknown section key: "${op.sectionKey}" — rejected.`)
           continue
         }
+        const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
+        if (!isRoot) {
+          sanitized.push(op)
+          continue
+        }
+
         if (simulated.includes(op.sectionKey)) {
           // Skip silently — already active, not an error
           continue
@@ -92,14 +98,20 @@ export function validateOperations(
       }
 
       case "remove_section": {
-        if (PROTECTED_SECTIONS.has(op.sectionKey)) {
-          errors.push(`Cannot remove protected section: "${op.sectionKey}".`)
+        const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
+        if (isRoot && PROTECTED_SECTIONS.has(op.sectionKey)) {
+          errors.push(`Cannot remove protected section: "${op.sectionKey}" from homepage.`)
           continue
         }
         if (isLegalPageSlug(op.sectionKey)) {
           errors.push(`Cannot remove legal page section: "${op.sectionKey}".`)
           continue
         }
+        if (!isRoot) {
+          sanitized.push(op)
+          continue
+        }
+
         const idx = simulated.indexOf(op.sectionKey)
         if (idx !== -1) simulated.splice(idx, 1)
         sanitized.push(op)
@@ -130,20 +142,29 @@ export function validateOperations(
       }
 
       case "reorder_sections": {
+        const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
         const unknownKeys = op.newOrder.filter((k) => !ALL_SECTION_IDS.has(k))
         if (unknownKeys.length > 0) {
           errors.push(`Unknown section keys in reorder: ${unknownKeys.join(", ")} — rejected.`)
           continue
         }
-        if (!op.newOrder.includes("hero")) {
-          errors.push(`Reorder must include "hero" section.`)
-          continue
-        }
+
         // Ensure no duplicates
         const deduped = [...new Set(op.newOrder)]
         if (deduped.length !== op.newOrder.length) {
           errors.push(`Reorder contains duplicate section keys — deduplicated.`)
         }
+
+        if (!isRoot) {
+          sanitized.push({ ...op, newOrder: deduped })
+          continue
+        }
+
+        if (!op.newOrder.includes("hero")) {
+          errors.push(`Homepage reorder must include "hero" section.`)
+          continue
+        }
+
         // Ensure set equality: no sections silently dropped or added
         const currentSet = new Set(simulated)
         const newSet = new Set(deduped)

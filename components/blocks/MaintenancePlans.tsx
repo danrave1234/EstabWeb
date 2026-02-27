@@ -18,6 +18,7 @@ export type MaintenancePlansProps = {
   subtitle?: string;
   plans: MaintenancePlan[];
   signUpNowLabel?: string;
+  signUpNowUrl?: string;
 };
 
 export default function MaintenancePlans({
@@ -41,6 +42,7 @@ export default function MaintenancePlans({
     },
   ],
   signUpNowLabel = "Sign Up Now",
+  signUpNowUrl = "#contact",
 }: MaintenancePlansProps) {
   return (
     <section className="py-12 sm:py-16 bg-muted/30 reveal">
@@ -49,16 +51,15 @@ export default function MaintenancePlans({
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">{title}</h2>
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">{subtitle}</p>
         </div>
-        
+
         <div className={`grid ${dynamicGridCols(plans.length, 3)} gap-4 lg:gap-8`}>
           {plans.map((plan, index) => (
-            <div 
-              key={index} 
-              className={`flex flex-col p-4 sm:p-8 rounded-2xl border transition-all ${
-                plan.isPopular 
-                  ? "border-primary bg-background shadow-xl ring-4 ring-primary/5" 
+            <div
+              key={index}
+              className={`flex flex-col p-4 sm:p-8 rounded-2xl border transition-all ${plan.isPopular
+                  ? "border-primary bg-background shadow-xl ring-4 ring-primary/5"
                   : "border-border bg-background/50"
-              }`}
+                }`}
             >
               <div className="mb-4 sm:mb-6">
                 <h3 className="text-sm sm:text-xl font-bold text-foreground mb-1 sm:mb-2">{plan.name}</h3>
@@ -68,7 +69,7 @@ export default function MaintenancePlans({
                 </div>
                 <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 sm:mt-2 line-clamp-2 sm:line-clamp-none">{plan.description}</p>
               </div>
-              
+
               <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8 flex-grow">
                 {plan.features.map((feature, fIndex) => (
                   <li key={fIndex} className="flex items-start gap-1.5 sm:gap-2 text-[10px] sm:text-sm">
@@ -77,15 +78,14 @@ export default function MaintenancePlans({
                   </li>
                 ))}
               </ul>
-              
-              <a 
-                href="#contact" 
+
+              <a
+                href={signUpNowUrl}
                 onClick={() => trackEvent({ type: 'cta_click', section_key: 'maintenance', cta_id: `maintenance_plan_${plan.name.toLowerCase()}` })}
-                className={`w-full py-2.5 sm:py-4 px-4 sm:px-6 rounded-lg sm:rounded-xl font-bold text-center transition-all text-xs sm:text-base ${
-                  plan.isPopular 
-                    ? "bg-primary text-primary-foreground hover:opacity-90" 
+                className={`w-full py-2.5 sm:py-4 px-4 sm:px-6 rounded-lg sm:rounded-xl font-bold text-center transition-all text-xs sm:text-base ${plan.isPopular
+                    ? "bg-primary text-primary-foreground hover:opacity-90"
                     : "bg-muted text-foreground hover:bg-muted/80"
-                }`}
+                  }`}
               >
                 {signUpNowLabel}
               </a>

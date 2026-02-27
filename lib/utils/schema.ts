@@ -16,11 +16,59 @@ function cleanSchema(obj: unknown): unknown {
   return obj === "" ? undefined : obj
 }
 
+function asText(value: unknown): string {
+  if (typeof value !== "string") return ""
+  return value.trim()
+}
+
+function splitAddress(address: string) {
+  const parts = address.split(",").map((part) => part.trim()).filter(Boolean)
+  return {
+    streetAddress: parts[0] || undefined,
+    addressLocality: parts[1] || undefined,
+    addressRegion: parts[2] || undefined,
+    postalCode: parts[3] || undefined,
+  }
+}
+
+function parseLatLngFromEmbedUrl(url: string): { latitude?: number; longitude?: number } {
+  // Supports formats like "...!2d121.03!3d14.59..." or "q=14.59,121.03"
+  const d3 = url.match(/!3d(-?\d+(?:\.\d+)?)/)
+  const d2 = url.match(/!2d(-?\d+(?:\.\d+)?)/)
+  if (d3 && d2) {
+    return {
+      latitude: Number(d3[1]),
+      longitude: Number(d2[1]),
+    }
+  }
+  const q = url.match(/[?&]q=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/)
+  if (q) {
+    return {
+      latitude: Number(q[1]),
+      longitude: Number(q[2]),
+    }
+  }
+  return {}
+}
+
 export function generateSchema(type: SchemaType | undefined, config: Record<string, any>): object | null {
   if (!type) return null
 
   const brand = config?.brand || {}
   const contact = config?.contact || {}
+  const social = config?.footer?.social || {}
+  const addressText = asText(contact.address)
+  const parsedAddress = addressText ? splitAddress(addressText) : {}
+  const mapEmbedUrl = asText(config?.contactWithMap?.mapEmbedUrl || config?.serviceAreaMap?.mapEmbedUrl)
+  const latLng = mapEmbedUrl ? parseLatLngFromEmbedUrl(mapEmbedUrl) : {}
+  const areaCities = Array.isArray(config?.serviceAreaMap?.cities)
+    ? config.serviceAreaMap.cities.filter((city: unknown) => typeof city === "string" && city.trim().length > 0)
+    : []
+  const areaList = Array.isArray(config?.deliveryCoverage?.areas)
+    ? config.deliveryCoverage.areas.filter((area: unknown) => typeof area === "string" && area.trim().length > 0)
+    : []
+  const sameAs = [social.facebook, social.instagram, social.linkedin, social.twitter]
+    .filter((url: unknown): url is string => typeof url === "string" && url.trim().length > 0)
 
   switch (type) {
     case "localbusiness":
@@ -32,9 +80,17 @@ export function generateSchema(type: SchemaType | undefined, config: Record<stri
         image: brand.logoUrl || undefined,
         telephone: contact.phone || undefined,
         email: contact.email || undefined,
-        address: contact.address ? {
+        sameAs: sameAs.length > 0 ? sameAs : undefined,
+        hasMap: mapEmbedUrl || undefined,
+        geo: latLng.latitude && latLng.longitude ? {
+          "@type": "GeoCoordinates",
+          latitude: latLng.latitude,
+          longitude: latLng.longitude,
+        } : undefined,
+        areaServed: [...areaCities, ...areaList].length > 0 ? [...areaCities, ...areaList].slice(0, 12) : undefined,
+        address: addressText ? {
           "@type": "PostalAddress",
-          streetAddress: contact.address,
+          ...parsedAddress,
         } : undefined,
       }) as object
 

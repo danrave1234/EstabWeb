@@ -50,19 +50,19 @@
     "subtitle": "Quality and clarity guaranteed. Customize this content for your business.",
     "items": [
       {
-        "title": "Service One",
-        "description": "Brief description of your first service or offering.",
+        "title": "Criminal Defense",
+        "description": "Aggressive representation for all criminal charges, ensuring your rights are protected.",
+        "icon": "Gavel"
+      },
+      {
+        "title": "DUI & DWI",
+        "description": "Expert defense for driving under the influence charges to help you keep your license.",
         "icon": "Shield"
       },
       {
-        "title": "Service Two",
-        "description": "Brief description of your second service or offering.",
-        "icon": "ShieldCheck"
-      },
-      {
-        "title": "Service Three",
-        "description": "Brief description of your third service or offering.",
-        "icon": "Home"
+        "title": "Drug Crimes",
+        "description": "Comprehensive legal support for drug-related offenses, from possession to trafficking.",
+        "icon": "Scale"
       }
     ]
   },

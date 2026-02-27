@@ -22,7 +22,7 @@ export default function ClientDomainSettings({
   subscriptionStatus,
   subscriptionEnd,
 }: ClientDomainSettingsProps) {
-  const isPro = subscriptionStatus === 'active' || subscriptionStatus === 'trial'
+  const isPro = subscriptionStatus === 'active' || subscriptionStatus === 'trial' || subscriptionStatus === 'admin_granted'
   const isExpired = subscriptionEnd ? new Date(subscriptionEnd) < new Date() : false
   const hasProAccess = isPro && !isExpired
   const [value, setValue] = useState("")
@@ -145,13 +145,12 @@ export default function ClientDomainSettings({
               Check Verification Status
             </button>
             {domainStatus && (
-              <div className={`flex items-start gap-2 p-3 rounded-xl border text-xs ${
-                domainStatus.status === 'verified'
+              <div className={`flex items-start gap-2 p-3 rounded-xl border text-xs ${domainStatus.status === 'verified'
                   ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400'
                   : domainStatus.status === 'invalid'
-                  ? 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400'
-                  : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-700 dark:text-yellow-400'
-              }`}>
+                    ? 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400'
+                    : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-700 dark:text-yellow-400'
+                }`}>
                 {domainStatus.status === 'verified' && <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />}
                 {domainStatus.status === 'invalid' && <XCircle className="w-4 h-4 shrink-0 mt-0.5" />}
                 {domainStatus.status === 'pending' && <Clock className="w-4 h-4 shrink-0 mt-0.5" />}

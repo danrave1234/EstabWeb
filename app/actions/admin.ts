@@ -72,7 +72,7 @@ export async function processChangeRequest(
     }
 
     const nextVersion = (project.config_version || 0) + 1
-    const updatePayload: any = { 
+    const updatePayload: any = {
       current_config: newConfig,
       draft_config: null, // Clear draft once approved
       config_version: nextVersion
@@ -121,7 +121,7 @@ export async function processChangeRequest(
   // 2. Update request status and note
   const { error: requestError } = await supabase
     .from('change_requests')
-    .update({ 
+    .update({
       status: action,
       admin_note: adminNote || null,
       decided_at: new Date().toISOString(),
@@ -134,7 +134,7 @@ export async function processChangeRequest(
   // 3. Live Sync / Revalidation
   // Revalidate the home page (where client sites render)
   revalidatePath('/')
-  
+
   // Revalidate the specific site if domain is known
   // We fetch the latest project state to get the (potentially new) subdomain
   const { data: latestProj } = await supabase
@@ -261,6 +261,34 @@ export async function setCustomDomain(projectId: string, customDomain: string | 
   return { success: true }
 }
 
+const updateAIStatsSchema = z.object({
+  projectId: z.string().uuid(),
+  aiUsageCount: z.number().int().min(0),
+  aiUsageLimit: z.number().int().min(0).nullable(),
+})
+
+export async function updateProjectAIStats(projectId: string, aiUsageCount: number, aiUsageLimit: number | null) {
+  const validated = updateAIStatsSchema.safeParse({ projectId, aiUsageCount, aiUsageLimit })
+  if (!validated.success) return { error: 'Invalid input' }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') return { error: 'Forbidden' }
+
+  const { error } = await supabase
+    .from('projects')
+    .update({ ai_usage_count: aiUsageCount, ai_usage_limit: aiUsageLimit })
+    .eq('id', projectId)
+
+  if (error) return { error: error.message }
+  revalidatePath('/admin/clients')
+  revalidatePath('/dashboard')
+  return { success: true }
+}
+
 export async function setPlanLimits(input: { proMaxPages: number; freeMaxPages?: number }) {
   const validated = setPlanLimitsSchema.safeParse(input)
   if (!validated.success) return { error: 'Invalid input' }
@@ -304,5 +332,45 @@ export async function setPlanLimits(input: { proMaxPages: number; freeMaxPages?:
   }
 
   revalidatePath('/admin/settings')
+  return { success: true }
+}
+
+export async function setPlansConfig(input: { PLANS: Record<string, any>, ENABLE_ANNUAL_PLANS: boolean }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') return { error: 'Forbidden' }
+
+  const { data: existing } = await supabase
+    .from('site_config')
+    .select('id, payload')
+    .eq('key', 'plans')
+    .single()
+
+  if (existing?.id) {
+    const { error } = await supabase
+      .from('site_config')
+      .update({ payload: input, updated_at: new Date().toISOString() })
+      .eq('id', existing.id)
+
+    if (error) return { error: error.message }
+  } else {
+    const { error } = await supabase
+      .from('site_config')
+      .insert({ key: 'plans', payload: input })
+
+    if (error) return { error: error.message }
+  }
+
+  revalidatePath('/admin/settings')
+  revalidatePath('/dashboard')
+  revalidatePath('/subscribe/[projectId]', 'page')
   return { success: true }
 }

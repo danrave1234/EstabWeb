@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import AdminDashboardRequests from '@/components/admin/AdminDashboardRequests'
+import AdminMetricsOverview from '@/components/admin/AdminMetricsOverview'
+import { getAdminMetrics } from '@/lib/utils/admin-metrics'
+import { Suspense } from 'react'
 
 export default async function AdminRequestsPage() {
   const supabase = await createClient()
@@ -24,53 +27,31 @@ export default async function AdminRequestsPage() {
     return redirect('/dashboard')
   }
 
-  // Fetch pending requests with project data
-  const { data: rawRequests, error } = await supabase
-    .from('change_requests')
-    .select(`
-      *,
-      projects (
-        id,
-        subdomain,
-        current_config
-      )
-    `)
-    .eq('status', 'pending')
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching requests:', error)
-  }
-
-  // Fetch emails from profiles (profiles.id = auth.users.id = requested_by)
-  let requests = rawRequests ?? []
-  if (requests.length > 0) {
-    const userIds = [...new Set(requests.map((r: any) => r.requested_by).filter(Boolean))]
-    const { data: profileRows } = await supabase
-      .from('profiles')
-      .select('id, email')
-      .in('id', userIds as string[])
-    const profileMap = Object.fromEntries((profileRows ?? []).map((p: any) => [p.id, p]))
-    requests = requests.map((r: any) => ({
-      ...r,
-      profiles: profileMap[r.requested_by] ?? null,
-    }))
-  }
+  // Only metrics block the main page render now (which is very fast due to caching)
+  const metrics = await getAdminMetrics(supabase)
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <div className="container mx-auto py-10 px-4">
         <div className="flex flex-col gap-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Admin Approval Center</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Admin Overview</h1>
             <p className="text-muted-foreground mt-2">
-              Review and approve content change requests from clients.
+              Platform metrics and pending change requests.
             </p>
           </div>
 
-          <AdminDashboardRequests initialRequests={requests || []} />
+          <AdminMetricsOverview metrics={metrics} />
+
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold tracking-tight">Pending Approvals</h2>
+            <Suspense fallback={<div className="h-48 border border-border rounded-2xl bg-muted/20 animate-pulse flex items-center justify-center text-sm text-muted-foreground">Loading pending requests...</div>}>
+              <AdminDashboardRequests />
+            </Suspense>
+          </div>
         </div>
       </div>
     </div>
   )
 }
+

@@ -23,7 +23,7 @@ export default function MainFooter() {
             </p>
           </div>
           
-          <nav className="flex flex-col items-center gap-4 sm:flex-row sm:gap-x-8 sm:gap-y-4 text-sm font-medium text-muted-foreground">
+          <nav aria-label="Footer" className="flex flex-col items-center gap-4 sm:flex-row sm:gap-x-8 sm:gap-y-4 text-sm font-medium text-muted-foreground">
             <Link href="/" className="hover:text-primary transition-colors">Home</Link>
             <Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
             <Link href="/contact" className="hover:text-primary transition-colors">Contact</Link>

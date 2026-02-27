@@ -1,103 +1,41 @@
 # EstabWeb
 
-**EstabWeb** is a production-ready, multi-tenant SaaS platform for generating and managing industry-optimized websites. Clients redeem template codes to instantly get a fully structured site, then customize it through a live dashboard editor — all without touching code.
+EstabWeb is a multi-tenant SaaS platform for generating and managing industry-optimized websites. Clients redeem template codes, get an instant starter site, and edit content from a dashboard without writing code.
 
-> **Status:** Active development · v0.1.0 · Core platform is functional end-to-end.
+> Status: Active development, `v0.1.0`.
 
----
+## End-to-End Flow
 
-## What It Does (End-to-End Flow)
-
-1. **Admin** builds and refines the master template in `/admin/preview`, then generates a redeemable code.
-2. **Client** signs up, redeems the code in `/dashboard/onboarding` — a project is created and seeded with the template config.
-3. **Client** edits content (text, images, colors, sections) via the live sidebar editor. Changes auto-save to `draft_config`.
-4. **Client** submits a change request for approval.
-5. **Admin** reviews and approves in `/admin/approvals` — publishing `draft_config` → `current_config` and revalidating the live site.
-6. **Public site** is served at the client's subdomain (`client.estabweb.com`) or custom domain, automatically routed by middleware.
-
----
+1. Admin updates the master template in `/admin/preview`.
+2. Client signs up and redeems a code in `/dashboard/onboarding`.
+3. Client edits content in the dashboard (saved to `draft_config`).
+4. Client submits a change request.
+5. Admin approves, publishing `draft_config` to `current_config`.
+6. Public site is served on subdomain or custom domain through middleware routing.
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16, React 19, App Router |
-| Styling | Tailwind CSS 4 |
-| Auth & Database | Supabase (Auth, PostgreSQL, Storage) |
-| Payments | PayMongo (Philippines — subscription & one-time) |
-| AI | Google Gemini API (content suggestions) |
-| Hosting | Vercel (with wildcard subdomain + custom domain support) |
-| Cron | Vercel Cron Jobs (subscription renewal, keep-alive) |
-| Cache | Redis / Upstash (ioredis — optional, graceful no-op when unset) |
+- Framework: Next.js 16, React 19, App Router
+- Styling: Tailwind CSS 4
+- Auth and DB: Supabase (Auth, PostgreSQL, Storage)
+- Payments: PayMongo
+- AI: Gemini API
+- Hosting: Vercel
+- Cron: Vercel Cron Jobs
+- Cache: Redis or Upstash (optional)
 
----
+## Key Areas
 
-## Current Features
+- Admin Suite: `/admin`
+- Client Dashboard: `/dashboard`
+- Public Sites: `/(sites)/[domain]`
+- Hub Pages: `/(hub)`
+- API Routes: `/api/*`
 
-### Admin Suite (`/admin`)
-- **Dashboard** — overview of pending change requests and platform activity
-- **Clients** — view and manage all client projects
-- **Template Editor** — edit the master site template (DNA) with live preview
-- **Codes** — generate, manage, and set redemption limits on template codes
-- **Approvals** — review and approve/reject client change requests
-- **Transactions** — view payment history
-- **Settings** — platform-level configuration and plan limits
+## Local Setup
 
-### Client Dashboard (`/dashboard`)
-- **Genre Presets** — 20+ industry-specific presets (law firm, dental, pest control, real estate, e-commerce, etc.) each bundling a hero style, color theme, recommended sections, and full placeholder content — applied in one click during onboarding or switched anytime from the editor sidebar
-- **AI-Assisted Onboarding** — client describes their business in plain text; Gemini AI auto-suggests the best genre preset and page sections to include
-- **Section Library** — 40+ named page sections (services, testimonials, pricing, FAQ, gallery, coverage map, CTAs, etc.) grouped by category; client toggles and reorders them freely; Hero is always locked first
-- **Live Editor** — sidebar editor with real-time iframe preview of the site
-- **Section Management** — add, remove, reorder, and toggle site sections
-- **Version History** — view and roll back to previous published configs
-- **Domain Settings** — request a custom domain
-- **Subscription Management** — upgrade plan, manage billing via PayMongo
-- **Analytics Dashboard** — view all lead interactions (calls, form submissions, Messenger/Viber clicks) captured from the public site, with summary cards, breakdown bars, and a recent activity feed
-- **Profile Settings** — update account details
+1. Create env vars from `.env.example` (or your existing `.env.local`):
 
-### Public Sites (`/(sites)/[domain]`)
-- Served at client subdomains or custom domains via middleware routing
-- DNA-driven rendering via `SiteBlockRenderer.tsx` — JSON config → UI
-- Multi-page support for paid/trial/admin-granted projects (free = single page + legal)
-- Auto-generated `sitemap.xml`, `robots.txt`, structured data, and Open Graph tags
-- Fallback demo mode using `config/site-data.json` when no project exists for a domain
-
-### Platform Hub (`/(hub)`)
-- Landing page, pricing, contact, legal pages (terms, privacy, cookies)
-- Auth flows (login, email verification, sign out)
-- Onboarding flow for new clients
-- Subscribe page with PayMongo payment integration
-- Success page post-payment
-
-### API Routes
-- `/api/paymongo/*` — payment links, subscriptions, webhook handler
-- `/api/change-requests/*` — submit and approve content change requests
-- `/api/codes/*` — redeem and validate template codes
-- `/api/domain/*` — request and check custom domain status
-- `/api/vercel/add-domain` — auto-register domains via Vercel API
-- `/api/publish` & `/api/rollback` — publish drafts and roll back versions
-- `/api/versions` — version history management
-- `/api/ai/suggest` — AI-powered content suggestions via Gemini
-- `/api/upload` — image upload to Supabase Storage
-- `/api/cron/*` — subscription renewal and keep-alive jobs
-- `/api/config` — serve site config for iframe preview
-- `/api/track-lead` — lead tracking for public sites
-
-### UI Blocks (60+)
-A library of industry-specific, composable blocks including:
-- **Heroes:** HeroBlock, HeroClinic, HeroDentist, HeroChiropractor, HeroCleaning, HeroPestControl, HeroPool, HeroEmergency, HeroSaas, HeroAuthority
-- **Content:** FeaturesGrid, FeaturesModern, FeatureHighlightZigzag, HowItWorksSteps, StatsSection, FAQAccordion, FAQTwoColumn, BlogGrid
-- **Social Proof:** ReviewsGrid, ReviewTrustBar, TrustBar, TrustBadgesGrid, TeamGrid, TeamCarousel, AwardsStrip, LogoCloud
-- **Contact & CTA:** ContactForm, ContactColumns, ContactSplit, ContactVisual, ContactWithMap, FreeConsultationForm, EmergencyCTAStrip, PromoCTASection, LeadMagnetFooter, MessengerStickyCTA, FloatingCTA
-- **Industry-Specific:** ACTypesGrid, AttorneyProfile, BeforeAfterGalleryGrid, BeforeAfterSlider, CommonPestsGrid, CoverageRadiusBlock, DeveloperPartnersLogos, FeaturedListingsGrid, FinancingSection, MaintenancePlans, PatientFaq, PaymentOptionsStrip, PhotoGalleryGrid, PracticeAreasGrid, PricePreviewStrip, PricingTable, ProductGrid, SafetySection, ServiceAreaMap, TreatmentProcessTimeline, WarrantyGuaranteeBlock, WhyChooseMe
-- **Layout:** SimpleFooter, MinimalFooter, PromoBannerStrip, FacebookReviewEmbed
-
----
-
-## Getting Started
-
-### 1. Environment Setup
-Copy `.env.local` and fill in your credentials:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
@@ -111,73 +49,52 @@ VERCEL_API_TOKEN=
 VERCEL_PROJECT_ID=
 GEMINI_API_KEY=
 CRON_SECRET=
-# Optional — leave all unset to disable Redis cache
 REDIS_HOST=
 REDIS_PORT=
 REDIS_USERNAME=
 REDIS_PASSWORD=
 ```
 
-### 2. Database
-Initialize your Supabase instance using the provided schema:
+2. Run database schema/migrations:
+
 ```bash
-# Run in Supabase SQL Editor or psql
+# Base schema
 docs/supabase_schema.sql
-docs/migrations/001_subscription_fields.sql
+
+# Incremental migrations
+migrations/001_initial_schema.sql
+migrations/002_add_sub_admin_role.sql
+migrations/003_fix_project_events_event_type_check.sql
+migrations/004_add_support_requests_table.sql
+migrations/005_payment_idempotency.sql
+migrations/006_add_subscription_interval.sql
+migrations/007_add_ai_usage_count.sql
 ```
 
-### 3. Run Locally
+3. Install and run:
+
 ```bash
 npm install
 npm run dev
 ```
 
-### 4. Access the Platform
-| URL | Purpose |
-|---|---|
-| `localhost:3000` | Hub / landing page |
-| `localhost:3000/admin` | Admin suite |
-| `localhost:3000/dashboard` | Client dashboard |
-| `localhost:3000/login` | Auth |
+## Scripts
 
-> For local subdomain testing, add entries to your `/etc/hosts` file (e.g., `127.0.0.1 client.localhost`).
+- `npm run dev`: start Next.js app
+- `npm run server:dev`: start server workspace in `server/`
+- `npm run test`: run Jest tests
+- `npm run check:boundaries`: enforce module import boundaries
+- `npm run migrate`: run migration helper script
+- `npm run migrate:status`: migration status
 
----
+## Module Boundaries
 
-## Project Structure
-
-```
-app/
-  (hub)/          # Landing, pricing, auth, client dashboard
-  (sites)/        # Public client sites (subdomain/custom domain routed)
-  admin/          # Admin suite
-  api/            # All API routes
-components/
-  blocks/         # 60+ composable UI blocks
-  dashboard/      # Client dashboard components
-  admin/          # Admin-specific components
-  shared/         # Shared layout, renderer, skeleton, SEO
-  landing/        # Hub landing page
-  ui/             # Base UI primitives
-config/           # Site config, presets, dashboard config
-docs/             # Schema, migrations, roadmap docs
-lib/
-  cache/          # Redis cache layer (client, keys, helpers, invalidation)
-  supabase/       # Supabase clients (browser, server, service-role)
-  utils/          # Shared utility functions
-server/           # Server-side helpers
-middleware.ts     # Multi-tenant routing (subdomains + custom domains)
-```
-
----
+See [docs/module-boundaries.md](docs/module-boundaries.md).
 
 ## Docs
-- [`docs/FEATURES.md`](docs/FEATURES.md) — **Comprehensive feature documentation** — every feature, its implementation logic, and display flow (includes §5.9 Genre Presets & Section Selection)
-- [`docs/roadmap-multipage-sites.md`](docs/roadmap-multipage-sites.md) — Multi-page site architecture and subscription gating
-- [`docs/whitelabel-flow.md`](docs/whitelabel-flow.md) — Full white-label onboarding flow
-- [`docs/PAYMONGO.md`](docs/PAYMONGO.md) — PayMongo integration details
-- [`README_DEPLOY.md`](README_DEPLOY.md) — Vercel deployment guide
 
----
-
-*Built for scale, performance, and architectural integrity.*
+- `docs/FEATURES.md`
+- `docs/roadmap-multipage-sites.md`
+- `docs/whitelabel-flow.md`
+- `docs/PAYMONGO.md`
+- `README_DEPLOY.md`

@@ -76,7 +76,7 @@ export default function FloatingCTA({
         <a
           href={ctaHref}
           onClick={() => handleCtaClick("sticky", "primary")}
-          className="flex h-11 sm:h-12 items-center gap-2 rounded-full bg-primary px-4 sm:px-6 font-bold text-primary-foreground shadow-2xl hover:scale-105 active:scale-95 transition-all"
+          className="font-serif flex h-11 sm:h-12 items-center gap-2 rounded-full bg-primary px-4 sm:px-6 font-bold text-primary-foreground shadow-2xl hover:scale-105 active:scale-95 transition-all"
         >
           <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
           <span className="text-xs sm:text-sm whitespace-nowrap">{ctaText}</span>

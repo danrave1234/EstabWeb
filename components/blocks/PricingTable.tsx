@@ -71,7 +71,7 @@ export default function PricingTable({
                 <div className="flex flex-col gap-0.5 mb-2">
                   <span className="text-[10px] sm:text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{startingAtLabel}</span>
                   <div className="flex items-baseline gap-0.5 sm:gap-1">
-                    <span className="text-base sm:text-4xl font-bold text-foreground">{plan.price.includes("â‚±") || plan.price.toLowerCase().includes("php") ? plan.price : `â‚±${plan.price}`}</span>
+                    <span className="text-base sm:text-4xl font-bold text-foreground">{plan.price.includes("₱") || plan.price.toLowerCase().includes("php") ? plan.price : `₱${plan.price}`}</span>
                     <span className="text-muted-foreground text-[10px] sm:text-sm">{periodLabel}</span>
                   </div>
                 </div>

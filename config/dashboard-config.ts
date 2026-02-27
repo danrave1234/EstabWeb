@@ -88,6 +88,88 @@ export const DEFAULT_NAVIGATION = [
   { name: "Testimonials", href: "#testimonials" },
   { name: "Contact", href: "/contact" },
 ];
+export const DEFAULT_HERO = {
+  title: "Aggressive Criminal Defense in [City Name]",
+  subtitle: "When your freedom is on the line, you need an experienced advocate fighting for you.",
+  primaryCTA: "Free Consultation",
+  secondaryCTA: "Our Results",
+  primaryCTAHref: "/contact",
+  secondaryCTAHref: "#results",
+  backgroundImage: "",
+  benefitText: "Available 24/7 for Emergencies",
+  benefitIcon: "Shield",
+};
+
+export const DEFAULT_HERO_EMERGENCY = {
+  title: "Arrested? Call Us Now.",
+  subtitle: "Don't speak to the police without representation. We are available 24/7.",
+  primaryCTA: "Call Now",
+  primaryCTAHref: "tel:555-0100",
+  backgroundImage: "",
+  benefitText: "Immediate Jail Release Assistance",
+  benefitIcon: "Phone",
+};
+
+export const DEFAULT_TRUST_BADGES = {
+  title: "Recognized for Excellence",
+  items: [
+    { label: "Top 100 Trial Lawyers", sublabel: "National recognition", icon: "Award" },
+    { label: "Super Lawyers", sublabel: "Selected consistently", icon: "Star" },
+    { label: "10.0 Superb Rating", sublabel: "Avvo Rating", icon: "Check" },
+    { label: "Client's Choice", sublabel: "Consistently highly rated", icon: "Users" },
+  ],
+};
+
+export const DEFAULT_TEAM_CAROUSEL = {
+  title: "Our Legal Team",
+  subtitle: "Experienced, aggressive, and dedicated to your defense.",
+  members: [
+    { name: "John Doe, Esq.", specialty: "Lead Criminal Defense Attorney", imageUrl: "" },
+    { name: "Jane Smith, Esq.", specialty: "DUI Defense Specialist", imageUrl: "" },
+  ],
+};
+
+export const DEFAULT_ATTORNEY_PROFILE = {
+  title: "Meet the Lead Attorney",
+  subtitle: "Over 20 years of courtroom experience.",
+  members: [
+    { name: "John Doe, Esq.", specialty: "Managing Partner", imageUrl: "", bioUrl: "/about" },
+  ],
+};
+
+export const DEFAULT_PROMO_STRIP = {
+  text: "Arrested? Don't wait. Call us immediately for a free, confidential case evaluation.",
+  buttonText: "Call Now",
+  buttonHref: "tel:555-0100",
+};
+
+export const DEFAULT_FREE_CONSULTATION = {
+  title: "Get a Free Case Review",
+  subtitle: "Fill out the form below and we will contact you immediately.",
+  buttonText: "Request Evaluation",
+};
+
+export const DEFAULT_GUARANTEE = {
+  title: "Our Commitment to You",
+  subtitle: "We will fight tirelessly to protect your rights, your reputation, and your freedom.",
+  icon: "ShieldCheck",
+};
+
+export const DEFAULT_CONTACT = {
+  title: "Contact Us Today",
+  subtitle: "We're here to help. Reach out for a free consultation.",
+  email: "info@examplelaw.com",
+  phone: "555-0100",
+  address: "123 Main St, Suite 100, CityName, State 12345",
+  buttonText: "Send Message",
+};
+
+export const DEFAULT_CTA = {
+  title: "Ready to Build Your Defense?",
+  subtitle: "Contact us today for a free, confidential consultation.",
+  buttonText: "Contact Us",
+  buttonHref: "/contact",
+};
 
 export const DEFAULT_EMERGENCY_CTA = {
   title: "Emergency Service?",
@@ -149,12 +231,13 @@ export const DEFAULT_HOW_IT_WORKS = {
 };
 
 export const DEFAULT_PRACTICE_AREAS = {
-  title: "Our Services",
-  subtitle: "Tailored to your needs.",
+  title: "Criminal Defense Expertise",
+  subtitle: "Aggressive representation for your most challenging legal issues.",
   items: [
-    { title: "Service One", description: "Description of your first offering.", icon: "Scale", href: "#" },
-    { title: "Service Two", description: "Description of your second offering.", icon: "Briefcase", href: "#" },
-    { title: "Service Three", description: "Description of your third offering.", icon: "Shield", href: "#" },
+    { title: "Criminal Defense", description: "Aggressive representation for all criminal charges, ensuring your rights are protected.", icon: "Gavel", href: "#" },
+    { title: "DUI & DWI", description: "Expert defense for driving under the influence charges to help you keep your license.", icon: "Shield", href: "#" },
+    { title: "Drug Crimes", description: "Comprehensive legal support for drug-related offenses, from possession to trafficking.", icon: "Scale", href: "#" },
+    { title: "White Collar Crime", description: "Sophisticated defense for complex financial and corporate criminal allegations.", icon: "Briefcase", href: "#" },
   ],
 };
 
@@ -228,10 +311,11 @@ export const DEFAULT_FINANCING = {
 export const DEFAULT_FEATURES = {
   title: "Our Services",
   subtitle: "Everything you need, all in one place.",
-  features: [
-    { title: "Service One", description: "Brief description of your first service.", icon: "Star", imageUrl: "" },
-    { title: "Service Two", description: "Brief description of your second service.", icon: "Zap", imageUrl: "" },
-    { title: "Service Three", description: "Brief description of your third service.", icon: "Shield", imageUrl: "" },
+  items: [
+    { title: "Criminal Defense", description: "Aggressive representation for all criminal charges.", icon: "Gavel", imageUrl: "" },
+    { title: "DUI & DWI", description: "Expert defense for driving under the influence charges.", icon: "Shield", imageUrl: "" },
+    { title: "Drug Crimes", description: "Comprehensive legal support for drug-related offenses.", icon: "Scale", imageUrl: "" },
+    { title: "White Collar Crime", description: "Sophisticated defense for complex allegations.", icon: "Briefcase", imageUrl: "" },
   ],
 };
 
@@ -283,10 +367,14 @@ export const DEFAULT_AC_TYPES = {
 };
 
 export const DEFAULT_PRICE_PREVIEW = {
-  title: "Quick Price Guide",
+  title: "Affordable AC Services",
+  transparentPricingNote: "No hidden charges. Transparent pricing guaranteed.",
+  bookNowLabel: "Book Now",
+  bookNowUrl: "#contact",
   items: [
-    { service: "Service 1", price: "₱XXX", note: "" },
-    { service: "Service 2", price: "₱XXX", note: "" },
+    { service: "AC Cleaning", price: "₱1,500", note: "Starting from" },
+    { service: "Check-up/Repair", price: "₱500", note: "Labor only" },
+    { service: "Freon Charging", price: "₱1,200", note: "Per unit" },
   ],
 };
 
@@ -303,6 +391,7 @@ export const DEFAULT_PRICING_TABLE = {
 export const DEFAULT_MAINTENANCE_PLANS = {
   title: "Maintenance Plans",
   subtitle: "Keep your systems running smoothly.",
+  signUpNowUrl: "#contact",
   plans: [
     { name: "Basic", price: "₱2,800", period: "/year", description: "2 visits per year.", features: ["Inspection", "Cleaning"], isPopular: false },
     { name: "Premium", price: "₱5,000", period: "/year", description: "4 visits per year.", features: ["Everything in Basic", "Priority service"], isPopular: true },
@@ -312,6 +401,7 @@ export const DEFAULT_MAINTENANCE_PLANS = {
 export const DEFAULT_FACEBOOK_REVIEW_EMBED = {
   title: "Highly Rated on Facebook",
   subtitle: "See why our customers love us",
+  facebookUrl: "https://facebook.com",
   reviews: [
     { author: "Customer A", text: "Excellent service!", date: "2 weeks ago", rating: 5 },
     { author: "Customer B", text: "Very satisfied.", date: "1 month ago", rating: 5 },

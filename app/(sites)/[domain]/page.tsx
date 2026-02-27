@@ -6,20 +6,9 @@ import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
 import { getCachedSiteConfig } from "@/lib/utils/site-config";
 import { getPageBySlug, normalizePages, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
 import { isProPlan } from "@/lib/subscription";
+import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo";
 
 export const revalidate = 120;
-
-function pickFirstText(...values: Array<unknown>): string {
-  const found = values.find((value) => typeof value === "string" && value.trim().length > 0);
-  return typeof found === "string" ? found.trim() : "";
-}
-
-function buildKeywords(values: Array<unknown>): string[] {
-  const list = values
-    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-    .map((value) => value.trim());
-  return Array.from(new Set(list)).slice(0, 12);
-}
 
 export async function generateMetadata({
   params,
@@ -33,64 +22,38 @@ export async function generateMetadata({
 
   const pages = normalizePagesWithDefaults(config?.pages);
   const homePage = getPageBySlug(pages, "");
-  const seo = homePage?.seo || config?.seo || {};
+  const resolvedSeo = buildAutoSeoDefaults({
+    config,
+    page: homePage as Record<string, any> | undefined,
+    pageSlug: "",
+    pageLabel: homePage?.label || "Home",
+    domain,
+  });
   const brand = config?.brand || {};
-  const hero = config?.hero || {};
-  const features = config?.features || {};
-  const practiceAreas = config?.practiceAreas || {};
-  const contact = config?.contact || {};
-  const theme = config?.theme || "";
-
-  const pageLabel = homePage?.label || (homePage?.slug ? homePage.slug.replace(/-/g, " ") : "");
-  const baseTitle = pickFirstText(seo.title, pageLabel, hero.title, features.title, practiceAreas.title);
   const brandName = brand.name || domain;
-  const title = baseTitle
-    ? baseTitle.includes(brandName) ? baseTitle : `${baseTitle} | ${brandName}`
-    : `${brandName} | Professional Website`;
-  const description = pickFirstText(
-    seo.description,
-    hero.subtitle,
-    features.subtitle,
-    practiceAreas.subtitle,
-    contact.tagline,
-    contact.subtitle,
-    contact.formHeading
-  ) || `Welcome to ${brandName}. Built with EstabWeb.`;
-  const keywords = Array.isArray(seo.keywords) && seo.keywords.length > 0
-    ? seo.keywords
-    : buildKeywords([brand.name, pageLabel, theme, hero.benefitText, hero.badgeText, features.title, practiceAreas.title]);
   const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
-
-  const ogTitle = pickFirstText(seo.og?.title, title);
-  const ogDescription = pickFirstText(seo.og?.description, description);
-  const ogImage = seo.og?.image || brand.logoUrl;
-  // Canonical: only allow a path override (e.g. "/about"), never a full external URL.
-  // This prevents cross-domain SEO poisoning when a client enters a wrong canonical.
-  const canonicalPath = typeof seo.canonical === 'string' && seo.canonical.startsWith('/')
-    ? seo.canonical
-    : '/';
-  const canonical = `https://${host}${canonicalPath}`;
+  const canonical = `https://${host}${resolvedSeo.canonical}`;
 
   return {
-    title,
-    description,
-    keywords,
+    title: resolvedSeo.title,
+    description: resolvedSeo.description,
+    keywords: resolvedSeo.keywords,
     openGraph: {
-      title: ogTitle,
-      description: ogDescription,
+      title: resolvedSeo.og.title,
+      description: resolvedSeo.og.description,
       type: "website",
-      siteName: brand.name,
-      images: ogImage ? [{ url: ogImage }] : [],
+      siteName: brandName,
+      images: resolvedSeo.og.image ? [{ url: resolvedSeo.og.image }] : [],
     },
     twitter: {
       card: "summary_large_image",
-      title: ogTitle,
-      description: ogDescription,
-      images: ogImage ? [ogImage] : [],
+      title: resolvedSeo.og.title,
+      description: resolvedSeo.og.description,
+      images: resolvedSeo.og.image ? [resolvedSeo.og.image] : [],
     },
     robots: {
-      index: !seo.robots?.noindex,
-      follow: !seo.robots?.nofollow,
+      index: !resolvedSeo.robots.noindex,
+      follow: !resolvedSeo.robots.nofollow,
     },
     icons: {
       icon: iconUrl,

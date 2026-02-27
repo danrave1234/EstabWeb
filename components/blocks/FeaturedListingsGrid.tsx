@@ -104,7 +104,7 @@ export default function FeaturedListingsGrid({
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-1 sm:pt-2 gap-1 sm:gap-2">
                   <p className="text-base sm:text-2xl font-black text-primary">
-                    {property.price.includes("â‚±") ? property.price : /^[\d,.\s]+$/.test(property.price.replace(/\s/g, "")) ? `â‚±${property.price}` : property.price}
+                    {property.price.includes("₱") ? property.price : /^[\d,.\s]+$/.test(property.price.replace(/\s/g, "")) ? `₱${property.price}` : property.price}
                   </p>
                   <button 
                     onClick={() => trackEvent({ type: 'cta_click', section_key: 'listings', cta_id: `listing_${index}_details` })}

@@ -64,10 +64,7 @@ export default function AttorneyProfile({
               <p className="text-sm sm:text-[17px]">{bioParagraph1}</p>
               <p className="text-sm sm:text-[17px]">{bioParagraph2}</p>
             </div>
-            <p
-              className="font-serif text-2xl text-primary italic pt-2"
-              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-            >
+            <p className="font-serif text-2xl text-primary italic pt-2">
               {signatureName}
             </p>
           </div>

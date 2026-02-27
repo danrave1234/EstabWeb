@@ -33,7 +33,7 @@ export async function GET(
     const planLimits = await getPlanLimits();
     const maxPages = getMaxPagesForProject(project, planLimits);
     const subPages = pages
-      .filter((p) => p.slug && !isLegalPageSlug(p.slug))
+      .filter((p) => p.slug && !isLegalPageSlug(p.slug) && !p?.seo?.robots?.noindex)
       .slice(0, maxPages);
 
     for (const page of subPages) {

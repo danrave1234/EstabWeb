@@ -6,34 +6,38 @@
 
 export type Operation =
   | {
-      type: "add_section"
-      sectionKey: string
-      position?: number
-      data?: Record<string, any>
-    }
+    type: "add_section"
+    sectionKey: string
+    position?: number
+    data?: Record<string, any>
+    pageSlug?: string
+  }
   | {
-      type: "remove_section"
-      sectionKey: string
-    }
+    type: "remove_section"
+    sectionKey: string
+    pageSlug?: string
+  }
   | {
-      type: "update_section"
-      sectionKey: string
-      changes: Record<string, any>
-    }
+    type: "update_section"
+    sectionKey: string
+    changes: Record<string, any>
+    pageSlug?: string
+  }
   | {
-      type: "reorder_sections"
-      newOrder: string[]
-    }
+    type: "reorder_sections"
+    newOrder: string[]
+    pageSlug?: string
+  }
   | {
-      type: "update_global"
-      changes: Record<string, any>
-    }
+    type: "update_global"
+    changes: Record<string, any>
+  }
   | {
-      type: "add_page"
-      slug: string
-      label: string
-      sections?: string[]
-    }
+    type: "add_page"
+    slug: string
+    label: string
+    sections?: string[]
+  }
 
 export interface AICommandResult {
   summary: string
@@ -225,14 +229,21 @@ export function applyOperations(
   for (const op of operations) {
     switch (op.type) {
       case "add_section": {
-        if (!Array.isArray(newConfig.activeSections)) {
-          newConfig.activeSections = []
+        const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
+        let pageRef = newConfig
+        if (!isRoot && Array.isArray(newConfig.pages)) {
+          const page = newConfig.pages.find((p: any) => p.slug === op.pageSlug)
+          if (page) pageRef = page
         }
-        if (!newConfig.activeSections.includes(op.sectionKey)) {
+
+        if (!Array.isArray(pageRef.activeSections)) {
+          pageRef.activeSections = []
+        }
+        if (!pageRef.activeSections.includes(op.sectionKey)) {
           // Clamp position to valid range
-          const rawPos = op.position ?? newConfig.activeSections.length
-          const safePos = Math.min(Math.max(rawPos, 0), newConfig.activeSections.length)
-          newConfig.activeSections.splice(safePos, 0, op.sectionKey)
+          const rawPos = op.position ?? pageRef.activeSections.length
+          const safePos = Math.min(Math.max(rawPos, 0), pageRef.activeSections.length)
+          pageRef.activeSections.splice(safePos, 0, op.sectionKey)
         }
         if (op.data && typeof op.data === "object") {
           const configProp = resolveConfigProp(op.sectionKey)
@@ -245,10 +256,18 @@ export function applyOperations(
       }
 
       case "remove_section": {
-        // Hero cannot be removed
-        if (op.sectionKey === "hero") break
-        if (Array.isArray(newConfig.activeSections)) {
-          newConfig.activeSections = newConfig.activeSections.filter(
+        const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
+        // Hero cannot be removed from homepage
+        if (op.sectionKey === "hero" && isRoot) break
+
+        let pageRef = newConfig
+        if (!isRoot && Array.isArray(newConfig.pages)) {
+          const page = newConfig.pages.find((p: any) => p.slug === op.pageSlug)
+          if (page) pageRef = page
+        }
+
+        if (Array.isArray(pageRef.activeSections)) {
+          pageRef.activeSections = pageRef.activeSections.filter(
             (s: string) => s !== op.sectionKey
           )
         }
@@ -272,7 +291,14 @@ export function applyOperations(
       }
 
       case "reorder_sections": {
-        newConfig.activeSections = op.newOrder
+        const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
+        let pageRef = newConfig
+        if (!isRoot && Array.isArray(newConfig.pages)) {
+          const page = newConfig.pages.find((p: any) => p.slug === op.pageSlug)
+          if (page) pageRef = page
+        }
+
+        pageRef.activeSections = op.newOrder
         break
       }
 

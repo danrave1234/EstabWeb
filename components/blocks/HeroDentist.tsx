@@ -55,7 +55,7 @@ export default function HeroDentist({
                 )}
                 {benefitText}
               </div>
-              <h1 className="font-sans text-2xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground mb-4 sm:mb-6 leading-tight">
+              <h1 className="font-serif text-2xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground mb-4 sm:mb-6 leading-tight">
                 {title}
               </h1>
               <p className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-xl mb-6 sm:mb-10 leading-relaxed">

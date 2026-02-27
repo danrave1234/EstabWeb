@@ -35,6 +35,8 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [scrolled, setScrolled] = React.useState(false)
   const pathname = usePathname()
+  const desktopNavId = "main-header-desktop-nav"
+  const mobileNavId = "main-header-mobile-nav"
 
   // Use fixed appearance for dashboard variants or when scrolled
   const isDashboard = variant === "admin" || variant === "client"
@@ -118,7 +120,11 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
         </div>
 
         {/* Desktop Navigation - Centered */}
-        <nav className="hidden md:flex items-center gap-1 bg-muted/50 p-1 rounded-full border border-border/50 backdrop-blur-sm mx-4">
+        <nav
+          id={desktopNavId}
+          aria-label="Primary"
+          className="hidden md:flex items-center gap-1 bg-muted/50 p-1 rounded-full border border-border/50 backdrop-blur-sm mx-4"
+        >
           {navLinks.map((link) => {
             const Icon = (link as any).icon
             return (
@@ -255,6 +261,9 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-expanded={mobileOpen}
+            aria-controls={mobileNavId}
+            aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
             className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-muted/50 text-foreground transition-colors hover:bg-muted"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -265,7 +274,7 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
       {/* Mobile Menu */}
       {mobileOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border animate-in slide-in-from-top duration-300 overflow-hidden shadow-xl">
-          <nav className="flex flex-col p-4 gap-1 max-h-[80vh] overflow-y-auto">
+          <nav id={mobileNavId} aria-label="Mobile Primary" className="flex flex-col p-4 gap-1 max-h-[80vh] overflow-y-auto">
             {navLinks.map((link) => (
               <Link
                 key={link.name}

@@ -32,7 +32,7 @@ export default function HeroSaas({
       <div className="container mx-auto px-4 py-10 md:py-24 lg:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-8 lg:gap-12 items-center">
             <div className="lg:col-span-6 space-y-3 sm:space-y-4">
-              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground order-1 lg:order-none lg:mb-0 text-center lg:text-left leading-tight">
+              <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground order-1 lg:order-none lg:mb-0 text-center lg:text-left leading-tight">
                 {title}
               </h1>
               <p className="text-sm sm:text-lg md:text-xl text-muted-foreground order-2 lg:order-none lg:mb-0 text-center lg:text-left max-w-xl lg:max-w-none leading-relaxed">

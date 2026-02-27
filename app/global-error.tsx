@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { fontVariables } from '@/lib/fonts'
+import { getFontVariables } from '@/lib/fonts'
 import { WifiOff, AlertTriangle, RotateCcw } from 'lucide-react'
 
 function isNetworkError(error: Error): boolean {
@@ -47,7 +47,7 @@ export default function GlobalError({
   const offline = isOffline || networkError
 
   return (
-    <html lang="en" className={fontVariables}>
+    <html lang="en" className={getFontVariables("partner")}>
       <body className="antialiased flex items-center justify-center min-h-screen bg-background p-4 text-center">
         <div className="space-y-6 max-w-md mx-auto">
           <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto ${offline ? 'bg-yellow-100 dark:bg-yellow-900/20' : 'bg-red-100 dark:bg-red-900/20'}`}>

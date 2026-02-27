@@ -17,7 +17,7 @@ export type ReviewsGridProps = {
 
 export default function ReviewsGrid({
   title = "Client Success Stories",
-  subtitle = "Don't just take our word for itâ€”see what our clients have to say.",
+  subtitle = "Don't just take our word for it—see what our clients have to say.",
   testimonials = [],
 }: ReviewsGridProps) {
   if (!testimonials?.length) return null;

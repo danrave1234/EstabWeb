@@ -14,6 +14,7 @@ import { getPlanLimits, getMaxPagesForProject } from "@/lib/utils/site-pages"
 import type { Operation } from "@/lib/utils/applyOperations"
 import { COLOR_THEME_SWATCHES, TYPOGRAPHY_OPTIONS } from "@/config/dashboard-config"
 import { buildConfigSummary } from "@/lib/ai/buildConfigSummary"
+import { getPlansConfig } from "@/lib/plans-config-server"
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 const GEMINI_URL =
@@ -189,62 +190,82 @@ const SECTION_FIELD_SCHEMA: Record<string, string[]> = {
     "imageUrl", "icon",
   ],
   // Contact variants
-  contact:            ["tagline", "formHeading", "formSubmitText", "formThankYouText", "email", "phone", "address"],
+  contact: ["tagline", "formHeading", "formSubmitText", "formThankYouText", "email", "phone", "address"],
   "contact--minimal": ["tagline", "formHeading", "formSubmitText", "email", "phone", "address"],
-  "contact--visual":  ["tagline", "formHeading", "formSubmitText", "email", "phone", "address"],
-  "contact--with-map":["tagline", "formHeading", "email", "phone", "address", "mapEmbedUrl"],
+  "contact--visual": ["tagline", "formHeading", "formSubmitText", "email", "phone", "address"],
+  "contact--with-map": ["tagline", "formHeading", "email", "phone", "address", "mapEmbedUrl"],
   "contact--columns": ["tagline", "formHeading", "email", "phone", "address"],
-  "contact--split":   ["tagline", "formHeading", "email", "phone", "address"],
+  "contact--split": ["tagline", "formHeading", "email", "phone", "address"],
   // FAQ
-  faq:                ["title", "subtitle", "items[].question", "items[].answer"],
-  "faq--two-column":  ["title", "subtitle", "items[].question", "items[].answer"],
+  faq: ["title", "subtitle", "items[].question", "items[].answer"],
+  "faq--two-column": ["title", "subtitle", "items[].question", "items[].answer"],
   // Features / Services
-  features:           ["title", "subtitle", "features[].title", "features[].description", "features[].icon"],
-  services:           ["title", "subtitle", "items[].title", "items[].description", "items[].icon"],
+  features: ["title", "subtitle", "features[].title", "features[].description", "features[].icon"],
+  services: ["title", "subtitle", "items[].title", "items[].description", "items[].icon"],
   "services--modern": ["title", "subtitle", "items[].title", "items[].description"],
   "services--highlight": ["title", "subtitle", "items[].title", "items[].description"],
   // Testimonials
-  testimonials:       ["title", "subtitle", "testimonials[].quoteTitle", "testimonials[].body", "testimonials[].customerName"],
+  testimonials: ["title", "subtitle", "testimonials[].quoteTitle", "testimonials[].body", "testimonials[].customerName"],
   "testimonials--grid": ["title", "subtitle", "testimonials[].quoteTitle", "testimonials[].body", "testimonials[].customerName"],
   // Pricing
-  pricing:            ["title", "subtitle", "plans[].name", "plans[].price", "plans[].description", "plans[].buttonText"],
+  pricing: ["title", "subtitle", "plans[].name", "plans[].price", "plans[].description", "plans[].buttonText"],
   "pricing--subscription": ["title", "subtitle", "plans[].name", "plans[].price", "plans[].description", "plans[].buttonText"],
   // Process
-  process:            ["title", "subtitle", "steps[].title", "steps[].description", "steps[].number"],
-  "process--timeline":["title", "subtitle", "steps[].title", "steps[].description"],
+  process: ["title", "subtitle", "steps[].title", "steps[].description", "steps[].number"],
+  "process--timeline": ["title", "subtitle", "steps[].title", "steps[].description"],
   // Stats
-  stats:              ["title", "subtitle", "items[].label", "items[].value"],
+  stats: ["title", "subtitle", "items[].label", "items[].value"],
   // CTA variants
-  cta:                ["title", "subtitle", "ctaText", "ctaHref"],
-  "cta--emergency":   ["title", "subtitle", "ctaText", "ctaHref", "phone"],
+  cta: ["title", "subtitle", "ctaText", "ctaHref"],
+  "cta--emergency": ["title", "subtitle", "ctaText", "ctaHref", "phone"],
   "cta--promo-strip": ["text", "buttonText", "buttonHref"],
-  "cta--sticky":      ["text", "buttonText", "buttonHref"],
+  "cta--sticky": ["text", "buttonText", "buttonHref"],
   // Announcement bar
-  announcement_bar:           ["text", "buttonText", "buttonHref", "countdownDate"],
-  "announcement_bar--promo":  ["text", "buttonText", "buttonHref", "countdownDate"],
+  announcement_bar: ["text", "buttonText", "buttonHref", "countdownDate"],
+  "announcement_bar--promo": ["text", "buttonText", "buttonHref", "countdownDate"],
   "announcement_bar--emergency": ["text", "buttonText", "buttonHref"],
-  "announcement_bar--offer":  ["text", "buttonText", "buttonHref"],
+  "announcement_bar--offer": ["text", "buttonText", "buttonHref"],
   // Booking / Lead capture
-  booking:            ["title", "subtitle", "ctaText", "ctaHref"],
-  lead_capture:       ["title", "subtitle", "ctaText", "ctaHref"],
-  free_consultation:  ["title", "subtitle", "ctaText", "phone"],
+  booking: ["title", "subtitle", "ctaText", "ctaHref"],
+  lead_capture: ["title", "subtitle", "ctaText", "ctaHref"],
+  free_consultation: ["title", "subtitle", "ctaText", "phone"],
   // Trust / Guarantee
-  trust:              ["title", "subtitle", "items[].title", "items[].description"],
-  guarantee:          ["title", "subtitle", "items[].title", "items[].description"],
+  trust_badges: ["title", "subtitle", "items[].title", "items[].description"],
+  guarantee: ["title", "subtitle", "items[].title", "items[].description"],
+  "guarantee--badge": ["title", "subtitle", "items[].title", "items[].description"],
+  "guarantee--safety": ["title", "subtitle", "items[].title", "items[].description"],
+  // Comparison
+  comparison: ["title", "subtitle", "items[].title", "items[].description"],
+  "comparison--table": ["title", "subtitle", "items[].title", "items[].description"],
+  "comparison--vs": ["title", "subtitle", "items[].title", "items[].description"],
+  // Specialty Listings
+  specialty_listings: ["title", "subtitle", "items[].title", "items[].description", "items[].price"],
+  // Service Detail
+  service_detail: ["title", "subtitle", "items[].title", "items[].description", "imageUrl"],
+  "service_detail--split": ["title", "subtitle", "items[].title", "items[].description", "imageUrl"],
+  // Case Study
+  case_study: ["title", "subtitle", "items[].title", "items[].description", "items[].imageUrl"],
+  "case_study--detail": ["title", "subtitle", "items[].title", "items[].description", "items[].imageUrl"],
+  // Price Preview
+  price_preview: ["title", "subtitle", "price", "ctaText", "ctaHref"],
+  // Payment Options
+  payment_options: ["title", "items[].name"],
+  // Team Spotlight
+  "team--spotlight": ["title", "subtitle", "name", "role", "bio"],
   // Coverage / Service area
-  service_area:       ["title", "subtitle", "cities", "mapEmbedUrl"],
+  service_area: ["title", "subtitle", "cities", "mapEmbedUrl"],
   "service_area--radius": ["title", "subtitle", "cities", "mapEmbedUrl"],
   // Blog preview
-  blog_preview:       ["title", "subtitle"],
+  blog_preview: ["title", "subtitle"],
   // Gallery
-  gallery:            ["title", "subtitle"],
-  "gallery--slider":  ["title", "subtitle"],
+  gallery: ["title", "subtitle"],
+  "gallery--slider": ["title", "subtitle"],
   // Team
-  team:               ["title", "subtitle", "items[].name", "items[].role", "items[].bio"],
-  "team--carousel":   ["title", "subtitle", "items[].name", "items[].role"],
+  team: ["title", "subtitle", "items[].name", "items[].role", "items[].bio"],
+  "team--carousel": ["title", "subtitle", "items[].name", "items[].role"],
   // Certifications / Logos
-  certifications:     ["title", "items[].name"],
-  logo_cloud:         ["title", "items[].name"],
+  certifications: ["title", "items[].name"],
+  logo_cloud: ["title", "items[].name"],
 }
 
 function buildSystemPrompt(
@@ -266,8 +287,8 @@ function buildSystemPrompt(
   const activeFooterStyle = (config.footerStyle as string) ?? "lead-magnet"
   const footerVariantName =
     activeFooterStyle === "simple" ? "SimpleFooter"
-    : activeFooterStyle === "minimal" ? "MinimalFooter"
-    : "LeadMagnetFooter"
+      : activeFooterStyle === "minimal" ? "MinimalFooter"
+        : "LeadMagnetFooter"
   const footerFields = getFooterFieldsForStyle(activeFooterStyle)
 
   const fullSchema = {
@@ -328,10 +349,10 @@ Analyze the user's request and return a JSON object with:
 2. "operations" — an array of structured operations (maximum 10).
 
 OPERATION TYPES (use ONLY these — no others):
-- { "type": "add_section", "sectionKey": string, "position"?: number }
-- { "type": "remove_section", "sectionKey": string }
-- { "type": "update_section", "sectionKey": string, "changes": object }
-- { "type": "reorder_sections", "newOrder": string[] }
+- { "type": "add_section", "sectionKey": string, "position"?: number, "pageSlug"?: string }
+- { "type": "remove_section", "sectionKey": string, "pageSlug"?: string }
+- { "type": "update_section", "sectionKey": string, "changes": object, "pageSlug"?: string }
+- { "type": "reorder_sections", "newOrder": string[], "pageSlug"?: string }
 - { "type": "update_global", "changes": { "colorTheme"?: string, "typographyStyle"?: string, "darkMode"?: boolean, "headerStyle"?: "solid"|"floating", "footerStyle"?: string, "brand"?: { "name"?: string, "logoUrl"?: string, "ctaHref"?: string }, "navigation"?: { "name": string, "href": string }[], "footer"?: { "tagline"?: string, "formHeading"?: string, "formSubmitText"?: string, "formThankYouText"?: string, "contactUsLabel"?: string, "callUsNowLabel"?: string, "contactLabel"?: string, "followLabel"?: string, "privacyLabel"?: string, "termsLabel"?: string, "cookieLabel"?: string, "privacyUrl"?: string, "termsUrl"?: string, "cookieUrl"?: string, "showSocial"?: boolean, "showContact"?: boolean, "contact"?: { "email"?: string, "phone"?: string, "address"?: string }, "social"?: { "facebook"?: string, "twitter"?: string, "linkedin"?: string, "instagram"?: string, "facebookEnabled"?: boolean, "twitterEnabled"?: boolean, "linkedinEnabled"?: boolean, "instagramEnabled"?: boolean } } } }
 - { "type": "add_page", "slug": string, "label": string, "sections"?: string[] }  // Only if plan allows more pages (current: ${currentPageCount}/${maxPages})
 
@@ -339,7 +360,7 @@ STRICT RULES:
 - Return raw JSON only. No markdown. No code fences. No explanation outside JSON.
 - Never return the full config.
 - Never hallucinate unknown section keys — only use keys from VALID SECTION KEYS above.
-- Never remove the "hero" section.
+- Never remove the "hero" section from the homepage. You may remove it from other pages (using pageSlug) if appropriate.
 - Never modify domain, subscription_status, script, pages, activeSections directly, or any field not listed above.
 - Never include raw HTML in any string value.
 - For update_global, only set colorTheme, typographyStyle, darkMode, footerStyle, or footer sub-fields — nothing else.
@@ -385,16 +406,42 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     // Load project config
+    const pid = (typeof projectId === "object" && projectId !== null && (projectId as any).id) ? (projectId as any).id : projectId
+
     const { data: proj, error: projErr } = await supabase
       .from("projects")
       .select(
-        "id, draft_config, current_config, subscription_status, trial_ends_at, subscription_ends_at"
+        "id, client_id, draft_config, current_config, subscription_status, trial_ends_at, subscription_ends_at, ai_usage_count, ai_usage_limit, subscription_plan_id"
       )
-      .eq("id", projectId)
-      .single()
+      .eq("id", pid)
+      .maybeSingle()
 
-    if (projErr || !proj) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 })
+    if (projErr) {
+      console.error("Project fetch error:", projErr)
+      return NextResponse.json({ error: "Database error while fetching project", details: [projErr.message] }, { status: 500 })
+    }
+
+    if (!proj) {
+      return NextResponse.json({ error: "Project not found or you don't have access" }, { status: 404 })
+    }
+
+    // Manual ownership check for extra safety (admins can edit any project)
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+    const isAdmin = profile?.role === "admin"
+    if (!isAdmin && proj.client_id !== user.id) {
+      return NextResponse.json({ error: "Forbidden: You don't own this project" }, { status: 403 })
+    }
+
+    const { PLANS } = await getPlansConfig()
+    const planId = proj.subscription_plan_id || "free"
+    const baseLimit = PLANS[planId]?.aiGenerationsLimit ?? 10
+    const finalLimit = proj.ai_usage_limit ?? baseLimit
+
+    if ((proj.ai_usage_count || 0) >= finalLimit) {
+      return NextResponse.json(
+        { error: `AI generation limit reached (${finalLimit}). Please upgrade your plan or contact support.` },
+        { status: 429 }
+      )
     }
 
     const config: Record<string, any> =
@@ -412,7 +459,7 @@ export async function POST(req: NextRequest) {
     // Use plan-based limits — not a hardcoded default
     const planLimits = await getPlanLimits(supabase)
     const maxPages = getMaxPagesForProject(proj, planLimits)
-    const isPro = proj.subscription_status === "active" || proj.subscription_status === "trialing"
+    const isPro = proj.subscription_status === "active" || proj.subscription_status === "trial" || proj.subscription_status === "admin_granted"
     const maxSections = isPro ? 20 : 15
 
     const currentColorTheme = typeof config.colorTheme === "string" ? config.colorTheme : "partner"
@@ -491,6 +538,12 @@ export async function POST(req: NextRequest) {
         { status: 422 }
       )
     }
+
+    // Increment AI usage limit
+    await supabase
+      .from("projects")
+      .update({ ai_usage_count: (proj.ai_usage_count || 0) + 1 })
+      .eq("id", projectId)
 
     return NextResponse.json({
       summary: parsed.summary,

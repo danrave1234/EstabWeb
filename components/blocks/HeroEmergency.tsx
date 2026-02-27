@@ -28,7 +28,7 @@ export default function HeroEmergency({
     <section className="container mx-auto px-4 py-8 md:py-20 lg:py-24 reveal">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-8 lg:gap-14 items-center">
           <div className="lg:col-span-6 space-y-4 sm:space-y-8">
-            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-tight order-1 lg:order-none lg:mb-0">
+            <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-tight order-1 lg:order-none lg:mb-0">
               {title}
             </h1>
             <p className="text-sm sm:text-xl text-muted-foreground font-medium order-2 lg:order-none lg:mb-0">

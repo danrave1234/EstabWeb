@@ -35,10 +35,10 @@ export function getPlanType(project: ProjectSubscription): PlanType {
 export function isAnalyticsAllowed(project: ProjectSubscription): boolean {
   const plan = getPlanType(project)
   const status = (project?.subscription_status || 'free').toLowerCase() as SubscriptionStatus
-  
+
   // Admin granted always has access
   if (status === 'admin_granted') return true
-  
+
   // Only basic, pro, and ecommerce have analytics. Free does not.
   // Trial users also get analytics if they are on a trial of a paid plan.
   return ['basic', 'pro', 'ecommerce', 'custom'].includes(plan)

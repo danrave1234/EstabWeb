@@ -6,6 +6,7 @@ import { toggleAutoRenew, cancelSubscription } from "@/app/actions/subscription"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import UpgradeButton from "@/components/dashboard/UpgradeButton"
+import { resolveAmountFromPlans } from "@/lib/plans-config"
 
 interface SubscriptionSettingsProps {
   project: {
@@ -17,17 +18,30 @@ interface SubscriptionSettingsProps {
     has_paid_initial?: boolean
     renewal_link?: string | null
     renewal_link_created_at?: string | null
+    subscription_interval?: string | null
+  }
+  initialPlansConfig: {
+    PLANS: any
+    ENABLE_ANNUAL_PLANS: boolean
   }
 }
 
-export default function SubscriptionSettings({ project }: SubscriptionSettingsProps) {
+export default function SubscriptionSettings({ project, initialPlansConfig }: SubscriptionSettingsProps) {
+  const { PLANS, ENABLE_ANNUAL_PLANS } = initialPlansConfig
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const status = project.subscription_status || "free"
+  const status = project?.subscription_status || "free"
   const isPaid = status === "active" || status === "admin_granted"
   const endsAt = project.subscription_ends_at ? new Date(project.subscription_ends_at) : null
   const autoRenew = project.auto_renew ?? true
   const hasPaidInitial = project.has_paid_initial ?? false
+  const interval = project.subscription_interval || 'monthly'
+
+  // Resolve plan details from config
+  const planId = project.subscription_plan_id || "basic"
+  const plan = PLANS[planId] || PLANS.basic
+  const amount = resolveAmountFromPlans(PLANS, planId, hasPaidInitial, interval as any)
+
 
   const handleToggleAutoRenew = async () => {
     setLoading(true)
@@ -87,48 +101,37 @@ export default function SubscriptionSettings({ project }: SubscriptionSettingsPr
             <div>
               <p className="text-sm font-bold capitalize">
                 {status === 'active' ? (
-                  project.subscription_plan_id === 'basic' ? (hasPaidInitial ? 'Basic Monthly Plan' : 'Basic Setup Plan') :
-                  project.subscription_plan_id === 'pro' ? (hasPaidInitial ? 'Pro Monthly Plan' : 'Pro Setup Plan') :
-                  project.subscription_plan_id === 'ecommerce' ? (hasPaidInitial ? 'E-commerce Monthly Plan' : 'E-commerce Setup Plan') :
-                  (hasPaidInitial ? 'Paid Monthly Plan' : 'Paid Setup Plan')
+                  `${plan.label} ${hasPaidInitial ? (interval === 'yearly' ? 'Annual' : 'Monthly') : 'Setup'} Plan`
                 ) : status === 'free' ? 'Free Plan' : status.replace('_', ' ')}
               </p>
               <p className="text-[10px] text-muted-foreground">
-                {status === 'active' && hasPaidInitial ? (
-                  project.subscription_plan_id === 'basic' ? '₱499 / month' :
-                  project.subscription_plan_id === 'pro' ? '₱999 / month' :
-                  project.subscription_plan_id === 'ecommerce' ? '₱1,499 / month' :
-                  '₱500 / month'
-                ) : status === 'active' ? (
-                  project.subscription_plan_id === 'basic' ? '₱1,500 Setup Fee' :
-                  project.subscription_plan_id === 'pro' ? '₱2,500 Setup Fee' :
-                  project.subscription_plan_id === 'ecommerce' ? '₱3,500 Setup Fee' :
-                  '₱5,000 Setup Fee'
+                {status === 'active' ? (
+                  `₱${(amount / 100).toLocaleString()} ${hasPaidInitial ? (interval === 'yearly' ? '/ year' : '/ month') : 'Setup Fee'}`
                 ) : '₱0 / month'}
               </p>
             </div>
           </div>
           {isPaid && (
-             <div className="px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-wider border border-emerald-500/20">
-               Active
-             </div>
+            <div className="px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-wider border border-emerald-500/20">
+              Active
+            </div>
           )}
         </div>
 
         {isPaid && endsAt && (
           <div className="pt-4 border-t border-border flex items-center justify-between">
-             <div className="flex items-center gap-2">
-               <Calendar className="w-4 h-4 text-muted-foreground" />
-               <span className="text-xs text-muted-foreground">
-                 {autoRenew ? 'Next billing date:' : 'Expires on:'} <b>{endsAt.toLocaleDateString()}</b>
-               </span>
-             </div>
-             {autoRenew && (
-                <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-bold">
-                  <RefreshCw className="w-3 h-3 animate-spin-slow" />
-                  Auto-renews
-                </div>
-             )}
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                {autoRenew ? 'Next billing date:' : 'Expires on:'} <b>{endsAt.toLocaleDateString()}</b>
+              </span>
+            </div>
+            {autoRenew && (
+              <div className="flex items-center gap-1 text-[10px] text-emerald-500 font-bold">
+                <RefreshCw className="w-3 h-3 animate-spin-slow" />
+                Auto-renews
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -156,7 +159,7 @@ export default function SubscriptionSettings({ project }: SubscriptionSettingsPr
             <div className="space-y-1">
               <p className="text-sm font-bold text-amber-700">Cancel Subscription</p>
               <p className="text-xs text-amber-600/80 leading-relaxed">
-                If you cancel, your site will remain active until <b>{endsAt?.toLocaleDateString()}</b>. 
+                If you cancel, your site will remain active until <b>{endsAt?.toLocaleDateString()}</b>.
                 After that, it will revert to the Free plan and publishing will require admin approval.
               </p>
               <button
@@ -178,14 +181,14 @@ export default function SubscriptionSettings({ project }: SubscriptionSettingsPr
           <div className="space-y-1">
             <p className="text-sm font-bold">Unlock Professional Features</p>
             <p className="text-xs text-muted-foreground">
-              {hasPaidInitial 
-                ? "Continue with our recurring plans starting at only ₱499/month." 
-                : "Get started with our Basic plan for ₱1,500 (Initial Setup + 1 Month Free)."}
+              {hasPaidInitial
+                ? `Continue with our recurring plans starting at only ₱${(PLANS.basic.recurringAmount / 100).toLocaleString()}/month.`
+                : `Get started with our Basic plan for ₱${(PLANS.basic.initialAmount / 100).toLocaleString()} (Includes first month care). ${ENABLE_ANNUAL_PLANS ? 'Switch to Annual for extra savings.' : ''}`}
             </p>
           </div>
-          <UpgradeButton 
-            projectId={project.id} 
-            subscriptionStatus={status} 
+          <UpgradeButton
+            projectId={project.id}
+            subscriptionStatus={status}
             variant="inline"
           />
         </div>

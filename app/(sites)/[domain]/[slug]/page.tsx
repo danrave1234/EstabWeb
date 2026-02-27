@@ -13,20 +13,9 @@ import {
   normalizePagesWithDefaults,
 } from "@/lib/utils/site-pages";
 import { isProPlan } from "@/lib/subscription";
+import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo";
 
 export const revalidate = 120;
-
-function pickFirstText(...values: Array<unknown>): string {
-  const found = values.find((v) => typeof v === "string" && v.trim().length > 0);
-  return typeof found === "string" ? found.trim() : "";
-}
-
-function buildKeywords(values: Array<unknown>): string[] {
-  const list = values
-    .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
-    .map((v) => v.trim());
-  return Array.from(new Set(list)).slice(0, 12);
-}
 
 export async function generateMetadata({
   params,
@@ -40,58 +29,39 @@ export async function generateMetadata({
 
   const pages = normalizePagesWithDefaults(config?.pages);
   const page = getPageBySlug(pages, slug);
-  const seo = page?.seo || config?.seo || {};
+  const resolvedSeo = buildAutoSeoDefaults({
+    config,
+    page: page as Record<string, any> | undefined,
+    pageSlug: slug,
+    pageLabel: page?.label || slug.replace(/-/g, " "),
+    domain,
+  });
+
   const brand = config?.brand || {};
-  const hero = config?.hero || {};
-  const features = config?.features || {};
-
-  const pageLabel = page?.label || slug.replace(/-/g, " ");
   const brandName = brand.name || domain;
-  const customSeoTitle = pickFirstText(seo.title);
-  const isGenericSeoTitle = !customSeoTitle || /^page\s+\d+$/i.test(customSeoTitle.trim());
-  const baseTitle = isGenericSeoTitle ? pageLabel : customSeoTitle;
-  const title = baseTitle.includes(brandName)
-    ? baseTitle
-    : `${baseTitle} | ${brandName}`;
-  const description =
-    pickFirstText(seo.description, hero.subtitle, features.subtitle) ||
-    `${pageLabel} — ${brandName}. Built with EstabWeb.`;
-  const keywords =
-    Array.isArray(seo.keywords) && seo.keywords.length > 0
-      ? seo.keywords
-      : buildKeywords([brand.name, pageLabel, config?.theme, hero.benefitText, features.title]);
   const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
-
-  const ogTitle = pickFirstText(seo.og?.title, title);
-  const ogDescription = pickFirstText(seo.og?.description, description);
-  const ogImage = seo.og?.image || brand.logoUrl;
-  // Canonical: only allow a path override (e.g. "/about"), never a full external URL.
-  // This prevents cross-domain SEO poisoning when a client enters a wrong canonical.
-  const canonicalPath = typeof seo.canonical === 'string' && seo.canonical.startsWith('/')
-    ? seo.canonical
-    : `/${slug}`;
-  const canonical = `https://${host}${canonicalPath}`;
+  const canonical = `https://${host}${resolvedSeo.canonical}`;
 
   return {
-    title,
-    description,
-    keywords,
+    title: resolvedSeo.title,
+    description: resolvedSeo.description,
+    keywords: resolvedSeo.keywords,
     openGraph: {
-      title: ogTitle,
-      description: ogDescription,
+      title: resolvedSeo.og.title,
+      description: resolvedSeo.og.description,
       type: "website",
-      siteName: brand.name,
-      images: ogImage ? [{ url: ogImage }] : [],
+      siteName: brandName,
+      images: resolvedSeo.og.image ? [{ url: resolvedSeo.og.image }] : [],
     },
     twitter: {
       card: "summary_large_image",
-      title: ogTitle,
-      description: ogDescription,
-      images: ogImage ? [ogImage] : [],
+      title: resolvedSeo.og.title,
+      description: resolvedSeo.og.description,
+      images: resolvedSeo.og.image ? [resolvedSeo.og.image] : [],
     },
     robots: {
-      index: !seo.robots?.noindex,
-      follow: !seo.robots?.nofollow,
+      index: !resolvedSeo.robots.noindex,
+      follow: !resolvedSeo.robots.nofollow,
     },
     icons: {
       icon: iconUrl,
@@ -114,7 +84,7 @@ export default async function SubPage({
   const heads = await headers();
   const preview = heads.get("x-preview-mode") === "true";
 
-  // Legal pages have their own dedicated routes — never handle them here
+  // Legal pages have their own dedicated routes - never handle them here
   if (isLegalPageSlug(slug)) {
     notFound();
   }
@@ -133,14 +103,14 @@ export default async function SubPage({
 
   // If accessed via custom domain but subscription is lapsed, redirect to subdomain
   if (!preview && project && project.custom_domain && !isProPlan(project)) {
-    const host = heads.get("host")?.split(":")[0]?.toLowerCase() || ""
+    const host = heads.get("host")?.split(":")[0]?.toLowerCase() || "";
     if (host === project.custom_domain.toLowerCase()) {
-      const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase()
-      redirect(`https://${project.subdomain}.${ROOT_DOMAIN}/${slug}`)
+      const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase();
+      redirect(`https://${project.subdomain}.${ROOT_DOMAIN}/${slug}`);
     }
   }
 
-  // Entitlement check — free projects cannot access subpages
+  // Entitlement check - free projects cannot access subpages
   if (!canUseMultiPage(project)) {
     notFound();
   }

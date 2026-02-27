@@ -37,16 +37,20 @@ export default async function AdminClientsPage() {
 
   if (profile?.role !== 'admin') return redirect('/dashboard')
 
-  const { data: profiles, error: profilesErr } = await supabase
-    .from('profiles')
-    .select('id,email,role,avatar_url')
-    .neq('role', 'admin')
-    .order('email', { ascending: true })
-
-  const { data: projects, error: projectsErr } = await supabase
-    .from('projects')
-    .select('id,client_id,subdomain,custom_domain,created_at,subscription_status,trial_ends_at,publish_limit,publish_limit_daily,publish_count,publish_count_today,publish_date')
-    .order('created_at', { ascending: false })
+  const [
+    { data: profiles, error: profilesErr },
+    { data: projects, error: projectsErr }
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id,email,role,avatar_url')
+      .neq('role', 'admin')
+      .order('email', { ascending: true }),
+    supabase
+      .from('projects')
+      .select('id,client_id,subdomain,custom_domain,created_at,subscription_status,trial_ends_at,publish_limit,publish_limit_daily,publish_count,publish_count_today,publish_date')
+      .order('created_at', { ascending: false })
+  ])
 
   const byOwner = new Map<string, ProjectRow[]>()
   for (const p of (projects ?? []) as ProjectRow[]) {

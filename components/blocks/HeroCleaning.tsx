@@ -38,7 +38,7 @@ export default function HeroCleaning({
       <div className="container mx-auto px-4 py-10 md:py-24 lg:py-32">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto space-y-8 sm:space-y-10">
           <div className="space-y-4 sm:space-y-6">
-            <h1 className="font-sans text-2xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1]">
+            <h1 className="font-serif text-2xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1]">
               <span className="text-primary block mb-1 opacity-90 text-sm sm:text-2xl uppercase tracking-widest font-bold">{benefitText}</span>
               {title}
             </h1>

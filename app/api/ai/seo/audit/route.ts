@@ -103,6 +103,8 @@ Provide your analysis as JSON with exactly this structure:
 Rules:
 - Be specific to the actual content — no generic advice
 - The hero title is already the H1 — never suggest adding one if it exists
+- Use exact counts and specific section/page names whenever possible
+- Avoid vague qualifiers like "most", "some", or "many" without numbers
 - improvements array: 2 to 4 items max, ordered by priority
 - quickWins: 1 to 3 items, each under 15 words
 - strengths: only include if genuinely present, can be empty array

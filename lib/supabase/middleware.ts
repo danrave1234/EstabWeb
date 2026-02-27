@@ -16,7 +16,7 @@ export async function updateSession(request: NextRequest) {
         setAll: (cookiesToSet) => {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) => 
+          cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, { ...options, domain: cookieDomain })
           )
         },
@@ -38,9 +38,29 @@ export async function updateSession(request: NextRequest) {
     return response
   }
 
+  const hostHeader = request.headers.get('host')?.toLowerCase() || ''
+  const hostname = hostHeader.split(':')[0]
+  const isAdminHost = hostname === `admin.${ROOT_DOMAIN}` || hostname.startsWith('admin.')
+  const isAdminRoute = path.startsWith('/admin') || isAdminHost
+
+  // Protected routes - require auth
+  const protectedRoutes = ['/dashboard', '/onboarding']
+  const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
+
+  // Auth routes like login or callbacks
+  const isAuthRoute = path === '/login' || path.startsWith('/auth')
+
+  // Performance optimization: skip Supabase auth check on public client pages
+  if (!isAdminRoute && !isProtectedRoute && !isAuthRoute) {
+    return response
+  }
+
+  // IMPORTANT: We must call getUser() on protected/admin/auth routes to reliably trigger token refresh
+  // before it hits Server Components, which cannot set cookies.
+  const { data: { user } } = await supabase.auth.getUser()
+
   // Handle /admin routes
-  if (path.startsWith('/admin')) {
-    const { data: { user } } = await supabase.auth.getUser()
+  if (isAdminRoute) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
@@ -53,12 +73,8 @@ export async function updateSession(request: NextRequest) {
     return response
   }
 
-  // Protected routes - require auth
-  const protectedRoutes = ['/dashboard', '/onboarding']
-  const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
 
   if (isProtectedRoute) {
-    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
@@ -71,10 +87,13 @@ export async function updateSession(request: NextRequest) {
 
   // Public routes check (for login redirect only)
   if (path === '/login') {
-    const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
       if (profile?.role === 'admin' || profile?.role === 'sub_admin') {
+        // Use isAdminHost to redirect appropriately
+        if (isAdminHost) {
+          return NextResponse.redirect(new URL('/', request.url)) // Already on admin subdomain
+        }
         return NextResponse.redirect(new URL('/admin', request.url))
       }
       return NextResponse.redirect(new URL('/dashboard', request.url))
