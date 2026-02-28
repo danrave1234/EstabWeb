@@ -65,6 +65,24 @@ export function resolveTenantRoute(input: ResolveTenantRouteInput): TenantRouteD
     headers["x-request-id"] = url.searchParams.get("requestId") || ""
   }
 
+  // Handle /preview/[projectId] paths
+  if (url.pathname.startsWith("/preview/")) {
+    const parts = url.pathname.split("/");
+    const pId = parts[2];
+    if (pId && pId.length > 5) { // Simple check for likely ID
+      headers["x-project-id"] = pId;
+      headers["x-preview-mode"] = "true";
+
+      const subpath = url.searchParams.get("path") || "";
+      // Rewrite to /preview/[subpath] to land in (sites)/[domain] with domain='preview'
+      return {
+        kind: "rewrite-site",
+        destination: `/preview/${subpath}${url.search}`,
+        headers,
+      };
+    }
+  }
+
   if (!isDevHost && !isStagingHost && !isVercelPreview && isRoot && url.pathname !== "/") {
     const segment = url.pathname.replace(/^\/|\/$/g, "").split("/")[0]?.toLowerCase()
     if (segment && !RESERVED_ROOT_PATHS.includes(segment) && !segment.includes(".")) {

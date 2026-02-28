@@ -23,6 +23,14 @@ export function AnalyticsProvider({
   children: React.ReactNode;
 }) {
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
+  // Expose projectId on window so plain (non-hook) trackLead() calls can read it
+  useEffect(() => {
+    if (projectId && typeof window !== "undefined") {
+      window.PROJECT_ID = projectId;
+    }
+  }, [projectId]);
+
   return (
     <AnalyticsContext.Provider value={projectId}>
       <PageViewTrackerInner projectId={projectId} />
@@ -42,7 +50,79 @@ export function useProjectId() {
 }
 
 // ---------------------------------------------------------------------------
-// Traffic source resolver
+// Visitor identity — persists across sessions (localStorage)
+// ---------------------------------------------------------------------------
+export function getOrCreateVisitorId(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    const key = "_vid";
+    let id = localStorage.getItem(key);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(key, id);
+    }
+    return id;
+  } catch {
+    return "";
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Session identity — new per tab/session (sessionStorage)
+// ---------------------------------------------------------------------------
+export function getOrCreateSessionId(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    const key = "_sid";
+    let id = sessionStorage.getItem(key);
+    if (!id) {
+      id = crypto.randomUUID();
+      sessionStorage.setItem(key, id);
+    }
+    return id;
+  } catch {
+    return "";
+  }
+}
+
+// ---------------------------------------------------------------------------
+// First-touch attribution — stored once in localStorage, never overwritten
+// ---------------------------------------------------------------------------
+export type FirstTouch = {
+  source: string;
+  utm: Record<string, string>;
+  ts: number;
+};
+
+export function getOrCreateFirstTouch(): FirstTouch {
+  const empty: FirstTouch = { source: "direct", utm: {}, ts: Date.now() };
+  if (typeof window === "undefined") return empty;
+  try {
+    const key = "_ft";
+    const stored = localStorage.getItem(key);
+    if (stored) return JSON.parse(stored) as FirstTouch;
+
+    const params = new URLSearchParams(window.location.search);
+    const utmKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
+    const utm: Record<string, string> = {};
+    utmKeys.forEach((k) => { const v = params.get(k); if (v) utm[k] = v; });
+
+    let source = "direct";
+    if (utm.utm_source) source = utm.utm_source;
+    else if (document.referrer) {
+      try { source = new URL(document.referrer).hostname; } catch { source = document.referrer; }
+    }
+
+    const ft: FirstTouch = { source, utm, ts: Date.now() };
+    localStorage.setItem(key, JSON.stringify(ft));
+    return ft;
+  } catch {
+    return empty;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Traffic source resolver (last-touch)
 // ---------------------------------------------------------------------------
 export function resolveTrafficSource(): string {
   if (typeof window === "undefined") return "direct";
@@ -71,7 +151,14 @@ export type EventType =
   | 'lead_call'
   | 'lead_messenger'
   | 'lead_viber'
-  | 'map_interact';
+  | 'map_interact'
+  | 'scroll_depth'
+  | 'click_map'
+  | 'form_start'
+  | 'session_start'
+  | 'session_end';
+
+export type FunnelStep = 'landing' | 'engaged' | 'cta' | 'lead';
 
 export function trackEvent(payload: {
   type: EventType;
@@ -80,16 +167,22 @@ export function trackEvent(payload: {
   section_key?: string;
   cta_id?: string;
   source?: string;
+  funnel_step?: FunnelStep;
   metadata?: Record<string, unknown>;
 }) {
   if (typeof window === "undefined") return;
   const resolvedProjectId = payload.project_id ?? window.PROJECT_ID;
   if (!resolvedProjectId) return;
+
   const body = JSON.stringify({
     ...payload,
     project_id: resolvedProjectId,
     source: payload.source ?? resolveTrafficSource(),
+    visitor_id: getOrCreateVisitorId(),
+    session_id: getOrCreateSessionId(),
+    event_id: crypto.randomUUID(),
   });
+
   const sent =
     typeof navigator.sendBeacon === "function" &&
     navigator.sendBeacon(
@@ -125,6 +218,7 @@ export function usePageViewTracker(projectId?: string) {
       type: "page_view",
       project_id: projectId,
       page_slug: slug,
+      funnel_step: "landing",
     });
   }, [pathname, projectId]);
 }
@@ -252,11 +346,18 @@ export function trackLead(
     if (val) utmFields[key] = val;
   });
 
+  const firstTouch = getOrCreateFirstTouch();
+
   const basePayload = {
     type,
     project_id: resolvedProjectId,
     page_slug: pageSlug ?? window.location.pathname.replace(/^\//, '') ?? undefined,
     section_key: sectionKey ?? undefined,
+    source: resolveTrafficSource(),
+    visitor_id: getOrCreateVisitorId(),
+    session_id: getOrCreateSessionId(),
+    first_touch_source: firstTouch.source,
+    first_touch_utm: firstTouch.utm,
     honeypot: "", // always empty for real users; bots may fill this
     metadata: {
       url: window.location.href,

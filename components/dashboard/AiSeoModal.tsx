@@ -81,9 +81,9 @@ export function AiSeoModal({
           pageIndex,
           businessType,
           currentContent: {
-            title: currentSeo.title,
-            description: currentSeo.description,
-            keywords: currentSeo.keywords,
+            title: currentSeo?.title || "",
+            description: currentSeo?.description || "",
+            keywords: currentSeo?.keywords || [],
           },
         }),
       })
@@ -93,8 +93,8 @@ export function AiSeoModal({
         Array.isArray(data.variants) && data.variants.length > 0
           ? data.variants
           : data.title
-          ? [data]
-          : []
+            ? [data]
+            : []
       const result: SeoVariant[] = rawVariants
         .map((variant) => ({
           title: typeof variant?.title === "string" ? variant.title : "",
@@ -148,10 +148,10 @@ export function AiSeoModal({
           <div className="rounded-md border border-border bg-muted/30 px-4 py-3 space-y-1.5">
             <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Current SEO</p>
             <p className="text-sm font-medium text-foreground leading-snug">
-              {currentSeo.title || <span className="italic text-muted-foreground">No title set</span>}
+              {currentSeo?.title || <span className="italic text-muted-foreground">No title set</span>}
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {currentSeo.description || <span className="italic">No description set</span>}
+              {currentSeo?.description || <span className="italic">No description set</span>}
             </p>
           </div>
 
@@ -180,11 +180,10 @@ export function AiSeoModal({
                       <button
                         type="button"
                         onClick={() => setSelected(i)}
-                        className={`w-full text-left rounded-md border px-3 py-3 transition-all space-y-1.5 ${
-                          isSelected
-                            ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                            : "border-border bg-background hover:border-primary/40 hover:bg-muted/30"
-                        }`}
+                        className={`w-full text-left rounded-md border px-3 py-3 transition-all space-y-1.5 ${isSelected
+                          ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                          : "border-border bg-background hover:border-primary/40 hover:bg-muted/30"
+                          }`}
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-[10px] font-bold text-primary/60 uppercase tracking-wider">

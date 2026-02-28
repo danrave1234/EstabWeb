@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { headers } from "next/headers";
 
 const VALID_TYPES = ["messenger", "call", "form", "viber"] as const;
 type LeadType = (typeof VALID_TYPES)[number];
 
 const EVENT_TYPE_MAP: Record<LeadType, string> = {
-  form: "lead_form",
-  call: "lead_call",
+  form:      "lead_form",
+  call:      "lead_call",
   messenger: "lead_messenger",
-  viber: "lead_viber",
+  viber:     "lead_viber",
 };
 
 // ---------------------------------------------------------------------------
@@ -61,8 +61,8 @@ export async function POST(request: Request) {
       "unknown";
 
     // Capture geolocation from Vercel headers
-    const city = hdrs.get("x-vercel-ip-city");
-    const region = hdrs.get("x-vercel-ip-country-region");
+    const city    = hdrs.get("x-vercel-ip-city");
+    const region  = hdrs.get("x-vercel-ip-country-region");
     const country = hdrs.get("x-vercel-ip-country");
 
     // Rate limit check
@@ -77,6 +77,10 @@ export async function POST(request: Request) {
       page_slug,
       section_key,
       source,
+      visitor_id,
+      session_id,
+      first_touch_source,
+      first_touch_utm,
       metadata,
       recaptchaToken,
       honeypot,
@@ -86,6 +90,10 @@ export async function POST(request: Request) {
       page_slug?: string;
       section_key?: string;
       source?: string;
+      visitor_id?: string;
+      session_id?: string;
+      first_touch_source?: string;
+      first_touch_utm?: Record<string, string>;
       metadata?: Record<string, string>;
       recaptchaToken?: string;
       honeypot?: string;
@@ -105,8 +113,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing project_id" }, { status: 400 });
     }
 
-    // reCAPTCHA v3 verification (only for form leads)
-    if (type === "form") {
+    // reCAPTCHA v3 verification (only for form leads when secret key is configured)
+    if (type === "form" && process.env.RECAPTCHA_SECRET_KEY) {
       if (!recaptchaToken) {
         return NextResponse.json({ error: "Missing verification token" }, { status: 400 });
       }
@@ -116,18 +124,23 @@ export async function POST(request: Request) {
       }
     }
 
-    const supabase = await createClient();
+    // Use service client — bypasses RLS for server-side inserts
+    const supabase = createServiceClient();
 
-    // Insert into project_leads (existing behaviour)
+    const geoMeta = { geo_city: city, geo_region: region, geo_country: country };
+
+    // Insert into project_leads (CRM record)
     const { error: leadError } = await supabase.from("project_leads").insert({
       project_id,
       type,
-      metadata: {
-        ...(metadata ?? {}),
-        geo_city: city,
-        geo_region: region,
-        geo_country: country,
-      },
+      page_slug:          page_slug          ?? null,
+      section_key:        section_key        ?? null,
+      source:             source             ?? null,
+      visitor_id:         visitor_id         ?? null,
+      session_id:         session_id         ?? null,
+      first_touch_source: first_touch_source ?? null,
+      first_touch_utm:    first_touch_utm    ?? null,
+      metadata: { ...(metadata ?? {}), ...geoMeta },
     });
 
     if (leadError) {
@@ -140,16 +153,14 @@ export async function POST(request: Request) {
     const { error: eventError } = await supabase.from("project_events").insert({
       project_id,
       event_type,
-      page_slug: page_slug ?? null,
+      page_slug:   page_slug   ?? null,
       section_key: section_key ?? null,
-      cta_id: null,
-      source: source ?? null,
-      metadata: {
-        ...(metadata ?? {}),
-        geo_city: city,
-        geo_region: region,
-        geo_country: country,
-      },
+      cta_id:      null,
+      source:      source      ?? null,
+      visitor_id:  visitor_id  ?? null,
+      session_id:  session_id  ?? null,
+      funnel_step: "lead",
+      metadata: { ...(metadata ?? {}), ...geoMeta },
     });
 
     if (eventError) {

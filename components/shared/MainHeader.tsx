@@ -94,7 +94,7 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
       <div className="container mx-auto px-4 h-full flex items-center">
         {/* Logo & Badge Area */}
         <div className="flex-1 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+          <Link href={variant === "admin" ? "/admin/dashboard" : variant === "client" ? "/dashboard" : "/"} className="flex items-center gap-2.5 group shrink-0">
             <div className="relative">
               <Image 
                 src="/Logo.svg" 

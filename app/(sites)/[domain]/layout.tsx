@@ -105,8 +105,8 @@ export default async function SiteLayout({
       homeSeoSettings = dbHomePage?.seo && typeof dbHomePage.seo === "object"
         ? dbHomePage.seo
         : dbConf.seo && typeof dbConf.seo === "object"
-        ? dbConf.seo
-        : {};
+          ? dbConf.seo
+          : {};
       homeSeoDefaults = buildAutoSeoDefaults({
         config: dbConf,
         page: dbHomePage as Record<string, any> | undefined,
@@ -137,7 +137,7 @@ export default async function SiteLayout({
       data-theme={colorTheme}
       data-mode={mode}
       data-typography={typography}
-      className={`${allFontVariables} ${getFontVariables(colorTheme, typography)}`}
+      className={`client-site ${allFontVariables} ${getFontVariables(colorTheme, typography)}`}
     >
       <head>
         <meta charSet="utf-8" />

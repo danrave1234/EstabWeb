@@ -84,9 +84,10 @@ export default function Header({
 
   return (
     <header
+      data-section-id="brand"
       className={`sticky top-0 z-50 w-full transition-all duration-300 ${isFloating
-          ? "bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/5"
-          : "bg-background/95 backdrop-blur-md border-b border-border"
+        ? "bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/5"
+        : "bg-background/95 backdrop-blur-md border-b border-border"
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

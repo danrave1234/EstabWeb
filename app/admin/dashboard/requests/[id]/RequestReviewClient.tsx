@@ -87,6 +87,29 @@ export default function RequestReviewClient({ request }: RequestReviewClientProp
 
   const requestedChanges = request.requested_changes || {}
 
+  // Build a flat list of diff entries, extracting SEO from pages[0].seo for full-site requests
+  const diffEntries: { key: string; label: string; currentVal: any; requestedVal: any }[] = []
+  const skipKeys = new Set<string>()
+
+  if (sectionId === 'full-site') {
+    const currentPages: any[] = Array.isArray(currentSectionData.pages) ? currentSectionData.pages : []
+    const requestedPages: any[] = Array.isArray((requestedChanges as any).pages) ? (requestedChanges as any).pages : []
+    const currentSeo = currentPages[0]?.seo ?? null
+    const requestedSeo = requestedPages[0]?.seo ?? null
+    diffEntries.push({ key: '__seo__', label: 'SEO', currentVal: currentSeo, requestedVal: requestedSeo })
+    skipKeys.add('pages')
+  }
+
+  Object.entries(requestedChanges).forEach(([key, val]) => {
+    if (skipKeys.has(key)) return
+    diffEntries.push({ key, label: key, currentVal: currentSectionData[key], requestedVal: val })
+  })
+
+  const isDiffChanged = (entry: typeof diffEntries[0]) =>
+    JSON.stringify(entry.currentVal) !== JSON.stringify(entry.requestedVal)
+
+  const changedEntries = diffEntries.filter(isDiffChanged)
+
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
       {/* Header */}
@@ -184,13 +207,13 @@ export default function RequestReviewClient({ request }: RequestReviewClientProp
                 </span>
               </div>
               <div className="space-y-8">
-                {Object.entries(requestedChanges).map(([key, _]) => (
-                  <div key={key} className="space-y-2 group">
+                {changedEntries.map((entry) => (
+                  <div key={entry.key} className="space-y-2 group">
                     <div className="text-[10px] font-bold uppercase text-muted-foreground transition-colors group-hover:text-foreground">
-                      {key}
+                      {entry.label}
                     </div>
                     <div className="p-4 bg-muted/30 rounded-lg border border-border/50 text-sm line-through opacity-60">
-                      <RenderValue value={currentSectionData[key]} />
+                      <RenderValue value={entry.currentVal} />
                     </div>
                   </div>
                 ))}
@@ -211,13 +234,13 @@ export default function RequestReviewClient({ request }: RequestReviewClientProp
                 </span>
               </div>
               <div className="space-y-8">
-                {Object.entries(requestedChanges).map(([key, value]: [string, any]) => (
-                  <div key={key} className="space-y-2 group">
+                {changedEntries.map((entry) => (
+                  <div key={entry.key} className="space-y-2 group">
                     <div className="text-[10px] font-bold uppercase text-primary/60 transition-colors group-hover:text-primary">
-                      {key}
+                      {entry.label}
                     </div>
                     <div className="p-4 bg-card rounded-lg border border-primary/20 shadow-sm text-sm font-medium">
-                      <RenderValue value={value} />
+                      <RenderValue value={entry.requestedVal} />
                     </div>
                   </div>
                 ))}

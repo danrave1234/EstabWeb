@@ -15,9 +15,10 @@ export async function GET(req: Request) {
       .from('projects')
       .select('id, client_id, config_version')
       .eq('id', projectId)
+      .eq('client_id', user.id)
       .single()
 
-    if (!proj || proj.client_id !== user.id) {
+    if (!proj) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 

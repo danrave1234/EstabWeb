@@ -1,15 +1,22 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { headers } from "next/headers";
 
 const VALID_EVENT_TYPES = [
   "page_view",
   "section_view",
   "cta_click",
+  "lead_submit",
   "lead_form",
   "lead_call",
   "lead_messenger",
   "lead_viber",
+  "map_interact",
+  "scroll_depth",
+  "click_map",
+  "form_start",
+  "session_start",
+  "session_end",
 ] as const;
 type EventType = (typeof VALID_EVENT_TYPES)[number];
 
@@ -40,8 +47,8 @@ export async function POST(request: Request) {
       "unknown";
 
     // Capture geolocation from Vercel headers
-    const city = hdrs.get("x-vercel-ip-city");
-    const region = hdrs.get("x-vercel-ip-country-region");
+    const city    = hdrs.get("x-vercel-ip-city");
+    const region  = hdrs.get("x-vercel-ip-country-region");
     const country = hdrs.get("x-vercel-ip-country");
 
     if (isRateLimited(ip)) {
@@ -49,13 +56,29 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { type, project_id, page_slug, section_key, cta_id, source, metadata } = body as {
+    const {
+      type,
+      project_id,
+      page_slug,
+      section_key,
+      cta_id,
+      source,
+      funnel_step,
+      visitor_id,
+      session_id,
+      event_id,
+      metadata,
+    } = body as {
       type: EventType;
       project_id: string;
       page_slug?: string;
       section_key?: string;
       cta_id?: string;
       source?: string;
+      funnel_step?: string;
+      visitor_id?: string;
+      session_id?: string;
+      event_id?: string;
       metadata?: Record<string, unknown>;
     };
 
@@ -67,7 +90,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing project_id" }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     // Validate project exists
     const { data: project } = await supabase
@@ -82,15 +105,19 @@ export async function POST(request: Request) {
 
     const { error } = await supabase.from("project_events").insert({
       project_id,
-      event_type: type,
-      page_slug: page_slug ?? null,
+      event_type:  type,
+      page_slug:   page_slug   ?? null,
       section_key: section_key ?? null,
-      cta_id: cta_id ?? null,
-      source: source ?? null,
+      cta_id:      cta_id      ?? null,
+      source:      source      ?? null,
+      funnel_step: funnel_step ?? null,
+      visitor_id:  visitor_id  ?? null,
+      session_id:  session_id  ?? null,
+      event_id:    event_id    ?? null,
       metadata: {
         ...(metadata ?? {}),
-        geo_city: city,
-        geo_region: region,
+        geo_city:    city,
+        geo_region:  region,
         geo_country: country,
       },
     });
