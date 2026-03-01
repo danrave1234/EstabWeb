@@ -39,7 +39,7 @@ export default function HubLayoutClient({ children, initialUser }: HubLayoutClie
             variant={isDashboard ? "client" : undefined}
           />
         )}
-        <div className={isDashboard ? "flex-1 flex flex-col overflow-hidden" : "flex-1 flex flex-col"}>
+        <div className="flex-1 flex flex-col">
           <div className={`flex-1${!isAuthPage ? " pt-16" : ""}`}>
             <ScrollReveal />
             {children}
