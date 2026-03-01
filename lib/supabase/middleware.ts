@@ -59,12 +59,16 @@ export async function updateSession(request: NextRequest) {
   // Handle /admin routes
   if (isAdminRoute) {
     if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      const redirect = NextResponse.redirect(new URL('/login', request.url))
+      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      return redirect
     }
 
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
     if (profile?.role !== 'admin' && profile?.role !== 'sub_admin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      const redirect = NextResponse.redirect(new URL('/dashboard', request.url))
+      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      return redirect
     }
 
     return response
@@ -73,11 +77,15 @@ export async function updateSession(request: NextRequest) {
 
   if (isProtectedRoute) {
     if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      const redirect = NextResponse.redirect(new URL('/login', request.url))
+      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      return redirect
     }
     // Block unverified email users from accessing protected features
     if (!user.email_confirmed_at) {
-      return NextResponse.redirect(new URL('/auth/verify-email', request.url))
+      const redirect = NextResponse.redirect(new URL('/auth/verify-email', request.url))
+      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      return redirect
     }
     return response
   }
@@ -89,11 +97,17 @@ export async function updateSession(request: NextRequest) {
       if (profile?.role === 'admin' || profile?.role === 'sub_admin') {
         // Use isAdminHost to redirect appropriately
         if (isAdminHost) {
-          return NextResponse.redirect(new URL('/', request.url)) // Already on admin subdomain
+          const redirect = NextResponse.redirect(new URL('/', request.url))
+          for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+          return redirect
         }
-        return NextResponse.redirect(new URL('/admin', request.url))
+        const redirect = NextResponse.redirect(new URL('/admin', request.url))
+        for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+        return redirect
       }
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      const redirect = NextResponse.redirect(new URL('/dashboard', request.url))
+      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      return redirect
     }
   }
 
