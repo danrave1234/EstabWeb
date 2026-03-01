@@ -219,59 +219,61 @@ export function EditorHeader({
     }
 
     return (
-        <header className="fixed lg:absolute top-16 lg:top-0 left-0 lg:left-0 right-0 h-14 border-b border-border flex items-center justify-between px-4 sm:px-6 bg-muted/20 backdrop-blur-md z-[46] gap-4">
-            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+        <header className="fixed lg:absolute top-16 lg:top-0 left-0 lg:left-0 right-0 h-14 border-b border-border flex items-center justify-between px-3 sm:px-6 bg-muted/20 backdrop-blur-md z-[46] gap-2 sm:gap-4">
+            <div className="flex items-center gap-1.5 sm:gap-4 min-w-0 flex-1">
                 <button
                     onClick={() => setMobileSidebarOpen(true)}
-                    className="lg:hidden p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors shrink-0"
+                    className="lg:hidden p-1.5 hover:bg-muted rounded-lg text-muted-foreground transition-colors shrink-0"
                 >
                     <Layout className="w-5 h-5" />
                 </button>
-                <div className="hidden xs:flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-600 text-[10px] font-bold uppercase tracking-wider rounded-full border border-emerald-500/20 shrink-0">
-                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                <div className="hidden min-[400px]:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-600 text-[9px] font-bold uppercase tracking-wider rounded-full border border-emerald-500/20 shrink-0">
+                    <span className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
                     Live
                 </div>
-                <div className="hidden sm:flex flex-col min-w-0">
+                <div className="hidden md:flex flex-col min-w-0">
                     <span className="text-xs font-semibold text-foreground leading-none truncate">Preview Mode: Viewing unsaved changes</span>
                     <span className="text-[10px] text-muted-foreground mt-0.5 truncate">Changes here are local to your browser until you click &quot;Save Draft&quot; in the dashboard.</span>
                 </div>
-                <div className="sm:hidden shrink-0">
+                <div className="min-[350px]:flex xs:hidden shrink-0 scale-75 origin-left">
                     <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} />
                 </div>
-                <div className="hidden sm:block shrink-0">
+                <div className="hidden xs:block shrink-0">
                     <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} />
                 </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
-                <button onClick={refreshPreview} className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-semibold hover:bg-muted transition-all duration-200 shadow-sm active:scale-95 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 ml-auto">
+                <button onClick={refreshPreview} className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-semibold hover:bg-muted transition-all duration-200 shadow-sm active:scale-95 shrink-0" title={isSaving ? 'Saving...' : 'Refresh'}>
                     <Eye className="w-3.5 h-3.5 shrink-0" />
-                    <span className="shrink-0">{isSaving ? 'Saving...' : 'Refresh'}</span>
+                    <span className="hidden sm:inline shrink-0">{isSaving ? 'Saving...' : 'Refresh'}</span>
                 </button>
                 <button
                     onClick={saveDraft}
                     disabled={isSubmitting || Object.keys(modified).length === 0}
                     className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
+                    title={isSubmitting ? 'Saving...' : 'Save Draft'}
                 >
                     <FileText className="w-3.5 h-3.5 shrink-0" />
-                    <span className="shrink-0">{isSubmitting ? 'Saving...' : 'Save'}</span>
+                    <span className="hidden sm:inline shrink-0">{isSubmitting ? 'Saving...' : 'Save'}</span>
                 </button>
                 <button
                     onClick={discardChanges}
-                    className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-semibold hover:bg-muted transition-all duration-200 shadow-sm shrink-0"
+                    className="hidden xs:flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-semibold hover:bg-muted transition-all duration-200 shadow-sm shrink-0"
+                    title="Discard changes"
                 >
                     <RotateCcw className="w-3.5 h-3.5 shrink-0" />
-                    <span className="shrink-0">Discard</span>
+                    <span className="hidden sm:inline shrink-0">Discard</span>
                 </button>
                 {canPublish ? (
                     <div className="flex flex-col items-end">
                         <button
                             onClick={handlePublish}
                             disabled={isPublishing || !canPublishNow(project) || (!hasDraft && !hasLocalChanges)}
-                            title={publishDisabledReason || undefined}
+                            title={publishDisabledReason || (isPublishing ? 'Publishing...' : 'Publish')}
                             className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
                         >
                             <Send className="w-3.5 h-3.5 shrink-0" />
-                            <span className="shrink-0">{isPublishing ? 'Publishing...' : 'Publish'}</span>
+                            <span className="hidden xs:inline shrink-0">{isPublishing ? 'Publishing...' : 'Publish'}</span>
                         </button>
                         {publishDisabledReason && (
                             <span className="mt-1 text-[10px] text-muted-foreground text-right max-w-[180px]">
@@ -284,11 +286,11 @@ export function EditorHeader({
                         <button
                             onClick={handleSubmitApproval}
                             disabled={isQueueing || hasPendingRequest}
-                            title={publishDisabledReason || undefined}
+                            title={publishDisabledReason || (isQueueing ? 'Submitting...' : hasPendingRequest ? 'Pending Review' : 'Submit for Approval')}
                             className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all shrink-0"
                         >
                             <Send className="w-3.5 h-3.5 shrink-0" />
-                            <span className="shrink-0">{isQueueing ? 'Submitting...' : hasPendingRequest ? 'Pending Review' : 'Submit'}</span>
+                            <span className="hidden xs:inline shrink-0">{isQueueing ? 'Submitting...' : hasPendingRequest ? 'Pending Review' : 'Submit'}</span>
                         </button>
                         {publishDisabledReason && (
                             <span className="mt-1 text-[10px] text-muted-foreground text-right max-w-[180px]">

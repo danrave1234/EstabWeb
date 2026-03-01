@@ -1,5 +1,9 @@
 # EstabWeb
 
+> [!IMPORTANT]
+> **To AI Coding Agents**: Always refer to the [AGENTS.md](file:///c:/Users/Danrave/Desktop/Project/template-nextjs-nestjs/boilerplate/AGENTS.md) file before starting any task. You are **REQUIRED** to update `AGENTS.md` and this `README.md` if your changes introduce new conventions, workflows, or significant code patterns.
+
+
 EstabWeb is a multi-tenant SaaS platform for generating and managing industry-optimized websites. Clients redeem template codes, get an instant starter site, and edit content from a dashboard without writing code.
 
 > Status: Active development, `v0.1.0`.
@@ -90,6 +94,16 @@ npm run dev
 ## Module Boundaries
 
 See [docs/module-boundaries.md](docs/module-boundaries.md).
+
+## Subscription Downgrade Lifecycle
+
+When a paid client's subscription lapses (failed payment or expiry), features are revoked via two code paths that must stay in sync:
+
+- **PayMongo webhook** (`subscription.unpaid`) → `app/api/paymongo/webhook/route.ts`: immediately resets `subscription_status`, `subscription_plan_id`, `custom_domain`, and publish limits to free-tier values, and removes the domain from Vercel.
+- **Cron expiry sweep** → `app/api/cron/renew-subscriptions/route.ts`: handles projects with status `active`, `trial`, or `expired` whose end date has passed — applies the same full downgrade.
+- **Feature gating** in `lib/subscription.ts` checks **both** `subscription_status` and `subscription_plan_id`. Never gate on `plan_id` alone.
+
+See `AGENTS.md § 9` for the authoritative rules and free-tier reset values.
 
 ## Docs
 

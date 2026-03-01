@@ -132,18 +132,31 @@ export function AiSeoModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh]">
-        <DialogHeader className="shrink-0">
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            AI SEO Optimizer
-          </DialogTitle>
-          <DialogDescription>
-            Generate optimized SEO suggestions for title, description, keywords, and sharing metadata.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-[620px] flex flex-col max-h-[90vh] p-0 gap-0 overflow-hidden border-border/60 shadow-[0_32px_80px_-12px_rgba(0,0,0,0.3)] rounded-2xl">
+        {/* Premium header */}
+        <div className="relative overflow-hidden shrink-0 bg-gradient-to-br from-background via-background to-muted/30">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/6 via-primary/3 to-transparent" aria-hidden />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" aria-hidden />
+          <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-primary via-primary/70 to-transparent" aria-hidden />
+          <DialogHeader className="relative p-5 sm:p-6 shrink-0">
+            <DialogTitle className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 shadow-sm shadow-primary/10 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-[0.15em]">AI Tools</span>
+                </div>
+                <span className="text-base font-black tracking-tight">AI SEO Optimizer</span>
+              </div>
+            </DialogTitle>
+            <DialogDescription className="mt-1.5 ml-12 text-[11px] text-muted-foreground">
+              Generate optimized SEO suggestions for title, description, keywords, and sharing metadata.
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <div className="flex flex-col gap-4 mt-2 overflow-y-auto flex-1 min-h-0 pr-1 pb-1">
+        <div className="flex flex-col gap-4 p-5 sm:p-6 overflow-y-auto flex-1 min-h-0 custom-scrollbar bg-muted/5">
           {/* Current SEO preview */}
           <div className="rounded-md border border-border bg-muted/30 px-4 py-3 space-y-1.5">
             <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Current SEO</p>
@@ -247,22 +260,22 @@ export function AiSeoModal({
         </div>
 
         {/* Action buttons — pinned at bottom */}
-        <div className="flex items-center gap-2 pt-3 mt-1 border-t border-border shrink-0 flex-wrap">
+        <div className="flex items-center gap-2 px-5 sm:px-6 py-4 border-t border-border/60 bg-background shrink-0 flex-wrap">
           {!hasVariants ? (
             <button
               type="button"
               onClick={handleGenerate}
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground px-5 py-2.5 text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-primary/20"
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   Generating…
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-3.5 h-3.5" />
                   Generate Suggestions
                 </>
               )}
@@ -273,26 +286,26 @@ export function AiSeoModal({
                 type="button"
                 onClick={handleApply}
                 disabled={!canApply}
-                className="inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-3 py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-primary text-primary-foreground px-4 py-2.5 text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-primary/20"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-3.5 h-3.5" />
                 Apply
               </button>
               <button
                 type="button"
                 onClick={handleReject}
-                className="inline-flex items-center gap-1.5 rounded-md border border-destructive text-destructive px-3 py-2 text-sm font-medium hover:bg-destructive/10 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-destructive/40 text-destructive px-4 py-2.5 text-[10px] font-black uppercase tracking-widest hover:bg-destructive/10 active:scale-95 transition-all"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
                 Reject
               </button>
               <button
                 type="button"
                 onClick={handleGenerate}
                 disabled={loading}
-                className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium hover:bg-accent disabled:opacity-50 transition-colors"
+                className="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-4 py-2.5 text-[10px] font-black uppercase tracking-widest hover:bg-muted active:scale-95 disabled:opacity-50 transition-all"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowLeft className="w-4 h-4" />}
+                {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ArrowLeft className="w-3.5 h-3.5" />}
                 Try Again
               </button>
             </>

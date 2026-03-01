@@ -25,7 +25,7 @@ export default function MessengerStickyCTA({
 
   return (
     <div
-      className="fixed bottom-4 left-1/2 -translate-x-1/2 sm:bottom-6 sm:right-6 sm:left-auto sm:translate-x-0 z-50 flex flex-row sm:flex-col items-center sm:items-end gap-2 sm:gap-3 pointer-events-none"
+      className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[100] flex flex-row sm:flex-col items-center sm:items-start gap-3 pointer-events-none animate-in fade-in slide-in-from-bottom-4 duration-500"
     >
       {viberNumber && (
         <a
@@ -37,7 +37,7 @@ export default function MessengerStickyCTA({
           <ChatCircleDotsIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" />
         </a>
       )}
-      
+
       {messengerUrl && (
         <a
           href={messengerUrl}

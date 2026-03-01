@@ -3,7 +3,7 @@ import { DEFAULT_FAQ_ACCORDION } from "@/config/dashboard-config";
 import React from "react";
 import { SECTION_NAV_MAP, slugify, categoryLabelForSection } from "@/lib/utils/blocks";
 
-import FloatingCTA from "@/components/shared/FloatingCTA";
+import SmartContactCTA from "@/components/shared/SmartContactCTA";
 import SiteEditorSidebar from "@/components/shared/SiteEditorSidebar";
 
 import { Header, LeadMagnetFooter, SimpleFooter, MinimalFooter, PromoBannerStrip } from "@/components/shared/BlockRegistry";
@@ -286,10 +286,12 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
         </div>
       )}
 
-      <FloatingCTA
+      <SmartContactCTA
         phone={brand.phone ?? contact.phone}
-        ctaText={brand.ctaText ?? data.hero?.primaryCTA ?? "Get started"}
-        ctaHref={brand.ctaHref ?? "/contact"}
+        messengerUrl={messengerStickyCTA?.messengerUrl ?? contact.messenger}
+        viberNumber={messengerStickyCTA?.viberNumber ?? contact.viber}
+        ctaText={brand.ctaText ?? data.hero?.primaryCTA ?? "Book Service"}
+        ctaHref={brand.ctaHref ?? "#contact"}
       />
     </div>
   );

@@ -76,47 +76,49 @@ export default async function AdminDashboardRequests() {
         return (
           <div
             key={request.id}
-            className="flex items-center gap-4 p-4 bg-card border border-border rounded-2xl hover:border-primary/40 hover:shadow-sm transition-all group"
+            className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-card border border-border rounded-2xl hover:border-primary/40 hover:shadow-sm transition-all group"
           >
-            {/* Avatar */}
-            <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 uppercase">
-              {displayName.charAt(0)}
-            </div>
-
-            {/* Main info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-sm text-foreground truncate">{displayName}</span>
-                <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-muted-foreground">
-                  {subdomain}
-                </code>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${sectionColor(request.section_id)}`}>
-                  {sectionLabel(request.section_id)}
-                </span>
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              {/* Avatar */}
+              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 uppercase">
+                {displayName.charAt(0)}
               </div>
-              <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
-                <span className="flex items-center gap-1">
-                  <User className="w-3 h-3" />
-                  {email}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {format(new Date(request.created_at), "MMM d, yyyy · HH:mm")}
-                </span>
+
+              {/* Main info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-sm text-foreground truncate">{displayName}</span>
+                  <code className="bg-muted px-1.5 py-0.5 rounded text-[10px] font-mono text-muted-foreground">
+                    {subdomain}
+                  </code>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${sectionColor(request.section_id)}`}>
+                    {sectionLabel(request.section_id)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground flex-wrap font-medium">
+                  <span className="flex items-center gap-1">
+                    <User className="w-3 h-3 text-primary/60" />
+                    {email}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-primary/60" />
+                    {format(new Date(request.created_at), "MMM d, yyyy · HH:mm")}
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* Pending badge + action */}
-            <div className="flex items-center gap-3 shrink-0">
-              <span className="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 px-2.5 py-1 rounded-full font-medium">
+            <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-border">
+              <span className="text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 px-3 py-1 rounded-full font-black uppercase tracking-widest">
                 Pending
               </span>
               <Link
                 href={`/admin/dashboard/requests/${request.id}`}
-                className="p-2 rounded-full hover:bg-muted transition-colors text-primary"
-                title="Review request"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted hover:bg-primary/10 hover:text-primary transition-all text-[10px] font-black uppercase tracking-widest"
               >
                 <Eye className="w-4 h-4" />
+                Review
               </Link>
             </div>
           </div>

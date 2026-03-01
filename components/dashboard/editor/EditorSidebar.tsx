@@ -112,7 +112,7 @@ export function EditorSidebar({
 }: EditorSidebarProps) {
 
   return (
-    <aside className={`fixed top-16 left-0 w-[280px] sm:w-[320px] bottom-0 border-r border-border bg-background flex flex-col shrink-0 shadow-xl z-[48] transition-transform duration-300 lg:translate-x-0 lg:static lg:z-20 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+    <aside className={`fixed top-16 left-0 w-[280px] sm:w-[320px] bottom-14 lg:bottom-0 border-r border-border bg-background flex flex-col shrink-0 shadow-xl z-[48] transition-transform duration-300 lg:translate-x-0 lg:static lg:z-20 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       <div className="p-6 border-b border-border space-y-4 bg-muted/20">
         <Link
           href="/dashboard"

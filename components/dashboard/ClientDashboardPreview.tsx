@@ -11,7 +11,9 @@ import { AiSeoModal } from "@/components/dashboard/AiSeoModal"
 import { EditorHeader } from "@/components/dashboard/editor/EditorHeader"
 import { EditorSidebar } from "@/components/dashboard/editor/EditorSidebar"
 import PreviewFrame from "@/components/dashboard/PreviewFrame"
+import { PreviewOverlay } from "@/components/dashboard/PreviewOverlay"
 import { useEditorState } from "@/hooks/dashboard/useEditorState"
+import { Layout, Eye, Layers } from "lucide-react"
 
 interface DashboardClientProps {
   project: any
@@ -23,6 +25,7 @@ interface DashboardClientProps {
 }
 
 export default function ClientDashboardPreview({ project, user, initialPlansConfig }: DashboardClientProps) {
+  const [overlayEnabled, setOverlayEnabled] = React.useState(true)
   const {
     iframeRef,
     selectedSection, setSelectedSection,
@@ -53,6 +56,7 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
     collapsedGroups, setCollapsedGroups,
     aiSeoOpen, setAiSeoOpen,
     mobileSidebarOpen, setMobileSidebarOpen,
+    sectionRects,
     colorPaletteRef,
     typographyRef,
     colorPaletteRectRef,
@@ -86,7 +90,15 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
 
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] mt-16 bg-background overflow-hidden selection:bg-primary/20">
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden relative">
+        {/* Mobile backdrop — closes sidebar on tap */}
+        {mobileSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-[47] lg:hidden"
+            aria-hidden
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+        )}
         {/* Sidebar */}
         <EditorSidebar
           mobileSidebarOpen={mobileSidebarOpen}
@@ -210,6 +222,35 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
               previewPath={`/preview/${project.id}${activePage?.slug ? ('?path=' + activePage.slug) : ''}`}
               iframeRef={iframeRef}
               className="pt-14 lg:pt-14"
+              chromeActions={
+                <button
+                  onClick={() => setOverlayEnabled((v) => !v)}
+                  title={overlayEnabled ? "Hide section controls" : "Show section controls"}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold border transition-all duration-150 ${
+                    overlayEnabled
+                      ? "bg-primary text-primary-foreground border-primary/40 hover:bg-primary/85"
+                      : "bg-muted text-muted-foreground border-border hover:text-foreground"
+                  }`}
+                >
+                  <Layers className="w-3 h-3" />
+                  {overlayEnabled ? "Controls On" : "Controls Off"}
+                </button>
+              }
+              overlayContent={
+                overlayEnabled ? <PreviewOverlay
+                  sectionRects={sectionRects}
+                  activeSections={activeSections}
+                  activePreviewSection={activePreviewSection}
+                  selectedSection={selectedSection}
+                  setSelectedSection={setSelectedSection}
+                  setActivePreviewSection={setActivePreviewSection}
+                  lockPreviewHighlight={lockPreviewHighlight}
+                  scrollToSection={scrollToSection}
+                  removeSectionAtIndex={removeSectionAtIndex}
+                  moveToSectionIndex={moveToSectionIndex}
+                  setAddSectionOpen={setAddSectionOpen}
+                /> : null
+              }
             />
           </div>
         </main>
@@ -275,6 +316,28 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
             }
           }}
         />
+      </div>
+
+      {/* Mobile bottom tab bar — Edit / Preview toggle */}
+      <div className="lg:hidden flex shrink-0 border-t border-border bg-background/95 backdrop-blur-md z-[45]">
+        <button
+          onClick={() => setMobileSidebarOpen(true)}
+          className={`flex-1 flex flex-col items-center gap-1 py-3 text-[11px] font-black uppercase tracking-widest transition-colors ${
+            mobileSidebarOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Layout className="w-5 h-5" />
+          Edit
+        </button>
+        <button
+          onClick={() => setMobileSidebarOpen(false)}
+          className={`flex-1 flex flex-col items-center gap-1 py-3 text-[11px] font-black uppercase tracking-widest transition-colors ${
+            !mobileSidebarOpen ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Eye className="w-5 h-5" />
+          Preview
+        </button>
       </div>
 
       {/* Footer */}

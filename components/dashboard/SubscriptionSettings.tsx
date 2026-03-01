@@ -6,7 +6,7 @@ import { toggleAutoRenew, cancelSubscription } from "@/app/actions/subscription"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import UpgradeButton from "@/components/dashboard/UpgradeButton"
-import { resolveAmountFromPlans } from "@/lib/plans-config"
+import { resolveAmountFromPlans, resolvePlan } from "@/lib/plans-config"
 
 interface SubscriptionSettingsProps {
   project: {
@@ -39,7 +39,7 @@ export default function SubscriptionSettings({ project, initialPlansConfig }: Su
 
   // Resolve plan details from config
   const planId = project.subscription_plan_id || "basic"
-  const plan = PLANS[planId] || PLANS.basic
+  const plan = resolvePlan(PLANS, planId)
   const amount = resolveAmountFromPlans(PLANS, planId, hasPaidInitial, interval as any)
 
 
@@ -182,8 +182,8 @@ export default function SubscriptionSettings({ project, initialPlansConfig }: Su
             <p className="text-sm font-bold">Unlock Professional Features</p>
             <p className="text-xs text-muted-foreground">
               {hasPaidInitial
-                ? `Continue with our recurring plans starting at only ₱${(PLANS.basic.recurringAmount / 100).toLocaleString()}/month.`
-                : `Get started with our Basic plan for ₱${(PLANS.basic.initialAmount / 100).toLocaleString()} (Includes first month care). ${ENABLE_ANNUAL_PLANS ? 'Switch to Annual for extra savings.' : ''}`}
+                ? `Continue with our recurring plans starting at only ₱${(resolvePlan(PLANS, 'basic').recurringAmount / 100).toLocaleString()}/month.`
+                : `Get started with our Basic plan for ₱${(resolvePlan(PLANS, 'basic').initialAmount / 100).toLocaleString()} (Includes first month care). ${ENABLE_ANNUAL_PLANS ? 'Switch to Annual for extra savings.' : ''}`}
             </p>
           </div>
           <UpgradeButton

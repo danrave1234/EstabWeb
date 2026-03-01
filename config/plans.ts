@@ -109,14 +109,20 @@ export function resolveDescription(id: string, isRecurring: boolean = false, int
     return `${plan.name} — ${isYearly ? 'Annual' : 'Monthly'} Care Renewal`
 }
 
-export function resolveAmountFromPlans(PLANS: any, id: string, isRecurring: boolean = false, interval: BillingInterval = 'monthly') {
-    const plan = PLANS[id] || PLANS.basic
+function resolvePlanFromDynamic(dynamicPlans: any, id: string) {
+    return (dynamicPlans && (dynamicPlans[id] || dynamicPlans.basic))
+        || PLANS[id as PlanId]
+        || PLANS.basic
+}
+
+export function resolveAmountFromPlans(dynamicPlans: any, id: string, isRecurring: boolean = false, interval: BillingInterval = 'monthly') {
+    const plan = resolvePlanFromDynamic(dynamicPlans, id)
     if (!isRecurring) return plan.initialAmount
     return interval === 'yearly' ? (plan as any).yearlyAmount : plan.recurringAmount
 }
 
-export function resolveDescriptionFromPlans(PLANS: any, id: string, isRecurring: boolean = false, interval: BillingInterval = 'monthly') {
-    const plan = PLANS[id] || PLANS.basic
+export function resolveDescriptionFromPlans(dynamicPlans: any, id: string, isRecurring: boolean = false, interval: BillingInterval = 'monthly') {
+    const plan = resolvePlanFromDynamic(dynamicPlans, id)
     const isYearly = interval === 'yearly'
     if (!isRecurring) return `${plan.name} — Initial Setup + ${isYearly ? '1 Year' : '1 Month'} Care`
     return `${plan.name} — ${isYearly ? 'Annual' : 'Monthly'} Care Renewal`

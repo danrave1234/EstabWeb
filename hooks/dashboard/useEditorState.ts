@@ -142,6 +142,7 @@ export function useEditorState(project: any) {
     const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>({ 'seo-og': true })
     const [aiSeoOpen, setAiSeoOpen] = React.useState(false)
     const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false)
+    const [sectionRects, setSectionRects] = React.useState<Array<{ id: string; index: number; top: number; height: number }>>([])
 
     const colorPaletteRef = React.useRef<HTMLButtonElement>(null)
     const typographyRef = React.useRef<HTMLButtonElement>(null)
@@ -439,6 +440,23 @@ export function useEditorState(project: any) {
                 const sectionId = (e.data as any).sectionId
                 if (sectionId === manualScrollTargetRef.current) return
                 setActivePreviewSection(sectionId)
+            } else if ((e.data as any)?.type === 'SECTION_RECTS') {
+                setSectionRects((e.data as any).rects || [])
+            } else if ((e.data as any)?.type === 'PREVIEW_ACTIVE_SECTION') {
+                const sectionId = (e.data as any).sectionId as string | undefined
+                if (!sectionId) return
+                if (!activeSections.includes(sectionId) && sectionId !== 'footer') return
+                if (manualScrollLockRef.current) {
+                    const target = manualScrollTargetRef.current
+                    if (target && sectionId !== target) return
+                    manualScrollLockRef.current = false
+                    manualScrollTargetRef.current = null
+                    if (manualScrollTimeoutRef.current) {
+                        clearTimeout(manualScrollTimeoutRef.current)
+                        manualScrollTimeoutRef.current = null
+                    }
+                }
+                setActivePreviewSection(sectionId)
             }
         }
         window.addEventListener('message', onMessage)
@@ -586,6 +604,7 @@ export function useEditorState(project: any) {
         collapsedGroups, setCollapsedGroups,
         aiSeoOpen, setAiSeoOpen,
         mobileSidebarOpen, setMobileSidebarOpen,
+        sectionRects,
         colorPaletteRef,
         typographyRef,
         colorPaletteRectRef,

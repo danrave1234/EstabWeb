@@ -13,15 +13,15 @@ import { ClipboardList, Globe, Layout, RotateCcw, Upload } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 
 const ACTION_META: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  publish:       { label: 'Published',      icon: <Upload className="w-3.5 h-3.5" />,      color: 'text-green-500' },
-  rollback:      { label: 'Rollback',       icon: <RotateCcw className="w-3.5 h-3.5" />,   color: 'text-yellow-500' },
-  preset_change: { label: 'Preset Changed', icon: <Layout className="w-3.5 h-3.5" />,      color: 'text-blue-500' },
-  domain_change: { label: 'Domain Changed', icon: <Globe className="w-3.5 h-3.5" />,       color: 'text-purple-500' },
+  publish: { label: 'Published', icon: <Upload className="w-3.5 h-3.5" />, color: 'text-green-500' },
+  rollback: { label: 'Rollback', icon: <RotateCcw className="w-3.5 h-3.5" />, color: 'text-yellow-500' },
+  preset_change: { label: 'Preset Changed', icon: <Layout className="w-3.5 h-3.5" />, color: 'text-blue-500' },
+  domain_change: { label: 'Domain Changed', icon: <Globe className="w-3.5 h-3.5" />, color: 'text-purple-500' },
 }
 
 function formatMetadata(action: string, metadata: Record<string, unknown>) {
-  if (action === 'publish')       return `v${metadata.version}`
-  if (action === 'rollback')      return `v${metadata.restoredVersion} → v${metadata.newVersion}`
+  if (action === 'publish') return `v${metadata.version}`
+  if (action === 'rollback') return `v${metadata.restoredVersion} → v${metadata.newVersion}`
   if (action === 'preset_change') return String(metadata.presetKey ?? '')
   if (action === 'domain_change') return String(metadata.domain ?? '')
   return JSON.stringify(metadata)

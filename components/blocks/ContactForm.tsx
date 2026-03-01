@@ -45,7 +45,7 @@ export default function ContactForm({
     e.preventDefault();
     setIsSubmitted(true);
     trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
-    
+
     // Simulate API call
     setTimeout(() => {
       router.push("/success");
@@ -55,82 +55,87 @@ export default function ContactForm({
   return (
     <section id="contact" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-muted/30 reveal">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3">
+        <div className="text-center mb-16 sm:mb-24">
+          <h2 className="text-3xl sm:text-6xl md:text-7xl font-black text-foreground mb-6 tracking-tighter leading-tight uppercase underline decoration-primary/30 decoration-8 underline-offset-8">
             {formHeading}
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base sm:text-xl text-muted-foreground font-medium opacity-70 max-w-2xl mx-auto leading-relaxed">
             {tagline}
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
-          <div className="lg:col-span-6 bg-background p-4 sm:p-8 rounded-2xl shadow-sm border border-border">
-            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-foreground mb-1 sm:mb-1.5 ml-1">{nameLabel}</label>
-                <input
-                  type="text"
-                  placeholder="John Doe"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                  required
-                  className="w-full min-h-[40px] sm:min-h-[44px] px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-base bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-foreground mb-1 sm:mb-1.5 ml-1">{emailLabel}</label>
-                <input
-                  type="email"
-                  placeholder="john@example.com"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, email: e.target.value }))
-                  }
-                  required
-                  className="w-full min-h-[40px] sm:min-h-[44px] px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-base bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-                />
+          <div className="lg:col-span-12 xl:col-span-7 bg-background p-8 sm:p-16 rounded-[3rem] border border-border/40 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary/20 via-primary to-primary/20" />
+
+            <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <label className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-foreground/60 ml-1">{nameLabel}</label>
+                  <input
+                    type="text"
+                    placeholder="John Doe"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, name: e.target.value }))
+                    }
+                    required
+                    className="w-full bg-muted/30 border-2 border-transparent rounded-2xl p-5 outline-none focus:border-primary focus:bg-background transition-all font-medium placeholder:text-muted-foreground/40 shadow-inner"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-foreground/60 ml-1">{emailLabel}</label>
+                  <input
+                    type="email"
+                    placeholder="john@example.com"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, email: e.target.value }))
+                    }
+                    required
+                    className="w-full bg-muted/30 border-2 border-transparent rounded-2xl p-5 outline-none focus:border-primary focus:bg-background transition-all font-medium placeholder:text-muted-foreground/40 shadow-inner"
+                  />
+                </div>
               </div>
               <button
                 type="submit"
                 disabled={isSubmitted}
                 onClick={() => trackEvent({ type: 'cta_click', section_key: 'contact', cta_id: 'contact_form_submit' })}
-                className="w-full min-h-[40px] sm:min-h-[44px] px-6 py-2 sm:py-3 mt-2 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity touch-manipulation text-xs sm:text-base"
+                className="w-full py-5 bg-primary text-primary-foreground font-black rounded-2xl hover:shadow-[0_20px_40px_-12px_rgba(var(--primary-rgb),0.5)] active:scale-95 transition-all disabled:opacity-50 uppercase tracking-[0.2em] text-sm"
               >
                 {isSubmitted ? formThankYouText : formSubmitText}
               </button>
             </form>
           </div>
 
-          <div className="lg:col-span-6 space-y-4 sm:space-y-8 lg:pt-2">
-            <h3 className="text-[10px] sm:text-sm font-bold uppercase tracking-widest text-primary/70 mb-4 sm:mb-6 ml-1">
+          <div className="lg:col-span-12 xl:col-span-5 space-y-6 sm:space-y-10 lg:pt-4">
+            <h3 className="font-serif text-2xl sm:text-4xl font-black text-foreground leading-tight">
               {infoLabel}
             </h3>
-            
-            <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-6">
+
+            <div className="grid grid-cols-1 gap-4 sm:gap-6">
               <a
                 href={`tel:${phoneHref}`}
                 onClick={() => trackLead('call')}
-                className="col-span-2 lg:col-span-1 group flex items-center gap-2 sm:gap-4 p-3 sm:p-4 bg-background border border-border rounded-xl hover:border-primary transition-all duration-200 shadow-sm"
+                className="group relative flex items-center gap-6 p-6 sm:p-10 bg-background border border-border/40 rounded-[2rem] hover:shadow-[0_32px_64px_-16px_rgba(var(--primary-rgb),0.15)] hover:border-primary/20 transition-all duration-500 overflow-hidden"
               >
-                <div className="w-8 h-8 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-6 h-6" />
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500 relative z-10 shadow-lg shadow-primary/5 transform group-hover:rotate-6">
+                  <PhoneIcon weight="bold" className="w-8 h-8" />
                 </div>
-                <div>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">{callLabel}</p>
-                  <p className="text-[10px] sm:text-lg font-bold text-foreground">{phone}</p>
+                <div className="relative z-10">
+                  <p className="text-[10px] sm:text-xs text-primary font-black uppercase tracking-[0.2em] mb-1">{callLabel}</p>
+                  <p className="text-lg sm:text-2xl font-black text-foreground tracking-tight">{phone}</p>
                 </div>
               </a>
 
-              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 p-3 sm:p-4 bg-background/50 border border-border/50 rounded-xl">
-                <div className="w-6 h-6 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center text-muted-foreground shrink-0 mt-0.5">
-                  <MapPinIcon weight="duotone" className="w-3 h-3 sm:w-5 sm:h-5" />
+              <div className="group relative flex items-start gap-6 p-6 sm:p-10 bg-muted/20 border border-border/40 rounded-[2rem] overflow-hidden">
+                <div className="w-10 h-10 bg-background rounded-xl flex items-center justify-center text-primary shrink-0 mt-1 shadow-sm">
+                  <MapPinIcon weight="bold" className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5 sm:mb-1">{locationLabel}</p>
-                  <p className="text-xs sm:text-sm text-foreground leading-relaxed whitespace-pre-line line-clamp-2 sm:line-clamp-none">
+                  <p className="text-[10px] sm:text-xs text-primary font-black uppercase tracking-[0.2em] mb-2">{locationLabel}</p>
+                  <p className="text-base sm:text-xl font-black text-foreground/80 leading-tight uppercase tracking-tight">
                     {address}
                   </p>
                 </div>
@@ -138,14 +143,15 @@ export default function ContactForm({
 
               <a
                 href={`mailto:${email}`}
-                className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 sm:p-4 bg-background/50 border border-border/50 rounded-xl hover:border-primary transition-all duration-200"
+                className="group relative flex items-center gap-6 p-6 sm:p-10 bg-muted/20 border border-border/40 rounded-[2rem] hover:bg-background hover:shadow-[0_32px_64px_-16px_rgba(var(--primary-rgb),0.15)] hover:border-primary/20 transition-all duration-500 overflow-hidden"
               >
-                <div className="w-6 h-6 sm:w-10 sm:h-10 bg-muted rounded-lg flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary shrink-0 transition-colors">
-                  <EnvelopeIcon weight="duotone" className="w-3 h-3 sm:w-5 sm:h-5" />
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="w-10 h-10 bg-background rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground shrink-0 transition-all duration-500 shadow-sm transform group-hover:rotate-3">
+                  <EnvelopeIcon weight="bold" className="w-6 h-6" />
                 </div>
-                <div className="overflow-hidden">
-                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">{emailUsLabel}</p>
-                  <span className="text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors font-medium truncate block">{email}</span>
+                <div className="overflow-hidden relative z-10">
+                  <p className="text-[10px] sm:text-xs text-primary font-black uppercase tracking-[0.2em] mb-1">{emailUsLabel}</p>
+                  <span className="text-sm sm:text-lg text-foreground font-black tracking-tight truncate block">{email}</span>
                 </div>
               </a>
             </div>

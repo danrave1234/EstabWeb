@@ -134,7 +134,7 @@ export async function GET(req: Request) {
   const { data: expiredProjects, error: expiredError } = await supabase
     .from('projects')
     .select('id, subdomain, custom_domain, subscription_status, subscription_ends_at, trial_ends_at')
-    .in('subscription_status', ['active', 'trial'])
+    .in('subscription_status', ['active', 'trial', 'expired'])
     .or(`subscription_ends_at.lt.${now},trial_ends_at.lt.${now}`)
 
   const downgradeResults: { projectId: string; status: string; domain?: string; error?: string }[] = []
@@ -150,8 +150,10 @@ export async function GET(req: Request) {
         proj.subscription_status === 'trial' &&
         proj.trial_ends_at &&
         new Date(proj.trial_ends_at) < new Date()
+      // Projects stuck in 'expired' limbo (set by webhook) always need downgrade cleanup
+      const isWebhookExpired = proj.subscription_status === 'expired'
 
-      if (!isActiveExpired && !isTrialExpired) continue
+      if (!isActiveExpired && !isTrialExpired && !isWebhookExpired) continue
 
       try {
         // Remove custom domain from Vercel if set
@@ -159,12 +161,15 @@ export async function GET(req: Request) {
           await removeDomainFromVercel(proj.custom_domain)
         }
 
-        // Downgrade project: set status to free, clear custom_domain
+        // Downgrade project: set status to free, clear custom_domain and reset plan/limits
         const { error: downgradeError } = await supabase
           .from('projects')
           .update({
             subscription_status: 'free',
+            subscription_plan_id: 'free',
             custom_domain: null,
+            publish_limit: 5,
+            publish_limit_daily: 1,
           })
           .eq('id', proj.id)
 

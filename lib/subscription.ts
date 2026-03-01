@@ -39,6 +39,9 @@ export function isAnalyticsAllowed(project: ProjectSubscription): boolean {
   // Admin granted always has access
   if (status === 'admin_granted') return true
 
+  // Must be on an active/trial subscription — expired or free status loses access
+  if (!['active', 'trial'].includes(status)) return false
+
   // Only basic, pro, and ecommerce have analytics. Free does not.
   // Trial users also get analytics if they are on a trial of a paid plan.
   return ['basic', 'pro', 'ecommerce', 'custom'].includes(plan)
@@ -47,6 +50,9 @@ export function isAnalyticsAllowed(project: ProjectSubscription): boolean {
 /** Whether the plan has advanced analytics (Pro and above) */
 export function hasAdvancedAnalytics(project: ProjectSubscription): boolean {
   const plan = getPlanType(project)
+  const status = (project?.subscription_status || 'free').toLowerCase() as SubscriptionStatus
+  // Must be on an active subscription (or admin_granted) to use advanced analytics
+  if (!['active', 'trial', 'admin_granted'].includes(status)) return false
   return ['pro', 'ecommerce', 'custom'].includes(plan)
 }
 

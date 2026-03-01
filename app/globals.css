@@ -30,6 +30,8 @@
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
   --font-mono: var(--font-geist-mono);
+  /* Custom xs breakpoint — between mobile and sm (640px) */
+  --breakpoint-xs: 480px;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

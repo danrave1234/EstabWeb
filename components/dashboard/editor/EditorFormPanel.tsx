@@ -1,7 +1,7 @@
 import * as React from "react"
 import { createPortal } from "react-dom"
 import { 
-  ChevronRight, Trash2, Plus, Image as ImageIcon, X, CreditCard, Globe, Search, Layout, Settings, ChevronDown, Zap, CheckCircle2, AlertTriangle, RotateCcw
+  ChevronRight, Trash2, Plus, Image as ImageIcon, X, CreditCard, Globe, Search, Layout, ChevronDown, Zap, CheckCircle2, AlertTriangle, RotateCcw
 } from "lucide-react"
 import ImageUpload from "@/components/shared/ImageUpload"
 import AwardIconPicker from "@/components/dashboard/AwardIconPicker"
@@ -16,6 +16,25 @@ import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo"
 import { toast } from "sonner"
 
 const formatSectionLabel = (id: string) => BLOCK_MAP[id]?.label ?? id.replace(/[-_]/g, " ").replace(/--/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
+
+function getFieldLimits(key: string): { suggested: number; max: number } {
+  const k = key.toLowerCase()
+  if (k.includes('url') || k.includes('href') || k.includes('src') || k.includes('embed') || k.includes('map')) return { suggested: 300, max: 500 }
+  if (k.includes('keyword')) return { suggested: 200, max: 300 }
+  if (k.includes('headline') || k.includes('heading')) return { suggested: 80, max: 120 }
+  if (k.includes('quotetitle') || k.includes('title')) return { suggested: 80, max: 120 }
+  if (k.includes('tagline') || k.includes('subtitle') || k.includes('subheading') || k.includes('subtext') || k.includes('slogan')) return { suggested: 120, max: 180 }
+  if (k.includes('description') || k.includes('body') || k.includes('content') || k.includes('summary') || k.includes('excerpt') || k.includes('bio') || k.includes('about') || k.includes('answer') || k.includes('text')) return { suggested: 400, max: 700 }
+  if (k.includes('cta') || k.includes('button')) return { suggested: 40, max: 70 }
+  if (k.includes('label') || k.includes('badge') || k.includes('tag') || k.includes('category')) return { suggested: 40, max: 70 }
+  if (k.includes('phone') || k.includes('email')) return { suggested: 80, max: 120 }
+  if (k.includes('address') || k.includes('location')) return { suggested: 120, max: 180 }
+  if (k.includes('name') || k.includes('author') || k.includes('specialty') || k.includes('role')) return { suggested: 60, max: 100 }
+  if (k.includes('question')) return { suggested: 160, max: 240 }
+  if (k.includes('price') || k.includes('period') || k.includes('rate') || k.includes('number')) return { suggested: 20, max: 40 }
+  if (k.includes('note') || k.includes('feature') || k.includes('service')) return { suggested: 100, max: 160 }
+  return { suggested: 120, max: 180 }
+}
 
 interface EditorFormPanelProps {
     selectedSection: string | null;
@@ -52,7 +71,7 @@ export function EditorFormPanel({
     return createPortal(
             <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-6">
               <div
-                className="absolute inset-0 bg-black/50"
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                 aria-hidden
                 onPointerDown={() => {
                   backdropPointerDownRef.current = true
@@ -63,67 +82,67 @@ export function EditorFormPanel({
                 }}
               />
               <div
-                className="relative z-[210] p-0 overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh] min-h-0 border border-border bg-background shadow-2xl w-full sm:w-[95vw] sm:max-w-[840px] rounded-2xl"
+                className="relative z-[210] p-0 overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh] min-h-0 border border-border/60 bg-background shadow-[0_32px_80px_-12px_rgba(0,0,0,0.35)] w-full sm:w-[95vw] sm:max-w-[840px] rounded-2xl"
                 onClick={(event) => event.stopPropagation()}
                 role="dialog"
                 aria-modal="true"
               >
-                <button
-                  type="button"
-                  onClick={() => setSelectedSection(null)}
-                  className="absolute right-4 top-4 z-20 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  aria-label="Close"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-                {/* Polished header - shrink-0 keeps it always visible */}
-                <div className="relative overflow-hidden shrink-0">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-primary/4 to-transparent" aria-hidden />
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" aria-hidden />
-                  <div className="relative p-4 sm:p-6 sm:pb-4">
+                {/* Premium header */}
+                <div className="relative overflow-hidden shrink-0 bg-gradient-to-br from-background via-background to-muted/30">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/6 via-primary/3 to-transparent" aria-hidden />
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" aria-hidden />
+                  <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-primary via-primary/70 to-transparent" aria-hidden />
+                  <div className="relative p-5 sm:p-6 sm:pb-5">
                     <div className="flex items-start gap-3 sm:gap-4">
-                      <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                      <div className="shrink-0 w-11 h-11 sm:w-13 sm:h-13 rounded-xl bg-primary/10 border border-primary/20 shadow-sm shadow-primary/10 flex items-center justify-center">
                         {selectedSection === 'subscription' ? (
-                          <CreditCard className="w-6 h-6 text-primary" />
+                          <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                         ) : selectedSection === 'domain' ? (
-                          <Globe className="w-6 h-6 text-primary" />
+                          <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                         ) : selectedSection === 'seo' ? (
-                          <Search className="w-6 h-6 text-primary" />
+                          <Search className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                         ) : (
-                          <Layout className="w-6 h-6 text-primary" />
+                          <Layout className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                         )}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <h2 className="capitalize flex items-center gap-2 text-base sm:text-lg font-bold tracking-tight">
-                          {selectedSection === 'subscription' ? (
-                            <>Subscription & Plan</>
-                          ) : selectedSection === 'domain' ? (
-                            <>Domain Settings</>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[10px] uppercase tracking-tighter">Editor</span>
-                              <span>{selectedSection?.replace(/-/g, ' ')}</span>
-                            </div>
-                          )}
-                        </h2>
-                        <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm leading-relaxed line-clamp-1 sm:line-clamp-none text-muted-foreground">
+                      <div className="min-w-0 flex-1 pr-10">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-[0.15em]">
+                            {selectedSection === 'subscription' ? 'Billing' : selectedSection === 'domain' ? 'Domain' : selectedSection === 'seo' ? 'SEO' : 'Section'}
+                          </span>
+                        </div>
+                        <h2 className="text-base sm:text-lg font-black tracking-tight text-foreground">
                           {selectedSection === 'subscription'
-                            ? "View plan and auto-renewal."
+                            ? 'Subscription & Plan'
                             : selectedSection === 'domain'
-                              ? "Manage your subdomain and connect a custom domain."
+                              ? 'Domain Settings'
+                              : formatSectionLabel(selectedSection || '')}
+                        </h2>
+                        <p className="mt-1 text-[11px] sm:text-xs leading-relaxed text-muted-foreground">
+                          {selectedSection === 'subscription'
+                            ? 'View your current plan, billing status, and auto-renewal settings.'
+                            : selectedSection === 'domain'
+                              ? 'Manage your subdomain and connect a custom domain.'
                               : selectedSection === 'seo'
-                                ? "Set your page title, meta description, and keywords for search engines."
-                                : "Customize content and images."}
+                                ? 'Set your page title, meta description, and keywords for search engines.'
+                                : 'Edit the content, text, and images for this section.'}
                         </p>
                       </div>
                     </div>
                   </div>
-
-                  {/* Tabs removed: global_settings now integrated into sidebar reordering */}
+                  {/* Close button — premium styled */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSection(null)}
+                    className="absolute right-4 top-4 z-20 w-8 h-8 rounded-xl bg-muted/60 hover:bg-muted border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all hover:scale-105 active:scale-95"
+                    aria-label="Close"
+                  >
+                    <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  </button>
                 </div>
 
                 <div
-                  className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-4 sm:space-y-6"
+                  className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-4 sm:space-y-6 custom-scrollbar"
                   onScroll={() => { setColorPaletteOpen(false); setTypographyOpen(false) }}
                 >
                   {selectedSection === 'subscription' ? (
@@ -138,20 +157,17 @@ export function EditorFormPanel({
                     />
                   ) : (
                     <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
-                          <Settings className="w-4 h-4 text-primary" />
-                          {formatSectionLabel(selectedSection || "")} Settings
-                        </h3>
-                        <div className="flex gap-2">
+                      <div className="flex items-center justify-between mb-2 px-1">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Fields</span>
+                        <div className="flex items-center gap-3">
                           <button
                             type="button"
                             onClick={() => setCollapsedGroups({})}
-                            className="text-[10px] font-bold text-primary hover:underline"
+                            className="text-[10px] font-black text-primary hover:text-primary/80 uppercase tracking-widest transition-colors"
                           >
                             Expand All
                           </button>
-                          <span className="text-muted-foreground opacity-30">|</span>
+                          <span className="text-border">·</span>
                           <button
                             type="button"
                             onClick={() => {
@@ -163,7 +179,7 @@ export function EditorFormPanel({
                               });
                               setCollapsedGroups(allKeys);
                             }}
-                            className="text-[10px] font-bold text-primary hover:underline"
+                            className="text-[10px] font-black text-primary hover:text-primary/80 uppercase tracking-widest transition-colors"
                           >
                             Collapse All
                           </button>
@@ -303,9 +319,13 @@ export function EditorFormPanel({
 
                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
-                                          <label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">Menu Name (Navbar)</label>
+                                          <label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground flex items-center justify-between">
+                                            <span>Menu Name (Navbar)</span>
+                                            {(() => { const len = (page.label || '').length; return <span className={`text-[9px] font-bold ${len >= 30 ? 'text-red-500' : len >= 20 ? 'text-amber-500' : 'text-muted-foreground/60'}`}>{len}<span className="font-normal opacity-60">/20</span></span> })()}
+                                          </label>
                                           <input
                                             value={page.label || ''}
+                                            maxLength={30}
                                             onChange={(e) => {
                                               const next = [...pages]
                                               next[idx] = { ...page, label: e.target.value }
@@ -684,7 +704,10 @@ export function EditorFormPanel({
                                         const isSubBoolean = typeof subVal === 'boolean';
                                         return (
                                           <div key={subKey} className="space-y-2">
-                                            <label className="text-[10px] font-bold text-muted-foreground uppercase block">{fieldLabel(subKey)}</label>
+                                            <label className="text-[10px] font-bold text-muted-foreground uppercase flex items-center justify-between">
+                                              <span>{fieldLabel(subKey)}</span>
+                                              {!isSubBoolean && !isSubImage && typeof subVal === 'string' && (() => { const { suggested: sg, max: mx } = getFieldLimits(subKey); const len = (subVal as string).length; return <span className={`text-[9px] font-bold ${len >= mx ? 'text-red-500' : len >= sg ? 'text-amber-500' : 'text-muted-foreground/60'}`}>{len}<span className="font-normal opacity-60">/{sg}</span></span> })()}
+                                            </label>
                                             {isSubBoolean ? (
                                               <div className="flex flex-col gap-2 p-3 bg-muted/20 border border-border rounded-lg">
                                                 <div className="flex gap-4">
@@ -739,6 +762,7 @@ export function EditorFormPanel({
                                             ) : isSubTextarea ? (
                                               <textarea
                                                 value={subVal as string}
+                                                maxLength={getFieldLimits(subKey).max}
                                                 onChange={(e) => {
                                                   const sectionKey = sectionIdToKey(selectedSection!)
                                                   const nextObj = { ...(value as object), [subKey]: e.target.value }
@@ -752,6 +776,7 @@ export function EditorFormPanel({
                                             ) : (
                                               <input
                                                 value={subVal as string}
+                                                maxLength={getFieldLimits(subKey).max}
                                                 onChange={(e) => {
                                                   const sectionKey = sectionIdToKey(selectedSection!)
                                                   const nextObj = { ...(value as object), [subKey]: e.target.value }
@@ -777,8 +802,8 @@ export function EditorFormPanel({
                             return (
                               <div key={key} className="space-y-2">
                                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
-                                  {fieldLabel(key).toLowerCase()}
-                                  {isImage && <ImageIcon className="w-3 h-3 opacity-50" />}
+                                  <span>{fieldLabel(key).toLowerCase()}</span>
+                                  {isImage ? <ImageIcon className="w-3 h-3 opacity-50" /> : (!isBoolean && !isDatetime && typeof value === 'string') && (() => { const { suggested: sg, max: mx } = getFieldLimits(key); const len = (value as string).length; return <span className={`text-[9px] font-bold ${len >= mx ? 'text-red-500' : len >= sg ? 'text-amber-500' : 'text-muted-foreground/60'}`}>{len}<span className="font-normal opacity-60">/{sg}</span></span> })()}
                                 </label>
 
                                 {isBoolean ? (
@@ -867,6 +892,7 @@ export function EditorFormPanel({
                                 ) : isTextarea ? (
                                   <textarea
                                     value={value as string}
+                                    maxLength={getFieldLimits(key).max}
                                     onChange={(e) => {
                                       const val = e.target.value
                                       const sectionKey = sectionIdToKey(selectedSection!)
@@ -883,6 +909,7 @@ export function EditorFormPanel({
                                   <input
                                     type="text"
                                     value={value as string}
+                                    maxLength={getFieldLimits(key).max}
                                     onChange={(e) => {
                                       const val = e.target.value
                                       const sectionKey = sectionIdToKey(selectedSection!)
@@ -1009,8 +1036,8 @@ export function EditorFormPanel({
                                                 <ImageUpload value={(itemObj.imageUrl as string) || ''} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, imageUrl: url }; updateItems(next) }} />
                                               </div>
                                             </div>
-                                            <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
-                                            <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                            <input value={(itemObj.title as string) || ''} maxLength={80} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title (max 80)" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                            <textarea value={(itemObj.description as string) || ''} maxLength={500} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description (suggested 300, max 500)" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                           </div>
                                         </div>
                                       )
@@ -1028,9 +1055,9 @@ export function EditorFormPanel({
                                           </div>
                                           <div className="p-4 flex flex-col gap-2 shrink-0">
                                             <input value={(itemObj.date as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, date: e.target.value }; updateItems(next) }} placeholder="Date" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
-                                            <input value={(itemObj.category as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, category: e.target.value }; updateItems(next) }} placeholder="Category" className="w-full px-2 py-1 text-[10px] font-bold uppercase text-primary bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
-                                            <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
-                                            <textarea value={(itemObj.excerpt as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, excerpt: e.target.value }; updateItems(next) }} placeholder="Excerpt" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                            <input value={(itemObj.category as string) || ''} maxLength={45} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, category: e.target.value }; updateItems(next) }} placeholder="Category (max 45)" className="w-full px-2 py-1 text-[10px] font-bold uppercase text-primary bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
+                                            <input value={(itemObj.title as string) || ''} maxLength={80} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title (max 80)" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                            <textarea value={(itemObj.excerpt as string) || ''} maxLength={300} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, excerpt: e.target.value }; updateItems(next) }} placeholder="Excerpt (suggested 150, max 300)" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                             <input value={(itemObj.href as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, href: e.target.value }; updateItems(next) }} placeholder="Link URL" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                           </div>
                                         </div>
@@ -1044,8 +1071,8 @@ export function EditorFormPanel({
                                             <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems];[next[idx + 1], next[idx]] = [next[idx], next[idx + 1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
                                             <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                           </div>
-                                          <input value={(itemObj.question as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, question: e.target.value }; updateItems(next) }} placeholder="Question" className="w-full px-3 py-2 text-xs font-medium bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
-                                          <textarea value={(itemObj.answer as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, answer: e.target.value }; updateItems(next) }} placeholder="Answer" rows={2} className="w-full px-3 py-2 text-[10px] text-muted-foreground bg-background border border-border rounded-lg resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                          <input value={(itemObj.question as string) || ''} maxLength={160} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, question: e.target.value }; updateItems(next) }} placeholder="Question (suggested 120, max 160)" className="w-full px-3 py-2 text-xs font-medium bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                          <textarea value={(itemObj.answer as string) || ''} maxLength={500} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, answer: e.target.value }; updateItems(next) }} placeholder="Answer (suggested 300, max 500)" rows={2} className="w-full px-3 py-2 text-[10px] text-muted-foreground bg-background border border-border rounded-lg resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                         </div>
                                       )
                                     }
@@ -1064,8 +1091,8 @@ export function EditorFormPanel({
                                           <div className="w-full">
                                             <ImageUpload value={(itemObj.imageUrl as string) || ''} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, imageUrl: url }; updateItems(next) }} />
                                           </div>
-                                          <input value={(itemObj.name as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, name: e.target.value }; updateItems(next) }} placeholder="Name" className="w-full px-2 py-1.5 text-center text-xs font-bold bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
-                                          <input value={(itemObj.specialty as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, specialty: e.target.value }; updateItems(next) }} placeholder="Role / Specialty" className="w-full px-2 py-1.5 text-center text-[10px] text-muted-foreground bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                          <input value={(itemObj.name as string) || ''} maxLength={70} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, name: e.target.value }; updateItems(next) }} placeholder="Name (max 70)" className="w-full px-2 py-1.5 text-center text-xs font-bold bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                          <input value={(itemObj.specialty as string) || ''} maxLength={70} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, specialty: e.target.value }; updateItems(next) }} placeholder="Role / Specialty (max 70)" className="w-full px-2 py-1.5 text-center text-[10px] text-muted-foreground bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                         </div>
                                       )
                                     }
@@ -1086,9 +1113,9 @@ export function EditorFormPanel({
                                                 <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
                                               </div>
                                             </div>
-                                            <input value={(itemObj.number as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, number: e.target.value }; updateItems(next) }} placeholder="Step # (e.g. 01)" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
-                                            <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
-                                            <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                            <input value={(itemObj.number as string) || ''} maxLength={10} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, number: e.target.value }; updateItems(next) }} placeholder="Step # (e.g. 01)" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                            <input value={(itemObj.title as string) || ''} maxLength={80} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title (max 80)" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                            <textarea value={(itemObj.description as string) || ''} maxLength={500} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description (suggested 300, max 500)" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                           </div>
                                         </div>
                                       )
@@ -1102,8 +1129,8 @@ export function EditorFormPanel({
                                             <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                           </div>
                                           <div className="p-4 space-y-3">
-                                            <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
-                                            <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                            <input value={(itemObj.title as string) || ''} maxLength={80} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title (max 80)" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                            <textarea value={(itemObj.description as string) || ''} maxLength={500} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description (suggested 300, max 500)" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                             <div className="grid grid-cols-2 gap-3">
                                               <div>
                                                 <span className="text-[9px] font-bold text-muted-foreground uppercase block mb-1">Before</span>
@@ -1139,8 +1166,8 @@ export function EditorFormPanel({
                                                 <ImageUpload value={(itemObj.imageUrl as string) || ''} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, imageUrl: url }; updateItems(next) }} />
                                               </div>
                                             </div>
-                                            <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
-                                            <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                            <input value={(itemObj.title as string) || ''} maxLength={80} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title (max 80)" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                            <textarea value={(itemObj.description as string) || ''} maxLength={500} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description (suggested 300, max 500)" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                             <input value={(itemObj.href as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, href: e.target.value }; updateItems(next) }} placeholder="Link URL (optional)" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                           </div>
                                         </div>
@@ -1158,14 +1185,14 @@ export function EditorFormPanel({
                                             <ImageUpload value={(itemObj.imageUrl as string) || ''} onChange={(url) => { const next = [...typedItems]; next[idx] = { ...item, imageUrl: url }; updateItems(next) }} />
                                           </div>
                                           <div className="p-4 space-y-2">
-                                            <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
-                                            <input value={(itemObj.location as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, location: e.target.value }; updateItems(next) }} placeholder="Location" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
-                                            <input value={(itemObj.price as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, price: e.target.value }; updateItems(next) }} placeholder="Price" className="w-full px-2 py-1 text-[10px] font-medium text-primary bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                            <input value={(itemObj.title as string) || ''} maxLength={80} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title (max 80)" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                            <input value={(itemObj.location as string) || ''} maxLength={140} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, location: e.target.value }; updateItems(next) }} placeholder="Location (max 140)" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                            <input value={(itemObj.price as string) || ''} maxLength={30} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, price: e.target.value }; updateItems(next) }} placeholder="Price (max 30)" className="w-full px-2 py-1 text-[10px] font-medium text-primary bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                             <div className="flex gap-2 flex-wrap">
                                               <input type="number" value={Number(itemObj.beds) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, beds: parseInt(e.target.value) || 0 }; updateItems(next) }} placeholder="Beds" className="w-14 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
                                               <input type="number" value={Number(itemObj.baths) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, baths: parseInt(e.target.value) || 0 }; updateItems(next) }} placeholder="Baths" className="w-14 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
                                               <input type="number" value={Number(itemObj.sqm) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, sqm: parseInt(e.target.value) || 0 }; updateItems(next) }} placeholder="Sqm" className="w-14 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
-                                              <input value={(itemObj.tag as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, tag: e.target.value }; updateItems(next) }} placeholder="Tag" className="flex-1 min-w-0 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                              <input value={(itemObj.tag as string) || ''} maxLength={45} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, tag: e.target.value }; updateItems(next) }} placeholder="Tag (max 45)" className="flex-1 min-w-0 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                             </div>
                                           </div>
                                         </div>
@@ -1187,7 +1214,7 @@ export function EditorFormPanel({
                                               <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
                                             )}
                                           </div>
-                                          <input value={(itemObj.name as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, name: e.target.value }; updateItems(next) }} placeholder="Partner name" className="w-full px-2 py-1.5 text-center text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                          <input value={(itemObj.name as string) || ''} maxLength={70} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, name: e.target.value }; updateItems(next) }} placeholder="Partner name (max 70)" className="w-full px-2 py-1.5 text-center text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
                                         </div>
                                       )
                                     }
@@ -1199,9 +1226,9 @@ export function EditorFormPanel({
                                             <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems];[next[idx + 1], next[idx]] = [next[idx], next[idx + 1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
                                             <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                           </div>
-                                          <input value={(itemObj.quoteTitle as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, quoteTitle: e.target.value }; updateItems(next) }} placeholder="Quote title" className="w-full px-3 py-2 text-xs font-bold bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
-                                          <textarea value={(itemObj.body as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, body: e.target.value }; updateItems(next) }} placeholder="Testimonial body" rows={3} className="w-full px-3 py-2 text-[10px] text-muted-foreground bg-background border border-border rounded-lg resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
-                                          <input value={(itemObj.customerName as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, customerName: e.target.value }; updateItems(next) }} placeholder="Customer name" className="w-full px-3 py-2 text-[10px] bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                          <input value={(itemObj.quoteTitle as string) || ''} maxLength={80} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, quoteTitle: e.target.value }; updateItems(next) }} placeholder="Quote title (max 80)" className="w-full px-3 py-2 text-xs font-bold bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                          <textarea value={(itemObj.body as string) || ''} maxLength={500} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, body: e.target.value }; updateItems(next) }} placeholder="Testimonial body (suggested 300, max 500)" rows={3} className="w-full px-3 py-2 text-[10px] text-muted-foreground bg-background border border-border rounded-lg resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                          <input value={(itemObj.customerName as string) || ''} maxLength={70} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, customerName: e.target.value }; updateItems(next) }} placeholder="Customer name (max 70)" className="w-full px-3 py-2 text-[10px] bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                           <label className="flex items-center gap-2 text-[10px]">
                                             <input type="checkbox" checked={(itemObj.verified as boolean) ?? false} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, verified: e.target.checked }; updateItems(next) }} className="h-3 w-3 rounded border-border text-primary" />
                                             Verified
@@ -1223,14 +1250,14 @@ export function EditorFormPanel({
                                               <div className="w-10 h-10 rounded-full bg-background border border-border overflow-visible flex items-center justify-center shrink-0 text-primary relative z-10">
                                                 <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
                                               </div>
-                                              <input value={(itemObj.title as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title" className="flex-1 px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                              <input value={(itemObj.title as string) || ''} maxLength={80} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, title: e.target.value }; updateItems(next) }} placeholder="Title (max 80)" className="flex-1 px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
                                             </div>
-                                            <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                            <textarea value={(itemObj.description as string) || ''} maxLength={500} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description (suggested 300, max 500)" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                             <div>
                                               <span className="text-[9px] font-bold text-muted-foreground uppercase block mb-1">Features</span>
                                               {featuresArr.map((f, fi) => (
                                                 <div key={fi} className="flex gap-2 mb-1">
-                                                  <input value={f} onChange={(e) => { const nextF = [...featuresArr]; nextF[fi] = e.target.value; const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="flex-1 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" placeholder="Feature" />
+                                                  <input value={f} maxLength={90} onChange={(e) => { const nextF = [...featuresArr]; nextF[fi] = e.target.value; const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="flex-1 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" placeholder="Feature (max 90)" />
                                                   <button type="button" onClick={() => { const nextF = featuresArr.filter((_, i) => i !== fi); const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="p-1 text-red-500 hover:bg-red-500/10 rounded"><Trash2 className="w-3 h-3" /></button>
                                                 </div>
                                               ))}
@@ -1248,9 +1275,9 @@ export function EditorFormPanel({
                                             <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems];[next[idx + 1], next[idx]] = [next[idx], next[idx + 1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
                                             <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                           </div>
-                                          <input value={(itemObj.service as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, service: e.target.value }; updateItems(next) }} placeholder="Service" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
-                                          <input value={(itemObj.price as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, price: e.target.value }; updateItems(next) }} placeholder="Price" className="w-full px-2 py-1 text-[10px] font-medium text-primary bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
-                                          <input value={(itemObj.note as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, note: e.target.value }; updateItems(next) }} placeholder="Note (optional)" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                          <input value={(itemObj.service as string) || ''} maxLength={90} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, service: e.target.value }; updateItems(next) }} placeholder="Service (max 90)" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                          <input value={(itemObj.price as string) || ''} maxLength={30} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, price: e.target.value }; updateItems(next) }} placeholder="Price (max 30)" className="w-full px-2 py-1 text-[10px] font-medium text-primary bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                          <input value={(itemObj.note as string) || ''} maxLength={90} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, note: e.target.value }; updateItems(next) }} placeholder="Note (max 90)" className="w-full px-2 py-1 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                         </div>
                                       )
                                     }
@@ -1267,9 +1294,9 @@ export function EditorFormPanel({
                                               <div className="w-10 h-10 rounded-full bg-background border border-border overflow-visible flex items-center justify-center shrink-0 text-primary relative z-10">
                                                 <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
                                               </div>
-                                              <input value={(itemObj.name as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, name: e.target.value }; updateItems(next) }} placeholder="Name" className="flex-1 px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                              <input value={(itemObj.name as string) || ''} maxLength={70} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, name: e.target.value }; updateItems(next) }} placeholder="Name (max 70)" className="flex-1 px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
                                             </div>
-                                            <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                            <textarea value={(itemObj.description as string) || ''} maxLength={500} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description (suggested 300, max 500)" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                           </div>
                                         </div>
                                       )
@@ -1290,19 +1317,19 @@ export function EditorFormPanel({
                                               <input type="checkbox" checked={(itemObj.isPopular as boolean) ?? false} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, isPopular: e.target.checked }; updateItems(next) }} className="h-3 w-3 rounded border-border text-primary" />
                                               Most Popular
                                             </label>
-                                            <input value={(itemObj.name as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, name: e.target.value }; updateItems(next) }} placeholder="Plan name" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                            <input value={(itemObj.name as string) || ''} maxLength={60} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, name: e.target.value }; updateItems(next) }} placeholder="Plan name (max 60)" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
                                             <div className="flex gap-2">
-                                              <input value={(itemObj.price as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, price: e.target.value }; updateItems(next) }} placeholder="Price" className="flex-1 px-2 py-1.5 text-sm font-bold text-primary bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
-                                              {hasProp(itemObj, 'period') && <input value={(itemObj.period as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, period: e.target.value }; updateItems(next) }} placeholder="/year" className="w-20 px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />}
+                                              <input value={(itemObj.price as string) || ''} maxLength={30} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, price: e.target.value }; updateItems(next) }} placeholder="Price (max 30)" className="flex-1 px-2 py-1.5 text-sm font-bold text-primary bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
+                                              {hasProp(itemObj, 'period') && <input value={(itemObj.period as string) || ''} maxLength={20} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, period: e.target.value }; updateItems(next) }} placeholder="/year" className="w-20 px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />}
                                             </div>
-                                            <textarea value={(itemObj.description as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
-                                            {hasProp(itemObj, 'buttonText') && <input value={(itemObj.buttonText as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, buttonText: e.target.value }; updateItems(next) }} placeholder="Button text" className="w-full px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />}
+                                            <textarea value={(itemObj.description as string) || ''} maxLength={500} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description (suggested 300, max 500)" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                            {hasProp(itemObj, 'buttonText') && <input value={(itemObj.buttonText as string) || ''} maxLength={45} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, buttonText: e.target.value }; updateItems(next) }} placeholder="Button text (max 45)" className="w-full px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />}
                                             <div>
                                               <span className="text-[9px] font-bold text-muted-foreground uppercase block mb-1">Features</span>
                                               {isPricingStyle ? (
                                                 (planFeatures as { text?: string; included?: boolean }[]).map((f, fi) => (
                                                   <div key={fi} className="flex gap-2 items-center mb-1">
-                                                    <input value={f.text || ''} onChange={(e) => { const nextF = [...(planFeatures as any[])]; nextF[fi] = { ...f, text: e.target.value }; const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="flex-1 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" placeholder="Feature" />
+                                                    <input value={f.text || ''} maxLength={90} onChange={(e) => { const nextF = [...(planFeatures as any[])]; nextF[fi] = { ...f, text: e.target.value }; const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="flex-1 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" placeholder="Feature (max 90)" />
                                                     <label className="flex items-center gap-1 shrink-0">
                                                       <input type="checkbox" checked={f.included !== false} onChange={(e) => { const nextF = [...(planFeatures as any[])]; nextF[fi] = { ...f, included: e.target.checked }; const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="h-3 w-3 rounded border-border text-primary" />
                                                       <span className="text-[9px]">incl.</span>
@@ -1313,7 +1340,7 @@ export function EditorFormPanel({
                                               ) : (
                                                 (planFeatures as string[]).map((f, fi) => (
                                                   <div key={fi} className="flex gap-2 mb-1">
-                                                    <input value={f} onChange={(e) => { const nextF = [...(planFeatures as string[])]; nextF[fi] = e.target.value; const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="flex-1 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" placeholder="Feature" />
+                                                    <input value={f} maxLength={90} onChange={(e) => { const nextF = [...(planFeatures as string[])]; nextF[fi] = e.target.value; const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="flex-1 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" placeholder="Feature (max 90)" />
                                                     <button type="button" onClick={() => { const nextF = (planFeatures as string[]).filter((_, i) => i !== fi); const next = [...typedItems]; next[idx] = { ...item, features: nextF }; updateItems(next) }} className="p-1 text-red-500 hover:bg-red-500/10 rounded"><Trash2 className="w-3 h-3" /></button>
                                                   </div>
                                                 ))
@@ -1336,8 +1363,8 @@ export function EditorFormPanel({
                                             <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems];[next[idx + 1], next[idx]] = [next[idx], next[idx + 1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
                                             <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
                                           </div>
-                                          <textarea value={(itemObj.text as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, text: e.target.value }; updateItems(next) }} placeholder="Review text" rows={3} className="w-full px-3 py-2 text-[10px] text-muted-foreground bg-background border border-border rounded-lg resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
-                                          <input value={(itemObj.author as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, author: e.target.value }; updateItems(next) }} placeholder="Author name" className="w-full px-3 py-2 text-[10px] bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                          <textarea value={(itemObj.text as string) || ''} maxLength={500} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, text: e.target.value }; updateItems(next) }} placeholder="Review text (suggested 300, max 500)" rows={3} className="w-full px-3 py-2 text-[10px] text-muted-foreground bg-background border border-border rounded-lg resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
+                                          <input value={(itemObj.author as string) || ''} maxLength={70} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, author: e.target.value }; updateItems(next) }} placeholder="Author name (max 70)" className="w-full px-3 py-2 text-[10px] bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                           <input value={(itemObj.date as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, date: e.target.value }; updateItems(next) }} placeholder="Date (e.g. 2 weeks ago)" className="w-full px-3 py-2 text-[10px] bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                           <input type="number" min={1} max={5} value={Number(itemObj.rating) || 5} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, rating: Math.min(5, Math.max(1, parseInt(e.target.value) || 5)) }; updateItems(next) }} className="w-16 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
                                         </div>
@@ -1354,7 +1381,7 @@ export function EditorFormPanel({
                                           <div className="w-12 h-12 rounded-full bg-background border border-border overflow-visible flex items-center justify-center shrink-0 text-primary relative z-10">
                                             <AwardIconPicker value={iconName} onChange={(val) => { const next = [...typedItems]; next[idx] = { ...item, icon: val }; updateItems(next) }} compact />
                                           </div>
-                                          <input value={(itemObj.label as string) || ''} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, label: e.target.value }; updateItems(next) }} placeholder="Label" className="w-full min-h-[36px] px-2 py-1.5 text-center text-xs font-bold bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                          <input value={(itemObj.label as string) || ''} maxLength={45} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, label: e.target.value }; updateItems(next) }} placeholder="Label (max 45)" className="w-full min-h-[36px] px-2 py-1.5 text-center text-xs font-bold bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
                                         </div>
                                       )
                                     }
@@ -1381,6 +1408,7 @@ export function EditorFormPanel({
                                           </div>
                                           <input
                                             value={(itemObj.label ?? itemObj.title ?? itemObj.name ?? '') as string}
+                                            maxLength={80}
                                             onChange={(e) => {
                                               const val = e.target.value
                                               const next = [...typedItems]
@@ -1389,18 +1417,19 @@ export function EditorFormPanel({
                                               else next[idx] = { ...item, title: val }
                                               updateItems(next)
                                             }}
-                                            placeholder="Enter label..."
+                                            placeholder="Enter label (max 80)..."
                                             className="w-full min-h-[36px] px-2 py-1.5 text-center text-xs font-bold bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60"
                                           />
                                           <input
                                             value={(itemObj.sublabel ?? itemObj.description ?? '') as string}
+                                            maxLength={120}
                                             onChange={(e) => {
                                               const val = e.target.value
                                               const next = [...typedItems]
                                               next[idx] = hasProp(itemObj, 'description') ? { ...item, description: val } : { ...item, sublabel: val }
                                               updateItems(next)
                                             }}
-                                            placeholder="Enter sublabel..."
+                                            placeholder="Enter sublabel (max 120)..."
                                             className="w-full min-h-[36px] px-2 py-1.5 text-center text-[10px] text-muted-foreground bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50"
                                           />
                                         </div>
@@ -1501,19 +1530,21 @@ export function EditorFormPanel({
                                                     <textarea
                                                       className="w-full px-3 py-2 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-primary/30 min-h-[60px] placeholder:text-muted-foreground/50"
                                                       value={iVal as string}
+                                                      maxLength={getFieldLimits(iKey).max}
                                                       onChange={(e) => {
                                                         const next = [...typedItems]; next[idx] = { ...item, [iKey]: e.target.value }; updateItems(next)
                                                       }}
-                                                      placeholder={`Enter ${fieldLabelStr.toLowerCase()}...`}
+                                                      placeholder={`Enter ${fieldLabelStr.toLowerCase()} (max ${getFieldLimits(iKey).suggested})...`}
                                                     />
                                                   ) : (
                                                     <input
                                                       className="w-full px-3 py-2 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50"
                                                       value={iVal as string}
+                                                      maxLength={getFieldLimits(iKey).max}
                                                       onChange={(e) => {
                                                         const next = [...typedItems]; next[idx] = { ...item, [iKey]: e.target.value }; updateItems(next)
                                                       }}
-                                                      placeholder={`Enter ${fieldLabelStr.toLowerCase()}...`}
+                                                      placeholder={`Enter ${fieldLabelStr.toLowerCase()} (max ${getFieldLimits(iKey).suggested})...`}
                                                     />
                                                   )}
                                                 </div>

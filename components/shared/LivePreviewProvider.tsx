@@ -189,6 +189,82 @@ export default function LivePreviewProvider({ initialData, children }: LivePrevi
     }
   }, [pathname, searchString])
 
+  // Emit section bounding rects to parent for overlay positioning
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || window.parent === window) return
+
+    const emit = () => {
+      const els = Array.from(document.querySelectorAll('[data-section-id]'))
+      const rects = els
+        .map((el) => {
+          const htmlEl = el as HTMLElement
+          const r = htmlEl.getBoundingClientRect()
+          return {
+            id: htmlEl.dataset.sectionId || '',
+            index: Number(htmlEl.dataset.sectionIndex ?? 0),
+            top: r.top,
+            height: r.height,
+          }
+        })
+        .filter((r) => r.id)
+      window.parent.postMessage({ type: 'SECTION_RECTS', rects }, '*')
+    }
+
+    // Delay after data change to let DOM settle
+    const timer = setTimeout(emit, 120)
+
+    // Throttle scroll/resize via rAF so postMessage fires once per frame,
+    // not on every individual scroll tick (removes jitter / message flood).
+    let rafId: number | null = null
+    const scheduleEmit = () => {
+      if (rafId !== null) return
+      rafId = requestAnimationFrame(() => {
+        rafId = null
+        emit()
+      })
+    }
+    window.addEventListener('scroll', scheduleEmit, { passive: true })
+    window.addEventListener('resize', scheduleEmit, { passive: true })
+    return () => {
+      clearTimeout(timer)
+      if (rafId !== null) cancelAnimationFrame(rafId)
+      window.removeEventListener('scroll', scheduleEmit)
+      window.removeEventListener('resize', scheduleEmit)
+    }
+  }, [data])
+
+  // Emit SECTION_HOVERED and SECTION_CLICKED so parent toolbar tracks active section
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || window.parent === window) return
+
+    const onMouseOver = (e: MouseEvent) => {
+      const section = (e.target as Element).closest('[data-section-id]') as HTMLElement | null
+      if (!section) return
+      const sectionId = section.dataset.sectionId
+      if (sectionId) window.parent.postMessage({ type: 'SECTION_HOVERED', sectionId }, '*')
+    }
+
+    const onClick = (e: MouseEvent) => {
+      const section = (e.target as Element).closest('[data-section-id]') as HTMLElement | null
+      if (!section) return
+      const sectionId = section.dataset.sectionId
+      const idx = section.dataset.sectionIndex
+      if (sectionId) {
+        window.parent.postMessage(
+          { type: 'SECTION_CLICKED', sectionId, index: idx ? Number(idx) : 0 },
+          '*'
+        )
+      }
+    }
+
+    document.addEventListener('mouseover', onMouseOver)
+    document.addEventListener('click', onClick)
+    return () => {
+      document.removeEventListener('mouseover', onMouseOver)
+      document.removeEventListener('click', onClick)
+    }
+  }, [])
+
   React.useEffect(() => {
     if (!data || typeof window === 'undefined' || typeof document === 'undefined') return
 

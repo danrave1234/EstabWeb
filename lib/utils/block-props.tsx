@@ -769,17 +769,7 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
       break;
     case "cta--sticky":
     case "messenger-sticky-cta":
-      sectionContent = (
-        <MessengerStickyCTA
-          key={key}
-          messengerUrl={messengerStickyCTA?.messengerUrl}
-          viberNumber={messengerStickyCTA?.viberNumber}
-          phone={contact.phone}
-          messengerLabel={messengerStickyCTA?.messengerLabel}
-          viberLabel={messengerStickyCTA?.viberLabel}
-          callLabel={messengerStickyCTA?.callLabel}
-        />
-      );
+      sectionContent = null;
       break;
     case "service_area":
     case "service-area-map":

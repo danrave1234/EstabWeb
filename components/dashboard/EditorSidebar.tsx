@@ -2,15 +2,15 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { 
-  ChevronRight, 
-  FileText, 
-  Palette, 
-  Settings, 
-  Layout, 
-  Image as ImageIcon, 
-  Zap, 
-  History, 
+import {
+  ChevronRight,
+  FileText,
+  Palette,
+  Settings,
+  Layout,
+  Image as ImageIcon,
+  Zap,
+  History,
   RotateCcw,
   Plus,
   Trash2,
@@ -46,35 +46,35 @@ interface EditorSidebarProps {
 }
 
 import { Search, X, Layers, Component } from "lucide-react"
-import { 
+import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/Dialog"
-import { 
-  DEFAULT_AWARDS_STRIP, 
-  DEFAULT_FAQ_ACCORDION, 
-  DEFAULT_BLOG, 
-  DEFAULT_BEFORE_AFTER_GALLERY, 
-  DEFAULT_HOW_IT_WORKS, 
-  DEFAULT_PRACTICE_AREAS, 
-  DEFAULT_TREATMENT_PROCESS, 
-  DEFAULT_COMMON_PESTS, 
-  DEFAULT_FEATURED_LISTINGS, 
-  DEFAULT_DEVELOPER_PARTNERS, 
+import {
+  DEFAULT_AWARDS_STRIP,
+  DEFAULT_FAQ_ACCORDION,
+  DEFAULT_BLOG,
+  DEFAULT_BEFORE_AFTER_GALLERY,
+  DEFAULT_HOW_IT_WORKS,
+  DEFAULT_PRACTICE_AREAS,
+  DEFAULT_TREATMENT_PROCESS,
+  DEFAULT_COMMON_PESTS,
+  DEFAULT_FEATURED_LISTINGS,
+  DEFAULT_DEVELOPER_PARTNERS,
   DEFAULT_TESTIMONIALS,
-  DEFAULT_REVIEW_TRUST_BAR, 
-  DEFAULT_FINANCING, 
-  DEFAULT_AC_TYPES, 
-  DEFAULT_PRICE_PREVIEW, 
-  DEFAULT_PRICING_TABLE, 
-  DEFAULT_MAINTENANCE_PLANS, 
-  DEFAULT_FACEBOOK_REVIEW_EMBED, 
-  DEFAULT_WHY_CHOOSE_ME, 
-  DEFAULT_SERVICE_AREA_MAP, 
-  DEFAULT_LOGO_CLOUD, 
+  DEFAULT_REVIEW_TRUST_BAR,
+  DEFAULT_FINANCING,
+  DEFAULT_AC_TYPES,
+  DEFAULT_PRICE_PREVIEW,
+  DEFAULT_PRICING_TABLE,
+  DEFAULT_MAINTENANCE_PLANS,
+  DEFAULT_FACEBOOK_REVIEW_EMBED,
+  DEFAULT_WHY_CHOOSE_ME,
+  DEFAULT_SERVICE_AREA_MAP,
+  DEFAULT_LOGO_CLOUD,
   DEFAULT_DELIVERY_COVERAGE,
   sectionIdToKey
 } from "@/config/dashboard-config"
@@ -117,7 +117,7 @@ export default function EditorSidebar({
   const addSection = (id: string) => {
     const next = [...activeSections, id]
     const sectionKey = sectionIdToKey(id)
-    
+
     // Default data mapping
     const defaultDataMap: Record<string, any> = {
       'awards': DEFAULT_AWARDS_STRIP,
@@ -146,9 +146,9 @@ export default function EditorSidebar({
     }
 
     const defaultData = defaultDataMap[id] || {}
-    
-    setModified((m: any) => ({ 
-      ...m, 
+
+    setModified((m: any) => ({
+      ...m,
       activeSections: next,
       [sectionKey]: defaultData
     }))
@@ -179,27 +179,34 @@ export default function EditorSidebar({
 
   return (
     <aside className="w-[320px] border-r border-border bg-background flex flex-col shrink-0 shadow-xl z-20">
-      <div className="p-6 border-b border-border space-y-4 bg-muted/20">
-        <Link 
+      <div className="p-8 border-b border-border bg-gradient-to-br from-background via-background to-muted/20 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16" />
+
+        <Link
           href="/dashboard"
-          className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors group"
+          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-all group mb-6"
         >
-          <ChevronRight className="w-3 h-3 rotate-180 group-hover:-translate-x-0.5 transition-transform" />
+          <div className="w-5 h-5 rounded-md bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+            <ChevronRight className="w-3 h-3 rotate-180 group-hover:-translate-x-0.5 transition-transform" strokeWidth={3} />
+          </div>
           Back to Dashboard
         </Link>
-        <div>
-          <h2 className="text-xl font-black flex items-center gap-2 tracking-tight">
-            <Layout className="w-6 h-6 text-primary" />
+
+        <div className="relative z-10">
+          <h2 className="text-2xl font-black flex items-center gap-3 tracking-tighter">
+            <div className="w-10 h-10 rounded-xl bg-primary shadow-lg shadow-primary/20 flex items-center justify-center text-primary-foreground transform -rotate-3 group-hover:rotate-0 transition-transform">
+              <Layout className="w-6 h-6" />
+            </div>
             Site Editor
           </h2>
-          <p className="text-[11px] text-muted-foreground font-medium mt-1 uppercase tracking-widest opacity-70">
+          <p className="text-[11px] text-muted-foreground font-black mt-2 uppercase tracking-[0.2em] opacity-40">
             Personalize your presence
           </p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-border bg-muted/10">
+      <div className="flex p-2 gap-1 border-b border-border bg-muted/10">
         {[
           { id: "content", label: "Content", icon: FileText },
           { id: "design", label: "Design", icon: Palette },
@@ -208,9 +215,12 @@ export default function EditorSidebar({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`flex-1 flex flex-col items-center gap-1.5 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab.id ? "bg-background text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground hover:bg-background/50"}`}
+            className={`flex-1 flex flex-col items-center gap-2 py-3.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === tab.id
+                ? "bg-background text-primary shadow-sm ring-1 ring-border/50"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+              }`}
           >
-            <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? "text-primary" : "text-muted-foreground"}`} />
+            <tab.icon className={`w-4 h-4 transition-transform duration-300 ${activeTab === tab.id ? "scale-110" : "opacity-60"}`} />
             {tab.label}
           </button>
         ))}
@@ -235,7 +245,7 @@ export default function EditorSidebar({
               </div>
               <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
-            
+
             <button
               onClick={() => setSelectedSection('navigation')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'navigation' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
@@ -252,7 +262,7 @@ export default function EditorSidebar({
 
             <div className="pt-4 px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50 flex items-center justify-between">
               Page Sections
-              <button 
+              <button
                 onClick={() => setAddSectionOpen(true)}
                 className="p-1 hover:bg-primary/10 text-primary rounded transition-colors"
                 title="Add Section"
@@ -273,7 +283,7 @@ export default function EditorSidebar({
                   className="w-full pl-9 pr-8 py-2 bg-muted/40 border border-border/50 rounded-lg text-xs outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all placeholder:text-muted-foreground/40"
                 />
                 {searchQuery && (
-                  <button 
+                  <button
                     onClick={() => setSearchQuery("")}
                     className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
                   >
@@ -325,30 +335,37 @@ export default function EditorSidebar({
                     setDragSectionIndex(null)
                     setDropSectionIndex(null)
                   }}
-                  className={`relative group w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left border ${isDragging ? 'opacity-40 bg-muted border-dashed' : selectedSection === section ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted border-transparent'} ${isDropTarget ? 'border-t-primary border-t-2' : ''}`}
+                  className={`relative group w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all text-left border overflow-hidden ${isDragging
+                      ? 'opacity-40 bg-muted border-dashed border-primary/20 scale-95'
+                      : selectedSection === section
+                        ? 'bg-primary/5 border-primary/20 shadow-[0_8px_30px_rgb(0,0,0,0.02)]'
+                        : 'hover:bg-muted border-transparent hover:-translate-y-0.5'
+                    } ${isDropTarget ? 'border-t-primary border-t-2 pt-5' : ''}`}
                 >
-                  <div 
-                    className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground shrink-0 group-hover:scale-110 transition-transform cursor-grab active:cursor-grabbing hover:bg-primary/10 hover:text-primary z-10"
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                  <div
+                    className="w-8 h-8 rounded-xl bg-muted/50 border border-border/50 flex items-center justify-center text-muted-foreground shrink-0 group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground transition-all cursor-grab active:cursor-grabbing z-10"
                     title="Drag to reorder"
                   >
                     <GripVertical className="w-4 h-4" />
                   </div>
                   <button
                     onClick={() => setSelectedSection(section)}
-                    className="flex-1 min-w-0 text-left py-1"
+                    className="flex-1 min-w-0 text-left py-1 relative z-10"
                   >
-                    <p className="text-sm font-bold truncate capitalize">{section.replace(/-/g, ' ')}</p>
-                    <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Block Edit</p>
+                    <p className="text-sm font-black truncate capitalize tracking-tight group-hover:text-primary transition-colors">{section.replace(/-/g, ' ')}</p>
+                    <p className="text-[10px] text-muted-foreground truncate uppercase tracking-[0.15em] font-black opacity-40 mt-0.5">Edit Layout</p>
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
                       removeSection(idx)
                     }}
-                    className="p-1.5 opacity-40 group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-all"
+                    className="p-2 opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-lg shadow-red-500/10 z-20"
                     title="Remove Section"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-3.5 h-3.5" strokeWidth={3} />
                   </button>
                 </div>
               )
@@ -415,7 +432,7 @@ export default function EditorSidebar({
             <div className="px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
               Site Management
             </div>
-            
+
             <button
               onClick={() => setSelectedSection('subscription')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'subscription' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
@@ -471,25 +488,38 @@ export default function EditorSidebar({
 
       {/* Add Section Modal */}
       <Dialog open={addSectionOpen} onOpenChange={setAddSectionOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col p-0 gap-0">
-          <DialogHeader className="p-6 border-b border-border bg-muted/10">
-            <DialogTitle className="flex items-center gap-2">
-              <Layers className="w-5 h-5 text-primary" />
-              Add New Section
-            </DialogTitle>
-            <DialogDescription>
-              Choose a block to add to your page.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+        <DialogContent className="sm:max-w-[640px] max-h-[85vh] overflow-hidden flex flex-col p-0 gap-0 border-border/60 shadow-[0_32px_80px_-12px_rgba(0,0,0,0.3)] rounded-2xl">
+          {/* Premium header */}
+          <div className="relative overflow-hidden shrink-0 bg-gradient-to-br from-background via-background to-muted/30">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/6 via-primary/3 to-transparent" aria-hidden />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" aria-hidden />
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-primary via-primary/70 to-transparent" aria-hidden />
+            <DialogHeader className="relative p-5 sm:p-6">
+              <DialogTitle className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 shadow-sm shadow-primary/10 flex items-center justify-center shrink-0">
+                  <Layers className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-[0.15em]">Editor</span>
+                  </div>
+                  <span className="text-base font-black tracking-tight">Add New Section</span>
+                </div>
+              </DialogTitle>
+              <DialogDescription className="mt-1.5 ml-12 text-[11px] text-muted-foreground">
+                Choose a block to add to your page.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-7 custom-scrollbar bg-muted/5">
             {SECTION_CATEGORIES.map((cat) => (
-              <div key={cat.label} className="space-y-4">
-                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
-                  <div className="w-1 h-4 bg-primary/20 rounded-full" />
+              <div key={cat.label} className="space-y-3">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 flex items-center gap-2">
+                  <div className="w-1 h-3.5 bg-primary/30 rounded-full" />
                   {cat.label}
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2.5">
                   {cat.ids.map((id) => {
                     if (id === 'hero') return null;
                     const isAdded = activeSections.includes(id);
@@ -498,17 +528,25 @@ export default function EditorSidebar({
                         key={id}
                         disabled={isAdded}
                         onClick={() => addSection(id)}
-                        className={`group relative flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${isAdded ? 'bg-muted/50 border-border opacity-60 cursor-not-allowed' : 'bg-background border-border hover:border-primary/30 hover:bg-primary/5 active:scale-[0.98]'}`}
+                        className={`group relative flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all active:scale-[0.98] ${
+                          isAdded
+                            ? 'bg-muted/40 border-border/50 opacity-55 cursor-not-allowed'
+                            : 'bg-background border-border/60 hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm'
+                        }`}
                       >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${isAdded ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white'}`}>
-                          <Component className="w-4 h-4" />
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all ${
+                          isAdded
+                            ? 'bg-muted text-muted-foreground'
+                            : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white group-hover:scale-110'
+                        }`}>
+                          <Component className="w-3.5 h-3.5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold truncate leading-tight capitalize">{id.replace(/-/g, ' ')}</p>
-                          <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">{isAdded ? 'Already on page' : 'Click to add'}</p>
+                          <p className="text-xs font-black truncate leading-tight capitalize tracking-tight group-hover:text-primary transition-colors">{id.replace(/-/g, ' ')}</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">{isAdded ? 'Already on page' : 'Click to add'}</p>
                         </div>
                         {!isAdded && (
-                          <Plus className="w-3.5 h-3.5 text-primary opacity-0 group-hover:opacity-100 transition-opacity absolute top-4 right-4" />
+                          <Plus className="w-3 h-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                         )}
                       </button>
                     );
@@ -517,11 +555,11 @@ export default function EditorSidebar({
               </div>
             ))}
           </div>
-          
-          <div className="p-4 border-t border-border bg-muted/5 flex justify-end">
+
+          <div className="p-4 border-t border-border/60 bg-background flex justify-end">
             <button
               onClick={() => setAddSectionOpen(false)}
-              className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+              className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
             >
               Cancel
             </button>
@@ -529,8 +567,8 @@ export default function EditorSidebar({
         </DialogContent>
       </Dialog>
 
-      <div className="p-4 border-t border-border bg-muted/30">
-        <div className="flex flex-col gap-2">
+      <div className="p-6 border-t border-border bg-gradient-to-t from-muted/50 to-background">
+        <div className="flex flex-col gap-4">
           <button
             onClick={async () => {
               setIsSubmitting(true)
@@ -552,20 +590,28 @@ export default function EditorSidebar({
               }
             }}
             disabled={isSubmitting || Object.keys(modified).length === 0}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-xl text-xs font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 transition-all shadow-lg shadow-primary/20"
+            className="group relative w-full flex items-center justify-center gap-3 px-6 py-4 bg-primary text-primary-foreground rounded-[1.25rem] text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] hover:shadow-[0_20px_40px_-12px_rgba(var(--primary-rgb),0.5)] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 transition-all overflow-hidden"
           >
-            <Send className="w-4 h-4" />
-            {isSubmitting ? 'Saving...' : 'Save Draft'}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            <Send className={`w-4 h-4 transition-transform duration-500 ${isSubmitting ? 'scale-0' : 'group-hover:translate-x-1 group-hover:-translate-y-1'}`} />
+            <span className="relative z-10">
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-3 h-3 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  Saving...
+                </span>
+              ) : 'Publish Changes'}
+            </span>
           </button>
-          
-          <div className="flex items-center justify-between px-2 pt-1">
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-              <div className={`w-1.5 h-1.5 rounded-full ${Object.keys(modified).length > 0 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
-              {Object.keys(modified).length > 0 ? 'Unsaved Changes' : 'All Changes Saved'}
+
+          <div className="flex items-center justify-between px-3">
+            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2 opacity-60">
+              <div className={`w-2 h-2 rounded-full ring-4 ring-background shadow-sm ${Object.keys(modified).length > 0 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+              {Object.keys(modified).length > 0 ? 'Unsaved' : 'Live'}
             </span>
             {hasDraft && (
-              <span className="text-[9px] font-bold text-primary uppercase tracking-widest">
-                Draft Active
+              <span className="px-2 py-0.5 bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest rounded-md ring-1 ring-primary/20">
+                Draft
               </span>
             )}
           </div>

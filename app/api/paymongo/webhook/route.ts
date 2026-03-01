@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { DEFAULT_PUBLISH_LIMIT, DEFAULT_PUBLISH_LIMIT_DAILY } from '@/config/plans'
+import { DEFAULT_PUBLISH_LIMIT, DEFAULT_PUBLISH_LIMIT_DAILY, getPlan } from '@/config/plans'
+import { removeDomainFromVercel } from '@/lib/utils/vercel-domains'
 import {
   computePeriodEnd,
   extractPaymongoEventId,
@@ -203,24 +204,26 @@ export async function POST(req: Request) {
     const now = new Date()
     const data = body?.data?.attributes?.data || body?.data
     const periodEnd = computePeriodEnd(data?.attributes)
+    const planId =
+      body?.data?.attributes?.data?.attributes?.metadata?.plan_id ||
+      body?.data?.attributes?.metadata?.plan_id ||
+      null
+    const planConfig = planId ? getPlan(planId) : null
 
     const { error } = await supabase
       .from('projects')
       .update({
         subscription_status: 'active',
         subscription_ends_at: periodEnd.toISOString(),
-        publish_limit: DEFAULT_PUBLISH_LIMIT,
-        publish_limit_daily: DEFAULT_PUBLISH_LIMIT_DAILY,
+        publish_limit: planConfig?.publishLimit ?? DEFAULT_PUBLISH_LIMIT,
+        publish_limit_daily: planConfig?.publishLimitDaily ?? DEFAULT_PUBLISH_LIMIT_DAILY,
         publish_count: 0,
         publish_count_today: 0,
         publish_date: null,
         publish_period_start: now.toISOString(),
         trial_ends_at: null,
         auto_renew: true,
-        subscription_plan_id:
-          body?.data?.attributes?.data?.attributes?.metadata?.plan_id ||
-          body?.data?.attributes?.metadata?.plan_id ||
-          null,
+        subscription_plan_id: planId,
         subscription_interval:
           body?.data?.attributes?.data?.attributes?.metadata?.interval ||
           body?.data?.attributes?.metadata?.interval ||
@@ -303,7 +306,14 @@ async function handleCheckoutSessionPaid(
     }
 
     const now = new Date()
-    const periodEnd = computePeriodEnd(sessionData?.attributes)
+    const basePeriodEnd = computePeriodEnd(sessionData?.attributes)
+    const isUpgrade = meta?.is_upgrade === 'true'
+    const remainingDays = isUpgrade ? Math.max(0, parseInt(meta?.remaining_days || '0', 10)) : 0
+    const periodEnd = remainingDays > 0
+      ? new Date(basePeriodEnd.getTime() + remainingDays * 24 * 60 * 60 * 1000)
+      : basePeriodEnd
+    const planId = meta?.plan_id || 'ph_monthly'
+    const planConfig = getPlan(planId)
 
     await supabase.from('projects').update({
       subscription_status: 'active',
@@ -313,16 +323,20 @@ async function handleCheckoutSessionPaid(
       renewal_link: null,
       renewal_link_id: null,
       renewal_link_created_at: null,
-      publish_limit: DEFAULT_PUBLISH_LIMIT,
-      publish_limit_daily: DEFAULT_PUBLISH_LIMIT_DAILY,
+      publish_limit: planConfig.publishLimit,
+      publish_limit_daily: planConfig.publishLimitDaily,
       publish_count: 0,
       publish_count_today: 0,
       publish_date: null,
       publish_period_start: now.toISOString(),
       trial_ends_at: null,
-      subscription_plan_id: meta?.plan_id || 'ph_monthly',
+      subscription_plan_id: planId,
       subscription_interval: meta?.interval || 'monthly',
     }).eq('id', projectId)
+
+    if (isUpgrade) {
+      console.log(`[webhook] Upgrade activated: ${meta?.previous_plan_id} → ${planId}, carry-over: ${remainingDays}d, new end: ${periodEnd.toISOString()}`)
+    }
 
 
     const payment = sessionData?.attributes?.payments?.[0]
@@ -385,6 +399,9 @@ async function handleSubscriptionInvoicePaid(
       renewal_link_created_at: null,
       publish_limit: DEFAULT_PUBLISH_LIMIT,
       publish_limit_daily: DEFAULT_PUBLISH_LIMIT_DAILY,
+      publish_count: 0,
+      publish_count_today: 0,
+      publish_date: null,
       publish_period_start: now.toISOString(),
     }).eq('id', proj.id)
 
@@ -420,18 +437,27 @@ async function handleSubscriptionUnpaid(
 
     const { data: proj } = await supabase
       .from('projects')
-      .select('id')
+      .select('id, custom_domain')
       .eq('paymongo_subscription_id', subscriptionId)
       .single()
 
     if (!proj) return NextResponse.json({ received: true })
 
+    // Remove custom domain from Vercel immediately on non-payment
+    if (proj.custom_domain) {
+      await removeDomainFromVercel(proj.custom_domain)
+    }
+
     await supabase.from('projects').update({
-      subscription_status: 'expired',
+      subscription_status: 'free',
+      subscription_plan_id: 'free',
+      custom_domain: null,
       auto_renew: false,
+      publish_limit: 5,
+      publish_limit_daily: 1,
     }).eq('id', proj.id)
 
-    console.log('[webhook] subscription.unpaid: expired project', proj.id)
+    console.log('[webhook] subscription.unpaid: downgraded project to free', proj.id)
     return NextResponse.json({ received: true })
   } catch (e: any) {
     console.error('[webhook] handleSubscriptionUnpaid error:', e)

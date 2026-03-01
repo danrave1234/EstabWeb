@@ -29,34 +29,37 @@ export default function HeroBlock({
   const isExternalImage = backgroundImage?.startsWith("http");
 
   return (
-    <section className="container mx-auto px-4 py-8 md:py-20 lg:py-24 reveal">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-6 lg:gap-12 items-center">
-          <div className="lg:col-span-12 space-y-4 lg:space-y-8 flex flex-col items-center text-center lg:items-start lg:text-left">
-            <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight text-foreground leading-tight">
-              {title}
-            </h1>
-            <p className="text-sm sm:text-base md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-              {subtitle}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-              <a
-                href={primaryCTAHref}
-                onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_primary' })}
-                className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-semibold rounded-lg hover:opacity-90 transition-opacity shadow-sm text-[10px] sm:text-base text-center"
-              >
-                {primaryCTA}
-              </a>
-              <a
-                href={secondaryCTAHref}
-                onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_secondary' })}
-                className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] px-4 sm:px-8 py-2 sm:py-4 bg-background text-foreground font-semibold rounded-lg border border-primary hover:bg-muted/50 transition-colors text-[10px] sm:text-base text-center"
-              >
-                {secondaryCTA}
-              </a>
-            </div>
+    <section className="relative container mx-auto px-6 py-12 md:py-24 lg:py-32 reveal overflow-hidden">
+      {/* Decorative background element */}
+      <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 animate-pulse" />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="space-y-6 lg:space-y-10 flex flex-col items-center text-center lg:items-start lg:text-left">
+          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-foreground leading-[1.1] animate-in fade-in slide-in-from-left-4 duration-700">
+            {title}
+          </h1>
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed font-medium animate-in fade-in slide-in-from-left-6 duration-700 delay-100">
+            {subtitle}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto animate-in fade-in slide-in-from-left-8 duration-700 delay-200">
+            <a
+              href={primaryCTAHref}
+              onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_primary' })}
+              className="inline-flex items-center justify-center min-h-[56px] px-10 py-4 bg-primary text-primary-foreground font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/25 border border-primary/20"
+            >
+              {primaryCTA}
+            </a>
+            <a
+              href={secondaryCTAHref}
+              onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_secondary' })}
+              className="inline-flex items-center justify-center min-h-[56px] px-10 py-4 bg-background/50 backdrop-blur-sm text-foreground font-black text-xs uppercase tracking-[0.2em] rounded-2xl border-2 border-border hover:border-primary hover:text-primary transition-all active:scale-95"
+            >
+              {secondaryCTA}
+            </a>
           </div>
-        <div className="lg:col-span-12">
-          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center bg-muted">
+        </div>
+        <div className="relative animate-in fade-in slide-in-from-right-8 duration-1000 delay-300">
+          <div className="relative aspect-[4/3] lg:aspect-square rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] flex items-center justify-center bg-muted transform hover:rotate-1 transition-transform duration-700">
             {backgroundImage ? (
               <>
                 {isExternalImage ? (
@@ -76,7 +79,7 @@ export default function HeroBlock({
                   />
                 )}
                 <div
-                  className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-foreground/5 to-transparent pointer-events-none"
+                  className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"
                   aria-hidden
                 />
               </>

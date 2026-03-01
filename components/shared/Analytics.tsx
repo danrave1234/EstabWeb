@@ -23,17 +23,18 @@ export function AnalyticsProvider({
   children: React.ReactNode;
 }) {
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+  const inPreview = typeof window !== "undefined" && window.self !== window.top;
 
   // Expose projectId on window so plain (non-hook) trackLead() calls can read it
   useEffect(() => {
-    if (projectId && typeof window !== "undefined") {
+    if (projectId && typeof window !== "undefined" && !isPreviewContext()) {
       window.PROJECT_ID = projectId;
     }
   }, [projectId]);
 
   return (
     <AnalyticsContext.Provider value={projectId}>
-      <PageViewTrackerInner projectId={projectId} />
+      {!inPreview && <PageViewTrackerInner projectId={projectId} />}
       {siteKey && (
         <Script
           src={`https://www.google.com/recaptcha/api.js?render=${siteKey}`}
@@ -160,6 +161,15 @@ export type EventType =
 
 export type FunnelStep = 'landing' | 'engaged' | 'cta' | 'lead';
 
+export function isPreviewContext(): boolean {
+  if (typeof window === "undefined") return false;
+  // Inside an iframe (dashboard editor preview)
+  if (window.self !== window.top) return true;
+  // Opened directly with ?preview=true (admin review preview)
+  const params = new URLSearchParams(window.location.search);
+  return params.get("preview") === "true";
+}
+
 export function trackEvent(payload: {
   type: EventType;
   project_id?: string;
@@ -171,6 +181,8 @@ export function trackEvent(payload: {
   metadata?: Record<string, unknown>;
 }) {
   if (typeof window === "undefined") return;
+  // Never track analytics inside the dashboard preview iframe
+  if (isPreviewContext()) return;
   const resolvedProjectId = payload.project_id ?? window.PROJECT_ID;
   if (!resolvedProjectId) return;
 
@@ -315,6 +327,8 @@ export function trackLead(
   pageSlug?: string
 ) {
   if (typeof window === "undefined") return;
+  // Never track analytics inside the dashboard preview iframe
+  if (isPreviewContext()) return;
 
   const resolvedProjectId = projectId ?? window.PROJECT_ID;
   const eventLabel = type.charAt(0).toUpperCase() + type.slice(1);

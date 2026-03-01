@@ -38,28 +38,30 @@ export default function StatsSection({
           </div>
         )}
 
-        <div className={`grid gap-2 sm:gap-8 ${dynamicGridCols(items.length, 4)} ${
-          variant === "bar"
+        <div className={`grid gap-2 sm:gap-8 ${dynamicGridCols(items.length, 4)} ${variant === "bar"
             ? "divide-y sm:divide-y-0 sm:divide-x border-y border-border py-4 sm:py-12"
             : ""
-        }`}>
+          }`}>
           {items.map((stat, i) => (
-            <div key={i} className={`flex flex-col items-center text-center p-3 sm:p-6 ${
-              variant === "cards" ? "bg-muted/20 rounded-xl sm:rounded-3xl border border-transparent hover:border-primary/20 transition-all shadow-sm" : ""
-            }`}>
-              <div className="mb-1 sm:mb-4">
+            <div key={i} className={`flex flex-col items-center text-center p-6 sm:p-10 ${variant === "cards"
+                ? "bg-background rounded-[2.5rem] border border-border/40 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_32px_64px_-16px_rgba(var(--primary-rgb),0.1)] hover:border-primary/20 transition-all duration-500 hover:-translate-y-2"
+                : "relative"
+              }`}>
+              <div className="mb-4 sm:mb-6">
                 {stat.imageUrl ? (
-                  <div className="w-6 h-6 sm:w-12 sm:h-12 rounded-full overflow-hidden">
+                  <div className="w-12 h-12 sm:w-20 sm:h-20 rounded-full overflow-hidden shadow-xl">
                     <img src={stat.imageUrl} alt="" className="w-full h-full object-cover" />
                   </div>
                 ) : stat.icon ? (
-                  <DynamicIcon name={stat.icon} className="w-4 h-4 sm:w-8 sm:h-8 text-primary" />
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary transform group-hover:rotate-3 transition-transform">
+                    <DynamicIcon name={stat.icon} className="w-6 h-6 sm:w-10 sm:h-10" />
+                  </div>
                 ) : null}
               </div>
-              <div className="text-lg sm:text-4xl font-black text-foreground mb-0.5 tracking-tight">
+              <div className="text-3xl sm:text-6xl font-black text-foreground mb-1 sm:mb-2 tracking-tighter leading-none">
                 {stat.value}
               </div>
-              <div className="text-[10px] sm:text-sm font-bold uppercase tracking-widest text-muted-foreground">
+              <div className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] text-primary/60">
                 {stat.label}
               </div>
             </div>

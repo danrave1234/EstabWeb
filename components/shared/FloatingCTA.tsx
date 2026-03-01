@@ -46,11 +46,10 @@ export default function FloatingCTA({
 
   return (
     <div
-      className={`fixed bottom-4 left-1/2 -translate-x-1/2 sm:bottom-6 sm:right-6 sm:left-auto sm:translate-x-0 z-50 flex flex-row sm:flex-col gap-2 sm:gap-3 transition-all duration-500 transform ${
-        isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0 pointer-events-none"
-      }`}
+      className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] flex flex-col items-end gap-3 transition-all duration-500 transform ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0 pointer-events-none"
+        }`}
     >
-      
+
       {/* Back to Top */}
       {showScrollTop && (
         <button
@@ -63,23 +62,24 @@ export default function FloatingCTA({
       )}
 
       {/* Main CTA */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         {phone && (
           <a
             href={`tel:${phone}`}
             onClick={() => handleCtaClick("sticky", "phone")}
-            className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-background border-2 border-primary shadow-xl text-primary hover:bg-primary hover:text-primary-foreground transition-all group"
+            className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-background border-2 border-primary shadow-2xl text-primary hover:bg-primary hover:text-primary-foreground transition-all group animate-in fade-in zoom-in duration-500"
           >
-            <Phone className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
+            <Phone className="w-5 h-5 sm:w-6 h-6 group-hover:rotate-12 transition-transform" />
           </a>
         )}
         <a
           href={ctaHref}
           onClick={() => handleCtaClick("sticky", "primary")}
-          className="font-serif flex h-11 sm:h-12 items-center gap-2 rounded-full bg-primary px-4 sm:px-6 font-bold text-primary-foreground shadow-2xl hover:scale-105 active:scale-95 transition-all"
+          className="font-serif flex h-12 sm:h-14 items-center gap-3 rounded-2xl bg-primary px-6 sm:px-8 font-black text-primary-foreground shadow-2xl hover:scale-105 active:scale-95 transition-all animate-in fade-in zoom-in duration-500 delay-100"
         >
-          <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="text-xs sm:text-sm whitespace-nowrap">{ctaText}</span>
+          <Calendar className="w-5 h-5 sm:w-6 h-6" />
+          <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] whitespace-nowrap hidden sm:inline">{ctaText}</span>
+          <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] whitespace-nowrap inline sm:hidden">Book</span>
         </a>
       </div>
     </div>
