@@ -121,11 +121,11 @@ export default function SupportSystem({ user }: { user: User | null }) {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end" ref={chatRef}>
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] flex flex-col items-end max-w-[calc(100vw-2rem)] sm:max-w-none" ref={chatRef}>
       {/* Chat Window */}
       <div 
         className={cn(
-          "mb-4 w-[350px] sm:w-[400px] bg-background border border-border shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 origin-bottom-right transform",
+          "mb-4 w-[calc(100vw-2rem)] sm:w-[350px] md:w-[400px] bg-background border border-border shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 origin-bottom-right transform",
           isOpen 
             ? "scale-100 opacity-100 translate-y-0" 
             : "scale-95 opacity-0 translate-y-10 pointer-events-none"
