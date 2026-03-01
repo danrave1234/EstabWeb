@@ -4,9 +4,6 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request })
 
-  const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com').toLowerCase()
-  const cookieDomain = process.env.NODE_ENV === 'production' ? `.${ROOT_DOMAIN}` : undefined
-
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -17,12 +14,11 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, { ...options, domain: cookieDomain })
+            response.cookies.set(name, value, { ...options })
           )
         },
       },
       cookieOptions: {
-        domain: cookieDomain,
         path: '/',
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
@@ -38,6 +34,7 @@ export async function updateSession(request: NextRequest) {
     return response
   }
 
+  const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com').toLowerCase()
   const hostHeader = request.headers.get('host')?.toLowerCase() || ''
   const hostname = hostHeader.split(':')[0]
   const isAdminHost = hostname === `admin.${ROOT_DOMAIN}` || hostname.startsWith('admin.')

@@ -22,10 +22,15 @@ function LoginContent() {
     setIsGooglePending(true)
     try {
       const supabase = createClient()
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`,
+          redirectTo: `${appUrl}/api/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       })
       if (error) toast.error(error.message)
