@@ -155,7 +155,7 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
             ) : user ? (
               <div className="relative">
                 <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  onClick={() => { setUserMenuOpen(!userMenuOpen); setMobileOpen(false) }}
                   className="flex items-center gap-3 p-1 pl-3 pr-1.5 rounded-full border border-border bg-background hover:bg-muted/50 transition-all duration-200 group cursor-pointer"
                 >
                   <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors hidden sm:inline">
@@ -169,7 +169,7 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
                 
                 {userMenuOpen && (
                   <>
-                    <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
+                    <div className="fixed inset-0 z-40 hidden md:block" onClick={() => setUserMenuOpen(false)} />
                     <div className="absolute right-0 top-full mt-3 w-64 bg-background border border-border rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                       <div className="px-5 py-4 border-b border-border bg-muted/20">
                         <p className="text-sm font-semibold text-foreground truncate">{displayEmail}</p>
@@ -260,7 +260,7 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
 
           {/* Mobile Menu Button */}
           <button
-            onClick={() => setMobileOpen(!mobileOpen)}
+            onClick={() => { setMobileOpen(!mobileOpen); setUserMenuOpen(false) }}
             aria-expanded={mobileOpen}
             aria-controls={mobileNavId}
             aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
@@ -273,7 +273,7 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border animate-in slide-in-from-top duration-300 overflow-hidden shadow-xl">
+        <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border animate-in slide-in-from-top duration-300 overflow-hidden shadow-xl z-[60]">
           <nav id={mobileNavId} aria-label="Mobile Primary" className="flex flex-col p-4 gap-1 max-h-[80vh] overflow-y-auto">
             {navLinks.map((link) => (
               <Link
