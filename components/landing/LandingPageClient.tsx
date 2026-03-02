@@ -16,7 +16,7 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
     <div className="flex flex-col min-h-screen bg-background">
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative pt-32 pb-24 lg:pt-48 lg:pb-40 overflow-hidden reveal">
+        <section className="relative pt-20 pb-16 lg:pt-24 lg:pb-20 overflow-hidden reveal">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,var(--primary)/10,transparent)]" />
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center space-y-6">
@@ -59,8 +59,8 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
                 { label: 'Industries', value: '12+', color: 'text-amber-500' },
                 { label: 'Uptime', value: '99.9%', color: 'text-blue-500' },
               ].map((stat) => (
-                <div 
-                  key={stat.label} 
+                <div
+                  key={stat.label}
                   className="p-3 sm:p-6 bg-background border border-border rounded-2xl flex flex-col justify-center items-center text-center shadow-sm"
                 >
                   <div className={`text-2xl sm:text-3xl font-black ${stat.color} mb-1`}>{stat.value}</div>

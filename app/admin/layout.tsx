@@ -16,15 +16,16 @@ export const metadata: Metadata = {
   },
 };
 
+
+
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getUser();
+  const user = data?.user || null;
 
   const { data: profile } = user
     ? await supabase.from('profiles').select('role').eq('id', user.id).single()

@@ -2,13 +2,13 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
-import { 
-  LifeBuoy, 
-  Bug, 
-  AlertCircle, 
-  PlusSquare, 
-  HelpCircle, 
-  MessageSquare, 
+import {
+  LifeBuoy,
+  Bug,
+  AlertCircle,
+  PlusSquare,
+  HelpCircle,
+  MessageSquare,
   Send,
   Loader2,
   CheckCircle2,
@@ -22,33 +22,33 @@ import { cn } from "@/lib/utils";
 type IssueType = 'bug' | 'problem' | 'template_request' | 'help' | 'other';
 
 const issueTypes: { value: IssueType; label: string; icon: React.ReactNode; description: string }[] = [
-  { 
-    value: 'problem', 
-    label: 'Spotted a Problem', 
+  {
+    value: 'problem',
+    label: 'Spotted a Problem',
     icon: <AlertCircle className="w-4 h-4 text-orange-500" />,
     description: 'Something looks wrong or isn\'t working.'
   },
-  { 
-    value: 'bug', 
-    label: 'Report a Bug', 
+  {
+    value: 'bug',
+    label: 'Report a Bug',
     icon: <Bug className="w-4 h-4 text-red-500" />,
     description: 'Technical errors or bugs.'
   },
-  { 
-    value: 'template_request', 
-    label: 'Template Request', 
+  {
+    value: 'template_request',
+    label: 'Template Request',
     icon: <PlusSquare className="w-4 h-4 text-blue-500" />,
     description: 'Need a specific business type?'
   },
-  { 
-    value: 'help', 
-    label: 'Need Help', 
+  {
+    value: 'help',
+    label: 'Need Help',
     icon: <HelpCircle className="w-4 h-4 text-emerald-500" />,
     description: 'Questions about usage.'
   },
-  { 
-    value: 'other', 
-    label: 'Other', 
+  {
+    value: 'other',
+    label: 'Other',
     icon: <MessageSquare className="w-4 h-4 text-gray-500" />,
     description: 'Anything else.'
   },
@@ -103,7 +103,7 @@ export default function SupportSystem({ user }: { user: User | null }) {
 
       setSubmitted(true);
       toast.success("Support request submitted!");
-      
+
       setTimeout(() => {
         setIsOpen(false);
         setTimeout(() => {
@@ -121,13 +121,13 @@ export default function SupportSystem({ user }: { user: User | null }) {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] flex flex-col items-end max-w-[calc(100vw-2rem)] sm:max-w-none" ref={chatRef}>
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] flex flex-col items-end max-w-[calc(100vw-2rem)] sm:max-w-none pointer-events-none" ref={chatRef}>
       {/* Chat Window */}
-      <div 
+      <div
         className={cn(
           "mb-4 w-[calc(100vw-2rem)] sm:w-[350px] md:w-[400px] bg-background border border-border shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 origin-bottom-right transform",
-          isOpen 
-            ? "scale-100 opacity-100 translate-y-0" 
+          isOpen
+            ? "scale-100 opacity-100 translate-y-0 pointer-events-auto"
             : "scale-95 opacity-0 translate-y-10 pointer-events-none"
         )}
       >
@@ -143,7 +143,7 @@ export default function SupportSystem({ user }: { user: User | null }) {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <button 
+            <button
               onClick={() => setIsOpen(false)}
               className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
             >
@@ -163,7 +163,7 @@ export default function SupportSystem({ user }: { user: User | null }) {
               <p className="text-xs text-muted-foreground max-w-[250px]">
                 We've received your request and our team will get back to you shortly via email.
               </p>
-              <button 
+              <button
                 onClick={() => setIsOpen(false)}
                 className="mt-6 text-xs font-bold text-primary hover:underline"
               >
@@ -268,7 +268,7 @@ export default function SupportSystem({ user }: { user: User | null }) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-2xl transition-all duration-300 transform group relative",
+          "flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-2xl transition-all duration-300 transform group relative pointer-events-auto",
           isOpen ? "rotate-90 scale-110" : "hover:scale-110 active:scale-95"
         )}
         aria-label="Toggle Support"

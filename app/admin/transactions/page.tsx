@@ -42,7 +42,8 @@ interface PaymentWithProject {
 
 export default async function AdminTransactionsPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data } = await supabase.auth.getUser()
+  const user = data?.user
   if (!user) return redirect('/login')
 
   // Admin check

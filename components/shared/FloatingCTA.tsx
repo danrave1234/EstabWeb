@@ -46,7 +46,7 @@ export default function FloatingCTA({
 
   return (
     <div
-      className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] flex flex-col items-end gap-3 transition-all duration-500 transform ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0 pointer-events-none"
+      className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] flex flex-col items-end gap-3 transition-all duration-500 transform pointer-events-none ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
         }`}
     >
 
@@ -54,7 +54,7 @@ export default function FloatingCTA({
       {showScrollTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-background border border-border shadow-lg text-foreground hover:bg-muted transition-colors"
+          className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-background border border-border shadow-lg text-foreground hover:bg-muted transition-colors pointer-events-auto"
           aria-label="Back to top"
         >
           <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -67,7 +67,7 @@ export default function FloatingCTA({
           <a
             href={`tel:${phone}`}
             onClick={() => handleCtaClick("sticky", "phone")}
-            className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-background border-2 border-primary shadow-2xl text-primary hover:bg-primary hover:text-primary-foreground transition-all group animate-in fade-in zoom-in duration-500"
+            className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-background border-2 border-primary shadow-2xl text-primary hover:bg-primary hover:text-primary-foreground transition-all group animate-in fade-in zoom-in duration-500 pointer-events-auto"
           >
             <Phone className="w-5 h-5 sm:w-6 h-6 group-hover:rotate-12 transition-transform" />
           </a>
@@ -75,7 +75,7 @@ export default function FloatingCTA({
         <a
           href={ctaHref}
           onClick={() => handleCtaClick("sticky", "primary")}
-          className="font-serif flex h-12 sm:h-14 items-center gap-3 rounded-2xl bg-primary px-6 sm:px-8 font-black text-primary-foreground shadow-2xl hover:scale-105 active:scale-95 transition-all animate-in fade-in zoom-in duration-500 delay-100"
+          className="font-serif flex h-12 sm:h-14 items-center gap-3 rounded-2xl bg-primary px-6 sm:px-8 font-black text-primary-foreground shadow-2xl hover:scale-105 active:scale-95 transition-all animate-in fade-in zoom-in duration-500 delay-100 pointer-events-auto"
         >
           <Calendar className="w-5 h-5 sm:w-6 h-6" />
           <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] whitespace-nowrap hidden sm:inline">{ctaText}</span>

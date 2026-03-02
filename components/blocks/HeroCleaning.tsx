@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import TrustSignals from "@/components/shared/TrustSignals";
 import { trackEvent, trackLead } from "@/components/shared/Analytics";

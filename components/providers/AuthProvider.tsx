@@ -13,7 +13,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  setUser: () => {},
+  setUser: () => { },
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -33,17 +33,15 @@ export function AuthProvider({
     const supabase = supabaseRef.current;
     // If we don't have an initial user, fetch it once
     if (!initialUser) {
-      supabase.auth.getUser().then(({ data: { user } }) => {
-        setUser(user);
+      supabase.auth.getUser().then((res) => {
+        setUser(res.data?.user ?? null);
         setLoading(false);
       });
     } else {
       setLoading(false);
     }
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser(session.user);
       } else {
@@ -52,8 +50,10 @@ export function AuthProvider({
       setLoading(false);
     });
 
+    const subscription = data?.subscription;
+
     return () => {
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, [initialUser]);
 

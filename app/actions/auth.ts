@@ -20,6 +20,9 @@ export async function login(formData: FormData) {
   const { email, password } = validatedFields.data
   const supabase = await createClient()
 
+  // Clear any existing session before signing in with new credentials
+  await supabase.auth.signOut()
+
   const { data: { user }, error } = await supabase.auth.signInWithPassword({ email, password })
   if (error) return { error: error.message }
 

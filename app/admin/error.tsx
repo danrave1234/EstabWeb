@@ -62,8 +62,13 @@ export default function AdminError({
       <p className="text-muted-foreground max-w-md mb-8">
         {offline
           ? "It looks like you're offline. Please check your internet connection and try again."
-          : 'An error occurred while processing your request in the admin panel. The details have been logged.'}
+          : error.message || 'An error occurred while processing your request in the admin panel. The details have been logged.'}
       </p>
+      {error.digest && (
+        <p className="text-xs text-muted-foreground mb-4 opacity-50">
+          Error ID: {error.digest}
+        </p>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-4">
         <button

@@ -177,9 +177,12 @@ export function useEditorState(project: any) {
 
     const canUsePages = !!(project?.subscription_status === 'pro' || project?.subscription_status === 'trial')
 
-    // Initial load from localStorage
+    // Initial load from localStorage — run once on mount only
+    const hasLoadedLocalRef = React.useRef(false)
     React.useEffect(() => {
         if (typeof window === 'undefined') return
+        if (hasLoadedLocalRef.current) return
+        hasLoadedLocalRef.current = true
         const saved = localStorage.getItem(LOCAL_KEY)
         if (saved) {
             try {
