@@ -59,6 +59,11 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
     creator: "@estabweb",
   },
+  verification: {
+    other: {
+      "msvalidate.01": "9F1BC3482AFCA6B6696F286ADCC062E0",
+    },
+  },
   robots: {
     index: true,
     follow: true,

@@ -14,6 +14,7 @@ const RESERVED_ROOT_PATHS = [
   "success",
   "sitemap.xml",
   "robots.txt",
+  "bingsiteauth.xml",
   "favicon.ico",
 ]
 
