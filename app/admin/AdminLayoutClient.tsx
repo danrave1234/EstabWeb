@@ -8,13 +8,16 @@ import ScrollReveal from "@/components/shared/ScrollReveal";
 import { Toaster } from "sonner";
 import { mainSiteConfig } from "@/config/main-site-config";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import NetworkOfflineBanner from "@/components/shared/NetworkOfflineBanner";
 
 export default function AdminLayoutClient({
   children,
   user,
+  role,
 }: {
   children: React.ReactNode;
   user?: any;
+  role?: string;
 }) {
   const pathname = usePathname();
   const isPreview = pathname === "/admin/preview" || pathname === "/admin/template";
@@ -50,8 +53,9 @@ export default function AdminLayoutClient({
 
   return (
     <AuthProvider initialUser={user ?? null}>
+    <NetworkOfflineBanner />
     <div className="min-h-screen flex flex-col">
-      {!isPreview && <MainHeader variant="admin" initialUser={user} />}
+      {!isPreview && <MainHeader variant="admin" initialUser={user} role={role} />}
       <main className={`flex-1 ${!isPreview ? 'pt-16' : ''}`}>
         {children}
       </main>

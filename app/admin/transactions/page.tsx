@@ -1,19 +1,19 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/Table'
-import { 
-  CreditCard, 
-  TrendingUp, 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  DollarSign, 
+import {
+  CreditCard,
+  TrendingUp,
+  ArrowUpRight,
+  ArrowDownRight,
+  DollarSign,
   Calendar,
   ExternalLink
 } from 'lucide-react'
@@ -42,7 +42,8 @@ interface PaymentWithProject {
 
 export default async function AdminTransactionsPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data } = await supabase.auth.getUser()
+  const user = data?.user
   if (!user) return redirect('/login')
 
   // Admin check
@@ -54,28 +55,47 @@ export default async function AdminTransactionsPage() {
 
   if (profile?.role !== 'admin') return redirect('/dashboard')
 
-  // Fetch payments with project and client info
+  // Fetch payments with project info
   const { data: payments, error } = await supabase
     .from('payments')
     .select(`
       *,
       projects (
         id,
+        client_id,
         subdomain,
         custom_domain,
-        auto_renew,
-        profiles:client_id (
-          email
-        )
+        auto_renew
       )
     `)
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching payments:', error)
+    console.error('Error fetching payments:', JSON.stringify(error, null, 2))
   }
 
-  const typedPayments = (payments || []) as unknown as PaymentWithProject[]
+  // Fetch client profiles manually to avoid foreign key errors
+  const clientIds = [...new Set(payments?.map(p => (p.projects as any)?.client_id).filter(Boolean))] as string[]
+  let profiles: any[] = []
+  if (clientIds.length > 0) {
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .in('id', clientIds)
+    profiles = profilesData || []
+  }
+
+  // Merge profiles into payments
+  const mappedPayments = (payments || []).map(p => {
+    const proj = p.projects as any
+    if (proj) {
+      proj.profiles = profiles.find(prof => prof.id === proj.client_id) || null
+    }
+    return p
+  })
+
+  const typedPayments = mappedPayments as unknown as PaymentWithProject[]
+
 
   // Stats calculation
   const totalRevenue = typedPayments.reduce((sum, p) => sum + Number(p.amount), 0)
@@ -86,7 +106,7 @@ export default async function AdminTransactionsPage() {
       return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
     })
     .reduce((sum, p) => sum + Number(p.amount), 0)
-  
+
   const last30DaysRevenue = typedPayments
     .filter(p => {
       const date = new Date(p.created_at)
@@ -236,13 +256,13 @@ export default async function AdminTransactionsPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           {p.paymongo_payment_id && (
-                             <Link 
-                               href={`https://dashboard.paymongo.com/payments/${p.paymongo_payment_id}`}
-                               target="_blank"
-                               className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                             >
-                               PayMongo <ExternalLink className="h-3 w-3" />
-                             </Link>
+                            <Link
+                              href={`https://dashboard.paymongo.com/payments/${p.paymongo_payment_id}`}
+                              target="_blank"
+                              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                            >
+                              PayMongo <ExternalLink className="h-3 w-3" />
+                            </Link>
                           )}
                         </TableCell>
                       </TableRow>

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logAudit } from '@/lib/audit'
 
 export async function POST(req: Request) {
   try {
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: insErr?.message || 'Failed to create change request' }, { status: 400 })
     }
 
+    await logAudit(supabase, 'change_request_submit', user.id, projectId, { requestId: inserted.id })
     return NextResponse.json({ success: true, id: inserted.id })
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Failed to submit change request' }, { status: 500 })

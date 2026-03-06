@@ -4,9 +4,6 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request })
 
-  const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com').toLowerCase()
-  const cookieDomain = process.env.NODE_ENV === 'production' ? `.${ROOT_DOMAIN}` : undefined
-
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -16,13 +13,12 @@ export async function updateSession(request: NextRequest) {
         setAll: (cookiesToSet) => {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) => 
-            response.cookies.set(name, value, { ...options, domain: cookieDomain })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, { ...options })
           )
         },
       },
       cookieOptions: {
-        domain: cookieDomain,
         path: '/',
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
@@ -38,46 +34,80 @@ export async function updateSession(request: NextRequest) {
     return response
   }
 
-  // Handle /admin routes
-  if (path.startsWith('/admin')) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (profile?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-
-    return response
-  }
+  const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com').toLowerCase()
+  const hostHeader = request.headers.get('host')?.toLowerCase() || ''
+  const hostname = hostHeader.split(':')[0]
+  const isAdminHost = hostname === `admin.${ROOT_DOMAIN}` || hostname.startsWith('admin.')
+  const isAdminRoute = path.startsWith('/admin') || isAdminHost
 
   // Protected routes - require auth
   const protectedRoutes = ['/dashboard', '/onboarding']
   const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
 
-  if (isProtectedRoute) {
-    const { data: { user } } = await supabase.auth.getUser()
+  // Auth routes like login or callbacks
+  const isAuthRoute = path === '/login' || path.startsWith('/auth')
+
+  // Performance optimization: skip Supabase auth check on public client pages
+  if (!isAdminRoute && !isProtectedRoute && !isAuthRoute) {
+    return response
+  }
+
+  // IMPORTANT: We must call getUser() on protected/admin/auth routes to reliably trigger token refresh
+  // before it hits Server Components, which cannot set cookies.
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Handle /admin routes
+  if (isAdminRoute) {
     if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      const redirect = NextResponse.redirect(new URL('/login', request.url))
+      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      return redirect
+    }
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (profile?.role !== 'admin' && profile?.role !== 'sub_admin') {
+      const redirect = NextResponse.redirect(new URL('/dashboard', request.url))
+      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      return redirect
+    }
+
+    return response
+  }
+
+
+  if (isProtectedRoute) {
+    if (!user) {
+      const redirect = NextResponse.redirect(new URL('/login', request.url))
+      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      return redirect
     }
     // Block unverified email users from accessing protected features
     if (!user.email_confirmed_at) {
-      return NextResponse.redirect(new URL('/auth/verify-email', request.url))
+      const redirect = NextResponse.redirect(new URL('/auth/verify-email', request.url))
+      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      return redirect
     }
     return response
   }
 
   // Public routes check (for login redirect only)
   if (path === '/login') {
-    const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-      if (profile?.role === 'admin') {
-        return NextResponse.redirect(new URL('/admin', request.url))
+      if (profile?.role === 'admin' || profile?.role === 'sub_admin') {
+        // Use isAdminHost to redirect appropriately
+        if (isAdminHost) {
+          const redirect = NextResponse.redirect(new URL('/', request.url))
+          for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+          return redirect
+        }
+        const redirect = NextResponse.redirect(new URL('/admin', request.url))
+        for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+        return redirect
       }
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      const redirect = NextResponse.redirect(new URL('/dashboard', request.url))
+      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      return redirect
     }
   }
 

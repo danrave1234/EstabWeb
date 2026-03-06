@@ -16,9 +16,9 @@ export type SafetySectionProps = {
   kidPetFriendlyLabel?: string;
 };
 
-export default function SafetySection({ 
-  title, 
-  subtitle, 
+export default function SafetySection({
+  title,
+  subtitle,
   items,
   kidPetFriendlyLabel = "Kid & Pet Friendly"
 }: SafetySectionProps) {
@@ -31,14 +31,14 @@ export default function SafetySection({
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 text-green-600 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-widest border border-green-500/20">
                 {kidPetFriendlyLabel}
               </div>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-foreground leading-tight tracking-tight">
                 {title || "Prioritizing the Safety of Your Loved Ones"}
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
                 {subtitle || "We use eco-friendly and low-toxicity treatments that are tough on pests but safe for your family and pets."}
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
               {items.map((item, index) => {
                 const hasImage = Boolean(item.imageUrl);

@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type ACType = {
   name: string;
@@ -28,28 +29,37 @@ export default function ACTypesGrid({
   return (
     <section className="py-12 sm:py-16 bg-background reveal">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">{title}</h2>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">{subtitle}</p>
+        <div className="text-center mb-16 sm:mb-24">
+          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-foreground mb-6 tracking-tight leading-tight uppercase underline decoration-primary/30 decoration-8 underline-offset-8">
+            {title}
+          </h2>
+          <p className="text-base sm:text-lg text-muted-foreground font-medium opacity-70 max-w-2xl mx-auto leading-relaxed">
+            {subtitle}
+          </p>
         </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
           {items.map((item, index) => {
             const hasImage = Boolean(item.imageUrl);
             return (
-              <div 
-                key={index} 
-                className="group p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-border bg-muted/20 hover:border-primary/30 transition-all text-center"
+              <div
+                key={index}
+                className="group p-6 sm:p-10 rounded-[2.5rem] border border-border/40 bg-muted/5 hover:bg-background shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_32px_64px_-16px_rgba(var(--primary-rgb),0.2)] hover:border-primary/20 transition-all duration-500 text-center cursor-pointer hover:-translate-y-2"
+                onClick={() => trackEvent({ type: 'cta_click', section_key: 'ac_types', cta_id: `ac_type_${index}` })}
               >
-                <div className={`${hasImage ? "w-12 h-12 sm:w-20 sm:h-20" : "w-8 h-8 sm:w-12 sm:h-12"} mx-auto bg-primary/10 rounded-lg sm:rounded-xl overflow-hidden flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform`}>
+                <div className={`${hasImage ? "w-16 h-16 sm:w-24 sm:h-24" : "w-12 h-12 sm:w-16 sm:h-16"} mx-auto bg-primary/10 rounded-2xl overflow-hidden flex items-center justify-center mb-6 sm:mb-8 group-hover:bg-primary group-hover:text-primary-foreground group-hover:rotate-3 transition-all duration-500 shadow-xl shadow-primary/5`}>
                   {item.imageUrl ? (
                     <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                   ) : (
-                    <DynamicIcon name={item.icon} className="w-4 h-4 sm:w-6 h-6 text-primary" />
+                    <DynamicIcon name={item.icon} className="w-6 h-6 sm:w-10 sm:h-10" />
                   )}
                 </div>
-                <h3 className="text-xs sm:text-base font-bold text-foreground mb-1">{item.name}</h3>
-                <p className="text-xs sm:text-xs text-muted-foreground">{item.description}</p>
+                <h3 className="font-serif text-lg sm:text-2xl font-black text-foreground mb-2 sm:mb-4 group-hover:text-primary transition-colors">
+                  {item.name}
+                </h3>
+                <p className="text-sm sm:text-base text-muted-foreground font-medium opacity-70 group-hover:opacity-100 transition-opacity">
+                  {item.description}
+                </p>
               </div>
             );
           })}

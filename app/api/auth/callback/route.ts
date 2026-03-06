@@ -21,7 +21,7 @@ export async function GET(request: Request) {
           .select('role')
           .eq('id', userId)
           .single()
-        if (profile?.role === 'admin') {
+        if (profile?.role === 'admin' || profile?.role === 'sub_admin') {
           return NextResponse.redirect(`${origin}/admin`)
         }
       }

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import DynamicIcon from "@/components/shared/DynamicIcon";
 import { ShoppingCartIcon } from "@phosphor-icons/react";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type Product = {
   name: string;
@@ -123,6 +124,7 @@ export default function ProductGrid({
 
                     <button
                       disabled={!hasStock}
+                      onClick={() => trackEvent({ type: 'cta_click', section_key: 'products', cta_id: `product_${index}_add_to_cart` })}
                       className={`w-full py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 ${
                         hasStock
                           ? "bg-foreground text-background hover:bg-primary hover:text-primary-foreground shadow-sm active:scale-[0.98]"

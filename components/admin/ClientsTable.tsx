@@ -1,10 +1,57 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useTransition } from "react"
 import Link from "next/link"
-import { Globe, ExternalLink, Search, ChevronDown, ChevronUp, Users } from "lucide-react"
+import { Globe, ExternalLink, Search, ChevronDown, ChevronUp, Users, ShieldCheck } from "lucide-react"
 import SubscriptionManage from "@/components/admin/SubscriptionManage"
 import DomainManage from "@/components/admin/DomainManage"
+import { updateUserRole } from "@/app/admin/actions"
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
+  sub_admin: "Sub-Admin",
+  client: "Client",
+}
+
+const ROLE_COLORS: Record<string, string> = {
+  admin: "bg-red-500/10 text-red-600 border-red-500/20",
+  sub_admin: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+  client: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",
+}
+
+function RoleSelect({ userId, currentRole }: { userId: string; currentRole: string | null }) {
+  const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+  const role = currentRole || "client"
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newRole = e.target.value as "admin" | "sub_admin" | "client"
+    setError(null)
+    startTransition(async () => {
+      try {
+        await updateUserRole(userId, newRole)
+      } catch (err: any) {
+        setError(err.message)
+      }
+    })
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <select
+        value={role}
+        onChange={handleChange}
+        disabled={isPending}
+        className="text-xs rounded-lg border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50"
+      >
+        <option value="client">Client</option>
+        <option value="sub_admin">Sub-Admin</option>
+        <option value="admin">Admin</option>
+      </select>
+      {error && <p className="text-[10px] text-red-500">{error}</p>}
+    </div>
+  )
+}
 
 interface ProfileRow {
   id: string
@@ -175,8 +222,8 @@ export default function ClientsTable({ rows, rootDomain }: ClientsTableProps) {
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
                       {clientProjects.length} {clientProjects.length === 1 ? "site" : "sites"}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium border bg-background capitalize">
-                      {profile.role || "user"}
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border capitalize ${ROLE_COLORS[profile.role || "client"] || ROLE_COLORS.client}`}>
+                      {ROLE_LABELS[profile.role || "client"] || profile.role || "Client"}
                     </span>
                     {isExpanded ? (
                       <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -190,8 +237,14 @@ export default function ClientsTable({ rows, rootDomain }: ClientsTableProps) {
                 {isExpanded && (
                   <div className="divide-y divide-border">
                     {!hasProjects ? (
-                      <div className="px-5 py-6 text-sm text-muted-foreground italic">
-                        No websites yet.
+                      <div className="px-5 py-6 flex flex-col gap-4">
+                        <p className="text-sm text-muted-foreground italic">No websites yet.</p>
+                        <div className="rounded-lg border border-border bg-muted/20 px-4 py-3 max-w-xs">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                            <ShieldCheck className="w-3 h-3" /> Role
+                          </p>
+                          <RoleSelect userId={profile.id} currentRole={profile.role} />
+                        </div>
                       </div>
                     ) : (
                       clientProjects.map((proj, idx) => {
@@ -265,6 +318,15 @@ export default function ClientsTable({ rows, rootDomain }: ClientsTableProps) {
                                 <SubscriptionManage project={proj as any} />
                               </div>
                             </div>
+                            {/* Role management — only shown on last project row to avoid duplication */}
+                            {idx === 0 && (
+                              <div className="rounded-lg border border-border bg-muted/20 px-4 py-3 mt-4">
+                                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
+                                  <ShieldCheck className="w-3 h-3" /> Role
+                                </p>
+                                <RoleSelect userId={profile.id} currentRole={profile.role} />
+                              </div>
+                            )}
                           </div>
                         )
                       })

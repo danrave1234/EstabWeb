@@ -1,9 +1,34 @@
+import type { Metadata } from "next";
 import { getSiteConfig } from "@/lib/utils/site-config";
 import { headers } from "next/headers";
 import LegalPageTemplate from "@/components/shared/LegalPageTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ domain: string }>;
+}): Promise<Metadata> {
+  const { domain } = await params;
+  const heads = await headers();
+  const host = heads.get("host") || domain;
+  const config = await getSiteConfig(domain, heads);
+  const brandName = config?.brand?.name || domain;
+
+  return {
+    title: `Privacy Policy | ${brandName}`,
+    description: `Read how ${brandName} collects, uses, and protects your personal data.`,
+    robots: {
+      index: true,
+      follow: true,
+    },
+    alternates: {
+      canonical: `https://${host}/privacy`,
+    },
+  };
+}
 
 export default async function PrivacyPage({ params }: { params: Promise<{ domain: string }> }) {
   const { domain } = await params;

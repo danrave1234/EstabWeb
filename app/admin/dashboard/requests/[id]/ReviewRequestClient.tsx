@@ -76,6 +76,9 @@ export default function ReviewRequestClient({ request }: ReviewRequestClientProp
   const currentSectionData = sectionId === 'full-site' ? currentConfig : (currentConfig[sectionKey] || {})
   const requestedChanges = request.requested_changes || {}
 
+  const isChanged = (key: string) =>
+    JSON.stringify(currentSectionData[key]) !== JSON.stringify((requestedChanges as any)[key])
+
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
@@ -166,8 +169,11 @@ export default function ReviewRequestClient({ request }: ReviewRequestClientProp
             className="flex-1 overflow-y-auto p-6 space-y-6"
           >
             {Object.keys(requestedChanges).map(key => (
-              <div key={key} className="space-y-2 opacity-60">
-                <div className="text-[10px] font-black uppercase text-muted-foreground/50">{key}</div>
+              <div key={key} className={`space-y-2 ${isChanged(key) ? '' : 'opacity-40'}`}>
+                <div className="flex items-center gap-2">
+                  <div className="text-[10px] font-black uppercase text-muted-foreground/50">{key}</div>
+                  {!isChanged(key) && <span className="text-[9px] px-1.5 py-0.5 bg-muted rounded text-muted-foreground">unchanged</span>}
+                </div>
                 <div className="p-4 rounded-xl border border-border bg-muted/20">
                   <RenderValue value={currentSectionData[key]} />
                 </div>
@@ -188,9 +194,14 @@ export default function ReviewRequestClient({ request }: ReviewRequestClientProp
             className="flex-1 overflow-y-auto p-6 space-y-6"
           >
             {Object.entries(requestedChanges).map(([key, value]) => (
-              <div key={key} className="space-y-2">
-                <div className="text-[10px] font-black uppercase text-emerald-600/70">{key}</div>
-                <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 shadow-sm ring-1 ring-emerald-500/10">
+              <div key={key} className={`space-y-2 ${isChanged(key) ? '' : 'opacity-40'}`}>
+                <div className="flex items-center gap-2">
+                  <div className={`text-[10px] font-black uppercase ${isChanged(key) ? 'text-emerald-600/70' : 'text-muted-foreground/50'}`}>{key}</div>
+                  {isChanged(key)
+                    ? <span className="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 rounded text-emerald-700 font-bold">changed</span>
+                    : <span className="text-[9px] px-1.5 py-0.5 bg-muted rounded text-muted-foreground">unchanged</span>}
+                </div>
+                <div className={`p-4 rounded-xl border ${isChanged(key) ? 'border-emerald-500/20 bg-emerald-500/5 shadow-sm ring-1 ring-emerald-500/10' : 'border-border bg-muted/20'}`}>
                   <RenderValue value={value} />
                 </div>
               </div>

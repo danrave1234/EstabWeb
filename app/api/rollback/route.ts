@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { logAudit } from '@/lib/audit'
 
 export async function POST(req: Request) {
   try {
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
       .from('projects')
       .update({
         current_config: snapshot,
-        draft_config: {},
+        draft_config: null,
         config_version: nextVersion,
       })
       .eq('id', projectId)
@@ -54,9 +55,11 @@ export async function POST(req: Request) {
       snapshot,
     })
 
+    if (proj.subdomain) revalidateTag(`site:${proj.subdomain}`, 'max')
+    if (proj.custom_domain) revalidateTag(`site:${proj.custom_domain}`, 'max')
     const domainParam = proj.subdomain || proj.custom_domain
     if (domainParam) revalidatePath(`/${domainParam}`)
-
+    await logAudit(supabase, 'rollback', user.id, projectId, { restoredVersion: version, newVersion: nextVersion })
     return NextResponse.json({ success: true, version: nextVersion })
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Failed to rollback' }, { status: 500 })

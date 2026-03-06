@@ -3,24 +3,12 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import SiteTemplate from "@/components/shared/SiteTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
-import { getSiteConfigWithProject } from "@/lib/utils/site-config";
+import { getCachedSiteConfig } from "@/lib/utils/site-config";
 import { getPageBySlug, normalizePages, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
 import { isProPlan } from "@/lib/subscription";
+import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
-function pickFirstText(...values: Array<unknown>): string {
-  const found = values.find((value) => typeof value === "string" && value.trim().length > 0);
-  return typeof found === "string" ? found.trim() : "";
-}
-
-function buildKeywords(values: Array<unknown>): string[] {
-  const list = values
-    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-    .map((value) => value.trim());
-  return Array.from(new Set(list)).slice(0, 12);
-}
+export const revalidate = 120;
 
 export async function generateMetadata({
   params,
@@ -30,54 +18,42 @@ export async function generateMetadata({
   const { domain } = await params;
   const heads = await headers();
   const host = heads.get("host") || domain;
-  const { config } = await getSiteConfigWithProject(domain, heads);
+  const { config } = await getCachedSiteConfig(domain, heads);
 
   const pages = normalizePagesWithDefaults(config?.pages);
   const homePage = getPageBySlug(pages, "");
-  const seo = homePage?.seo || config?.seo || {};
+  const resolvedSeo = buildAutoSeoDefaults({
+    config,
+    page: homePage as Record<string, any> | undefined,
+    pageSlug: "",
+    pageLabel: homePage?.label || "Home",
+    domain,
+  });
   const brand = config?.brand || {};
-  const hero = config?.hero || {};
-  const features = config?.features || {};
-  const practiceAreas = config?.practiceAreas || {};
-  const contact = config?.contact || {};
-  const theme = config?.theme || "";
-
-  const pageLabel = homePage?.label || (homePage?.slug ? homePage.slug.replace(/-/g, " ") : "");
-  const baseTitle = pickFirstText(seo.title, pageLabel, hero.title, features.title, practiceAreas.title);
   const brandName = brand.name || domain;
-  const title = baseTitle
-    ? baseTitle.includes(brandName) ? baseTitle : `${baseTitle} | ${brandName}`
-    : `${brandName} | Professional Website`;
-  const description = pickFirstText(
-    seo.description,
-    hero.subtitle,
-    features.subtitle,
-    practiceAreas.subtitle,
-    contact.tagline,
-    contact.subtitle,
-    contact.formHeading
-  ) || `Welcome to ${brandName}. Built with EstabWeb.`;
-  const keywords = Array.isArray(seo.keywords) && seo.keywords.length > 0
-    ? seo.keywords
-    : buildKeywords([brand.name, pageLabel, theme, hero.benefitText, hero.badgeText, features.title, practiceAreas.title]);
   const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
+  const canonical = `https://${host}${resolvedSeo.canonical}`;
 
   return {
-    title,
-    description,
-    keywords,
+    title: resolvedSeo.title,
+    description: resolvedSeo.description,
+    keywords: resolvedSeo.keywords,
     openGraph: {
-      title,
-      description,
+      title: resolvedSeo.og.title,
+      description: resolvedSeo.og.description,
       type: "website",
-      siteName: brand.name,
-      images: brand.logoUrl ? [{ url: brand.logoUrl }] : [],
+      siteName: brandName,
+      images: resolvedSeo.og.image ? [{ url: resolvedSeo.og.image }] : [],
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
-      images: brand.logoUrl ? [brand.logoUrl] : [],
+      title: resolvedSeo.og.title,
+      description: resolvedSeo.og.description,
+      images: resolvedSeo.og.image ? [resolvedSeo.og.image] : [],
+    },
+    robots: {
+      index: !resolvedSeo.robots.noindex,
+      follow: !resolvedSeo.robots.nofollow,
     },
     icons: {
       icon: iconUrl,
@@ -86,7 +62,7 @@ export async function generateMetadata({
     },
     metadataBase: new URL(`https://${host}`),
     alternates: {
-      canonical: "/",
+      canonical,
     },
   };
 }
@@ -100,7 +76,7 @@ export default async function Home({
   const heads = await headers();
   const preview = heads.get('x-preview-mode') === 'true';
 
-  const { config: initialData, project } = await getSiteConfigWithProject(domain, heads);
+  const { config: initialData, project } = await getCachedSiteConfig(domain, heads);
 
   // If accessed via custom domain but subscription is lapsed, redirect to subdomain
   if (!preview && project && project.custom_domain && !isProPlan(project)) {

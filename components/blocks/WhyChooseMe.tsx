@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import { trackLead, trackEvent } from "@/components/shared/Analytics";
 
 export type WhyChooseMeProps = {
   title?: string;
@@ -34,57 +35,68 @@ export default function WhyChooseMe({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Agent Image */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-primary/10 rounded-3xl -rotate-3 group-hover:rotate-0 transition-transform duration-500" />
-            <div className="relative aspect-[3/4] sm:aspect-square lg:aspect-[4/5] rounded-3xl overflow-hidden border-8 border-background shadow-2xl rotate-3 group-hover:rotate-0 transition-transform duration-500">
+            <div className="absolute inset-4 bg-primary/10 rounded-[3rem] -rotate-3 group-hover:rotate-0 transition-transform duration-700 blur-2xl opacity-50" />
+            <div className="relative aspect-[3/4] sm:aspect-square lg:aspect-[4/5] rounded-[2.5rem] sm:rounded-[4rem] overflow-hidden border-8 border-background shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] group-hover:scale-[1.02] transition-all duration-700 z-10">
               <Image
                 src={agentImageUrl}
                 alt={agentName}
                 fill
-                className="object-cover"
+                className="object-cover transition-transform duration-[2000ms] group-hover:scale-110"
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
             </div>
             {/* License Badge */}
-            <div className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 bg-primary p-3 sm:p-6 rounded-xl sm:rounded-2xl shadow-2xl z-10 border-4 border-background animate-bounce-slow">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-primary-foreground/70 mb-1">{licensedBrokerLabel}</p>
-              <p className="text-sm font-black text-primary-foreground">{licenseNumber}</p>
+            <div className="absolute -bottom-6 -right-6 sm:-bottom-10 sm:-right-10 bg-background p-6 sm:p-10 rounded-[2.5rem] shadow-2xl z-20 border-border border transition-all duration-500 hover:-translate-y-2">
+              <div className="absolute top-0 left-0 w-full h-1 bg-primary rounded-full" />
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 mb-2">{licensedBrokerLabel}</p>
+              <p className="font-serif text-lg sm:text-2xl font-black text-foreground tracking-tight">{licenseNumber}</p>
             </div>
           </div>
 
           {/* Content */}
           <div className="space-y-8">
             <div className="space-y-4">
-              <div className="space-y-2">
-                <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-primary">{title}</p>
-                <h2 className="text-3xl sm:text-5xl font-black text-foreground leading-tight">
+              <div className="space-y-4">
+                <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] text-primary/60">{title}</p>
+                <h2 className="font-serif text-3xl sm:text-7xl font-black text-foreground leading-[1.1] tracking-tighter">
                   {agentName}
                 </h2>
-                <p className="text-lg font-bold text-muted-foreground uppercase tracking-wider border-l-4 border-primary pl-4">
-                  {agentRole}
-                </p>
+                <div className="flex items-center gap-4 py-2">
+                  <span className="h-1 w-12 bg-primary/20 rounded-full" />
+                  <p className="text-xs sm:text-lg font-black text-primary uppercase tracking-[0.3em]">
+                    {agentRole}
+                  </p>
+                </div>
               </div>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                {agentBio}
-              </p>
+              <blockquote className="relative">
+                <div className="absolute -top-4 -left-6 text-7xl text-primary/10 font-serif leading-none">&ldquo;</div>
+                <p className="text-base sm:text-2xl text-muted-foreground leading-relaxed font-medium opacity-80 pl-6 py-2 italic font-serif">
+                  {agentBio}
+                </p>
+              </blockquote>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-10">
               {trustSignals.map((signal, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary/5 rounded-full overflow-hidden flex items-center justify-center shrink-0">
+                <div key={index} className="group/signal flex items-center gap-4 p-4 bg-muted/20 rounded-[1.5rem] border border-border/40 hover:border-primary/20 hover:bg-background hover:shadow-xl transition-all duration-300">
+                  <div className="w-12 h-12 bg-background rounded-xl overflow-hidden flex items-center justify-center shrink-0 border border-border/40 group-hover/signal:bg-primary group-hover/signal:text-primary-foreground transition-all duration-300 shadow-sm">
                     {signal.imageUrl ? (
-                      <img src={signal.imageUrl} alt={signal.label} className="w-full h-full object-cover" />
+                      <img src={signal.imageUrl} alt={signal.label} className="w-full h-full object-contain p-2 filter grayscale group-hover/signal:grayscale-0 transition-all" />
                     ) : (
-                      <DynamicIcon name={signal.icon} className="w-5 h-5 text-primary" />
+                      <DynamicIcon name={signal.icon} className="w-6 h-6 text-primary group-hover/signal:text-primary-foreground transition-colors" />
                     )}
                   </div>
-                  <p className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-tight">{signal.label}</p>
+                  <p className="text-xs sm:text-sm font-black text-foreground uppercase tracking-[0.1em]">{signal.label}</p>
                 </div>
               ))}
             </div>
 
-            <div className="pt-6 flex justify-center lg:justify-start">
-              <button className="w-full sm:w-auto px-10 py-4 bg-primary text-primary-foreground font-black rounded-lg hover:scale-105 active:scale-95 transition-all shadow-xl uppercase tracking-widest text-xs">
+            <div className="pt-10 flex justify-center lg:justify-start">
+              <button
+                onClick={() => { trackEvent({ type: 'cta_click', section_key: 'why_choose_me', cta_id: 'agent_inquire' }); trackLead('form'); }}
+                className="w-full sm:w-auto px-16 py-5 bg-primary text-primary-foreground font-black rounded-2xl hover:shadow-[0_20px_40px_-12px_rgba(var(--primary-rgb),0.5)] active:scale-95 transition-all uppercase tracking-[0.2em] text-sm"
+              >
                 {inquireNowLabel}
               </button>
             </div>

@@ -1,11 +1,11 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { getSectionKey } from '@/lib/utils/config-mapping'
 import { generateSubdomain } from '@/lib/codes'
-import { deepMerge } from '@/lib/utils'
 import { addSubdomainToVercel, addDomainToVercel } from '@/lib/utils/vercel-domains'
 
 const processChangeRequestSchema = z.object({
@@ -57,27 +57,24 @@ export async function processChangeRequest(
     const sectionId = request.section_id
     const requestedChanges = request.requested_changes
 
-    // Deep clone current config for update
-    let newConfig = JSON.parse(JSON.stringify(project.current_config || {}))
+    // Snapshot-based: requested_changes must be a full config snapshot for full-site requests
+    let newConfig: Record<string, any>
 
     if (!sectionId || sectionId === 'full-site') {
-      // Merge the requested changes (draft) into the current config instead of replacing it
-      newConfig = deepMerge(newConfig, requestedChanges)
+      // Full snapshot replace — no merging
+      newConfig = JSON.parse(JSON.stringify(requestedChanges || {}))
     } else {
-      // Map section_id to config key
-      const sectionKey = getSectionKey(sectionId);
-
-      // Update the specific section
-      newConfig[sectionKey] = {
-        ...(newConfig[sectionKey] || {}),
-        ...requestedChanges
-      }
+      // Section-only update: apply section onto current config
+      const base = JSON.parse(JSON.stringify(project.current_config || {}))
+      const sectionKey = getSectionKey(sectionId)
+      base[sectionKey] = { ...(base[sectionKey] || {}), ...requestedChanges }
+      newConfig = base
     }
 
     const nextVersion = (project.config_version || 0) + 1
-    const updatePayload: any = { 
+    const updatePayload: any = {
       current_config: newConfig,
-      draft_config: {}, // Clear draft once approved
+      draft_config: null, // Clear draft once approved
       config_version: nextVersion
     }
 
@@ -124,7 +121,7 @@ export async function processChangeRequest(
   // 2. Update request status and note
   const { error: requestError } = await supabase
     .from('change_requests')
-    .update({ 
+    .update({
       status: action,
       admin_note: adminNote || null,
       decided_at: new Date().toISOString(),
@@ -137,7 +134,7 @@ export async function processChangeRequest(
   // 3. Live Sync / Revalidation
   // Revalidate the home page (where client sites render)
   revalidatePath('/')
-  
+
   // Revalidate the specific site if domain is known
   // We fetch the latest project state to get the (potentially new) subdomain
   const { data: latestProj } = await supabase
@@ -146,21 +143,17 @@ export async function processChangeRequest(
     .eq('id', request.project_id)
     .single()
 
-  const domainParam = latestProj?.subdomain || latestProj?.custom_domain
-  if (domainParam) {
-    revalidatePath(`/${domainParam}`)
-  }
-
-  // Also revalidate the old domain if it was different
-  const oldProject = Array.isArray(request.projects) ? request.projects[0] : request.projects
-  const oldDomainParam = oldProject?.subdomain || oldProject?.custom_domain
-  if (oldDomainParam && oldDomainParam !== domainParam) {
-    revalidatePath(`/${oldDomainParam}`)
-  }
+  if (latestProj?.subdomain) revalidateTag(`site:${latestProj.subdomain}`, 'max')
+  if (latestProj?.custom_domain) revalidateTag(`site:${latestProj.custom_domain}`, 'max')
+  revalidatePath('/(sites)/[domain]', 'page')
+  revalidatePath('/(sites)/[domain]/[slug]', 'page')
 
   // Revalidate the admin dashboard and approvals page
   revalidatePath('/admin/dashboard', 'page')
   revalidatePath('/admin/approvals', 'page')
+
+  const auditAction = action === 'approved' ? 'change_request_approve' : 'change_request_reject'
+  await logAudit(supabase, auditAction, user.id, request.project_id, { requestId, adminNote })
 
   return { success: true }
 }
@@ -268,6 +261,34 @@ export async function setCustomDomain(projectId: string, customDomain: string | 
   return { success: true }
 }
 
+const updateAIStatsSchema = z.object({
+  projectId: z.string().uuid(),
+  aiUsageCount: z.number().int().min(0),
+  aiUsageLimit: z.number().int().min(0).nullable(),
+})
+
+export async function updateProjectAIStats(projectId: string, aiUsageCount: number, aiUsageLimit: number | null) {
+  const validated = updateAIStatsSchema.safeParse({ projectId, aiUsageCount, aiUsageLimit })
+  if (!validated.success) return { error: 'Invalid input' }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') return { error: 'Forbidden' }
+
+  const { error } = await supabase
+    .from('projects')
+    .update({ ai_usage_count: aiUsageCount, ai_usage_limit: aiUsageLimit })
+    .eq('id', projectId)
+
+  if (error) return { error: error.message }
+  revalidatePath('/admin/clients')
+  revalidatePath('/dashboard')
+  return { success: true }
+}
+
 export async function setPlanLimits(input: { proMaxPages: number; freeMaxPages?: number }) {
   const validated = setPlanLimitsSchema.safeParse(input)
   if (!validated.success) return { error: 'Invalid input' }
@@ -311,5 +332,45 @@ export async function setPlanLimits(input: { proMaxPages: number; freeMaxPages?:
   }
 
   revalidatePath('/admin/settings')
+  return { success: true }
+}
+
+export async function setPlansConfig(input: { PLANS: Record<string, any>, ENABLE_ANNUAL_PLANS: boolean }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') return { error: 'Forbidden' }
+
+  const { data: existing } = await supabase
+    .from('site_config')
+    .select('id, payload')
+    .eq('key', 'plans')
+    .single()
+
+  if (existing?.id) {
+    const { error } = await supabase
+      .from('site_config')
+      .update({ payload: input, updated_at: new Date().toISOString() })
+      .eq('id', existing.id)
+
+    if (error) return { error: error.message }
+  } else {
+    const { error } = await supabase
+      .from('site_config')
+      .insert({ key: 'plans', payload: input })
+
+    if (error) return { error: error.message }
+  }
+
+  revalidatePath('/admin/settings')
+  revalidatePath('/dashboard')
+  revalidatePath('/subscribe/[projectId]', 'page')
   return { success: true }
 }

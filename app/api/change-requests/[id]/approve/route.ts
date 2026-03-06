@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { getSectionKey } from '@/lib/utils/config-mapping'
 import { generateSubdomain } from '@/lib/codes'
-import { deepMerge } from '@/lib/utils'
+import { logAudit } from '@/lib/audit'
+import { onChangeRequestResolved } from '@/lib/cache/invalidation'
 
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -39,24 +40,24 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     const sectionId = cr.section_id
     const requestedChanges = cr.requested_changes
 
-    // Deep clone current config for update
-    let newConfig = JSON.parse(JSON.stringify(project.current_config || {}))
+    // Snapshot-based: requested_changes must be a full config snapshot for full-site requests
+    let newConfig: Record<string, any>
 
     if (!sectionId || sectionId === 'full-site') {
-      // Merge the requested changes (draft) into the current config instead of replacing it
-      newConfig = deepMerge(newConfig, requestedChanges)
+      // Full snapshot replace — no merging
+      newConfig = JSON.parse(JSON.stringify(requestedChanges || {}))
     } else {
+      // Section-only update: apply section onto current config
+      const base = JSON.parse(JSON.stringify(project.current_config || {}))
       const sectionKey = getSectionKey(cr.section_id)
-      newConfig[sectionKey] = {
-        ...(newConfig[sectionKey] || {}),
-        ...requestedChanges
-      }
+      base[sectionKey] = { ...(base[sectionKey] || {}), ...requestedChanges }
+      newConfig = base
     }
 
     const nextVersion = (project.config_version || 0) + 1
     const updatePayload: any = { 
       current_config: newConfig, 
-      draft_config: {}, // Clear draft once approved
+      draft_config: null, // Clear draft once approved
       config_version: nextVersion
     }
 
@@ -104,15 +105,21 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
       .eq('id', cr.project_id)
       .single()
 
-    const domainParam = proj?.subdomain || proj?.custom_domain
-    if (domainParam) {
-      // Revalidate the public path served by middleware as /{domain}
-      revalidatePath(`/${domainParam}`)
+    if (proj?.subdomain) revalidateTag(`site:${proj.subdomain}`, 'max')
+    if (proj?.custom_domain) revalidateTag(`site:${proj.custom_domain}`, 'max')
+    await onChangeRequestResolved({ projectId: cr.project_id, subdomain: proj?.subdomain, customDomain: proj?.custom_domain })
+    revalidatePath('/(sites)/[domain]', 'page')
+    revalidatePath('/(sites)/[domain]/[slug]', 'page')
+
+    // Also revalidate using the actual subdomain/custom_domain values so Vercel's
+    // edge cache is busted for the specific domain paths.
+    const approvedDomains = [proj?.subdomain, proj?.custom_domain].filter(Boolean) as string[]
+    for (const d of approvedDomains) {
+      revalidatePath(`/${d}`, 'page')
+      revalidatePath(`/${d}/[slug]`, 'page')
     }
 
-    // If subdomain was just changed, we might also want to revalidate the old one 
-    // but the new one is the priority. The code above now fetches the FRESH subdomain.
-
+    await logAudit(supabase, 'change_request_approve', user.id, cr.project_id, { requestId: id, version: nextVersion })
     return NextResponse.json({ success: true })
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Failed to approve change request' }, { status: 500 })

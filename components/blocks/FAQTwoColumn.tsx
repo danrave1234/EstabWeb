@@ -1,6 +1,7 @@
 "use client";
 
 import { QuestionIcon } from "@phosphor-icons/react";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type FAQItem = {
   question: string;
@@ -37,7 +38,11 @@ export default function FAQTwoColumn({
               </p>
               <div className="mt-8 pt-8 border-t border-border">
                 <p className="text-sm font-medium text-foreground mb-4">Still have questions?</p>
-                <a href="#contact" className="text-primary font-bold hover:underline">
+                <a 
+                  href="#contact" 
+                  onClick={() => trackEvent({ type: 'cta_click', section_key: 'faq', cta_id: 'faq_contact_click' })}
+                  className="text-primary font-bold hover:underline"
+                >
                   Contact our support team &rarr;
                 </a>
               </div>

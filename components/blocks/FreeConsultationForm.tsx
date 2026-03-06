@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ShieldCheckIcon, ClockIcon, LockIcon } from "@phosphor-icons/react";
-import { trackLead } from "@/components/shared/Analytics";
+import { trackLead, trackEvent } from "@/components/shared/Analytics";
 
 export type FreeConsultationFormProps = {
   headline: string;
@@ -43,7 +43,7 @@ export default function FreeConsultationForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
-    trackLead('form', undefined, { name: formData.name, email: formData.email });
+    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
     setTimeout(() => {
       setSubmitted(false);
       setFormData({ name: "", email: "", issue: dropdownOptions[0] ?? "" });
@@ -141,6 +141,7 @@ export default function FreeConsultationForm({
               <button
                 type="submit"
                 disabled={submitted}
+                onClick={() => trackEvent({ type: 'cta_click', section_key: 'consultation', cta_id: 'consultation_submit' })}
                 className="w-full min-h-[40px] sm:min-h-[44px] py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 disabled:opacity-70 transition-opacity text-xs sm:text-lg touch-manipulation"
               >
                 {submitted ? buttonThankYou : buttonText}

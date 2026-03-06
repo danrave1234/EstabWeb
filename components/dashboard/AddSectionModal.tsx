@@ -25,6 +25,7 @@ function SectionTypeIcon({ name, className }: { name: string; className?: string
 export function AddSectionModal({ open, onOpenChange, activeSections, addSection }: AddSectionModalProps) {
   const [selectedType, setSelectedType] = React.useState<SectionTypeGroup | null>(null)
   const [selectedVariantId, setSelectedVariantId] = React.useState<string | null>(null)
+  const backdropPointerDownRef = React.useRef(false)
 
   // Reset state when modal closes
   React.useEffect(() => {
@@ -32,7 +33,15 @@ export function AddSectionModal({ open, onOpenChange, activeSections, addSection
       setSelectedType(null)
       setSelectedVariantId(null)
     }
-  }, [open])
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) {
+        onOpenChange(false)
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [open, onOpenChange])
 
   // Auto-select first variant when type changes
   React.useEffect(() => {
@@ -56,8 +65,13 @@ export function AddSectionModal({ open, onOpenChange, activeSections, addSection
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      onPointerDown={(e) => {
+        if (e.target === e.currentTarget) backdropPointerDownRef.current = true
+        else backdropPointerDownRef.current = false
+      }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onOpenChange(false)
+        if (e.target === e.currentTarget && backdropPointerDownRef.current) onOpenChange(false)
+        backdropPointerDownRef.current = false
       }}
     >
       <div className="w-[90vw] h-[90vh] max-w-[1600px] bg-background rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-border">
@@ -164,22 +178,20 @@ export function AddSectionModal({ open, onOpenChange, activeSections, addSection
                         key={id}
                         type="button"
                         onClick={() => setSelectedVariantId(id)}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all ${
-                          isSelected
-                            ? "bg-primary text-white"
-                            : isAdded
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all ${isSelected
+                          ? "bg-primary text-white"
+                          : isAdded
                             ? "bg-muted/40 text-muted-foreground"
                             : "hover:bg-muted/60 text-foreground"
-                        }`}
+                          }`}
                       >
                         <span
-                          className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${
-                            isSelected
-                              ? "bg-white/20 text-white"
-                              : isAdded
+                          className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${isSelected
+                            ? "bg-white/20 text-white"
+                            : isAdded
                               ? "bg-muted text-muted-foreground"
                               : "bg-primary/10 text-primary"
-                          }`}
+                            }`}
                         >
                           <SectionTypeIcon name={selectedType.icon} className="w-3.5 h-3.5" />
                         </span>

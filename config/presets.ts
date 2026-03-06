@@ -138,9 +138,9 @@ const GENERIC_CONTENT: PresetContent = {
     title: "Our Services",
     subtitle: "Quality and clarity guaranteed. Customize this content for your business.",
     items: [
-      { title: "Service One", description: "Brief description of your first service or offering.", icon: "Shield" },
-      { title: "Service Two", description: "Brief description of your second service or offering.", icon: "ShieldCheck" },
-      { title: "Service Three", description: "Brief description of your third service or offering.", icon: "Home" },
+      { title: "Criminal Defense", description: "Aggressive representation for all criminal charges, ensuring your rights are protected.", icon: "Gavel" },
+      { title: "DUI & DWI", description: "Expert defense for driving under the influence charges to help you keep your license.", icon: "Shield" },
+      { title: "Drug Crimes", description: "Comprehensive legal support for drug-related offenses, from possession to trafficking.", icon: "Scale" },
     ],
   },
   testimonials: {
@@ -167,9 +167,9 @@ const GENERIC_CONTENT: PresetContent = {
     title: "Our Services",
     subtitle: "Tailored to your needs. Customize in site-data.",
     items: [
-      { title: "Service One", description: "Description of your first offering.", icon: "Scale", href: "#" },
-      { title: "Service Two", description: "Description of your second offering.", icon: "Briefcase", href: "#" },
-      { title: "Service Three", description: "Description of your third offering.", icon: "Shield", href: "#" },
+      { title: "Criminal Defense", description: "Aggressive representation for all criminal charges, ensuring your rights are protected.", icon: "Gavel", href: "#" },
+      { title: "DUI & DWI", description: "Expert defense for driving under the influence charges to help you keep your license.", icon: "Shield", href: "#" },
+      { title: "Drug Crimes", description: "Comprehensive legal support for drug-related offenses, from possession to trafficking.", icon: "Scale", href: "#" },
     ],
   },
   attorneyProfile: {
@@ -303,7 +303,7 @@ const GENERIC_CONTENT: PresetContent = {
     title: "Our Service Areas",
     subtitle: "We proudly serve the following locations across Metro Cebu",
     cities: ["Cebu City", "Mandaue", "Lapu-Lapu", "Talisay", "Liloan", "Consolacion"],
-    googleMapsEmbedUrl: "",
+    mapEmbedUrl: "",
   },
   beforeAfterSlider: {
     title: "Seeing is Believing",
@@ -712,6 +712,8 @@ export type GenrePreset = {
   theme: ThemeKey;
   colorTheme: ColorThemeKey;
   typographyStyle?: string;
+  headerStyle?: string;
+  footerStyle?: string;
   activeSections: string[];
   content: PresetContent;
 };

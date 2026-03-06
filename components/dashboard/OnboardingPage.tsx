@@ -72,58 +72,58 @@ const BUSINESS_ICONS: Record<string, React.ElementType> = {
 
 // ─── All available sections for Step 3 customization ─────────────────────────
 const ALL_SECTIONS = [
-  { id: "hero",                    label: "Hero",               description: "Main banner — always included.",          icon: Layout,        color: "text-primary",     bg: "bg-primary/10",      locked: true },
+  { id: "hero", label: "Hero", description: "Main banner — always included.", icon: Layout, color: "text-primary", bg: "bg-primary/10", locked: true },
   // Core
-  { id: "features",                label: "Services",           description: "Showcase what you offer.",                icon: Zap,           color: "text-amber-500",   bg: "bg-amber-500/10",   category: "Services" },
-  { id: "services-grid",           label: "Services Grid",      description: "Grid layout of your services.",           icon: Zap,           color: "text-amber-400",   bg: "bg-amber-400/10",   category: "Services" },
-  { id: "features-modern",         label: "Services Modern",    description: "Modern card layout for services.",        icon: Zap,           color: "text-amber-600",   bg: "bg-amber-600/10",   category: "Services" },
-  { id: "testimonials",            label: "Testimonials",       description: "Social proof from real clients.",         icon: Star,          color: "text-yellow-500",  bg: "bg-yellow-500/10",  category: "Trust" },
-  { id: "review-trust-bar",        label: "Review Bar",         description: "Compact review trust strip.",             icon: Star,          color: "text-yellow-400",  bg: "bg-yellow-400/10",  category: "Trust" },
-  { id: "reviews-grid",            label: "Reviews Grid",       description: "Grid of client reviews.",                 icon: Star,          color: "text-yellow-600",  bg: "bg-yellow-600/10",  category: "Trust" },
-  { id: "facebook-review-embed",   label: "Facebook Reviews",   description: "Embed Facebook review cards.",            icon: Star,          color: "text-blue-400",    bg: "bg-blue-400/10",    category: "Trust" },
-  { id: "contact",                 label: "Contact",            description: "Let visitors reach you easily.",          icon: MessageSquare, color: "text-blue-500",    bg: "bg-blue-500/10",    category: "Contact" },
-  { id: "contact-with-map",        label: "Contact with Map",   description: "Contact form with embedded map.",         icon: Map,           color: "text-blue-600",    bg: "bg-blue-600/10",    category: "Contact" },
-  { id: "pricing",                 label: "Pricing",            description: "Transparent plans and packages.",         icon: DollarSign,    color: "text-emerald-500", bg: "bg-emerald-500/10", category: "Pricing" },
-  { id: "packages-pricing",        label: "Packages & Pricing", description: "Detailed package comparison.",            icon: DollarSign,    color: "text-emerald-400", bg: "bg-emerald-400/10", category: "Pricing" },
-  { id: "price-preview-strip",     label: "Price Preview",      description: "Compact pricing preview strip.",          icon: DollarSign,    color: "text-emerald-600", bg: "bg-emerald-600/10", category: "Pricing" },
-  { id: "patient-faq",             label: "FAQ",                description: "Answer common questions upfront.",        icon: MessageSquare, color: "text-sky-500",     bg: "bg-sky-500/10",     category: "Info" },
-  { id: "faq",                     label: "FAQ Accordion",      description: "Expandable FAQ accordion.",               icon: MessageSquare, color: "text-sky-400",     bg: "bg-sky-400/10",     category: "Info" },
-  { id: "faq-two-column",          label: "FAQ Two Column",     description: "Two-column FAQ layout.",                  icon: MessageSquare, color: "text-sky-600",     bg: "bg-sky-600/10",     category: "Info" },
-  { id: "team-carousel",           label: "Team Carousel",      description: "Scrollable team showcase.",               icon: Users,         color: "text-purple-500",  bg: "bg-purple-500/10",  category: "Team" },
-  { id: "team-grid",               label: "Team Grid",          description: "Grid layout of team members.",            icon: Users,         color: "text-purple-400",  bg: "bg-purple-400/10",  category: "Team" },
-  { id: "why-choose-me",           label: "Why Choose Us",      description: "Highlight your unique advantages.",       icon: Users,         color: "text-purple-600",  bg: "bg-purple-600/10",  category: "Team" },
-  { id: "blog",                    label: "Blog / News",        description: "Keep your site fresh with articles.",     icon: Globe,         color: "text-indigo-500",  bg: "bg-indigo-500/10",  category: "Content" },
-  { id: "awards",                  label: "Trust & Certs",      description: "Display badges and certifications.",      icon: ShieldCheck,   color: "text-teal-500",    bg: "bg-teal-500/10",    category: "Trust" },
-  { id: "certifications",          label: "Certifications",     description: "Show licenses and certifications.",       icon: ShieldCheck,   color: "text-teal-400",    bg: "bg-teal-400/10",    category: "Trust" },
-  { id: "trust-badges-grid",       label: "Trust Badges",       description: "Logos and trust signals.",                icon: ShieldCheck,   color: "text-green-500",   bg: "bg-green-500/10",   category: "Trust" },
-  { id: "gallery",                 label: "Gallery",            description: "Show your work visually.",                icon: Image,         color: "text-pink-500",    bg: "bg-pink-500/10",    category: "Media" },
-  { id: "before-after-gallery",    label: "Before & After",     description: "Side-by-side transformation photos.",     icon: Image,         color: "text-pink-400",    bg: "bg-pink-400/10",    category: "Media" },
-  { id: "before-after-slider",     label: "Before/After Slider",description: "Interactive before/after slider.",        icon: Image,         color: "text-pink-600",    bg: "bg-pink-600/10",    category: "Media" },
-  { id: "service-area-map",        label: "Coverage Map",       description: "Show where you operate.",                 icon: Map,           color: "text-orange-500",  bg: "bg-orange-500/10",  category: "Coverage" },
-  { id: "comparison",              label: "Comparison",         description: "Us vs competitors or plan comparison.",   icon: BarChart2,     color: "text-red-500",     bg: "bg-red-500/10",     category: "Info" },
-  { id: "stats",                   label: "Stats / Numbers",    description: "Quick authority reinforcement.",          icon: BarChart2,     color: "text-cyan-500",    bg: "bg-cyan-500/10",    category: "Info" },
-  { id: "case_study",              label: "Case Studies",       description: "Problem, solution, results.",             icon: Briefcase,     color: "text-violet-500",  bg: "bg-violet-500/10",  category: "Content" },
-  { id: "announcement_bar",        label: "Announcement Bar",   description: "Promo strip above the header.",           icon: Bell,          color: "text-rose-500",    bg: "bg-rose-500/10",    category: "CTA" },
-  { id: "emergency-cta-strip",     label: "Emergency CTA",      description: "Urgent call-to-action strip.",            icon: Bell,          color: "text-rose-400",    bg: "bg-rose-400/10",    category: "CTA" },
-  { id: "cta--sticky",             label: "Sticky CTA",         description: "Floating call-to-action button.",         icon: Megaphone,     color: "text-lime-500",    bg: "bg-lime-500/10",    category: "CTA" },
-  { id: "promo-cta-section",       label: "Promo CTA",          description: "Promotional call-to-action section.",     icon: Megaphone,     color: "text-lime-400",    bg: "bg-lime-400/10",    category: "CTA" },
-  { id: "how-it-works",            label: "How It Works",       description: "Step-by-step process overview.",          icon: ChevronRight,  color: "text-fuchsia-500", bg: "bg-fuchsia-500/10", category: "Process" },
-  { id: "treatment-process",       label: "Treatment Process",  description: "Detailed process or treatment steps.",    icon: ChevronRight,  color: "text-fuchsia-400", bg: "bg-fuchsia-400/10", category: "Process" },
-  { id: "booking-cta",             label: "Booking",            description: "Let visitors book appointments.",         icon: ArrowRight,    color: "text-blue-600",    bg: "bg-blue-600/10",    category: "CTA" },
-  { id: "free-consultation",       label: "Free Consultation",  description: "Lead capture for consultations.",         icon: MessageSquare, color: "text-emerald-600", bg: "bg-emerald-600/10", category: "CTA" },
-  { id: "warranty-block",          label: "Warranty / Guarantee",description: "Highlight your guarantee or warranty.",  icon: ShieldCheck,   color: "text-green-600",   bg: "bg-green-600/10",   category: "Trust" },
-  { id: "safety-section",          label: "Safety",             description: "Safety compliance and standards.",        icon: ShieldCheck,   color: "text-green-400",   bg: "bg-green-400/10",   category: "Trust" },
-  { id: "practice-areas",          label: "Practice Areas",     description: "List of specialty practice areas.",       icon: Briefcase,     color: "text-violet-400",  bg: "bg-violet-400/10",  category: "Services" },
-  { id: "ac-types-grid",           label: "Product Types",      description: "Grid of product or service types.",       icon: Zap,           color: "text-amber-300",   bg: "bg-amber-300/10",   category: "Services" },
-  { id: "featured-properties-grid",label: "Featured Listings",  description: "Showcase featured properties or items.",  icon: Key,           color: "text-orange-400",  bg: "bg-orange-400/10",  category: "Content" },
-  { id: "financing-section",       label: "Financing",          description: "Financing options and payment plans.",    icon: DollarSign,    color: "text-emerald-300", bg: "bg-emerald-300/10", category: "Pricing" },
-  { id: "common-pests",            label: "Common Issues",      description: "Highlight common problems you solve.",    icon: Bug,           color: "text-red-400",     bg: "bg-red-400/10",     category: "Services" },
-  { id: "delivery-coverage",       label: "Delivery Coverage",  description: "Show delivery or service coverage area.", icon: Map,           color: "text-orange-600",  bg: "bg-orange-600/10",  category: "Coverage" },
-  { id: "developer-partners",      label: "Partners",           description: "Showcase developer or brand partners.",   icon: Users,         color: "text-indigo-400",  bg: "bg-indigo-400/10",  category: "Trust" },
-  { id: "enrollment-process",      label: "Enrollment Process", description: "Steps to enroll or get started.",         icon: ChevronRight,  color: "text-fuchsia-600", bg: "bg-fuchsia-600/10", category: "Process" },
-  { id: "programs-grid",           label: "Programs Grid",      description: "Grid of programs or courses offered.",    icon: GraduationCap, color: "text-indigo-600",  bg: "bg-indigo-600/10",  category: "Content" },
-  { id: "faculty-grid",            label: "Faculty / Staff",    description: "Grid of faculty or staff members.",       icon: Users,         color: "text-purple-300",  bg: "bg-purple-300/10",  category: "Team" },
-  { id: "product-grid",            label: "Product Grid",       description: "Grid of products for sale.",              icon: ShoppingCart,  color: "text-pink-300",    bg: "bg-pink-300/10",    category: "Services" },
+  { id: "features", label: "Services", description: "Showcase what you offer.", icon: Zap, color: "text-amber-500", bg: "bg-amber-500/10", category: "Services" },
+  { id: "services-grid", label: "Services Grid", description: "Grid layout of your services.", icon: Zap, color: "text-amber-400", bg: "bg-amber-400/10", category: "Services" },
+  { id: "features-modern", label: "Services Modern", description: "Modern card layout for services.", icon: Zap, color: "text-amber-600", bg: "bg-amber-600/10", category: "Services" },
+  { id: "testimonials", label: "Testimonials", description: "Social proof from real clients.", icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10", category: "Trust" },
+  { id: "review-trust-bar", label: "Review Bar", description: "Compact review trust strip.", icon: Star, color: "text-yellow-400", bg: "bg-yellow-400/10", category: "Trust" },
+  { id: "reviews-grid", label: "Reviews Grid", description: "Grid of client reviews.", icon: Star, color: "text-yellow-600", bg: "bg-yellow-600/10", category: "Trust" },
+  { id: "facebook-review-embed", label: "Facebook Reviews", description: "Embed Facebook review cards.", icon: Star, color: "text-blue-400", bg: "bg-blue-400/10", category: "Trust" },
+  { id: "contact", label: "Contact", description: "Let visitors reach you easily.", icon: MessageSquare, color: "text-blue-500", bg: "bg-blue-500/10", category: "Contact" },
+  { id: "contact-with-map", label: "Contact with Map", description: "Contact form with embedded map.", icon: Map, color: "text-blue-600", bg: "bg-blue-600/10", category: "Contact" },
+  { id: "pricing", label: "Pricing", description: "Transparent plans and packages.", icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/10", category: "Pricing" },
+  { id: "packages-pricing", label: "Packages & Pricing", description: "Detailed package comparison.", icon: DollarSign, color: "text-emerald-400", bg: "bg-emerald-400/10", category: "Pricing" },
+  { id: "price-preview-strip", label: "Price Preview", description: "Compact pricing preview strip.", icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-600/10", category: "Pricing" },
+  { id: "patient-faq", label: "FAQ", description: "Answer common questions upfront.", icon: MessageSquare, color: "text-sky-500", bg: "bg-sky-500/10", category: "Info" },
+  { id: "faq", label: "FAQ Accordion", description: "Expandable FAQ accordion.", icon: MessageSquare, color: "text-sky-400", bg: "bg-sky-400/10", category: "Info" },
+  { id: "faq-two-column", label: "FAQ Two Column", description: "Two-column FAQ layout.", icon: MessageSquare, color: "text-sky-600", bg: "bg-sky-600/10", category: "Info" },
+  { id: "team-carousel", label: "Team Carousel", description: "Scrollable team showcase.", icon: Users, color: "text-purple-500", bg: "bg-purple-500/10", category: "Team" },
+  { id: "team-grid", label: "Team Grid", description: "Grid layout of team members.", icon: Users, color: "text-purple-400", bg: "bg-purple-400/10", category: "Team" },
+  { id: "why-choose-me", label: "Why Choose Us", description: "Highlight your unique advantages.", icon: Users, color: "text-purple-600", bg: "bg-purple-600/10", category: "Team" },
+  { id: "blog", label: "Blog / News", description: "Keep your site fresh with articles.", icon: Globe, color: "text-indigo-500", bg: "bg-indigo-500/10", category: "Content" },
+  { id: "awards", label: "Trust & Certs", description: "Display badges and certifications.", icon: ShieldCheck, color: "text-teal-500", bg: "bg-teal-500/10", category: "Trust" },
+  { id: "certifications", label: "Certifications", description: "Show licenses and certifications.", icon: ShieldCheck, color: "text-teal-400", bg: "bg-teal-400/10", category: "Trust" },
+  { id: "trust-badges-grid", label: "Trust Badges", description: "Logos and trust signals.", icon: ShieldCheck, color: "text-green-500", bg: "bg-green-500/10", category: "Trust" },
+  { id: "gallery", label: "Gallery", description: "Show your work visually.", icon: Image, color: "text-pink-500", bg: "bg-pink-500/10", category: "Media" },
+  { id: "before-after-gallery", label: "Before & After", description: "Side-by-side transformation photos.", icon: Image, color: "text-pink-400", bg: "bg-pink-400/10", category: "Media" },
+  { id: "before-after-slider", label: "Before/After Slider", description: "Interactive before/after slider.", icon: Image, color: "text-pink-600", bg: "bg-pink-600/10", category: "Media" },
+  { id: "service-area-map", label: "Coverage Map", description: "Show where you operate.", icon: Map, color: "text-orange-500", bg: "bg-orange-500/10", category: "Coverage" },
+  { id: "comparison", label: "Comparison", description: "Us vs competitors or plan comparison.", icon: BarChart2, color: "text-red-500", bg: "bg-red-500/10", category: "Info" },
+  { id: "stats", label: "Stats / Numbers", description: "Quick authority reinforcement.", icon: BarChart2, color: "text-cyan-500", bg: "bg-cyan-500/10", category: "Info" },
+  { id: "case_study", label: "Case Studies", description: "Problem, solution, results.", icon: Briefcase, color: "text-violet-500", bg: "bg-violet-500/10", category: "Content" },
+  { id: "announcement_bar", label: "Announcement Bar", description: "Promo strip above the header.", icon: Bell, color: "text-rose-500", bg: "bg-rose-500/10", category: "CTA" },
+  { id: "emergency-cta-strip", label: "Emergency CTA", description: "Urgent call-to-action strip.", icon: Bell, color: "text-rose-400", bg: "bg-rose-400/10", category: "CTA" },
+  { id: "cta--sticky", label: "Sticky CTA", description: "Floating call-to-action button.", icon: Megaphone, color: "text-lime-500", bg: "bg-lime-500/10", category: "CTA" },
+  { id: "promo-cta-section", label: "Promo CTA", description: "Promotional call-to-action section.", icon: Megaphone, color: "text-lime-400", bg: "bg-lime-400/10", category: "CTA" },
+  { id: "how-it-works", label: "How It Works", description: "Step-by-step process overview.", icon: ChevronRight, color: "text-fuchsia-500", bg: "bg-fuchsia-500/10", category: "Process" },
+  { id: "treatment-process", label: "Treatment Process", description: "Detailed process or treatment steps.", icon: ChevronRight, color: "text-fuchsia-400", bg: "bg-fuchsia-400/10", category: "Process" },
+  { id: "booking-cta", label: "Booking", description: "Let visitors book appointments.", icon: ArrowRight, color: "text-blue-600", bg: "bg-blue-600/10", category: "CTA" },
+  { id: "free-consultation", label: "Free Consultation", description: "Lead capture for consultations.", icon: MessageSquare, color: "text-emerald-600", bg: "bg-emerald-600/10", category: "CTA" },
+  { id: "warranty-block", label: "Warranty / Guarantee", description: "Highlight your guarantee or warranty.", icon: ShieldCheck, color: "text-green-600", bg: "bg-green-600/10", category: "Trust" },
+  { id: "safety-section", label: "Safety", description: "Safety compliance and standards.", icon: ShieldCheck, color: "text-green-400", bg: "bg-green-400/10", category: "Trust" },
+  { id: "practice-areas", label: "Practice Areas", description: "List of specialty practice areas.", icon: Briefcase, color: "text-violet-400", bg: "bg-violet-400/10", category: "Services" },
+  { id: "ac-types-grid", label: "Product Types", description: "Grid of product or service types.", icon: Zap, color: "text-amber-300", bg: "bg-amber-300/10", category: "Services" },
+  { id: "featured-properties-grid", label: "Featured Listings", description: "Showcase featured properties or items.", icon: Key, color: "text-orange-400", bg: "bg-orange-400/10", category: "Content" },
+  { id: "financing-section", label: "Financing", description: "Financing options and payment plans.", icon: DollarSign, color: "text-emerald-300", bg: "bg-emerald-300/10", category: "Pricing" },
+  { id: "common-pests", label: "Common Issues", description: "Highlight common problems you solve.", icon: Bug, color: "text-red-400", bg: "bg-red-400/10", category: "Services" },
+  { id: "delivery-coverage", label: "Delivery Coverage", description: "Show delivery or service coverage area.", icon: Map, color: "text-orange-600", bg: "bg-orange-600/10", category: "Coverage" },
+  { id: "developer-partners", label: "Partners", description: "Showcase developer or brand partners.", icon: Users, color: "text-indigo-400", bg: "bg-indigo-400/10", category: "Trust" },
+  { id: "enrollment-process", label: "Enrollment Process", description: "Steps to enroll or get started.", icon: ChevronRight, color: "text-fuchsia-600", bg: "bg-fuchsia-600/10", category: "Process" },
+  { id: "programs-grid", label: "Programs Grid", description: "Grid of programs or courses offered.", icon: GraduationCap, color: "text-indigo-600", bg: "bg-indigo-600/10", category: "Content" },
+  { id: "faculty-grid", label: "Faculty / Staff", description: "Grid of faculty or staff members.", icon: Users, color: "text-purple-300", bg: "bg-purple-300/10", category: "Team" },
+  { id: "product-grid", label: "Product Grid", description: "Grid of products for sale.", icon: ShoppingCart, color: "text-pink-300", bg: "bg-pink-300/10", category: "Services" },
 ];
 
 // ─── Ranking ──────────────────────────────────────────────────────────────────
@@ -153,15 +153,13 @@ function SectionCard({
     <button
       onClick={locked ? undefined : onToggle}
       disabled={locked}
-      className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left group relative ${
-        selected
-          ? "border-primary bg-primary/5 shadow-lg shadow-primary/5 ring-1 ring-primary/10"
-          : "border-border bg-card hover:border-primary/20 hover:bg-muted/30"
-      } ${locked ? "opacity-70 cursor-default" : ""}`}
+      className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left group relative ${selected
+        ? "border-primary bg-primary/5 shadow-lg shadow-primary/5 ring-1 ring-primary/10"
+        : "border-border bg-card hover:border-primary/20 hover:bg-muted/30"
+        } ${locked ? "opacity-70 cursor-default" : ""}`}
     >
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 ${
-        selected ? "bg-primary text-primary-foreground scale-110" : `${bg} ${color} group-hover:scale-110`
-      }`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 ${selected ? "bg-primary text-primary-foreground scale-110" : `${bg} ${color} group-hover:scale-110`
+        }`}>
         <Icon className="w-5 h-5" />
       </div>
       <div className={`flex-1 ${aiSuggested ? "pr-20" : "pr-6"}`}>
@@ -169,9 +167,8 @@ function SectionCard({
         <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-1">{description}</p>
       </div>
       {!aiSuggested && !locked && (
-        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all absolute top-1/2 -translate-y-1/2 right-4 ${
-          selected ? "bg-primary border-primary" : "border-border"
-        }`}>
+        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all absolute top-1/2 -translate-y-1/2 right-4 ${selected ? "bg-primary border-primary" : "border-border"
+          }`}>
           {selected && <Check className="w-3 h-3 text-primary-foreground" />}
         </div>
       )}
@@ -332,8 +329,8 @@ export default function OnboardingPage() {
 
       {/* Header */}
       <header className="container mx-auto px-6 py-4 flex justify-between items-center relative z-10 shrink-0">
-        <div className="flex items-center gap-3">
-          <NextImage src="/Logo.svg" alt="EstabWeb" width={32} height={32} className="w-8 h-8 object-contain" />
+        <div className="flex items-center gap-3 group px-4 py-2 rounded-2xl bg-muted/40 border border-border/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all">
+          <NextImage src="/Logo.svg" alt="EstabWeb" width={32} height={32} className="w-8 h-8 object-contain group-hover:scale-110 transition-transform" />
           <span className="font-black text-xl tracking-tighter uppercase text-foreground">EstabWeb</span>
         </div>
         <div className="flex items-center gap-4">
@@ -403,9 +400,8 @@ export default function OnboardingPage() {
                 ].map(({ n, label }) => (
                   <React.Fragment key={n}>
                     <div className="flex flex-col items-center gap-1">
-                      <div className={`flex items-center justify-center w-8 h-8 rounded-full font-black text-xs transition-all duration-500 ${
-                        step >= n ? "bg-primary text-primary-foreground scale-110 shadow-lg" : "bg-muted text-muted-foreground"
-                      }`}>
+                      <div className={`flex items-center justify-center w-8 h-8 rounded-full font-black text-xs transition-all duration-500 ${step >= n ? "bg-primary text-primary-foreground scale-110 shadow-lg" : "bg-muted text-muted-foreground"
+                        }`}>
                         {step > n ? <Check className="w-4 h-4" /> : n}
                       </div>
                       <span className={`text-[9px] font-black uppercase tracking-widest transition-colors ${step >= n ? "text-primary" : "text-muted-foreground/50"}`}>
@@ -423,8 +419,8 @@ export default function OnboardingPage() {
               {step === 1 && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-8 flex-1 flex flex-col">
                   <div className="space-y-2 text-center shrink-0">
-                    <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-                      Choose your <span className="text-primary">industry</span>
+                    <h1 className="font-serif text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+                      Choose your <span className="text-primary italic">industry</span>
                     </h1>
                     <p className="text-base text-muted-foreground max-w-xl mx-auto">
                       We'll recommend the best template for your business.
@@ -440,25 +436,25 @@ export default function OnboardingPage() {
                         <span className="font-normal normal-case tracking-normal">(optional)</span>
                       </label>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <textarea
                         value={businessDescription}
                         onChange={(e) => setBusinessDescription(e.target.value)}
                         placeholder="e.g. We're a pest control company serving Metro Cebu, specializing in termite treatment and general pest management."
                         rows={2}
-                        className="flex-1 px-4 py-3 text-sm border border-border rounded-xl bg-muted/30 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none placeholder:text-muted-foreground/40 transition-all"
+                        className="flex-1 px-4 py-3 text-sm border border-border rounded-xl bg-muted/30 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none placeholder:text-muted-foreground/40 transition-all font-medium"
                       />
                       <button
                         onClick={handleAiAnalyze}
                         disabled={isAnalyzing || businessDescription.trim().length < 5}
-                        className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs flex items-center gap-2 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 shrink-0 self-stretch"
+                        className="sm:w-auto px-6 py-3 rounded-xl bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 shrink-0 self-stretch shadow-lg shadow-primary/20"
                       >
                         {isAnalyzing ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <Sparkles className="w-4 h-4" />
                         )}
-                        {isAnalyzing ? "Analyzing..." : "Analyze"}
+                        {isAnalyzing ? "Analyzing..." : "AI Analyze"}
                       </button>
                     </div>
                     {aiReasoning && (
@@ -469,7 +465,7 @@ export default function OnboardingPage() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 overflow-y-auto scrollbar-hide py-2 px-1 flex-1 content-start">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 overflow-y-auto pt-2 pb-6 px-1 flex-1 content-start scrollbar-thin scrollbar-track-muted scrollbar-thumb-border">
                     {Object.entries(GENRE_LABELS).map(([key, label]) => {
                       const Icon = BUSINESS_ICONS[key] || Layout;
                       const selected = businessType === key;
@@ -477,15 +473,13 @@ export default function OnboardingPage() {
                         <button
                           key={key}
                           onClick={() => setBusinessType(key)}
-                          className={`px-3 py-3 rounded-[14px] border-2 transition-all text-center flex flex-col items-center justify-center gap-1.5 group relative h-[88px] ${
-                            selected
-                              ? "border-primary bg-primary shadow-xl shadow-primary/20 -translate-y-1"
-                              : "border-border bg-card hover:border-primary/30 hover:bg-muted/50 hover:-translate-y-0.5"
-                          }`}
+                          className={`px-3 py-3 rounded-2xl border-2 transition-all text-center flex flex-col items-center justify-center gap-1.5 group relative h-[100px] ${selected
+                            ? "border-primary bg-primary shadow-[0_20px_40px_-12px_rgba(var(--primary-rgb),0.5)] -translate-y-2 scale-105"
+                            : "border-border bg-card hover:border-primary/40 hover:bg-muted/50 hover:-translate-y-1 shadow-sm"
+                            }`}
                         >
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                            selected ? "bg-white/20 text-white scale-110" : "bg-primary/5 text-primary group-hover:scale-110"
-                          }`}>
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${selected ? "bg-white/20 text-white scale-110" : "bg-primary/5 text-primary group-hover:scale-110"
+                            }`}>
                             <Icon className="w-5 h-5" />
                           </div>
                           <span className={`font-bold text-[10px] uppercase tracking-wider leading-tight ${selected ? "text-white" : "text-foreground"}`}>
@@ -507,11 +501,11 @@ export default function OnboardingPage() {
                     })}
                   </div>
 
-                  <div className="pt-2 flex justify-center shrink-0">
+                  <div className="pt-4 flex justify-center shrink-0 border-t border-border mt-auto bg-background/80 backdrop-blur-sm sticky bottom-0 z-20 pb-4">
                     <button
                       disabled={!businessType}
                       onClick={() => setStep(2)}
-                      className="group flex items-center gap-3 px-10 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-base shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100"
+                      className="group flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-base shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                     >
                       Next — Choose a Template
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -524,8 +518,8 @@ export default function OnboardingPage() {
               {step === 2 && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-700 pb-8 flex-1 flex flex-col">
                   <div className="space-y-2 text-center shrink-0">
-                    <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-                      Choose a <span className="text-primary">starting template</span>
+                    <h1 className="font-serif text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+                      Choose a <span className="text-primary italic">starting template</span>
                     </h1>
                     <p className="text-base text-muted-foreground max-w-xl mx-auto">
                       Pick the layout that fits your business. You'll customize sections in the next step.
@@ -539,11 +533,10 @@ export default function OnboardingPage() {
                       return (
                         <div
                           key={key}
-                          className={`relative group rounded-2xl border-2 p-5 transition-all duration-300 bg-card ${
-                            isTop
-                              ? "border-primary bg-primary/5 shadow-xl shadow-primary/5 ring-2 ring-primary/5"
-                              : "border-border hover:border-primary/20"
-                          }`}
+                          className={`relative group rounded-2xl border-2 p-5 transition-all duration-300 bg-card ${isTop
+                            ? "border-primary bg-primary/5 shadow-xl shadow-primary/5 ring-2 ring-primary/5"
+                            : "border-border hover:border-primary/20"
+                            }`}
                         >
                           {isTop && (
                             <div className="absolute -top-3 left-8 px-4 py-1 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg">
@@ -591,11 +584,10 @@ export default function OnboardingPage() {
                             <button
                               disabled={isSubmitting}
                               onClick={() => handleSelectPreset(key)}
-                              className={`w-full lg:w-auto flex items-center justify-center gap-2 px-8 py-3 rounded-2xl font-black text-sm transition-all duration-300 ${
-                                isTop
-                                  ? "bg-primary text-primary-foreground hover:scale-105 shadow-xl shadow-primary/20"
-                                  : "bg-background border-2 border-border hover:border-primary hover:text-primary"
-                              } disabled:opacity-50`}
+                              className={`w-full lg:w-auto flex items-center justify-center gap-2 px-8 py-3 rounded-2xl font-black text-sm transition-all duration-300 ${isTop
+                                ? "bg-primary text-primary-foreground hover:scale-105 shadow-xl shadow-primary/20"
+                                : "bg-background border-2 border-border hover:border-primary hover:text-primary"
+                                } disabled:opacity-50`}
                             >
                               Use This Template
                               <ChevronRight className="w-4 h-4" />
@@ -606,10 +598,10 @@ export default function OnboardingPage() {
                     })}
                   </div>
 
-                  <div className="flex justify-center shrink-0 pt-2">
+                  <div className="flex flex-col sm:flex-row justify-center items-center shrink-0 pt-4 border-t border-border bg-background/80 backdrop-blur-sm sticky bottom-0 z-20 pb-4 w-full gap-4">
                     <button
                       onClick={() => setStep(1)}
-                      className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 group"
+                      className="order-2 sm:order-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 group"
                     >
                       <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                         <ArrowLeft className="w-3 h-3" />
@@ -624,8 +616,8 @@ export default function OnboardingPage() {
               {step === 3 && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-700 pb-8 flex-1 flex flex-col">
                   <div className="space-y-2 text-center shrink-0">
-                    <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-                      Customize your <span className="text-primary">sections</span>
+                    <h1 className="font-serif text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+                      Customize your <span className="text-primary italic">sections</span>
                     </h1>
                     <p className="text-base text-muted-foreground max-w-xl mx-auto">
                       These sections come from your chosen template. Remove what you don't need or add more.
@@ -695,11 +687,10 @@ export default function OnboardingPage() {
                               <button
                                 key={cat}
                                 onClick={() => setMoreCategory(cat)}
-                                className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${
-                                  moreCategory === cat
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-muted text-muted-foreground hover:bg-muted/70"
-                                }`}
+                                className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${moreCategory === cat
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted text-muted-foreground hover:bg-muted/70"
+                                  }`}
                               >
                                 {cat}
                               </button>
@@ -735,10 +726,10 @@ export default function OnboardingPage() {
                     </div>
                   </div>
 
-                  <div className="pt-2 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
+                  <div className="pt-4 flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0 border-t border-border bg-background/80 backdrop-blur-sm sticky bottom-0 z-20 pb-4">
                     <button
                       onClick={() => setStep(2)}
-                      className="flex items-center gap-2 px-6 py-3 text-muted-foreground font-bold hover:text-foreground transition-colors text-sm"
+                      className="order-2 sm:order-1 flex items-center gap-2 px-6 py-3 text-muted-foreground font-black uppercase tracking-widest hover:text-foreground transition-colors text-[10px]"
                     >
                       <ArrowLeft className="w-4 h-4" /> Back to templates
                     </button>
@@ -746,12 +737,12 @@ export default function OnboardingPage() {
                     <button
                       disabled={isSubmitting}
                       onClick={handleFinish}
-                      className="group flex items-center gap-2 px-10 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-base shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                      className="order-1 sm:order-2 group flex items-center justify-center gap-2 w-full sm:w-auto px-10 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-base shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                     >
                       {submittingKey ? (
                         <>
                           <Loader2 className="w-5 h-5 animate-spin" />
-                          Building your site...
+                          Building...
                         </>
                       ) : (
                         <>
@@ -769,10 +760,10 @@ export default function OnboardingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 py-4 border-t border-border/50 bg-muted/5 shrink-0">
-        <div className="container mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4 opacity-50 text-[10px] font-black uppercase tracking-[0.2em]">
+      <footer className="relative z-10 py-6 border-t border-border/50 bg-muted/5 shrink-0 px-6 sm:px-0">
+        <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-6 opacity-50 text-[10px] font-black uppercase tracking-[0.2em] text-center sm:text-left">
           <span>© 2026 EstabWeb Inc.</span>
-          <div className="flex gap-6">
+          <div className="flex gap-8 sm:gap-6 flex-wrap justify-center">
             <a href="#" className="hover:text-primary transition-colors">Privacy</a>
             <a href="#" className="hover:text-primary transition-colors">Terms</a>
             <a href="#" className="hover:text-primary transition-colors">Support</a>

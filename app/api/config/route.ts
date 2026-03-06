@@ -1,20 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
-  const out = { ...target };
-  for (const key of Object.keys(source)) {
-    const a = out[key];
-    const b = source[key];
-    if (a != null && b != null && typeof a === "object" && typeof b === "object" && !Array.isArray(a) && !Array.isArray(b)) {
-      out[key] = deepMerge(a as Record<string, unknown>, b as Record<string, unknown>);
-    } else if (source[key] !== undefined) {
-      out[key] = source[key];
-    }
-  }
-  return out;
-}
-
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -28,8 +14,6 @@ export async function GET() {
       .single();
 
     if (error || !config) {
-      // If global config doesn't exist in DB, it might not have been migrated yet.
-      // The getSiteConfig auto-migration will handle this on the first load of the site.
       return NextResponse.json({});
     }
 
@@ -55,15 +39,13 @@ export async function POST(request: Request) {
       .eq("key", "template_master")
       .single();
 
-    let existing: Record<string, unknown> = (config?.payload as Record<string, unknown>) || {};
-    const merged = deepMerge(existing, body);
-
+    // Snapshot-based: body is the full new config, replace entirely
     if (config) {
       // 2. Update existing template master config
       await supabase
         .from("site_config")
-        .update({ 
-          payload: merged,
+        .update({
+          payload: body,
           updated_at: new Date().toISOString()
         })
         .eq("id", config.id);
@@ -73,7 +55,7 @@ export async function POST(request: Request) {
         .from("site_config")
         .insert({
           key: "template_master",
-          payload: merged
+          payload: body
         });
     }
 

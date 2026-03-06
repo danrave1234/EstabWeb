@@ -6,15 +6,11 @@ import { MapPinIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
 type LatLng = { lat: number; lng: number };
 
 type Props = {
-  value?: string; // current googleMapsEmbedUrl
+  value?: string; // current mapEmbedUrl (OpenStreetMap)
   onChange: (embedUrl: string) => void;
 };
 
-function buildEmbedUrl(lat: number, lng: number): string {
-  return `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d2000!2d${lng}!3d${lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sph!4v1700000000000!5m2!1sen!2sph`;
-}
-
-function buildOsmUrl(lat: number, lng: number, zoom = 15): string {
+function buildOsmUrl(lat: number, lng: number): string {
   return `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01},${lat - 0.01},${lng + 0.01},${lat + 0.01}&layer=mapnik&marker=${lat},${lng}`;
 }
 
@@ -44,7 +40,7 @@ export default function MapPinPicker({ value, onChange }: Props) {
       const lngNum = parseFloat(lon);
       setPinned({ lat: latNum, lng: lngNum });
       setAddress(display_name);
-      onChange(buildEmbedUrl(latNum, lngNum));
+      onChange(buildOsmUrl(latNum, lngNum));
     } catch {
       setError("Search failed. Please check your connection.");
     } finally {
@@ -113,7 +109,7 @@ export default function MapPinPicker({ value, onChange }: Props) {
             </div>
           </div>
           <p className="text-[10px] text-muted-foreground/60 italic">
-            Google Maps embed URL has been updated automatically.
+            OpenStreetMap embed URL has been saved automatically.
           </p>
         </div>
       ) : value ? (
@@ -138,13 +134,13 @@ export default function MapPinPicker({ value, onChange }: Props) {
         <summary className="text-[10px] text-muted-foreground/60 cursor-pointer hover:text-primary transition-colors select-none list-none flex items-center gap-1">
           <span className="group-open:hidden">▶</span>
           <span className="hidden group-open:inline">▼</span>
-          Or paste Google Maps embed URL manually
+          Or paste OpenStreetMap embed URL manually
         </summary>
         <input
           type="text"
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="https://www.google.com/maps/embed?pb=…"
+          placeholder="https://www.openstreetmap.org/export/embed.html?bbox=…"
           className="mt-2 w-full px-3 py-2 bg-muted/30 border border-border rounded-lg text-[10px] outline-none focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground/40"
         />
       </details>

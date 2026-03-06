@@ -2,6 +2,9 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { getPlanLimits } from "@/lib/utils/site-pages"
 import PlanLimitsForm from "@/components/admin/PlanLimitsForm"
+import PlansSettingsForm from "@/components/admin/PlansSettingsForm"
+import ClearCacheButton from "@/components/admin/ClearCacheButton"
+import { getPlansConfig } from "@/lib/plans-config-server"
 
 export const dynamic = "force-dynamic"
 
@@ -18,7 +21,10 @@ export default async function AdminSettingsPage() {
 
   if (profile?.role !== "admin") return redirect("/dashboard")
 
-  const limits = await getPlanLimits(supabase)
+  const [limits, initialConfig] = await Promise.all([
+    getPlanLimits(supabase),
+    getPlansConfig(),
+  ])
   const freeMaxPages = limits.free?.maxPages ?? 1
   const proMaxPages = limits.pro?.maxPages ?? 5
 
@@ -31,7 +37,11 @@ export default async function AdminSettingsPage() {
         </p>
       </div>
 
-      <PlanLimitsForm freeMaxPages={freeMaxPages} proMaxPages={proMaxPages} />
+      <div className="space-y-6">
+        <PlansSettingsForm initialConfig={initialConfig} />
+        <PlanLimitsForm freeMaxPages={freeMaxPages} proMaxPages={proMaxPages} />
+        <ClearCacheButton />
+      </div>
     </div>
   )
 }

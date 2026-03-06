@@ -1,334 +1,341 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
-import { Layout, Globe, ChevronRight, ExternalLink, Sparkles, Plus, BarChart3 } from 'lucide-react'
-import UpgradeButton from '@/components/dashboard/UpgradeButton'
-import ClientDashboardPreview from '@/components/dashboard/ClientDashboardPreview'
-import MainHeader from '@/components/shared/MainHeader'
-import MainFooter from '@/components/shared/MainFooter'
-import NoProjectRedeem from '@/components/dashboard/NoProjectRedeem'
-import OnboardingPage from '@/components/dashboard/OnboardingPage'
-import PaymentSuccessHandler from '@/components/dashboard/PaymentSuccessHandler'
-import { Suspense } from 'react'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table'
+"use client"
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { useSearchParams } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import {
+  Plus,
+  ExternalLink,
+  Layout,
+  ChevronRight,
+  BarChart3,
+  Globe,
+  Sparkles
+} from "lucide-react"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table"
+import ClientDashboardPreview from "@/components/dashboard/ClientDashboardPreview"
+import UpgradeButton from "@/components/dashboard/UpgradeButton"
+import NoProjectRedeem from "@/components/dashboard/NoProjectRedeem"
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ projectId?: string }>;
-}) {
-  const { projectId } = await searchParams
-  const supabase = await createClient()
+export default function DashboardPage() {
+  const searchParams = useSearchParams()
+  const projectIdFromUrl = searchParams.get("projectId")
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const [projects, setProjects] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [rootDomain, setRootDomain] = useState("")
+  const [selectedProject, setSelectedProject] = useState<any | null>(null)
+  const [leadsCount, setLeadsCount] = useState<Record<string, number>>({})
+  const [user, setUser] = useState<any>(null)
 
-  if (!user) {
-    return redirect('/login')
-  }
+  useEffect(() => {
+    async function init() {
+      const supabase = createClient()
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (!authUser) return
+      setUser(authUser)
 
-  // Fetch ALL projects for this client
-  const { data: projects, error } = await supabase
-    .from('projects')
-    .select('id, subdomain, custom_domain, current_config, draft_config, created_at, subscription_status, trial_ends_at, subscription_ends_at, auto_renew, has_paid_initial, publish_limit, publish_limit_daily, publish_count, publish_count_today, publish_date, publish_period_start, renewal_link, renewal_link_created_at')
-    .eq('client_id', user.id)
-    .order('created_at', { ascending: false })
+      // Fetch projects
+      const { data: projs } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("client_id", authUser.id)
+        .order("created_at", { ascending: false })
 
-  if (error) console.error('Dashboard Fetch Error:', error)
+      setProjects(projs || [])
 
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com'
-  
-  // Fetch lead counts for all user's projects
-  const projectIds = projects?.map(p => p.id) || []
-  let leadsData: any[] = []
-  if (projectIds.length > 0) {
-    const { data: leads, error: leadsError } = await supabase
-      .from('project_leads')
-      .select('project_id')
-      .in('project_id', projectIds)
-    
-    if (leadsError) console.error('Leads Fetch Error:', leadsError)
-    else leadsData = leads || []
-  }
+      // Fetch lead counts for all projects
+      const { data: stats } = await supabase
+        .from('v_lead_stats')
+        .select('project_id, total_leads')
 
-  // Helper to count leads for a project
-  const getLeadCount = (id: string) => leadsData.filter(l => l.project_id === id).length
+      const counts: Record<string, number> = {}
+      stats?.forEach(s => {
+        counts[s.project_id] = (counts[s.project_id] || 0) + Number(s.total_leads)
+      })
+      setLeadsCount(counts)
 
-  // If a specific project is selected, show the preview
-  if (projectId && projects?.some(p => p.id === projectId)) {
-    const selectedProject = projects.find(p => p.id === projectId)
+      // Get root domain from config
+      const res = await fetch("/api/config")
+      const config = await res.json()
+      setRootDomain(config.rootDomain || "estabweb.com")
+
+      setLoading(false)
+    }
+    init()
+  }, [])
+
+  useEffect(() => {
+    if (projectIdFromUrl && projects.length > 0) {
+      const p = projects.find((x) => x.id === projectIdFromUrl)
+      if (p) setSelectedProject(p)
+      else setSelectedProject(null)
+    } else {
+      setSelectedProject(null)
+    }
+  }, [projectIdFromUrl, projects])
+
+  if (loading) {
     return (
-      <>
-        <Suspense fallback={null}>
-          <PaymentSuccessHandler />
-        </Suspense>
-        <ClientDashboardPreview project={selectedProject} user={user} />
-      </>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">Initializing Hub...</p>
+        </div>
+      </div>
     )
   }
 
-  // If no projects at all, show the redeem/empty state
-  if (!projects || projects.length === 0) {
+  // If a project is selected, show the high-fidelity editor/preview interface
+  if (selectedProject) {
     return (
-      <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 text-center min-h-[calc(100vh-64px)] pt-20 sm:pt-24">
-        <div className="relative mb-6 sm:mb-12">
-          <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
-          <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-primary rounded-[1.5rem] sm:rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-primary/40 rotate-6 hover:rotate-0 transition-transform duration-500 overflow-hidden">
-            <Image 
-              src="/Logo.svg" 
-              alt="EstabWeb Logo" 
-              width={64} 
-              height={64} 
-              className="w-12 h-12 sm:w-16 sm:h-16 object-contain invert brightness-0"
-            />
+      <ClientDashboardPreview
+        project={selectedProject}
+        user={user}
+        initialPlansConfig={{
+          PLANS: {}, // Mock or fetch if needed
+          ENABLE_ANNUAL_PLANS: false
+        }}
+      />
+    )
+  }
+
+  // If no projects, show empty state with redemption option
+  if (projects.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
+        <div className="max-w-md w-full bg-card border-2 border-dashed border-border rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
+          <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform duration-500">
+            <Globe className="w-10 h-10 text-primary" />
+          </div>
+          <h1 className="text-3xl font-black text-foreground mb-4 tracking-tight">Ready to Launch?</h1>
+          <p className="text-muted-foreground mb-10 font-medium leading-relaxed font-sans">
+            You haven&apos;t created any websites yet. Start building your professional online presence in minutes.
+          </p>
+
+          <div className="space-y-4">
+            <Link
+              href="/onboarding"
+              className="flex items-center justify-center gap-3 w-full px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20"
+            >
+              <Plus className="w-5 h-5" />
+              Create New Project
+            </Link>
+
+            <div className="flex items-center gap-4 my-8">
+              <div className="h-px bg-border flex-1" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">OR REDEEM CODE</span>
+              <div className="h-px bg-border flex-1" />
+            </div>
+
+            <NoProjectRedeem />
           </div>
         </div>
-        
-        <h1 className="text-3xl sm:text-7xl font-black text-foreground mb-3 sm:mb-6 tracking-tight leading-none">
-          Build something <span className="text-primary">extraordinary</span>.
-        </h1>
-        <p className="text-sm sm:text-xl text-muted-foreground max-w-xl mb-6 sm:mb-12 leading-relaxed font-medium px-4">
-          Your journey to a world-class online presence starts here. Let&apos;s craft your perfect website together.
-        </p>
-        
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 w-full max-w-md sm:max-w-none px-4">
+      </div>
+    )
+  }
+
+  const getLeadCount = (id: string) => leadsCount[id] || 0
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8 sm:mb-12">
+        <div>
+          <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">My Websites</h1>
+          <p className="text-xs sm:text-base text-muted-foreground mt-0.5 sm:mt-2 font-medium">Manage and optimize your digital assets.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3 sm:gap-6">
           <Link
             href="/onboarding"
-            className="group flex items-center justify-center gap-2 px-6 py-4 sm:px-12 sm:py-6 bg-primary text-primary-foreground rounded-xl sm:rounded-[2rem] font-black text-sm sm:text-xl shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all w-full sm:w-auto"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
           >
-            Start Building Now
-            <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" />
+            <Plus className="w-4 h-4" />
+            Build New
           </Link>
-          
-          <div className="h-px w-full sm:h-12 sm:w-px bg-border my-2 sm:my-0" />
-          
+          <div className="hidden sm:block h-10 w-px bg-border mx-2" />
           <div className="w-full sm:w-auto">
             <NoProjectRedeem />
           </div>
         </div>
+      </div>
 
-        <div className="mt-10 sm:mt-24 grid grid-cols-3 gap-2 sm:gap-12 max-w-5xl text-left opacity-60 px-4">
-          <div className="space-y-1 sm:space-y-3 text-center sm:text-left">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-muted flex items-center justify-center font-black text-[10px] sm:text-xs mx-auto sm:mx-0">01</div>
-            <h3 className="font-black text-[8px] sm:text-sm uppercase tracking-widest leading-tight">Select Soul</h3>
-            <p className="text-[7px] sm:text-xs font-medium leading-relaxed line-clamp-2 sm:line-clamp-none">Choose your industry and we&apos;ll adapt our engine.</p>
-          </div>
-          <div className="space-y-1 sm:space-y-3 text-center sm:text-left">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-muted flex items-center justify-center font-black text-[10px] sm:text-xs mx-auto sm:mx-0">02</div>
-            <h3 className="font-black text-[8px] sm:text-sm uppercase tracking-widest leading-tight">Equip Arsenal</h3>
-            <p className="text-[7px] sm:text-xs font-medium leading-relaxed line-clamp-2 sm:line-clamp-none">Select high-performance blocks with one click.</p>
-          </div>
-          <div className="space-y-1 sm:space-y-3 text-center sm:text-left">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-muted flex items-center justify-center font-black text-[10px] sm:text-xs mx-auto sm:mx-0">03</div>
-            <h3 className="font-black text-[8px] sm:text-sm uppercase tracking-widest leading-tight">Manifest</h3>
-            <p className="text-[7px] sm:text-xs font-medium leading-relaxed line-clamp-2 sm:line-clamp-none">Watch your vision come to life as we generate blueprints instantly.</p>
-          </div>
-        </div>
-      </main>
-    )
-  }
+      {/* Mobile & Tablet View: Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:hidden mb-8">
+        {projects.map((project) => {
+          const siteName = (project.current_config as any)?.brand?.name || "My Website"
+          const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.${rootDomain}` : "Not set")
+          const previewUrl = project.custom_domain
+            ? `https://${project.custom_domain}`
+            : (project.subdomain ? `https://${project.subdomain}.${rootDomain}` : "#")
 
-  // If multiple projects exist (or just to show the list), show the selector
-  return (
-    <>
-      <Suspense fallback={null}>
-        <PaymentSuccessHandler />
-      </Suspense>
-      <main className="flex-1 container mx-auto pt-20 sm:pt-24 pb-12 px-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-12">
-          <div>
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">My Websites</h1>
-            <p className="text-xs sm:text-base text-muted-foreground mt-0.5 sm:mt-2 font-medium">Manage and optimize your digital assets.</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3 sm:gap-6">
-            <Link 
-              href="/onboarding"
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
-            >
-              <Plus className="w-4 h-4" />
-              Build New
-            </Link>
-            <div className="hidden sm:block h-10 w-px bg-border mx-2" />
-            <div className="w-full sm:w-auto">
-              <NoProjectRedeem />
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile View: Cards */}
-        <div className="grid grid-cols-1 gap-4 sm:hidden mb-8">
-          {projects.map((project) => {
-            const siteName = (project.current_config as any)?.brand?.name || "My Website"
-            const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.${rootDomain}` : "Not set")
-            const previewUrl = project.custom_domain
-              ? `https://${project.custom_domain}`
-              : (project.subdomain ? `https://${project.subdomain}.${rootDomain}` : "#")
-
-            return (
-              <div key={project.id} className="bg-card border border-border rounded-2xl p-4 shadow-sm space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary overflow-hidden">
-                    {(project.current_config as any)?.brand?.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={(project.current_config as any).brand.logoUrl} alt={siteName} className="w-full h-full object-contain" />
-                    ) : (
-                      <Globe className="w-6 h-6" />
-                    )}
+          return (
+            <div key={project.id} className="bg-card border border-border rounded-2xl p-4 shadow-sm space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary overflow-hidden">
+                  {(project.current_config as any)?.brand?.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={(project.current_config as any).brand.logoUrl} alt={siteName} className="w-full h-full object-contain" />
+                  ) : (
+                    <Globe className="w-6 h-6" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-foreground truncate">{siteName}</h3>
+                    <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} variant="badge" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-foreground truncate">{siteName}</h3>
-                      <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} variant="badge" />
-                    </div>
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      {project.custom_domain ? (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[9px] font-black uppercase tracking-widest shrink-0">Custom</span>
-                      ) : null}
-                      <p className="text-[10px] text-muted-foreground truncate">{domain}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-black text-green-600 leading-none">{getLeadCount(project.id)}</p>
-                    <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mt-1">Leads</p>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {project.custom_domain ? (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[9px] font-black uppercase tracking-widest shrink-0">Custom</span>
+                    ) : null}
+                    <p className="text-[10px] text-muted-foreground truncate">{domain}</p>
                   </div>
                 </div>
-                
-                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground pt-2 border-t border-border">
-                  <span>Created: {new Date(project.created_at).toLocaleDateString()}</span>
+                <div className="text-right">
+                  <p className="text-lg font-black text-green-600 leading-none">{getLeadCount(project.id)}</p>
+                  <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground mt-1">Leads</p>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-2 pt-2">
-                  <Link
-                    href={`/dashboard?projectId=${project.id}`}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
-                  >
-                    Edit Site
-                    <ChevronRight className="w-3 h-3" />
-                  </Link>
-                </div>
-                <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground pt-2 border-t border-border">
+                <span>Created: {new Date(project.created_at).toLocaleDateString()}</span>
+              </div>
+
+              <div className="flex flex-col gap-2 pt-2 border-t border-border mt-auto">
+                <Link
+                  href={`/dashboard?projectId=${project.id}`}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95"
+                >
+                  Edit Site
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+                <div className="flex items-center gap-2">
                   <Link
                     href={`/dashboard/analytics?projectId=${project.id}`}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-muted hover:bg-muted/80 text-foreground rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex-1"
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-muted hover:bg-muted/80 text-foreground rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all flex-1 active:scale-95"
                   >
                     <BarChart3 className="w-3.5 h-3.5" />
-                    Analytics
+                    Leads
                   </Link>
-                  <a 
-                    href={previewUrl} 
-                    target="_blank" 
+                  <a
+                    href={previewUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="p-3 bg-muted hover:bg-muted/80 rounded-xl text-foreground transition-colors"
+                    className="p-3 bg-muted hover:bg-muted/80 rounded-xl text-foreground transition-all shrink-0 active:scale-95"
                     title="Visit Live Site"
                   >
                     <ExternalLink className="w-4 h-4" />
                   </a>
                 </div>
               </div>
-            )
-          })}
-        </div>
+            </div>
+          )
+        })}
+      </div>
 
 
-        {/* Desktop View: Table */}
-        <div className="hidden sm:block bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[40%] text-[11px] font-black uppercase tracking-widest">Website</TableHead>
-                <TableHead className="text-[11px] font-black uppercase tracking-widest">Leads</TableHead>
-                <TableHead className="text-[11px] font-black uppercase tracking-widest">Domain</TableHead>
-                <TableHead className="text-[11px] font-black uppercase tracking-widest">Created</TableHead>
-                <TableHead className="text-right text-[11px] font-black uppercase tracking-widest">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {projects.map((project) => {
-                const siteName = (project.current_config as any)?.brand?.name || "My Website"
-                const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.${rootDomain}` : "Not set")
-                const previewUrl = project.custom_domain
-                  ? `https://${project.custom_domain}`
-                  : (project.subdomain ? `https://${project.subdomain}.${rootDomain}` : "#")
+      {/* Desktop View: Table */}
+      <div className="hidden lg:block bg-card border border-border rounded-xl shadow-sm overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/30">
+              <TableHead className="w-[40%] text-[11px] font-black uppercase tracking-widest py-5">Website</TableHead>
+              <TableHead className="text-[11px] font-black uppercase tracking-widest py-5">Leads</TableHead>
+              <TableHead className="text-[11px] font-black uppercase tracking-widest py-5">Domain</TableHead>
+              <TableHead className="text-[11px] font-black uppercase tracking-widest py-5">Created</TableHead>
+              <TableHead className="text-right text-[11px] font-black uppercase tracking-widest py-5">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {projects.map((project) => {
+              const siteName = (project.current_config as any)?.brand?.name || "My Website"
+              const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.${rootDomain}` : "Not set")
+              const previewUrl = project.custom_domain
+                ? `https://${project.custom_domain}`
+                : (project.subdomain ? `https://${project.subdomain}.${rootDomain}` : "#")
 
-                return (
-                  <TableRow key={project.id} className="group transition-colors">
-                    <TableCell className="py-4">
-                      <Link href={`/dashboard?projectId=${project.id}`} className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors overflow-hidden">
-                          {(project.current_config as any)?.brand?.logoUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={(project.current_config as any).brand.logoUrl} alt={siteName} className="w-full h-full object-contain" />
-                          ) : (
-                            <Globe className="w-5 h-5" />
-                          )}
+              return (
+                <TableRow key={project.id} className="group transition-colors hover:bg-muted/10">
+                  <TableCell className="py-4">
+                    <Link href={`/dashboard?projectId=${project.id}`} className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 overflow-hidden shadow-sm">
+                        {(project.current_config as any)?.brand?.logoUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={(project.current_config as any).brand.logoUrl} alt={siteName} className="w-full h-full object-contain" />
+                        ) : (
+                          <Globe className="w-6 h-6" />
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-foreground group-hover:text-primary transition-colors">{siteName}</span>
+                          <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} variant="badge" />
                         </div>
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-foreground group-hover:text-primary transition-colors">{siteName}</span>
-                            <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} variant="badge" />
-                          </div>
-                        </div>
+                      </div>
+                    </Link>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <span className="font-black text-foreground text-lg">{getLeadCount(project.id)}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
+                      {project.custom_domain ? (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[9px] font-black uppercase tracking-widest shrink-0">Custom</span>
+                      ) : null}
+                      <span className={project.custom_domain ? "text-foreground font-bold" : ""}>{domain}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4 text-sm text-muted-foreground font-medium">
+                    {new Date(project.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/dashboard?projectId=${project.id}`}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20"
+                      >
+                        <Layout className="w-3.5 h-3.5" />
+                        Edit
                       </Link>
-                    </TableCell>
-                    <TableCell className="py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-600">
-                          <Sparkles className="w-4 h-4" />
-                        </div>
-                        <span className="font-black text-foreground">{getLeadCount(project.id)}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-4">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        {project.custom_domain ? (
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[9px] font-black uppercase tracking-widest shrink-0">Custom</span>
-                        ) : null}
-                        <span className={project.custom_domain ? "text-foreground font-medium" : ""}>{domain}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-4 text-sm text-muted-foreground">
-                      {new Date(project.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/dashboard/analytics?projectId=${project.id}`}
-                          className="flex items-center gap-1 px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-lg text-xs font-bold transition-all"
-                          title="Analytics"
-                        >
-                          <BarChart3 className="w-4 h-4" />
-                          Analytics
-                        </Link>
-                        <Link
-                          href={`/dashboard?projectId=${project.id}`}
-                          className="flex items-center gap-1 px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground rounded-lg text-xs font-bold transition-all"
-                        >
-                          Edit Site
-                          <ChevronRight className="w-3 h-3" />
-                        </Link>
-                        <a 
-                          href={previewUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="p-2 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-foreground"
-                          title="Visit Live Site"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      </main>
-    </>
+                      <Link
+                        href={`/dashboard/analytics?projectId=${project.id}`}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-muted text-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-muted/80 transition-all border border-border"
+                        title="View Leads"
+                      >
+                        <BarChart3 className="w-3.5 h-3.5" />
+                        Analytics
+                      </Link>
+                      <a
+                        href={previewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2.5 bg-muted text-foreground rounded-xl hover:bg-muted/80 transition-all border border-border"
+                        title="Visit Live Site"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   )
 }

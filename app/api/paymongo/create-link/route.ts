@@ -1,35 +1,26 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { DEFAULT_PUBLISH_LIMIT, DEFAULT_PUBLISH_LIMIT_DAILY } from '@/lib/subscription'
+import { getPlansConfig } from '@/lib/plans-config-server'
+import { resolveAmountFromPlans, resolveDescriptionFromPlans } from '@/lib/plans-config'
 
 const PAYMONGO_API = 'https://api.paymongo.com/v1'
-
-const PLANS = {
-  ph_monthly: { 
-    initialAmount: 500000,   // ₱5,000 (Setup/Initial)
-    recurringAmount: 50000,  // ₱500 (Monthly)
-    currency: 'PHP' as const, 
-    label: 'Direct Publish' 
-  },
-}
 
 export async function POST(req: Request) {
   try {
     const secret = process.env.PAYMONGO_SECRET_KEY
     if (!secret) return NextResponse.json({ error: 'PayMongo not configured' }, { status: 503 })
 
-    const { projectId, planId = 'ph_monthly', successUrl } = await req.json()
+    const { projectId, planId = 'ph_monthly', interval = 'monthly', successUrl } = await req.json()
     if (!projectId) return NextResponse.json({ error: 'Missing projectId' }, { status: 400 })
-
-    const plan = PLANS[planId as keyof typeof PLANS] ?? PLANS.ph_monthly
 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { data: proj } = await supabase
+
       .from('projects')
-      .select('id, client_id, subscription_status, has_paid_initial')
+      .select('id, client_id, subscription_status, has_paid_initial, subscription_plan_id')
       .eq('id', projectId)
       .single()
 
@@ -41,9 +32,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Project already has an active subscription' }, { status: 400 })
     }
 
-    // Determine price based on whether they've paid the initial fee
-    const amount = proj.has_paid_initial ? plan.recurringAmount : plan.initialAmount
-    const description = `EstabWeb: ${plan.label} - ${proj.has_paid_initial ? 'Monthly Renewal' : 'Initial Setup'}`
+    // ── PLAN LOCKING ────────────────────────────────────────────────────────
+    let activePlanId = proj.subscription_plan_id || planId
+    if (planId && !proj.subscription_plan_id) {
+      await supabase.from('projects').update({ subscription_plan_id: planId }).eq('id', projectId)
+      activePlanId = planId
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
+    const { PLANS } = await getPlansConfig()
+    const plan = PLANS[activePlanId as keyof typeof PLANS] || PLANS.basic
+
+    // Determine price and description based on shared config
+    const amount = resolveAmountFromPlans(PLANS, activePlanId, !!proj.has_paid_initial, interval)
+    const description = resolveDescriptionFromPlans(PLANS, activePlanId, !!proj.has_paid_initial, interval)
+
+
+
+
 
     const auth = Buffer.from(`${secret}:`).toString('base64')
     const res = await fetch(`${PAYMONGO_API}/links`, {
@@ -64,6 +70,7 @@ export async function POST(req: Request) {
               plan_id: planId,
               user_id: user.id,
               is_initial: !proj.has_paid_initial,
+              interval: interval,
             },
           },
         },
@@ -83,6 +90,7 @@ export async function POST(req: Request) {
     await supabase.from('paymongo_links').insert({ link_id: linkId, project_id: projectId, plan_id: planId })
 
     return NextResponse.json({ checkoutUrl, linkId })
+
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Failed to create payment link' }, { status: 500 })
   }

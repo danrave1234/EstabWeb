@@ -1,5 +1,7 @@
 "use client";
 
+import { trackEvent } from "@/components/shared/Analytics";
+
 export type PriceItem = {
   service: string;
   price: string;
@@ -11,6 +13,7 @@ export type PricePreviewStripProps = {
   items: PriceItem[];
   transparentPricingNote?: string;
   bookNowLabel?: string;
+  bookNowUrl?: string;
 };
 
 export default function PricePreviewStrip({
@@ -22,6 +25,7 @@ export default function PricePreviewStrip({
   ],
   transparentPricingNote = "No hidden charges. Transparent pricing guaranteed.",
   bookNowLabel = "Book Now",
+  bookNowUrl = "#contact",
 }: PricePreviewStripProps) {
   return (
     <section className="py-12 bg-primary/5 border-y border-primary/10 reveal">
@@ -31,7 +35,7 @@ export default function PricePreviewStrip({
             <h2 className="text-2xl font-bold text-foreground mb-2">{title}</h2>
             <p className="text-sm text-muted-foreground italic">{transparentPricingNote}</p>
           </div>
-          
+
           <div className="flex flex-wrap justify-center gap-4 sm:gap-8">
             {items.map((item, index) => (
               <div key={index} className="flex flex-col items-center lg:items-start p-4 bg-background rounded-xl border border-border shadow-sm min-w-[160px]">
@@ -43,8 +47,12 @@ export default function PricePreviewStrip({
               </div>
             ))}
           </div>
-          
-          <a href="#contact" className="px-8 py-4 bg-primary text-primary-foreground font-bold rounded-full hover:scale-105 transition-all shadow-lg whitespace-nowrap uppercase tracking-widest text-xs">
+
+          <a
+            href={bookNowUrl}
+            onClick={() => trackEvent({ type: 'cta_click', section_key: 'price_preview', cta_id: 'price_preview_book' })}
+            className="px-8 py-4 bg-primary text-primary-foreground font-bold rounded-full hover:scale-105 transition-all shadow-lg whitespace-nowrap uppercase tracking-widest text-xs"
+          >
             {bookNowLabel}
           </a>
         </div>

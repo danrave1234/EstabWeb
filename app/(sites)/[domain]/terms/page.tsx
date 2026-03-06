@@ -1,9 +1,34 @@
+import type { Metadata } from "next";
 import { getSiteConfig } from "@/lib/utils/site-config";
 import { headers } from "next/headers";
 import LegalPageTemplate from "@/components/shared/LegalPageTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ domain: string }>;
+}): Promise<Metadata> {
+  const { domain } = await params;
+  const heads = await headers();
+  const host = heads.get("host") || domain;
+  const config = await getSiteConfig(domain, heads);
+  const brandName = config?.brand?.name || domain;
+
+  return {
+    title: `Terms of Service | ${brandName}`,
+    description: `Review the terms and conditions for using ${brandName}.`,
+    robots: {
+      index: true,
+      follow: true,
+    },
+    alternates: {
+      canonical: `https://${host}/terms`,
+    },
+  };
+}
 
 export default async function TermsPage({ params }: { params: Promise<{ domain: string }> }) {
   const { domain } = await params;

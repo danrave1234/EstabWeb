@@ -1,7 +1,7 @@
 "use client";
 
 import { ChatCircleIcon, PhoneIcon, ChatCircleDotsIcon } from "@phosphor-icons/react";
-import { trackLead } from "@/components/shared/Analytics";
+import { trackLead, trackEvent } from "@/components/shared/Analytics";
 
 export type MessengerStickyCTAProps = {
   messengerUrl?: string;
@@ -21,41 +21,44 @@ export default function MessengerStickyCTA({
   callLabel = "Call Now",
 }: MessengerStickyCTAProps) {
   if (!messengerUrl && !viberNumber && !phone) return null;
+  const track = (cta_id: string) => trackEvent({ type: 'cta_click', section_key: 'sticky_cta', cta_id });
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 pointer-events-none">
+    <div
+      className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[100] flex flex-row sm:flex-col items-center sm:items-start gap-3 pointer-events-none animate-in fade-in slide-in-from-bottom-4 duration-500"
+    >
       {viberNumber && (
         <a
           href={`viber://chat?number=${viberNumber.replace(/[^0-9]/g, "")}`}
-          onClick={() => trackLead('viber')}
-          className="pointer-events-auto flex items-center gap-3 bg-[#7360f2] text-white px-5 py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group"
+          onClick={() => { track('sticky_viber'); trackLead('viber'); }}
+          className="pointer-events-auto flex items-center gap-2 sm:gap-3 bg-[#7360f2] text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group"
         >
-          <span className="text-sm font-bold hidden sm:inline">{viberLabel}</span>
-          <ChatCircleDotsIcon weight="duotone" className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+          <span className="text-xs sm:text-sm font-bold hidden sm:inline">{viberLabel}</span>
+          <ChatCircleDotsIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" />
         </a>
       )}
-      
+
       {messengerUrl && (
         <a
           href={messengerUrl}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={() => trackLead('messenger')}
-          className="pointer-events-auto flex items-center gap-3 bg-[#0084FF] text-white px-5 py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group"
+          onClick={() => { track('sticky_messenger'); trackLead('messenger'); }}
+          className="pointer-events-auto flex items-center gap-2 sm:gap-3 bg-[#0084FF] text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group"
         >
-          <span className="text-sm font-bold hidden sm:inline">{messengerLabel}</span>
-          <ChatCircleIcon weight="duotone" className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+          <span className="text-xs sm:text-sm font-bold hidden sm:inline">{messengerLabel}</span>
+          <ChatCircleIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" />
         </a>
       )}
 
       {phone && (
         <a
           href={`tel:${phone}`}
-          onClick={() => trackLead('call')}
-          className="pointer-events-auto flex items-center gap-3 bg-primary text-primary-foreground px-5 py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group border-2 border-white/20"
+          onClick={() => { track('sticky_call'); trackLead('call'); }}
+          className="pointer-events-auto flex items-center gap-2 sm:gap-3 bg-primary text-primary-foreground px-4 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group border-2 border-white/20"
         >
-          <span className="text-sm font-bold hidden sm:inline">{callLabel}</span>
-          <PhoneIcon weight="duotone" className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+          <span className="text-xs sm:text-sm font-bold hidden sm:inline">{callLabel}</span>
+          <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" />
         </a>
       )}
     </div>

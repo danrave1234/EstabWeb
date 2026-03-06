@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import TrustSignals from "@/components/shared/TrustSignals";
+import { trackEvent, trackLead } from "@/components/shared/Analytics";
 
 export type HeroCleaningProps = {
   title: string;
@@ -37,7 +40,7 @@ export default function HeroCleaning({
       <div className="container mx-auto px-4 py-10 md:py-24 lg:py-32">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto space-y-8 sm:space-y-10">
           <div className="space-y-4 sm:space-y-6">
-            <h1 className="font-sans text-2xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1]">
+            <h1 className="font-serif text-2xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1]">
               <span className="text-primary block mb-1 opacity-90 text-sm sm:text-2xl uppercase tracking-widest font-bold">{benefitText}</span>
               {title}
             </h1>
@@ -49,6 +52,11 @@ export default function HeroCleaning({
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-md px-4 sm:px-0">
               <a
                 href={primaryCTAHref}
+                onClick={() => {
+                  trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_primary' });
+                  if (primaryCTAHref === '#contact' || primaryCTAHref === '#quote') trackLead('form');
+                  else if (primaryCTAHref.startsWith('tel:')) trackLead('call');
+                }}
                 className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[56px] px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-full hover:scale-105 transition-transform shadow-xl text-[10px] sm:text-base touch-manipulation text-center"
               >
                 {primaryCTA}
@@ -56,6 +64,7 @@ export default function HeroCleaning({
               {secondaryCTA && (
                 <a
                   href={secondaryCTAHref}
+                  onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_secondary' })}
                   className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[56px] px-4 sm:px-8 py-2 sm:py-4 bg-background text-primary font-bold rounded-full border-2 border-primary/10 hover:bg-primary/5 transition-colors text-[10px] sm:text-base touch-manipulation text-center"
                 >
                   {secondaryCTA}

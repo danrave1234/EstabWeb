@@ -33,35 +33,41 @@ export default function PhotoGalleryGrid({
   return (
     <section id="gallery" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background reveal">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-10 sm:mb-12">
+        <div className="text-center mb-16 sm:mb-24">
           {title && (
-            <h2 className="text-xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-3">
+            <h2 className="text-3xl sm:text-6xl md:text-7xl font-black text-foreground mb-6 tracking-tighter leading-tight uppercase underline decoration-primary/30 decoration-8 underline-offset-8">
               {title}
             </h2>
           )}
           {subtitle && (
-            <p className="text-sm sm:text-lg text-muted-foreground max-w-xl mx-auto">
+            <p className="text-base sm:text-xl text-muted-foreground font-medium opacity-70 max-w-2xl mx-auto leading-relaxed">
               {subtitle}
             </p>
           )}
         </div>
-        <div className={`grid gap-4 sm:gap-6 ${gridClass}`}>
+        <div className={`grid gap-6 sm:gap-10 ${gridClass}`}>
           {galleryItems.map((item, index) => (
             <div
               key={index}
-              className="group relative overflow-hidden rounded-xl aspect-square bg-muted shadow-sm hover:shadow-md transition-shadow"
+              className="group relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] aspect-square bg-muted shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_32px_64px_-16px_rgba(var(--primary-rgb),0.3)] hover:border-primary/20 hover:-translate-y-2 transition-all duration-500 cursor-pointer"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */} 
               <img
                 src={item.imageUrl ?? ""}
                 alt={item.alt ?? item.caption ?? `Gallery image ${index + 1}`}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
-              {item.caption && (
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <p className="text-white text-xs sm:text-sm font-medium truncate">{item.caption}</p>
-                </div>
-              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8 sm:p-10 backdrop-blur-[2px]">
+                {item.caption && (
+                  <p className="text-white text-base sm:text-xl font-black tracking-tight leading-tight transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 uppercase">
+                    {item.caption}
+                  </p>
+                )}
+                {item.alt && (
+                  <p className="text-white/60 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] mt-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
+                    {item.alt}
+                  </p>
+                )}
+              </div>
             </div>
           ))}
         </div>

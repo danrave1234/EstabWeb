@@ -1,7 +1,7 @@
 "use client";
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
-import { trackLead } from "@/components/shared/Analytics";
+import { trackLead, trackEvent } from "@/components/shared/Analytics";
 
 export type EmergencyCTAStripProps = {
   title?: string;
@@ -38,7 +38,7 @@ export default function EmergencyCTAStrip({
           
           <a 
             href={`tel:${phone.replace(/\s/g, '')}`} 
-            onClick={() => trackLead('call')}
+            onClick={() => { trackEvent({ type: 'cta_click', section_key: 'emergency_cta', cta_id: 'emergency_call' }); trackLead('call'); }}
             className="group flex items-center gap-3 px-10 py-5 bg-primary-foreground text-primary font-black rounded-full hover:scale-105 transition-all shadow-2xl uppercase tracking-widest text-sm"
           >
             <DynamicIcon name={icon} className="w-5 h-5 animate-pulse" />

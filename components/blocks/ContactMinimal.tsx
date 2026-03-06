@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon } from "@phosphor-icons/react";
-import { trackLead } from "@/components/shared/Analytics";
+import { trackLead, trackEvent } from "@/components/shared/Analytics";
 
 export type ContactMinimalProps = {
   title?: string;
@@ -39,7 +39,7 @@ export default function ContactMinimal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitted(true);
-    trackLead('form', undefined, { name: formData.name, email: formData.email });
+    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
     setTimeout(() => {
       router.push("/success");
     }, 1000);
@@ -143,6 +143,7 @@ export default function ContactMinimal({
                 <button
                   type="submit"
                   disabled={isSubmitted}
+                  onClick={() => trackEvent({ type: 'cta_click', section_key: 'contact', cta_id: 'contact_minimal_submit' })}
                   className="w-full sm:w-auto px-10 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:shadow-lg hover:shadow-primary/20 active:scale-95 transition-all disabled:opacity-50"
                 >
                   {isSubmitted ? formThankYouText : formSubmitText}

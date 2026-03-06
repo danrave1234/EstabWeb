@@ -14,6 +14,10 @@ export interface PlanLimits {
 }
 
 const PAGE_CATEGORY_LABELS: Record<string, string> = {
+  "hero": "Home",
+  "hero--emergency": "Home",
+  "hero--video": "Home",
+  "hero--split": "Home",
   "review-trust-bar": "Reviews",
   "reviews-grid": "Reviews",
   "facebook-review-embed": "Reviews",

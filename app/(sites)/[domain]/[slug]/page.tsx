@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import SiteTemplate from "@/components/shared/SiteTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
-import { getSiteConfigWithProject } from "@/lib/utils/site-config";
+import { getCachedSiteConfig } from "@/lib/utils/site-config";
 import {
   canUseMultiPage,
   getMaxPagesForProject,
@@ -13,21 +13,9 @@ import {
   normalizePagesWithDefaults,
 } from "@/lib/utils/site-pages";
 import { isProPlan } from "@/lib/subscription";
+import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
-function pickFirstText(...values: Array<unknown>): string {
-  const found = values.find((v) => typeof v === "string" && v.trim().length > 0);
-  return typeof found === "string" ? found.trim() : "";
-}
-
-function buildKeywords(values: Array<unknown>): string[] {
-  const list = values
-    .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
-    .map((v) => v.trim());
-  return Array.from(new Set(list)).slice(0, 12);
-}
+export const revalidate = 120;
 
 export async function generateMetadata({
   params,
@@ -37,48 +25,43 @@ export async function generateMetadata({
   const { domain, slug } = await params;
   const heads = await headers();
   const host = heads.get("host") || domain;
-  const { config } = await getSiteConfigWithProject(domain, heads);
+  const { config } = await getCachedSiteConfig(domain, heads);
 
   const pages = normalizePagesWithDefaults(config?.pages);
   const page = getPageBySlug(pages, slug);
-  const seo = page?.seo || config?.seo || {};
-  const brand = config?.brand || {};
-  const hero = config?.hero || {};
-  const features = config?.features || {};
+  const resolvedSeo = buildAutoSeoDefaults({
+    config,
+    page: page as Record<string, any> | undefined,
+    pageSlug: slug,
+    pageLabel: page?.label || slug.replace(/-/g, " "),
+    domain,
+  });
 
-  const pageLabel = page?.label || slug.replace(/-/g, " ");
+  const brand = config?.brand || {};
   const brandName = brand.name || domain;
-  const customSeoTitle = pickFirstText(seo.title);
-  const isGenericSeoTitle = !customSeoTitle || /^page\s+\d+$/i.test(customSeoTitle.trim());
-  const baseTitle = isGenericSeoTitle ? pageLabel : customSeoTitle;
-  const title = baseTitle.includes(brandName)
-    ? baseTitle
-    : `${baseTitle} | ${brandName}`;
-  const description =
-    pickFirstText(seo.description, hero.subtitle, features.subtitle) ||
-    `${pageLabel} — ${brandName}. Built with EstabWeb.`;
-  const keywords =
-    Array.isArray(seo.keywords) && seo.keywords.length > 0
-      ? seo.keywords
-      : buildKeywords([brand.name, pageLabel, config?.theme, hero.benefitText, features.title]);
   const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
+  const canonical = `https://${host}${resolvedSeo.canonical}`;
 
   return {
-    title,
-    description,
-    keywords,
+    title: resolvedSeo.title,
+    description: resolvedSeo.description,
+    keywords: resolvedSeo.keywords,
     openGraph: {
-      title,
-      description,
+      title: resolvedSeo.og.title,
+      description: resolvedSeo.og.description,
       type: "website",
-      siteName: brand.name,
-      images: brand.logoUrl ? [{ url: brand.logoUrl }] : [],
+      siteName: brandName,
+      images: resolvedSeo.og.image ? [{ url: resolvedSeo.og.image }] : [],
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
-      images: brand.logoUrl ? [brand.logoUrl] : [],
+      title: resolvedSeo.og.title,
+      description: resolvedSeo.og.description,
+      images: resolvedSeo.og.image ? [resolvedSeo.og.image] : [],
+    },
+    robots: {
+      index: !resolvedSeo.robots.noindex,
+      follow: !resolvedSeo.robots.nofollow,
     },
     icons: {
       icon: iconUrl,
@@ -87,7 +70,7 @@ export async function generateMetadata({
     },
     metadataBase: new URL(`https://${host}`),
     alternates: {
-      canonical: `/${slug}`,
+      canonical,
     },
   };
 }
@@ -101,12 +84,12 @@ export default async function SubPage({
   const heads = await headers();
   const preview = heads.get("x-preview-mode") === "true";
 
-  // Legal pages have their own dedicated routes — never handle them here
+  // Legal pages have their own dedicated routes - never handle them here
   if (isLegalPageSlug(slug)) {
     notFound();
   }
 
-  const { config: initialData, project } = await getSiteConfigWithProject(domain, heads);
+  const { config: initialData, project } = await getCachedSiteConfig(domain, heads);
 
   if (!initialData) {
     return (
@@ -120,14 +103,14 @@ export default async function SubPage({
 
   // If accessed via custom domain but subscription is lapsed, redirect to subdomain
   if (!preview && project && project.custom_domain && !isProPlan(project)) {
-    const host = heads.get("host")?.split(":")[0]?.toLowerCase() || ""
+    const host = heads.get("host")?.split(":")[0]?.toLowerCase() || "";
     if (host === project.custom_domain.toLowerCase()) {
-      const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase()
-      redirect(`https://${project.subdomain}.${ROOT_DOMAIN}/${slug}`)
+      const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase();
+      redirect(`https://${project.subdomain}.${ROOT_DOMAIN}/${slug}`);
     }
   }
 
-  // Entitlement check — free projects cannot access subpages
+  // Entitlement check - free projects cannot access subpages
   if (!canUseMultiPage(project)) {
     notFound();
   }

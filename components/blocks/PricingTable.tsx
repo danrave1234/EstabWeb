@@ -1,8 +1,9 @@
-﻿"use client";
+"use client";
 
 import { CheckCircleIcon } from "@phosphor-icons/react";
 import { X } from "lucide-react";
 import { dynamicGridCols } from "@/lib/utils/grid-cols";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type PricingPlan = {
   name: string;
@@ -25,7 +26,7 @@ export type PricingTableProps = {
 
 export default function PricingTable({
   title = "Simple, Transparent Pricing",
-  subtitle = "Simply create a project and apply a subscription to it.",
+  subtitle = "Simply create a project and apply a subscription to it. For fully custom designs and complex builds, you can contact us to scope a bespoke project.",
   plans,
   mostPopularLabel = "Most Popular",
   startingAtLabel = "Starting at",
@@ -35,14 +36,14 @@ export default function PricingTable({
     <section id="pricing" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-background reveal">
       <div className="max-w-7xl mx-auto">
         {(title || subtitle) && (
-          <div className="text-center mb-12 sm:mb-16">
+          <div className="text-center mb-16 sm:mb-24">
             {title && (
-              <h2 className="text-2xl sm:text-4xl font-bold text-foreground mb-4 tracking-tight">
+              <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-foreground mb-6 tracking-tight leading-[1.1]">
                 {title}
               </h2>
             )}
             {subtitle && (
-              <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed opacity-70">
                 {subtitle}
               </p>
             )}
@@ -53,11 +54,10 @@ export default function PricingTable({
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`relative flex flex-col p-4 sm:p-8 rounded-2xl border transition-all duration-300 ${
-                plan.isPopular
-                  ? "border-primary bg-primary/5 shadow-xl lg:scale-105 z-10"
-                  : "border-border bg-background hover:border-primary/30 shadow-sm"
-              }`}
+              className={`relative flex flex-col p-6 sm:p-10 rounded-[2.5rem] border transition-all duration-500 hover:-translate-y-2 ${plan.isPopular
+                ? "border-primary bg-primary/[0.03] shadow-[0_32px_64px_-16px_rgba(var(--primary-rgb),0.2)] lg:scale-110 z-10"
+                : "border-border bg-background hover:border-primary/20 shadow-sm"
+                }`}
             >
               {plan.isPopular && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-widest whitespace-nowrap">
@@ -70,7 +70,7 @@ export default function PricingTable({
                 <div className="flex flex-col gap-0.5 mb-2">
                   <span className="text-[10px] sm:text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{startingAtLabel}</span>
                   <div className="flex items-baseline gap-0.5 sm:gap-1">
-                    <span className="text-base sm:text-4xl font-bold text-foreground">{plan.price.includes("â‚±") || plan.price.toLowerCase().includes("php") ? plan.price : `â‚±${plan.price}`}</span>
+                    <span className="text-base sm:text-4xl font-bold text-foreground">{plan.price.includes("₱") || plan.price.toLowerCase().includes("php") ? plan.price : `₱${plan.price}`}</span>
                     <span className="text-muted-foreground text-[10px] sm:text-sm">{periodLabel}</span>
                   </div>
                 </div>
@@ -96,11 +96,11 @@ export default function PricingTable({
 
               <a
                 href={plan.href ?? "#"}
-                className={`w-full py-1.5 sm:py-3 px-3 sm:px-6 rounded-lg sm:rounded-xl font-bold text-center transition-all duration-200 min-h-[32px] sm:min-h-[48px] flex items-center justify-center text-xs sm:text-base ${
-                  plan.isPopular
-                    ? "bg-primary text-primary-foreground hover:opacity-90 shadow-lg"
-                    : "bg-muted text-foreground hover:bg-muted/80"
-                }`}
+                onClick={() => trackEvent({ type: 'cta_click', section_key: 'pricing', cta_id: `plan_${plan.name.toLowerCase()}` })}
+                className={`w-full py-1.5 sm:py-3 px-3 sm:px-6 rounded-lg sm:rounded-xl font-bold text-center transition-all duration-200 min-h-[32px] sm:min-h-[48px] flex items-center justify-center text-xs sm:text-base ${plan.isPopular
+                  ? "bg-primary text-primary-foreground hover:opacity-90 shadow-lg"
+                  : "bg-muted text-foreground hover:bg-muted/80"
+                  }`}
               >
                 {plan.buttonText}
               </a>

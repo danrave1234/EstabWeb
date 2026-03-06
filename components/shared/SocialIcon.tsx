@@ -1,18 +1,12 @@
 "use client";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faFacebookF,
-  faTwitter,
-  faLinkedinIn,
-  faInstagram,
-} from "@fortawesome/free-brands-svg-icons";
+import { Facebook, Twitter, Linkedin, Instagram } from "lucide-react";
 
 const brandIcons = {
-  facebook: faFacebookF,
-  twitter: faTwitter,
-  linkedin: faLinkedinIn,
-  instagram: faInstagram,
+  facebook: Facebook,
+  twitter: Twitter,
+  linkedin: Linkedin,
+  instagram: Instagram,
 } as const;
 
 export type SocialBrand = keyof typeof brandIcons;
@@ -28,10 +22,9 @@ export function SocialIcon({
   className,
   "aria-hidden": ariaHidden,
 }: SocialIconProps) {
-  const icon = brandIcons[brand];
+  const Icon = brandIcons[brand];
   return (
-    <FontAwesomeIcon
-      icon={icon}
+    <Icon
       className={className}
       aria-hidden={ariaHidden}
     />

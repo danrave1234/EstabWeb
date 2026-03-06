@@ -88,6 +88,88 @@ export const DEFAULT_NAVIGATION = [
   { name: "Testimonials", href: "#testimonials" },
   { name: "Contact", href: "/contact" },
 ];
+export const DEFAULT_HERO = {
+  title: "Aggressive Criminal Defense in [City Name]",
+  subtitle: "When your freedom is on the line, you need an experienced advocate fighting for you.",
+  primaryCTA: "Free Consultation",
+  secondaryCTA: "Our Results",
+  primaryCTAHref: "/contact",
+  secondaryCTAHref: "#results",
+  backgroundImage: "",
+  benefitText: "Available 24/7 for Emergencies",
+  benefitIcon: "Shield",
+};
+
+export const DEFAULT_HERO_EMERGENCY = {
+  title: "Arrested? Call Us Now.",
+  subtitle: "Don't speak to the police without representation. We are available 24/7.",
+  primaryCTA: "Call Now",
+  primaryCTAHref: "tel:555-0100",
+  backgroundImage: "",
+  benefitText: "Immediate Jail Release Assistance",
+  benefitIcon: "Phone",
+};
+
+export const DEFAULT_TRUST_BADGES = {
+  title: "Recognized for Excellence",
+  items: [
+    { label: "Top 100 Trial Lawyers", sublabel: "National recognition", icon: "Award" },
+    { label: "Super Lawyers", sublabel: "Selected consistently", icon: "Star" },
+    { label: "10.0 Superb Rating", sublabel: "Avvo Rating", icon: "Check" },
+    { label: "Client's Choice", sublabel: "Consistently highly rated", icon: "Users" },
+  ],
+};
+
+export const DEFAULT_TEAM_CAROUSEL = {
+  title: "Our Legal Team",
+  subtitle: "Experienced, aggressive, and dedicated to your defense.",
+  members: [
+    { name: "John Doe, Esq.", specialty: "Lead Criminal Defense Attorney", imageUrl: "" },
+    { name: "Jane Smith, Esq.", specialty: "DUI Defense Specialist", imageUrl: "" },
+  ],
+};
+
+export const DEFAULT_ATTORNEY_PROFILE = {
+  title: "Meet the Lead Attorney",
+  subtitle: "Over 20 years of courtroom experience.",
+  members: [
+    { name: "John Doe, Esq.", specialty: "Managing Partner", imageUrl: "", bioUrl: "/about" },
+  ],
+};
+
+export const DEFAULT_PROMO_STRIP = {
+  text: "Arrested? Don't wait. Call us immediately for a free, confidential case evaluation.",
+  buttonText: "Call Now",
+  buttonHref: "tel:555-0100",
+};
+
+export const DEFAULT_FREE_CONSULTATION = {
+  title: "Get a Free Case Review",
+  subtitle: "Fill out the form below and we will contact you immediately.",
+  buttonText: "Request Evaluation",
+};
+
+export const DEFAULT_GUARANTEE = {
+  title: "Our Commitment to You",
+  subtitle: "We will fight tirelessly to protect your rights, your reputation, and your freedom.",
+  icon: "ShieldCheck",
+};
+
+export const DEFAULT_CONTACT = {
+  title: "Contact Us Today",
+  subtitle: "We're here to help. Reach out for a free consultation.",
+  email: "info@examplelaw.com",
+  phone: "555-0100",
+  address: "123 Main St, Suite 100, CityName, State 12345",
+  buttonText: "Send Message",
+};
+
+export const DEFAULT_CTA = {
+  title: "Ready to Build Your Defense?",
+  subtitle: "Contact us today for a free, confidential consultation.",
+  buttonText: "Contact Us",
+  buttonHref: "/contact",
+};
 
 export const DEFAULT_EMERGENCY_CTA = {
   title: "Emergency Service?",
@@ -149,12 +231,13 @@ export const DEFAULT_HOW_IT_WORKS = {
 };
 
 export const DEFAULT_PRACTICE_AREAS = {
-  title: "Our Services",
-  subtitle: "Tailored to your needs.",
+  title: "Criminal Defense Expertise",
+  subtitle: "Aggressive representation for your most challenging legal issues.",
   items: [
-    { title: "Service One", description: "Description of your first offering.", icon: "Scale", href: "#" },
-    { title: "Service Two", description: "Description of your second offering.", icon: "Briefcase", href: "#" },
-    { title: "Service Three", description: "Description of your third offering.", icon: "Shield", href: "#" },
+    { title: "Criminal Defense", description: "Aggressive representation for all criminal charges, ensuring your rights are protected.", icon: "Gavel", href: "#" },
+    { title: "DUI & DWI", description: "Expert defense for driving under the influence charges to help you keep your license.", icon: "Shield", href: "#" },
+    { title: "Drug Crimes", description: "Comprehensive legal support for drug-related offenses, from possession to trafficking.", icon: "Scale", href: "#" },
+    { title: "White Collar Crime", description: "Sophisticated defense for complex financial and corporate criminal allegations.", icon: "Briefcase", href: "#" },
   ],
 };
 
@@ -195,6 +278,19 @@ export const DEFAULT_DEVELOPER_PARTNERS = {
   ],
 };
 
+export const DEFAULT_TESTIMONIALS = {
+  label: "What our customers say",
+  logos: [],
+  testimonial: {
+    quote: "Great service. Professional and reliable. Highly recommend.",
+    author: "Customer Name",
+    role: "Customer",
+    avatar:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=112&h=112&fit=crop&q=80",
+    rating: 5,
+  },
+};
+
 export const DEFAULT_REVIEW_TRUST_BAR = {
   title: "What Our Customers Say",
   subtitle: "Real feedback from real people.",
@@ -209,6 +305,17 @@ export const DEFAULT_FINANCING = {
   items: [
     { title: "Option One", description: "Brief description.", icon: "Home", features: ["Feature 1", "Feature 2"] },
     { title: "Option Two", description: "Brief description.", icon: "Building", features: ["Feature 1"] },
+  ],
+};
+
+export const DEFAULT_FEATURES = {
+  title: "Our Services",
+  subtitle: "Everything you need, all in one place.",
+  items: [
+    { title: "Criminal Defense", description: "Aggressive representation for all criminal charges.", icon: "Gavel", imageUrl: "" },
+    { title: "DUI & DWI", description: "Expert defense for driving under the influence charges.", icon: "Shield", imageUrl: "" },
+    { title: "Drug Crimes", description: "Comprehensive legal support for drug-related offenses.", icon: "Scale", imageUrl: "" },
+    { title: "White Collar Crime", description: "Sophisticated defense for complex allegations.", icon: "Briefcase", imageUrl: "" },
   ],
 };
 
@@ -260,10 +367,14 @@ export const DEFAULT_AC_TYPES = {
 };
 
 export const DEFAULT_PRICE_PREVIEW = {
-  title: "Quick Price Guide",
+  title: "Affordable AC Services",
+  transparentPricingNote: "No hidden charges. Transparent pricing guaranteed.",
+  bookNowLabel: "Book Now",
+  bookNowUrl: "#contact",
   items: [
-    { service: "Service 1", price: "₱XXX", note: "" },
-    { service: "Service 2", price: "₱XXX", note: "" },
+    { service: "AC Cleaning", price: "₱1,500", note: "Starting from" },
+    { service: "Check-up/Repair", price: "₱500", note: "Labor only" },
+    { service: "Freon Charging", price: "₱1,200", note: "Per unit" },
   ],
 };
 
@@ -271,14 +382,16 @@ export const DEFAULT_PRICING_TABLE = {
   title: "Simple Pricing",
   subtitle: "Choose the plan that fits.",
   plans: [
-    { name: "Basic", price: "₱0", description: "Get started for free.", features: [{ text: "Core features", included: true }, { text: "Support", included: true }], buttonText: "Get Started", isPopular: false },
-    { name: "Pro", price: "₱999", description: "For growing teams.", features: [{ text: "Everything in Basic", included: true }, { text: "Priority support", included: true }], buttonText: "Get Pro", isPopular: true },
+    { name: "Free", price: "₱0", description: "Get started for free.", features: [{ text: "Core features", included: true }, { text: "Analytics", included: false }], buttonText: "Get Started", isPopular: false },
+    { name: "Basic", price: "₱499", description: "Standard business presence.", features: [{ text: "Everything in Free", included: true }, { text: "Analytics summary", included: true }, { text: "Custom Domain", included: true }], buttonText: "Choose Basic", isPopular: true },
+    { name: "Pro", price: "₱999", description: "Advanced analytics & SEO.", features: [{ text: "Everything in Basic", included: true }, { text: "Advanced Analytics", included: true }, { text: "SEO Audit", included: true }], buttonText: "Get Pro", isPopular: false },
   ],
 };
 
 export const DEFAULT_MAINTENANCE_PLANS = {
   title: "Maintenance Plans",
   subtitle: "Keep your systems running smoothly.",
+  signUpNowUrl: "#contact",
   plans: [
     { name: "Basic", price: "₱2,800", period: "/year", description: "2 visits per year.", features: ["Inspection", "Cleaning"], isPopular: false },
     { name: "Premium", price: "₱5,000", period: "/year", description: "4 visits per year.", features: ["Everything in Basic", "Priority service"], isPopular: true },
@@ -288,6 +401,7 @@ export const DEFAULT_MAINTENANCE_PLANS = {
 export const DEFAULT_FACEBOOK_REVIEW_EMBED = {
   title: "Highly Rated on Facebook",
   subtitle: "See why our customers love us",
+  facebookUrl: "https://facebook.com",
   reviews: [
     { author: "Customer A", text: "Excellent service!", date: "2 weeks ago", rating: 5 },
     { author: "Customer B", text: "Very satisfied.", date: "1 month ago", rating: 5 },
@@ -312,7 +426,7 @@ export const DEFAULT_SERVICE_AREA_MAP = {
   title: "Our Service Areas",
   subtitle: "We serve the following locations.",
   cities: ["City 1", "City 2", "City 3"],
-  googleMapsEmbedUrl: "",
+  mapEmbedUrl: "",
 };
 
 export const DEFAULT_CONTACT_WITH_MAP = {
@@ -321,7 +435,7 @@ export const DEFAULT_CONTACT_WITH_MAP = {
   email: "",
   phone: "",
   address: "",
-  googleMapsEmbedUrl: "",
+  mapEmbedUrl: "",
   formHeading: "Send us a Message",
   formSubmitText: "Send Message",
   formThankYouText: "Message Sent!",
@@ -431,7 +545,7 @@ export function sectionIdToKey(id: string) {
     'service_area--radius': 'deliveryCoverage',
     'contact_with_map': 'contactWithMap',
     'logo_cloud': 'logoCloud',
-    'testimonials': 'reviewTrustBar',
+    'testimonials': 'testimonials',
     'testimonials--grid': 'reviewTrustBar',
     'testimonials--facebook': 'facebookReviewEmbed',
     'stats': 'statsSection',
@@ -454,9 +568,45 @@ export function sectionIdToKey(id: string) {
     'features': 'features',
     'features-modern': 'features',
     'services-grid': 'features',
+    'services': 'features',
+    'services--modern': 'features',
+    'services--highlight': 'featureHighlight',
+    'service_detail': 'featureHighlight',
+    'service_detail--split': 'featureHighlight',
     'project-gallery': 'features',
     'programs-grid': 'features',
     'faculty-grid': 'features',
+    // canonical IDs — trust & social proof
+    // canonical IDs — team
+    'team': 'teamCarousel',
+    'team--carousel': 'teamCarousel',
+    'team--profile': 'attorneyProfile',
+    'team--spotlight': 'whyChooseMe',
+    // canonical IDs — comparison
+    'comparison--table': 'acTypes',
+    'comparison--vs': 'acTypes',
+    // canonical IDs — gallery / case study
+    // (canonical IDs for case_study already defined above)
+    // canonical IDs — CTA
+    'cta--emergency': 'emergencyCTA',
+    'cta--promo-strip': 'promoBannerStrip',
+    // canonical IDs — booking / lead / consultation
+    'booking': 'bookingCTA',
+    'lead_capture': 'freeConsultation',
+    'lead_capture--multi-step': 'freeConsultation',
+    'free_consultation': 'freeConsultation',
+    // canonical IDs — payment / guarantee / contact
+    'guarantee': 'warranty',
+    'guarantee--badge': 'warranty',
+    'guarantee--safety': 'warranty',
+    'contact--minimal': 'contact',
+    'contact--visual': 'contact',
+    'contact--with-map': 'contactWithMap',
+    'contact--columns': 'contact',
+    'contact--split': 'contact',
+    // canonical IDs — hero variant
+    'hero--emergency': 'heroEmergency',
+    // canonical IDs — stats
     'delivery-coverage': 'deliveryCoverage',
     'booking-cta': 'bookingCTA',
     'footer': 'footer',

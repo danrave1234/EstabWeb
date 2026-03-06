@@ -8,23 +8,23 @@ const GEMINI_URL =
 const VALID_INDUSTRIES = Object.keys(GENRE_LABELS);
 
 const VALID_SECTIONS = [
-  "hero", "features", "testimonials", "contact", "pricing", "patient-faq",
-  "team-carousel", "blog", "awards", "gallery", "service_area", "comparison",
-  "stats", "case_study", "announcement_bar", "cta--sticky", "faq-accordion",
-  "how-it-works", "trust-badges-grid", "before-after-gallery", "booking-cta",
-  "free-consultation", "service_detail", "lead_capture", "guarantee",
+  "hero", "services", "testimonials", "contact", "pricing", "faq--two-column",
+  "team", "blog_preview", "certifications", "gallery", "service_area", "comparison",
+  "stats", "case_study", "announcement_bar", "cta--sticky", "faq",
+  "process", "trust_badges", "booking",
+  "free_consultation", "service_detail", "lead_capture", "guarantee",
 ];
 
 // Sections that are only relevant when the business explicitly needs them.
 // The AI must NOT suggest these unless the business description clearly implies them.
 const GATED_SECTIONS: Record<string, string> = {
-  "booking-cta": "Only include if the business explicitly takes appointments or bookings (e.g. salon, clinic, dentist, photographer scheduling sessions).",
-  "free-consultation": "Only include if the business explicitly offers free consultations (e.g. law firm, financial advisor, contractor).",
+  "booking": "Only include if the business explicitly takes appointments or bookings (e.g. salon, clinic, dentist, photographer scheduling sessions).",
+  "free_consultation": "Only include if the business explicitly offers free consultations (e.g. law firm, financial advisor, contractor).",
   "service_area": "Only include if the business serves a specific geographic area and coverage matters (e.g. pest control, HVAC, plumber).",
-  "patient-faq": "Only include if the business has medical or health-related clients.",
+  "faq--two-column": "Only include if the business has medical or health-related clients.",
   "lead_capture": "Only include if the business relies on lead generation forms (e.g. real estate, insurance).",
   "case_study": "Only include if the business has project-based work to showcase (e.g. agency, contractor, law firm).",
-  "before-after-gallery": "Only include if the business has visible transformation results (e.g. cleaning, detailing, renovation, aesthetics).",
+  "gallery": "Only include if the business has visible transformation results (e.g. cleaning, detailing, renovation, aesthetics).",
   "guarantee": "Only include if the business explicitly offers warranties or satisfaction guarantees.",
 };
 
@@ -62,7 +62,7 @@ ${gatedRules}
 - Prefer fewer, accurate sections over many guessed ones.
 
 Example response:
-{"industry":"pest_control","sections":["hero","features","testimonials","contact","how-it-works","trust-badges-grid"],"presetKey":"pest_control","reasoning":"Pest control service businesses benefit from trust signals and a clear process overview."}`;
+{"industry":"pest_control","sections":["hero","services","testimonials","contact","process","trust_badges"],"presetKey":"pest_control","reasoning":"Pest control service businesses benefit from trust signals and a clear process overview."}`;
 
   try {
     const res = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
@@ -94,7 +94,7 @@ Example response:
       : VALID_INDUSTRIES[0];
     const sections = Array.isArray(parsed.sections)
       ? parsed.sections.filter((s: string) => VALID_SECTIONS.includes(s))
-      : ["hero", "features", "contact"];
+      : ["hero", "services", "contact"];
     const presetKey = VALID_INDUSTRIES.includes(parsed.presetKey)
       ? parsed.presetKey
       : industry;

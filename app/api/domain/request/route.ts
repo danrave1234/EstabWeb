@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { addDomainToVercel } from '@/lib/utils/vercel-domains'
+import { logAudit } from '@/lib/audit'
+import { isProPlan } from '@/lib/subscription'
 
 /**
  * POST /api/domain/request
@@ -37,9 +39,19 @@ export async function POST(req: Request) {
     // Verify the project belongs to this user
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('id, client_id, custom_domain')
+      .select('id, client_id, custom_domain, subscription_status, subscription_ends_at, trial_ends_at, subscription_plan_id')
       .eq('id', projectId)
       .single()
+
+    if (projectError || !project) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+    }
+    if (project.client_id !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    if (!isProPlan(project as any)) {
+      return NextResponse.json({ error: 'Custom domains require a paid plan' }, { status: 403 })
+    }
 
     if (projectError || !project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
@@ -76,6 +88,7 @@ export async function POST(req: Request) {
       console.warn(`[domain/request] Vercel registration failed for "${domain}": ${vercelResult.error}`)
     }
 
+    await logAudit(supabase, 'domain_change', user.id, projectId, { domain })
     return NextResponse.json({ success: true, domain })
   } catch (e: any) {
     console.error('[domain/request] Error:', e)

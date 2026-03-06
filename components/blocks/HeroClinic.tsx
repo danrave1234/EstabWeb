@@ -1,6 +1,7 @@
 "use client";
 
 import TrustSignals from "@/components/shared/TrustSignals";
+import { trackEvent, trackLead } from "@/components/shared/Analytics";
 
 export type HeroClinicProps = {
   title: string;
@@ -68,12 +69,18 @@ export default function HeroClinic({
           <div className="mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <a
               href={primaryCTAHref}
+              onClick={() => {
+                trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_primary' });
+                if (primaryCTAHref === '#contact') trackLead('form');
+                else if (primaryCTAHref.startsWith('tel:')) trackLead('call');
+              }}
               className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[52px] px-4 sm:px-10 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/20 text-[10px] sm:text-base touch-manipulation text-center"
             >
               {primaryCTA}
             </a>
             <a
               href={secondaryCTAHref}
+              onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_secondary' })}
               className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[52px] px-4 sm:px-10 py-2 sm:py-4 bg-background text-foreground font-bold rounded-xl border border-border hover:bg-muted/50 transition-all text-[10px] sm:text-base touch-manipulation text-center"
             >
               {secondaryCTA}

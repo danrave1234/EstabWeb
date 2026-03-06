@@ -10,6 +10,11 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 const AnalyticsContext = createContext<string | undefined>(undefined);
 
+function PageViewTrackerInner({ projectId }: { projectId?: string }) {
+  usePageViewTracker(projectId);
+  return null;
+}
+
 export function AnalyticsProvider({
   projectId,
   children,
@@ -17,8 +22,25 @@ export function AnalyticsProvider({
   projectId?: string;
   children: React.ReactNode;
 }) {
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+  const inPreview = typeof window !== "undefined" && window.self !== window.top;
+
+  // Expose projectId on window so plain (non-hook) trackLead() calls can read it
+  useEffect(() => {
+    if (projectId && typeof window !== "undefined" && !isPreviewContext()) {
+      window.PROJECT_ID = projectId;
+    }
+  }, [projectId]);
+
   return (
     <AnalyticsContext.Provider value={projectId}>
+      {!inPreview && <PageViewTrackerInner projectId={projectId} />}
+      {siteKey && (
+        <Script
+          src={`https://www.google.com/recaptcha/api.js?render=${siteKey}`}
+          strategy="afterInteractive"
+        />
+      )}
       {children}
     </AnalyticsContext.Provider>
   );
@@ -26,6 +48,191 @@ export function AnalyticsProvider({
 
 export function useProjectId() {
   return useContext(AnalyticsContext);
+}
+
+// ---------------------------------------------------------------------------
+// Visitor identity — persists across sessions (localStorage)
+// ---------------------------------------------------------------------------
+export function getOrCreateVisitorId(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    const key = "_vid";
+    let id = localStorage.getItem(key);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(key, id);
+    }
+    return id;
+  } catch {
+    return "";
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Session identity — new per tab/session (sessionStorage)
+// ---------------------------------------------------------------------------
+export function getOrCreateSessionId(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    const key = "_sid";
+    let id = sessionStorage.getItem(key);
+    if (!id) {
+      id = crypto.randomUUID();
+      sessionStorage.setItem(key, id);
+    }
+    return id;
+  } catch {
+    return "";
+  }
+}
+
+// ---------------------------------------------------------------------------
+// First-touch attribution — stored once in localStorage, never overwritten
+// ---------------------------------------------------------------------------
+export type FirstTouch = {
+  source: string;
+  utm: Record<string, string>;
+  ts: number;
+};
+
+export function getOrCreateFirstTouch(): FirstTouch {
+  const empty: FirstTouch = { source: "direct", utm: {}, ts: Date.now() };
+  if (typeof window === "undefined") return empty;
+  try {
+    const key = "_ft";
+    const stored = localStorage.getItem(key);
+    if (stored) return JSON.parse(stored) as FirstTouch;
+
+    const params = new URLSearchParams(window.location.search);
+    const utmKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
+    const utm: Record<string, string> = {};
+    utmKeys.forEach((k) => { const v = params.get(k); if (v) utm[k] = v; });
+
+    let source = "direct";
+    if (utm.utm_source) source = utm.utm_source;
+    else if (document.referrer) {
+      try { source = new URL(document.referrer).hostname; } catch { source = document.referrer; }
+    }
+
+    const ft: FirstTouch = { source, utm, ts: Date.now() };
+    localStorage.setItem(key, JSON.stringify(ft));
+    return ft;
+  } catch {
+    return empty;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Traffic source resolver (last-touch)
+// ---------------------------------------------------------------------------
+export function resolveTrafficSource(): string {
+  if (typeof window === "undefined") return "direct";
+  const params = new URLSearchParams(window.location.search);
+  const utm = params.get("utm_source");
+  if (utm) return utm;
+  if (document.referrer) {
+    try {
+      return new URL(document.referrer).hostname;
+    } catch {
+      return document.referrer;
+    }
+  }
+  return "direct";
+}
+
+// ---------------------------------------------------------------------------
+// trackEvent – fire-and-forget event to /api/track-event
+// ---------------------------------------------------------------------------
+export type EventType =
+  | 'page_view'
+  | 'section_view'
+  | 'cta_click'
+  | 'lead_submit'
+  | 'lead_form'
+  | 'lead_call'
+  | 'lead_messenger'
+  | 'lead_viber'
+  | 'map_interact'
+  | 'scroll_depth'
+  | 'click_map'
+  | 'form_start'
+  | 'session_start'
+  | 'session_end';
+
+export type FunnelStep = 'landing' | 'engaged' | 'cta' | 'lead';
+
+export function isPreviewContext(): boolean {
+  if (typeof window === "undefined") return false;
+  // Inside an iframe (dashboard editor preview)
+  if (window.self !== window.top) return true;
+  // Opened directly with ?preview=true (admin review preview)
+  const params = new URLSearchParams(window.location.search);
+  return params.get("preview") === "true";
+}
+
+export function trackEvent(payload: {
+  type: EventType;
+  project_id?: string;
+  page_slug?: string;
+  section_key?: string;
+  cta_id?: string;
+  source?: string;
+  funnel_step?: FunnelStep;
+  metadata?: Record<string, unknown>;
+}) {
+  if (typeof window === "undefined") return;
+  // Never track analytics inside the dashboard preview iframe
+  if (isPreviewContext()) return;
+  const resolvedProjectId = payload.project_id ?? window.PROJECT_ID;
+  if (!resolvedProjectId) return;
+
+  const body = JSON.stringify({
+    ...payload,
+    project_id: resolvedProjectId,
+    source: payload.source ?? resolveTrafficSource(),
+    visitor_id: getOrCreateVisitorId(),
+    session_id: getOrCreateSessionId(),
+    event_id: crypto.randomUUID(),
+  });
+
+  const sent =
+    typeof navigator.sendBeacon === "function" &&
+    navigator.sendBeacon(
+      "/api/track-event",
+      new Blob([body], { type: "application/json" })
+    );
+  if (!sent) {
+    fetch("/api/track-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      keepalive: true,
+    }).catch(() => {});
+  }
+}
+
+// ---------------------------------------------------------------------------
+// usePageViewTracker – call inside a client component to track page views
+// ---------------------------------------------------------------------------
+export function usePageViewTracker(projectId?: string) {
+  const pathname = usePathname();
+  const tracked = useRef<string | null>(null);
+  useEffect(() => {
+    const key = `${projectId}:${pathname}`;
+    if (tracked.current === key) return;
+    // Deduplicate within the same session
+    const ssKey = `pv-${pathname}`;
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(ssKey)) return;
+    tracked.current = key;
+    if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(ssKey, '1');
+    const slug = pathname === "/" ? "" : pathname.replace(/^\//, "");
+    trackEvent({
+      type: "page_view",
+      project_id: projectId,
+      page_slug: slug,
+      funnel_step: "landing",
+    });
+  }, [pathname, projectId]);
 }
 
 // ---------------------------------------------------------------------------
@@ -115,9 +322,13 @@ export function FacebookPixel({ id }: { id: string }) {
 export function trackLead(
   type: "messenger" | "call" | "form" | "viber",
   projectId?: string,
-  extraMetadata?: Record<string, string>
+  extraMetadata?: Record<string, string>,
+  sectionKey?: string,
+  pageSlug?: string
 ) {
   if (typeof window === "undefined") return;
+  // Never track analytics inside the dashboard preview iframe
+  if (isPreviewContext()) return;
 
   const resolvedProjectId = projectId ?? window.PROJECT_ID;
   const eventLabel = type.charAt(0).toUpperCase() + type.slice(1);
@@ -139,6 +350,8 @@ export function trackLead(
     });
   }
 
+  if (!resolvedProjectId) return;
+
   // Auto-capture UTM params from URL
   const urlParams = new URLSearchParams(window.location.search);
   const utmFields: Record<string, string> = {};
@@ -147,34 +360,59 @@ export function trackLead(
     if (val) utmFields[key] = val;
   });
 
-  // Server-side persistence via sendBeacon (survives tab close)
-  if (resolvedProjectId) {
-    const payload = JSON.stringify({
-      type,
-      project_id: resolvedProjectId,
-      metadata: {
-        url: window.location.href,
-        path: window.location.pathname,
-        referrer: document.referrer || undefined,
-        ua: navigator.userAgent,
-        ...utmFields,
-        ...extraMetadata,
-      },
-    });
+  const firstTouch = getOrCreateFirstTouch();
 
-    const sent =
-      typeof navigator.sendBeacon === "function" &&
-      navigator.sendBeacon("/api/track-lead", new Blob([payload], { type: "application/json" }));
+  const basePayload = {
+    type,
+    project_id: resolvedProjectId,
+    page_slug: pageSlug ?? window.location.pathname.replace(/^\//, '') ?? undefined,
+    section_key: sectionKey ?? undefined,
+    source: resolveTrafficSource(),
+    visitor_id: getOrCreateVisitorId(),
+    session_id: getOrCreateSessionId(),
+    first_touch_source: firstTouch.source,
+    first_touch_utm: firstTouch.utm,
+    honeypot: "", // always empty for real users; bots may fill this
+    metadata: {
+      url: window.location.href,
+      path: window.location.pathname,
+      referrer: document.referrer || undefined,
+      ua: navigator.userAgent,
+      ...utmFields,
+      ...extraMetadata,
+    },
+  };
 
-    if (!sent) {
-      // Fallback for environments where sendBeacon is unavailable
-      fetch("/api/track-lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: payload,
-        keepalive: true,
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
+  // For form leads: get reCAPTCHA v3 token first, then POST via fetch
+  if (type === "form" && siteKey && typeof window.grecaptcha !== "undefined") {
+    window.grecaptcha.ready(() => {
+      window.grecaptcha.execute(siteKey, { action: "lead_form" }).then((token) => {
+        fetch("/api/track-lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...basePayload, recaptchaToken: token }),
+          keepalive: true,
+        }).catch(() => {});
       }).catch(() => {});
-    }
+    });
+    return;
+  }
+
+  // For non-form leads (call, messenger, viber): fire-and-forget via sendBeacon
+  const payload = JSON.stringify(basePayload);
+  const sent =
+    typeof navigator.sendBeacon === "function" &&
+    navigator.sendBeacon("/api/track-lead", new Blob([payload], { type: "application/json" }));
+
+  if (!sent) {
+    fetch("/api/track-lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      keepalive: true,
+    }).catch(() => {});
   }
 }
 
@@ -188,5 +426,9 @@ declare global {
     dataLayer: any[];
     fbq: (...args: any[]) => void;
     PROJECT_ID?: string; // kept for backward-compat; prefer AnalyticsContext
+    grecaptcha: {
+      ready: (cb: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+    };
   }
 }

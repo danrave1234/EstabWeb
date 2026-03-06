@@ -60,11 +60,11 @@ export default function MinimalFooter({
               />
             )
           ) : (
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <span className="text-sm font-bold text-primary-foreground">{initials}</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border-2 border-primary/20">
+              <span className="text-sm font-bold text-primary">{initials}</span>
             </div>
           )}
-          <span className="text-base font-semibold tracking-tight text-foreground">
+          <span className="font-serif text-base font-semibold tracking-tight text-foreground">
             {brandName}
           </span>
         </div>
@@ -82,15 +82,15 @@ export default function MinimalFooter({
         )}
 
         {social.showSocial !== false && (
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground font-medium uppercase tracking-wider">
+          <nav aria-label="Social" className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground font-medium uppercase tracking-wider">
             {social.facebook && social.facebookEnabled !== false && <a href={social.facebook} className="hover:text-primary transition-colors">Facebook</a>}
             {social.twitter && social.twitterEnabled !== false && <a href={social.twitter} className="hover:text-primary transition-colors">Twitter</a>}
             {social.linkedin && social.linkedinEnabled !== false && <a href={social.linkedin} className="hover:text-primary transition-colors">LinkedIn</a>}
             {social.instagram && social.instagramEnabled !== false && <a href={social.instagram} className="hover:text-primary transition-colors">Instagram</a>}
-          </div>
+          </nav>
         )}
 
-        <div className="mt-2 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-muted-foreground">
+        <nav aria-label="Legal" className="mt-2 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-muted-foreground">
           <a href={privacyUrl} className="hover:text-foreground">
             Privacy
           </a>
@@ -100,7 +100,7 @@ export default function MinimalFooter({
           <a href={cookieUrl} className="hover:text-foreground">
             Cookies
           </a>
-        </div>
+        </nav>
 
         <p className="mt-2 text-xs text-muted-foreground">
           © {new Date().getFullYear()} {brandName}. All rights reserved.
@@ -109,4 +109,3 @@ export default function MinimalFooter({
     </footer>
   );
 }
-

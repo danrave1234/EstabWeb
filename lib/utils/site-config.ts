@@ -1,11 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
+import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import path from "path";
 import fs from "fs/promises";
 import { getSectionKey } from "./config-mapping";
 
 const SITE_DATA_PATH = path.join(process.cwd(), "config", "site-data.json");
 
-export async function getSiteConfig(domain: string, headersList?: Headers) {
+export const getSiteConfig = cache(async (domain: string, headersList?: Headers) => {
   const isPreview = headersList?.get('x-preview-mode') === 'true';
   const projectId = headersList?.get('x-project-id') || undefined;
   const requestId = headersList?.get('x-request-id') || undefined;
@@ -21,7 +24,7 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
         .select('*, projects(*)')
         .eq('id', requestId)
         .single();
-      
+
       if (reqError) {
         console.error(`[getSiteConfig] Error fetching change request:`, reqError);
       }
@@ -57,13 +60,13 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
         dbRow = data?.[0];
       } else {
         console.log(`[getSiteConfig] Searching by domain: "${domain}"`);
-        
+
         // 1. Try exact match
         const { data, error, count } = await supabase
           .from("projects")
           .select("id,subdomain,custom_domain,current_config,draft_config", { count: 'exact' })
           .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`);
-        
+
         dbRow = data?.[0];
 
         // 2. If no match, and it looks like a subdomain of our root domains, try just the subdomain part
@@ -113,7 +116,7 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           .select("payload")
           .eq("key", "template_master")
           .single();
-        
+
         if (data) {
           dbConf = data.payload;
         }
@@ -125,15 +128,15 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           .select("payload")
           .eq("key", "global")
           .single();
-        
+
         if (data) {
           dbConf = data.payload;
         }
       } else {
-      console.log(`[getSiteConfig] No project found for domain: ${domain}`);
+        console.log(`[getSiteConfig] No project found for domain: ${domain}`);
+      }
     }
-    }
-    
+
     if (dbConf && Object.keys(dbConf).length > 0) {
       return dbConf;
     }
@@ -145,7 +148,7 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
   try {
     const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
     const fileData = JSON.parse(raw);
-    
+
     console.log(`[getSiteConfig] Using file fallback for domain: "${domain}"`);
     if (domain === 'master') {
       try {
@@ -157,11 +160,11 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           .single();
 
         if (!templateConfig) {
-           await supabase.from("site_config").insert({
-             key: "template_master",
-             payload: fileData
-           });
-           console.log("Auto-migrated site-data.json to template_master in DB");
+          await supabase.from("site_config").insert({
+            key: "template_master",
+            payload: fileData
+          });
+          console.log("Auto-migrated site-data.json to template_master in DB");
         }
       } catch (migrateErr) {
         console.error("Auto-migration failed for master:", migrateErr);
@@ -176,11 +179,11 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
           .single();
 
         if (!globalConfig) {
-           await supabase.from("site_config").insert({
-             key: "global",
-             payload: fileData
-           });
-           console.log("Auto-migrated site-data.json to site_config table in DB");
+          await supabase.from("site_config").insert({
+            key: "global",
+            payload: fileData
+          });
+          console.log("Auto-migrated site-data.json to site_config table in DB");
         }
       } catch (migrateErr) {
         console.error("Auto-migration failed:", migrateErr);
@@ -192,9 +195,9 @@ export async function getSiteConfig(domain: string, headersList?: Headers) {
     console.error("Error reading site-data.json:", error);
     return null;
   }
-}
+});
 
-export async function getSiteConfigWithProject(domain: string, headersList?: Headers): Promise<{ config: any | null; project: any | null }> {
+export const getSiteConfigWithProject = cache(async (domain: string, headersList?: Headers): Promise<{ config: any | null; project: any | null }> => {
   const isPreview = headersList?.get('x-preview-mode') === 'true';
   const projectId = headersList?.get('x-project-id') || undefined;
   const requestId = headersList?.get('x-request-id') || undefined;
@@ -378,4 +381,99 @@ export async function getSiteConfigWithProject(domain: string, headersList?: Hea
     console.error("Error reading site-data.json:", error);
     return { config: null, project };
   }
+});
+
+// ---------------------------------------------------------------------------
+// Cached version for public (non-preview) routes
+// Cache is keyed per domain with tag `site:{domain}` and a 120s TTL.
+// Preview mode, projectId overrides, and requestId previews always bypass
+// the cache and call getSiteConfigWithProject directly.
+//
+// NOTE: unstable_cache is intentionally created fresh on every call (no
+// module-level Map memoization). Next.js deduplicates by cache key internally,
+// and a module-level Map would prevent revalidateTag from working correctly
+// because the old stale closure would persist in the same process instance.
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Service-client-based DB fetch — safe to use inside unstable_cache because
+// it does NOT call cookies() or headers() (those are banned in cache context).
+// ---------------------------------------------------------------------------
+async function fetchSiteConfigFromDB(domain: string): Promise<{ config: any | null; project: any | null }> {
+  try {
+    const supabase = createServiceClient();
+
+    const { data } = await supabase
+      .from("projects")
+      .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+      .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`)
+      .limit(1);
+
+    let dbRow = data?.[0];
+
+    if (!dbRow) {
+      const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com').toLowerCase();
+      if (domain.endsWith(`.${ROOT_DOMAIN}`)) {
+        const sub = domain.slice(0, -(ROOT_DOMAIN.length + 1));
+        const { data: subData } = await supabase
+          .from("projects")
+          .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+          .eq("subdomain", sub)
+          .limit(1);
+        dbRow = subData?.[0];
+      }
+    }
+
+    if (!dbRow) {
+      const { data: ciData } = await supabase
+        .from("projects")
+        .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+        .ilike("subdomain", domain)
+        .limit(1);
+      dbRow = ciData?.[0];
+    }
+
+    if (dbRow) {
+      const hasCurrent = dbRow.current_config && Object.keys(dbRow.current_config).length > 0;
+      const config = hasCurrent ? dbRow.current_config : dbRow.draft_config;
+      if (config && Object.keys(config).length > 0) {
+        return { config, project: dbRow };
+      }
+    }
+  } catch (error) {
+    console.error("[fetchSiteConfigFromDB] Error:", error);
+  }
+
+  // Fallback to site-data.json
+  try {
+    const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
+    return { config: JSON.parse(raw), project: null };
+  } catch {
+    return { config: null, project: null };
+  }
+}
+
+export async function getCachedSiteConfig(
+  domain: string,
+  headersList?: Headers
+): Promise<{ config: any | null; project: any | null }> {
+  const isPreview = headersList?.get("x-preview-mode") === "true";
+  const projectId = headersList?.get("x-project-id") || undefined;
+  const requestId = headersList?.get("x-request-id") || undefined;
+
+  // Never cache preview, projectId, or requestId requests — always live
+  if (isPreview || projectId || requestId) {
+    return getSiteConfigWithProject(domain, headersList);
+  }
+
+  const fetcher = unstable_cache(
+    async (d: string) => fetchSiteConfigFromDB(d),
+    [`site:${domain}`],
+    {
+      tags: [`site:${domain}`],
+      revalidate: 120,
+    }
+  );
+
+  return fetcher(domain);
 }

@@ -1,22 +1,51 @@
 "use client";
 
-import * as Icons from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import React from "react";
+import React, { Suspense, useMemo } from "react";
+import dynamic from "next/dynamic";
+import dynamicIconImports from "lucide-react/dynamicIconImports";
+import { Circle } from "lucide-react";
 
 /**
- * DynamicIcon
- * Resolves a Lucide icon component by its string name at runtime.
- * Falls back to a neutral icon when the name is missing or unknown.
+ * Converts PascalCase to kebab-case
+ * Example: "MapPin" -> "map-pin", "Circle" -> "circle"
  */
-export function getLucideIcon(name?: string): LucideIcon {
-  const lib = Icons as Record<string, any>;
-  const fallback = (lib["Circle"] || lib["Dot"] || lib["Square"]) as LucideIcon;
-  if (!name) return fallback;
-  const Icon = lib[name] as LucideIcon | undefined;
-  return Icon ?? fallback;
+function toKebabCase(str: string): string {
+  return str.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
-export default function DynamicIcon({ name, className, strokeWidth = 2 }: { name?: string; className?: string; strokeWidth?: number }) {
-  return React.createElement(getLucideIcon(name), { className, strokeWidth });
+type IconName = keyof typeof dynamicIconImports;
+
+export default function DynamicIcon({
+  name,
+  className,
+  strokeWidth = 2,
+}: {
+  name?: string;
+  className?: string;
+  strokeWidth?: number;
+}) {
+  const IconComponent = useMemo(() => {
+    if (!name) return null;
+
+    // Parse the given name to kebab-case to match dynamicIconImports keys
+    const kebabName = toKebabCase(name) as IconName;
+
+    // Check if it's a valid icon in the registry
+    if (kebabName in dynamicIconImports) {
+      return dynamic(dynamicIconImports[kebabName]);
+    }
+
+    return null;
+  }, [name]);
+
+  if (!IconComponent) {
+    // Fallback neutral icon
+    return <Circle className={className} strokeWidth={strokeWidth} />;
+  }
+
+  return (
+    <Suspense fallback={<div className={className} style={{ width: '1em', height: '1em', display: 'inline-block', opacity: 0.5 }} />}>
+      <IconComponent className={className} strokeWidth={strokeWidth} />
+    </Suspense>
+  );
 }

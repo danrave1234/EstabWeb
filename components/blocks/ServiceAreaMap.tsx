@@ -1,12 +1,13 @@
 "use client";
 
 import { MapPinIcon } from "@phosphor-icons/react";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type ServiceAreaMapProps = {
   title?: string;
   subtitle?: string;
   cities: string[];
-  googleMapsEmbedUrl?: string;
+  mapEmbedUrl?: string;
   cantFindCityTitle?: string;
   cantFindCityDescription?: string;
 };
@@ -15,7 +16,7 @@ export default function ServiceAreaMap({
   title = "Our Service Areas",
   subtitle = "We proudly serve the following locations",
   cities = ["Cebu City", "Mandaue", "Lapu-Lapu"],
-  googleMapsEmbedUrl,
+  mapEmbedUrl,
   cantFindCityTitle = "Can't find your city?",
   cantFindCityDescription = "We are constantly expanding our reach. Contact us to check if we can service your specific location.",
 }: ServiceAreaMapProps) {
@@ -52,20 +53,22 @@ export default function ServiceAreaMap({
             </div>
           </div>
 
-          <div className="aspect-video w-full rounded-2xl overflow-hidden border border-border bg-muted shadow-lg">
-            {googleMapsEmbedUrl ? (
+          <div 
+            className="aspect-video w-full rounded-2xl overflow-hidden border border-border bg-muted shadow-lg cursor-pointer group"
+            onClick={() => trackEvent({ type: 'map_interact', section_key: 'service_area', metadata: { action: 'map_click' } })}
+          >
+            {mapEmbedUrl ? (
               <iframe
-                src={googleMapsEmbedUrl}
+                src={mapEmbedUrl}
                 className="w-full h-full border-0"
                 allowFullScreen
                 loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
               />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground bg-muted/50 p-8 text-center">
                 <MapPinIcon weight="duotone" className="w-12 h-12 mb-4 opacity-20" />
                 <p className="text-sm font-medium">Interactive map will be displayed here.</p>
-                <p className="text-xs opacity-60 mt-1">Configure Google Maps Embed URL in settings.</p>
+                <p className="text-xs opacity-60 mt-1">Search and pin a location in the editor.</p>
               </div>
             )}
           </div>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import { trackEvent, trackLead } from "@/components/shared/Analytics";
 
 export type HeroSaasProps = {
   title: string;
@@ -31,7 +32,7 @@ export default function HeroSaas({
       <div className="container mx-auto px-4 py-10 md:py-24 lg:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-8 lg:gap-12 items-center">
             <div className="lg:col-span-6 space-y-3 sm:space-y-4">
-              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground order-1 lg:order-none lg:mb-0 text-center lg:text-left leading-tight">
+              <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground order-1 lg:order-none lg:mb-0 text-center lg:text-left leading-tight">
                 {title}
               </h1>
               <p className="text-sm sm:text-lg md:text-xl text-muted-foreground order-2 lg:order-none lg:mb-0 text-center lg:text-left max-w-xl lg:max-w-none leading-relaxed">
@@ -40,12 +41,18 @@ export default function HeroSaas({
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start order-4 lg:order-none">
                 <a
                   href={primaryCTAHref}
+                  onClick={() => {
+                    trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_primary' });
+                    if (primaryCTAHref === '#contact') trackLead('form');
+                    else if (primaryCTAHref.startsWith('tel:')) trackLead('call');
+                  }}
                   className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] px-4 sm:px-8 py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 transition-opacity shadow-lg touch-manipulation text-[10px] sm:text-base text-center"
                 >
                   {primaryCTA}
                 </a>
                 <a
                   href={secondaryCTAHref}
+                  onClick={() => trackEvent({ type: 'cta_click', section_key: 'hero', cta_id: 'hero_secondary' })}
                   className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] px-4 sm:px-8 py-2 sm:py-4 bg-background text-foreground font-bold rounded-lg border border-border hover:bg-muted/50 transition-colors touch-manipulation text-[10px] sm:text-base text-center"
                 >
                   {secondaryCTA}

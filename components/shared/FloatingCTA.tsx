@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Phone, Calendar, ArrowUp } from "lucide-react";
+import { trackEvent } from "@/components/shared/Analytics";
+import { useProjectId } from "@/components/shared/Analytics";
 
 export type FloatingCTAProps = {
   phone?: string;
@@ -16,10 +18,10 @@ export default function FloatingCTA({
 }: FloatingCTAProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const projectId = useProjectId();
 
   useEffect(() => {
     const toggleVisibility = () => {
-      // Show after scrolling 300px
       if (window.pageYOffset > 300) {
         setIsVisible(true);
         setShowScrollTop(true);
@@ -33,34 +35,51 @@ export default function FloatingCTA({
     return () => window.removeEventListener("scroll", toggleVisibility);
   }, []);
 
+  function handleCtaClick(section: string, ctaId: string) {
+    trackEvent({
+      type: "cta_click",
+      project_id: projectId,
+      section_key: section,
+      cta_id: ctaId,
+    });
+  }
+
   return (
-    <div className={`fixed bottom-6 right-6 z-50 flex flex-col gap-3 transition-all duration-500 transform ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0 pointer-events-none"}`}>
-      
+    <div
+      className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] flex flex-col items-end gap-3 transition-all duration-500 transform pointer-events-none ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+        }`}
+    >
+
       {/* Back to Top */}
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="flex h-10 w-10 items-center justify-center rounded-full bg-background border border-border shadow-lg text-foreground hover:bg-muted transition-colors"
-        aria-label="Back to top"
-      >
-        <ArrowUp className="w-5 h-5" />
-      </button>
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-background border border-border shadow-lg text-foreground hover:bg-muted transition-colors pointer-events-auto"
+          aria-label="Back to top"
+        >
+          <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
+        </button>
+      )}
 
       {/* Main CTA */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         {phone && (
           <a
             href={`tel:${phone}`}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-background border-2 border-primary shadow-xl text-primary hover:bg-primary hover:text-primary-foreground transition-all group"
+            onClick={() => handleCtaClick("sticky", "phone")}
+            className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-background border-2 border-primary shadow-2xl text-primary hover:bg-primary hover:text-primary-foreground transition-all group animate-in fade-in zoom-in duration-500 pointer-events-auto"
           >
-            <Phone className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            <Phone className="w-5 h-5 sm:w-6 h-6 group-hover:rotate-12 transition-transform" />
           </a>
         )}
         <a
           href={ctaHref}
-          className="flex h-12 items-center gap-2 rounded-full bg-primary px-6 font-bold text-primary-foreground shadow-2xl hover:scale-105 active:scale-95 transition-all"
+          onClick={() => handleCtaClick("sticky", "primary")}
+          className="font-serif flex h-12 sm:h-14 items-center gap-3 rounded-2xl bg-primary px-6 sm:px-8 font-black text-primary-foreground shadow-2xl hover:scale-105 active:scale-95 transition-all animate-in fade-in zoom-in duration-500 delay-100 pointer-events-auto"
         >
-          <Calendar className="w-5 h-5" />
-          <span className="text-sm whitespace-nowrap">{ctaText}</span>
+          <Calendar className="w-5 h-5 sm:w-6 h-6" />
+          <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] whitespace-nowrap hidden sm:inline">{ctaText}</span>
+          <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] whitespace-nowrap inline sm:hidden">Book</span>
         </a>
       </div>
     </div>

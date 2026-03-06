@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
-import ReviewRequestClient from './ReviewRequestClient'
+import RequestReviewClient from './RequestReviewClient'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,20 +19,13 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
 
   if (profile?.role !== 'admin') return redirect('/dashboard')
 
-  // Fetch request with project and profiles
+  // Fetch request with project — profiles join is done separately to avoid
+  // notFound() when the requesting user's profile has been deleted
   const { data: request, error } = await supabase
     .from('change_requests')
     .select(`
       *,
-      projects (
-        *,
-        profiles:client_id (
-          email
-        )
-      ),
-      profiles:requested_by (
-        email
-      )
+      projects (*)
     `)
     .eq('id', id)
     .single()
@@ -42,5 +35,21 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
     return notFound()
   }
 
-  return <ReviewRequestClient request={request} />
+  // Optionally enrich with requester email — non-fatal if missing
+  let requesterEmail: string | null = null
+  if (request.requested_by) {
+    const { data: requesterProfile } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('id', request.requested_by)
+      .maybeSingle()
+    requesterEmail = requesterProfile?.email ?? null
+  }
+
+  const enrichedRequest = {
+    ...request,
+    profiles: requesterEmail ? { email: requesterEmail } : null,
+  }
+
+  return <RequestReviewClient request={enrichedRequest} />
 }

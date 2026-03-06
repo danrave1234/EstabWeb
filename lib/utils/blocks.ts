@@ -10,6 +10,10 @@ import { BLOCK_MAP } from "@/lib/utils/block-registry";
 
 /** @deprecated Use BLOCK_MAP[id].navEntry from block-registry.ts instead. */
 export const PAGE_CATEGORY_LABELS: Record<string, string> = {
+  "hero": "Home",
+  "hero--emergency": "Home",
+  "hero--video": "Home",
+  "hero--split": "Home",
   "review-trust-bar": "Reviews",
   "reviews-grid": "Reviews",
   "facebook-review-embed": "Reviews",
@@ -165,6 +169,8 @@ export function slugify(value: string): string {
  * Prefers the registry `label` field; falls back to the legacy map.
  */
 export function categoryLabelForSection(sectionId: string): string {
+  // Hero sections always represent the home page
+  if (sectionId === "hero" || sectionId.startsWith("hero--") || sectionId === "hero-emergency") return "Home";
   const block = BLOCK_MAP[sectionId];
   if (block?.label) return block.label;
   return PAGE_CATEGORY_LABELS[sectionId] || "";

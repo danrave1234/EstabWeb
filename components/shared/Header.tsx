@@ -80,14 +80,15 @@ export default function Header({
     .toUpperCase();
 
   const isFloating = headerStyle === "floating";
+  const mobileNavId = "site-mobile-nav";
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-        isFloating
-          ? "bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/5"
-          : "bg-background/95 backdrop-blur-md border-b border-border"
-      }`}
+      data-section-id="brand"
+      className={`sticky top-0 z-50 w-full transition-all duration-300 ${isFloating
+        ? "bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/5"
+        : "bg-background/95 backdrop-blur-md border-b border-border"
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-18">
@@ -113,25 +114,25 @@ export default function Header({
                 />
               )
             ) : (
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">
+              <div className="w-10 h-10 border-2 border-primary/20 rounded-xl flex items-center justify-center group-hover:border-primary/40 transition-colors">
+                <span className="text-primary font-bold text-sm">
                   {initials}
                 </span>
               </div>
             )}
-            <span className="font-bold text-lg tracking-tight text-foreground hidden sm:inline">
+            <span className="font-serif font-bold text-lg tracking-tight text-foreground hidden sm:inline">
               {brandName}
             </span>
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav aria-label="Primary" className="hidden md:flex items-center gap-1">
             {navigation.map((item) => (
               isInternalRoute(item.href) ? (
                 <Link
                   key={item.name}
                   href={buildHref(item.href)}
-                  className="px-4 py-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2"
+                  className="font-serif px-4 py-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2"
                 >
                   {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
                   {item.name}
@@ -140,7 +141,7 @@ export default function Header({
                 <a
                   key={item.name}
                   href={buildHref(item.href)}
-                  className="px-4 py-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2"
+                  className="font-serif px-4 py-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2"
                 >
                   {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
                   {item.name}
@@ -155,7 +156,7 @@ export default function Header({
               isInternalRoute(ctaHref) ? (
                 <Link
                   href={buildHref(ctaHref)}
-                  className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+                  className="font-serif px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors"
                 >
                   {ctaText}
                 </Link>
@@ -165,7 +166,7 @@ export default function Header({
                   onClick={() => {
                     if (ctaHref.startsWith('tel:')) trackLead('call');
                   }}
-                  className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+                  className="font-serif px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors"
                 >
                   {ctaText}
                 </a>
@@ -176,6 +177,9 @@ export default function Header({
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            aria-controls={mobileNavId}
             className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-foreground hover:bg-muted transition-colors"
           >
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -186,14 +190,14 @@ export default function Header({
       {/* Mobile nav */}
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background">
-          <nav className="px-4 py-4 flex flex-col gap-1">
+          <nav id={mobileNavId} aria-label="Mobile Primary" className="px-4 py-4 flex flex-col gap-1">
             {navigation.map((item) => (
               isInternalRoute(item.href) ? (
                 <Link
                   key={item.name}
                   href={buildHref(item.href)}
                   onClick={() => setMobileOpen(false)}
-                  className="py-3 px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl font-medium transition-colors flex items-center gap-2"
+                  className="font-serif py-3 px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl font-medium transition-colors flex items-center gap-2"
                 >
                   {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
                   {item.name}
@@ -203,7 +207,7 @@ export default function Header({
                   key={item.name}
                   href={buildHref(item.href)}
                   onClick={() => setMobileOpen(false)}
-                  className="py-3 px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl font-medium transition-colors flex items-center gap-2"
+                  className="font-serif py-3 px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl font-medium transition-colors flex items-center gap-2"
                 >
                   {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
                   {item.name}
@@ -215,7 +219,7 @@ export default function Header({
                 <Link
                   href={buildHref(ctaHref)}
                   onClick={() => setMobileOpen(false)}
-                  className="mt-2 py-3 px-4 bg-primary text-primary-foreground text-center font-semibold rounded-xl hover:bg-primary/90"
+                  className="font-serif mt-2 py-3 px-4 bg-primary text-primary-foreground text-center font-semibold rounded-xl hover:bg-primary/90"
                 >
                   {ctaText}
                 </Link>
@@ -226,7 +230,7 @@ export default function Header({
                     setMobileOpen(false);
                     if (ctaHref.startsWith('tel:')) trackLead('call');
                   }}
-                  className="mt-2 py-3 px-4 bg-primary text-primary-foreground text-center font-semibold rounded-xl hover:bg-primary/90"
+                  className="font-serif mt-2 py-3 px-4 bg-primary text-primary-foreground text-center font-semibold rounded-xl hover:bg-primary/90"
                 >
                   {ctaText}
                 </a>

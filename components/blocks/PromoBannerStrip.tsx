@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { TimerIcon, SparkleIcon } from "@phosphor-icons/react";
 import { X } from "lucide-react";
+import { trackEvent } from "@/components/shared/Analytics";
 
 export type PromoBannerStripProps = {
   text?: string;
@@ -72,7 +73,7 @@ export default function PromoBannerStrip({
     <div className="relative bg-primary text-primary-foreground py-2 px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 text-center z-[60] shadow-md border-b border-white/10">
       <div className="flex items-center gap-2">
         <SparkleIcon weight="duotone" className="w-4 h-4 text-accent animate-pulse" />
-        <p className="text-xs sm:text-sm font-bold uppercase tracking-wide">
+        <p className="font-serif text-xs sm:text-sm font-bold uppercase tracking-wide">
           {text}
         </p>
       </div>
@@ -93,7 +94,8 @@ export default function PromoBannerStrip({
       {buttonText && (
         <a 
           href={buttonHref}
-          className="bg-accent text-accent-foreground px-4 py-1 rounded-full text-[10px] sm:text-xs font-bold hover:scale-105 transition-transform"
+          onClick={() => trackEvent({ type: 'cta_click', section_key: 'announcement_bar', cta_id: 'banner_cta' })}
+          className="font-serif bg-accent text-accent-foreground px-4 py-1 rounded-full text-[10px] sm:text-xs font-bold hover:scale-105 transition-transform"
         >
           {buttonText}
         </a>
