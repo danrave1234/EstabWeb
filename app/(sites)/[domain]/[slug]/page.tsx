@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
 import SiteTemplate from "@/components/shared/SiteTemplate";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
 import { getCachedSiteConfig } from "@/lib/utils/site-config";
@@ -24,8 +24,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { domain, slug } = await params;
   const heads = await headers();
-  const host = heads.get("host") || domain;
-  const { config } = await getCachedSiteConfig(domain, heads);
+  const host = (heads.get("host") || domain).toLowerCase();
+  const { config, project } = await getCachedSiteConfig(domain, heads);
+  const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase();
+  const preferredHost =
+    project?.custom_domain && isProPlan(project)
+      ? project.custom_domain.toLowerCase()
+      : project?.subdomain
+        ? `${project.subdomain}.${ROOT_DOMAIN}`.toLowerCase()
+        : host;
 
   const pages = normalizePagesWithDefaults(config?.pages);
   const page = getPageBySlug(pages, slug);
@@ -40,7 +47,7 @@ export async function generateMetadata({
   const brand = config?.brand || {};
   const brandName = brand.name || domain;
   const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
-  const canonical = `https://${host}${resolvedSeo.canonical}`;
+  const canonical = `https://${preferredHost}${resolvedSeo.canonical}`;
 
   return {
     title: resolvedSeo.title,
@@ -68,7 +75,7 @@ export async function generateMetadata({
       shortcut: iconUrl,
       apple: iconUrl,
     },
-    metadataBase: new URL(`https://${host}`),
+    metadataBase: new URL(`https://${preferredHost}`),
     alternates: {
       canonical,
     },
@@ -83,6 +90,7 @@ export default async function SubPage({
   const { domain, slug } = await params;
   const heads = await headers();
   const preview = heads.get("x-preview-mode") === "true";
+  const host = heads.get("host")?.split(":")[0]?.toLowerCase() || "";
 
   // Legal pages have their own dedicated routes - never handle them here
   if (isLegalPageSlug(slug)) {
@@ -91,14 +99,13 @@ export default async function SubPage({
 
   const { config: initialData, project } = await getCachedSiteConfig(domain, heads);
 
+  // Prefer custom domain as canonical host when subscription is active.
+  if (!preview && project?.custom_domain && isProPlan(project) && host !== project.custom_domain.toLowerCase()) {
+    permanentRedirect(`https://${project.custom_domain.toLowerCase()}/${slug}`);
+  }
+
   if (!initialData) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <p className="text-muted-foreground text-sm sm:text-base">
-          Configuration not found. Please check your domain.
-        </p>
-      </div>
-    );
+    notFound();
   }
 
   // If accessed via custom domain but subscription is lapsed, redirect to subdomain

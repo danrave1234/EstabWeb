@@ -12,6 +12,9 @@ const RESERVED_ROOT_PATHS = [
   "cookies",
   "contact",
   "success",
+  "sitemap.xml",
+  "robots.txt",
+  "favicon.ico",
 ]
 
 function isCommonPath(pathname: string): boolean {
@@ -84,8 +87,15 @@ export function resolveTenantRoute(input: ResolveTenantRouteInput): TenantRouteD
   }
 
   if (!isDevHost && !isStagingHost && !isVercelPreview && isRoot && url.pathname !== "/") {
-    const segment = url.pathname.replace(/^\/|\/$/g, "").split("/")[0]?.toLowerCase()
-    if (segment && !RESERVED_ROOT_PATHS.includes(segment) && !segment.includes(".")) {
+    const segments = url.pathname.replace(/^\/|\/$/g, "").split("/").filter(Boolean)
+    const segment = segments[0]?.toLowerCase()
+    const isSingleSegmentPath = segments.length === 1
+    if (
+      isSingleSegmentPath &&
+      segment &&
+      !RESERVED_ROOT_PATHS.includes(segment) &&
+      !segment.includes(".")
+    ) {
       const protocol =
         input.forwardedProto === "https" || url.protocol === "https:" ? "https" : "http"
       const tail = url.pathname.slice(segment.length + 1) || "/"

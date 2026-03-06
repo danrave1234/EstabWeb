@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { getSiteConfigWithProject } from "@/lib/utils/site-config";
 import { normalizePagesWithDefaults, canUseMultiPage, getMaxPagesForProject, getPlanLimits, isLegalPageSlug } from "@/lib/utils/site-pages";
+import { isProPlan } from "@/lib/subscription";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -12,10 +13,17 @@ export async function GET(
 ) {
   const { domain } = await params;
   const heads = await headers();
-  const host = heads.get("host") || domain;
-  const origin = `https://${host}`;
+  const host = (heads.get("host") || domain).toLowerCase();
+  const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase();
 
   const { config, project } = await getSiteConfigWithProject(domain, heads);
+  const preferredHost =
+    project?.custom_domain && isProPlan(project)
+      ? project.custom_domain.toLowerCase()
+      : project?.subdomain
+        ? `${project.subdomain}.${ROOT_DOMAIN}`.toLowerCase()
+        : host;
+  const origin = `https://${preferredHost}`;
 
   if (!config) {
     return new NextResponse("Not found", { status: 404 });
@@ -47,7 +55,7 @@ export async function GET(
 
   // Always include legal pages
   for (const slug of ["privacy", "terms", "cookies"]) {
-    urls.push({ loc: `${origin}/${slug}`, priority: "0.3", changefreq: "yearly" });
+    urls.push({ loc: `${origin}/${slug}`, priority: "0.3", changefreq: "monthly" });
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

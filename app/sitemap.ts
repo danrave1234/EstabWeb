@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next'
 import { headers } from 'next/headers'
 import { getSiteConfigWithProject } from '@/lib/utils/site-config'
 import { canUseMultiPage, getMaxPagesForProject, getPlanLimits, isLegalPageSlug, normalizePagesWithDefaults } from '@/lib/utils/site-pages'
+import { isProPlan } from '@/lib/subscription'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const headersList = await headers()
@@ -28,8 +29,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // For client sites
-  const baseUrl = `https://${host}`
+  const ROOT_DOMAIN_LOWER = ROOT_DOMAIN.toLowerCase()
   const { config, project } = await getSiteConfigWithProject(host, headersList)
+  const preferredHost =
+    project?.custom_domain && isProPlan(project)
+      ? project.custom_domain.toLowerCase()
+      : project?.subdomain
+        ? `${project.subdomain}.${ROOT_DOMAIN_LOWER}`.toLowerCase()
+        : host.toLowerCase()
+  const baseUrl = `https://${preferredHost}`
   const pages = normalizePagesWithDefaults(config?.pages)
   const planLimits = await getPlanLimits()
   const maxPages = getMaxPagesForProject(project, planLimits)

@@ -13,6 +13,7 @@ import { generateSchema } from "@/lib/utils/schema";
 import NetworkOfflineBanner from "@/components/shared/NetworkOfflineBanner";
 import { getPageBySlug, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
 import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo";
+import { isProPlan } from "@/lib/subscription";
 
 /**
  * Layout-level metadata provides sensible defaults and shared fields.
@@ -26,8 +27,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { domain } = await params;
   const heads = await headers();
-  const host = heads.get("host") || domain;
-  const { config } = await getSiteConfigWithProject(domain, heads);
+  const host = (heads.get("host") || domain).toLowerCase();
+  const { config, project } = await getSiteConfigWithProject(domain, heads);
+  const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase();
+  const preferredHost =
+    project?.custom_domain && isProPlan(project)
+      ? project.custom_domain.toLowerCase()
+      : project?.subdomain
+        ? `${project.subdomain}.${ROOT_DOMAIN}`.toLowerCase()
+        : host;
 
   const pages = normalizePagesWithDefaults(config?.pages);
   const homePage = getPageBySlug(pages, "");
@@ -46,14 +54,14 @@ export async function generateMetadata({
     // Fallback title - page.tsx and [slug]/page.tsx override this per-route.
     title: resolvedSeo.title || brand.name || domain,
     description: resolvedSeo.description || `Welcome to ${brand.name || domain}`,
-    metadataBase: new URL(`https://${host}`),
+    metadataBase: new URL(`https://${preferredHost}`),
     icons: {
       icon: iconUrl,
       shortcut: iconUrl,
       apple: iconUrl,
     },
     alternates: {
-      canonical: resolvedSeo.canonical || "/",
+      canonical: `https://${preferredHost}${resolvedSeo.canonical || "/"}`,
     },
   };
 }
