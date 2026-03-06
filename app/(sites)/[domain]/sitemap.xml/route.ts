@@ -29,11 +29,12 @@ export async function GET(
     return new NextResponse("Not found", { status: 404 });
   }
 
+  const lastmod = new Date().toISOString().split("T")[0];
   const pages = normalizePagesWithDefaults(config?.pages);
 
   // Always include home
-  const urls: { loc: string; priority: string; changefreq: string }[] = [
-    { loc: origin, priority: "1.0", changefreq: "weekly" },
+  const urls: { loc: string; priority: string; lastmod: string }[] = [
+    { loc: origin, priority: "1.0", lastmod },
   ];
 
   // Add sub-pages if plan allows
@@ -48,14 +49,14 @@ export async function GET(
       urls.push({
         loc: `${origin}/${page.slug}`,
         priority: "0.8",
-        changefreq: "weekly",
+        lastmod,
       });
     }
   }
 
   // Always include legal pages
   for (const slug of ["privacy", "terms", "cookies"]) {
-    urls.push({ loc: `${origin}/${slug}`, priority: "0.3", changefreq: "monthly" });
+    urls.push({ loc: `${origin}/${slug}`, priority: "0.3", lastmod });
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -64,7 +65,7 @@ ${urls
   .map(
     (u) => `  <url>
     <loc>${u.loc}</loc>
-    <changefreq>${u.changefreq}</changefreq>
+    <lastmod>${u.lastmod}</lastmod>
     <priority>${u.priority}</priority>
   </url>`
   )

@@ -8,6 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const headersList = await headers()
   const host = headersList.get('host') || 'estabweb.com'
   const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com'
+  const lastmod = new Date().toISOString().split('T')[0]
 
   const isRoot = host === ROOT_DOMAIN || host === `www.${ROOT_DOMAIN}` || host.includes('localhost')
 
@@ -22,8 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       '/cookies',
     ].map((route) => ({
       url: `${baseUrl}${route}`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
+      lastModified: lastmod,
       priority: route === '' ? 1 : 0.8,
     }))
   }
@@ -57,8 +57,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return routes.map((route) => ({
     url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: route === '' ? 'weekly' : 'monthly',
+    lastModified: lastmod,
     priority: route === '' ? 1 : 0.7,
   }))
 }
