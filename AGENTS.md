@@ -39,10 +39,13 @@
 - It handles onboarding suggestions, SEO content generation (titles, descriptions, keywords), and automatic content generation/editing for site sections.
 - **Rule**: AI operations must respect token limits and return cleanly formatted JSON that precisely matches the expected site config structure. Provide strict system prompts for the AI to prevent malformed config states.
 
-### 5. Premium UI & Aesthetics (CRITICAL)
-- **Design Standard**: The templates are the core offering. They must exude premium quality to WoW the client immediately.
-- **Implementation**: Avoid generic colors. Use curated, harmonious color palettes, modern typography, glassmorphism where appropriate, and subtle micro-animations (especially hover states and scroll reveals).
-- **Styling**: Tailwind CSS 4 is the primary tool. Global theme variables are housed in `app/themes.css`.
+### 5. Premium UI & Aesthetics - Anti-AI Patterns (CRITICAL)
+- **Design Standard**: DO NOT follow generic AI design patterns. The UI and any new sections must look intentionally **human-made** and professional.
+- **Implementation Rules**: 
+  - Do NOT make designs look overly "modern" with typical AI tropes (e.g., heavy glassmorphism, completely unstructured glowing gradients, excessive border-radiuses everywhere, or generic floating abstract blobs).
+  - Do NOT use typical AI-generated font scaling, generic font pairings, or typical AI color palettes (like generic deep purple/teal tech gradients).
+  - stick to natural, grounded, well-spaced, standard web patterns that look like they were built by a professional human agency, not an AI bot. Use straightforward, accessible, and functional styling.
+- **Styling**: Tailwind CSS 4 is the primary tool. Global theme variables are housed in `app/themes.css`. Keep layouts structured and clean without unnecessary visual fluff.
 
 ### 6. Component Boundaries & Performance
 - **Server / Client Separation**: Use Server Components for data fetching. Use `"use client"` strictly for interactive islands.
