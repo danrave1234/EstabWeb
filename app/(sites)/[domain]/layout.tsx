@@ -143,6 +143,9 @@ export default async function SiteLayout({
     // use defaults
   }
 
+  const rawBrandName = dbConf?.brand?.name === "Your Business Name" ? "" : dbConf?.brand?.name;
+  const fallbackBrandName = rawBrandName || formatDomainAsBrand(domain);
+
   return (
     <html
       lang="en"
@@ -161,9 +164,9 @@ export default async function SiteLayout({
               data={{
                 "@context": "https://schema.org",
                 "@type": "WebSite",
-                "name": dbConf.brand?.name || domain,
+                "name": fallbackBrandName,
                 "url": `https://${host}`,
-                "description": homeSeoDefaults?.description || `Welcome to ${dbConf.brand?.name || domain}`,
+                "description": homeSeoDefaults?.description || `Welcome to ${fallbackBrandName}`,
               }}
             />
             {(() => {
@@ -181,7 +184,7 @@ export default async function SiteLayout({
                 const defaultSchema: Record<string, unknown> = {
                   "@context": "https://schema.org",
                   "@type": schemaType,
-                  "name": dbConf.brand?.name || domain,
+                  "name": fallbackBrandName,
                   "url": `https://${host}`,
                 };
                 if (dbConf.brand?.logoUrl) defaultSchema["image"] = dbConf.brand.logoUrl;

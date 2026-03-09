@@ -55,9 +55,17 @@ export function generateSchema(type: SchemaType | undefined, config: Record<stri
   if (!type) return null
 
   const brand = config?.brand || {}
+  const rawBrandName = asText(brand.name)
+  const brandName = rawBrandName.toLowerCase() === "your business name" ? undefined : (rawBrandName || undefined)
   const contact = config?.contact || {}
+  const safeContact = {
+    ...contact,
+    email: asText(contact.email).toLowerCase().includes("example") ? undefined : contact.email,
+    phone: asText(contact.phone).includes("555-0100") ? undefined : contact.phone,
+    address: asText(contact.address).includes("CityName") || asText(contact.address).includes("123 Main") ? undefined : contact.address,
+  }
   const social = config?.footer?.social || {}
-  const addressText = asText(contact.address)
+  const addressText = asText(safeContact.address)
   const parsedAddress = addressText ? splitAddress(addressText) : {}
   const mapEmbedUrl = asText(config?.contactWithMap?.mapEmbedUrl || config?.serviceAreaMap?.mapEmbedUrl)
   const latLng = mapEmbedUrl ? parseLatLngFromEmbedUrl(mapEmbedUrl) : {}
@@ -75,11 +83,11 @@ export function generateSchema(type: SchemaType | undefined, config: Record<stri
       return cleanSchema({
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
-        name: brand.name || undefined,
+        name: brandName,
         url: config?.siteUrl || undefined,
         image: brand.logoUrl || undefined,
-        telephone: contact.phone || undefined,
-        email: contact.email || undefined,
+        telephone: safeContact.phone || undefined,
+        email: safeContact.email || undefined,
         sameAs: sameAs.length > 0 ? sameAs : undefined,
         hasMap: mapEmbedUrl || undefined,
         geo: latLng.latitude && latLng.longitude ? {
@@ -115,11 +123,11 @@ export function generateSchema(type: SchemaType | undefined, config: Record<stri
       return cleanSchema({
         "@context": "https://schema.org",
         "@type": "Article",
-        headline: brand.name || undefined,
+        headline: brandName,
         image: brand.logoUrl || undefined,
-        author: brand.name ? {
+        author: brandName ? {
           "@type": "Organization",
-          name: brand.name,
+          name: brandName,
         } : undefined,
       }) as object
 

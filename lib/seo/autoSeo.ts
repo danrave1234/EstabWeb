@@ -129,7 +129,7 @@ function getLocation(config: Record<string, any>): string {
   const byParts = [city, region, country].filter(Boolean).join(", ")
   if (byParts) return byParts
   const address = asText(config?.contact?.address ?? config?.location)
-  if (!address) return ""
+  if (!address || address.includes("CityName")) return ""
   return truncateAtWord(address.split(",").slice(0, 2).join(", "), 60)
 }
 
@@ -146,6 +146,12 @@ function inferStructuredType(page: Record<string, any>): StructuredDataType {
 
 function normalizeTitle(seed: string, brandName: string, location: string, theme: string, serviceHint: string): string {
   let title = asText(seed).replace(/(?:\s*[-|]\s*)?Your Business Name/ig, "")
+  if (location) {
+    title = title.replace(/\[City\s*Name\]/ig, location)
+  } else {
+    title = title.replace(/\s*in\s*\[City\s*Name\]/ig, "")
+    title = title.replace(/\[City\s*Name\]/ig, "")
+  }
   const mainService = serviceHint || theme || "Professional Services"
 
   if (!title) {
@@ -184,6 +190,12 @@ function normalizeTitle(seed: string, brandName: string, location: string, theme
 
 function normalizeDescription(seed: string, brandName: string, serviceHint: string, location: string, theme: string): string {
   let description = asText(seed).replace(/(?:\s*[-|]\s*)?Your Business Name/ig, "")
+  if (location) {
+    description = description.replace(/\[City\s*Name\]/ig, location)
+  } else {
+    description = description.replace(/\s*in\s*\[City\s*Name\]/ig, "")
+    description = description.replace(/\[City\s*Name\]/ig, "")
+  }
   const mainService = serviceHint || theme || "professional services"
   const where = location ? ` serving the ${location} area` : ""
 
