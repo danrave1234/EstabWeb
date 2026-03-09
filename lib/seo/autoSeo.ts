@@ -145,7 +145,7 @@ function inferStructuredType(page: Record<string, any>): StructuredDataType {
 }
 
 function normalizeTitle(seed: string, brandName: string, location: string, theme: string, serviceHint: string): string {
-  let title = asText(seed)
+  let title = asText(seed).replace(/(?:\s*[-|]\s*)?Your Business Name/ig, "")
   const mainService = serviceHint || theme || "Professional Services"
 
   if (!title) {
@@ -183,7 +183,7 @@ function normalizeTitle(seed: string, brandName: string, location: string, theme
 }
 
 function normalizeDescription(seed: string, brandName: string, serviceHint: string, location: string, theme: string): string {
-  let description = asText(seed)
+  let description = asText(seed).replace(/(?:\s*[-|]\s*)?Your Business Name/ig, "")
   const mainService = serviceHint || theme || "professional services"
   const where = location ? ` serving the ${location} area` : ""
 
