@@ -192,6 +192,15 @@ export const SECTION_KEY_TO_CONFIG_PROP: Record<string, string> = {
   "featured-properties-grid": "featuredListings",
   "financing-section": "financing",
   "developer-partners": "developerPartners",
+  // gym
+  "gym--programs": "gymPrograms",
+  "gym--schedule": "gymSchedule",
+  "gym--memberships": "gymMemberships",
+  "gym--trainers": "gymTrainers",
+  "gym--results": "gymResults",
+  "gym--facility": "gymFacility",
+  "gym--class-types": "gymClassTypes",
+  "gym--faq": "gymFaq",
 }
 
 /** Resolve the config property name for a given section key. Falls back to the key itself. */
@@ -224,7 +233,7 @@ export function applyOperations(
   config: Record<string, any>,
   operations: Operation[]
 ): Record<string, any> {
-  let newConfig = structuredClone(config)
+  const newConfig = structuredClone(config)
 
   for (const op of operations) {
     switch (op.type) {

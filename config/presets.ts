@@ -24,7 +24,8 @@ export type ThemeKey =
   | "generic"
   | "personal-portfolio"
   | "ecommerce"
-  | "photobooth";
+  | "photobooth"
+  | "gym";
 
 export type ColorThemeKey =
   | "partner"
@@ -71,7 +72,10 @@ export type ColorThemeKey =
   | "facebook-blue"
   | "nebula"
   | "flow"
-  | "mono";
+  | "mono"
+  | "gym-boutique"
+  | "gym-hardcore"
+  | "gym-functional";
 
 export type PresetContent = {
   brand?: { name: string; logoUrl: string };
@@ -115,6 +119,14 @@ export type PresetContent = {
   pricePreview?: { title?: string; items: { service: string; price: string; note?: string }[] };
   emergencyCTA?: { title?: string; subtitle?: string; buttonText?: string; phone?: string };
   maintenancePlans?: { title?: string; subtitle?: string; plans: { name: string; price: string; period: string; description: string; features: string[]; isPopular?: boolean }[] };
+  gymPrograms?: { title?: string; subtitle?: string; items: { name: string; tagline?: string; schedule?: string; coach?: string; intensity?: string; icon?: string }[] };
+  gymSchedule?: { title?: string; subtitle?: string; days: { day: string; classes: { time: string; name: string; coach?: string; studio?: string }[] }[] };
+  gymMemberships?: { title?: string; subtitle?: string; tiers: { name: string; price: string; period?: string; description?: string; perks: string[]; isPopular?: boolean; ctaLabel?: string; ctaHref?: string }[] };
+  gymTrainers?: { title?: string; subtitle?: string; items: { name: string; role: string; specialty?: string; yearsExperience?: string; imageUrl?: string }[] };
+  gymResults?: { title?: string; subtitle?: string; stories: { name: string; result: string; timeframe?: string; quote?: string; beforeImage?: string; afterImage?: string }[] };
+  gymFacility?: { title?: string; subtitle?: string; items: { name: string; description?: string; icon?: string; imageUrl?: string }[] };
+  gymClassTypes?: { title?: string; subtitle?: string; items: { name: string; duration?: string; level?: string; description?: string; icon?: string }[] };
+  gymFaq?: { title?: string; subtitle?: string; items: { question: string; answer: string }[] };
   beforeAfterGallery?: { title?: string; subtitle?: string; items: { title: string; beforeImage: string; afterImage: string; description?: string }[] };
   promoCTA?: { title?: string; subtitle?: string; promoBadge?: string; buttonText?: string; buttonHref?: string; phone?: string; countdownEndDate?: string; backgroundImage?: string };
   featuredListings?: { title?: string; subtitle?: string; viewDetailsLabel?: string; sqmLabel?: string; items: { title: string; location: string; price: string; imageUrl: string; beds: number; baths: number; sqm: number; tag?: string }[] };
@@ -1040,7 +1052,143 @@ const ECOMMERCE_CONTENT: PresetContent = {
   },
 };
 
+const GYM_BOUTIQUE_CONTENT: PresetContent = {
+  ...GENERIC_CONTENT,
+  brand: { name: "Atelier Strength Studio", logoUrl: "https://placehold.co/80x80/4c1d95/ffffff?text=AS" },
+  hero: {
+    layout: "boutique",
+    title: "Personalized Coaching, Studio Energy.",
+    subtitle: "Small-group strength sessions designed for busy professionals who want measurable results.",
+    primaryCTA: "Book Intro Session",
+    secondaryCTA: "See Schedule",
+    benefitText: "Coach-Led Programs",
+    localCoverage: "Open Daily 6AM - 10PM",
+    promoText: "Free Movement Assessment",
+    backgroundImage: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=1200&q=80",
+  },
+  gymPrograms: {
+    title: "Signature Programs",
+    subtitle: "Progressive tracks for strength, body composition, and functional performance.",
+    items: [
+      { name: "Strength Foundations", tagline: "Build confidence with form-first lifting.", schedule: "Mon/Wed/Fri - 6:00 PM", coach: "Coach Bea", intensity: "Beginner", icon: "Dumbbell" },
+      { name: "Sculpt & Tone", tagline: "High-energy training for lean muscle and endurance.", schedule: "Tue/Thu/Sat - 7:00 AM", coach: "Coach Sam", intensity: "Intermediate", icon: "Flame" },
+      { name: "Power Lab", tagline: "Advanced progressive overload cycles.", schedule: "Tue/Thu - 7:30 PM", coach: "Coach Nico", intensity: "Advanced", icon: "Zap" },
+    ],
+  },
+  gymSchedule: {
+    title: "Studio Class Flow",
+    subtitle: "Reserve your slot and train with a consistent rhythm each week.",
+    days: [
+      { day: "Monday", classes: [{ time: "6:00 AM", name: "Functional Lift", coach: "Coach Bea", studio: "Main Floor" }, { time: "6:30 PM", name: "Sculpt Circuit", coach: "Coach Sam", studio: "Studio A" }] },
+      { day: "Wednesday", classes: [{ time: "5:30 AM", name: "Athletic Conditioning", coach: "Coach Nico", studio: "Performance Zone" }, { time: "7:00 PM", name: "Strength Foundations", coach: "Coach Bea", studio: "Main Floor" }] },
+      { day: "Saturday", classes: [{ time: "8:00 AM", name: "Weekend Burn", coach: "Coach Team", studio: "Studio A" }, { time: "10:00 AM", name: "Mobility Reset", coach: "Coach Aya", studio: "Recovery Room" }] },
+    ],
+  },
+  gymMemberships: {
+    title: "Membership Options",
+    subtitle: "Flexible plans for every training frequency and coaching need.",
+    tiers: [
+      { name: "Essential", price: "PHP 2,200", period: "/month", description: "Best for 2 to 3 sessions weekly.", perks: ["Open gym access", "1 onboarding session", "Locker access"], ctaLabel: "Choose Essential", ctaHref: "#contact" },
+      { name: "Signature", price: "PHP 3,800", period: "/month", description: "Unlimited classes and monthly progress checks.", perks: ["Unlimited group classes", "Monthly body composition scan", "Priority booking"], isPopular: true, ctaLabel: "Start Signature", ctaHref: "#contact" },
+      { name: "Private Elite", price: "PHP 7,500", period: "/month", description: "Premium coaching and tailored programming.", perks: ["Weekly 1:1 coaching", "Custom plan updates", "Nutrition support"], ctaLabel: "Apply for Elite", ctaHref: "#contact" },
+    ],
+  },
+  gymTrainers: {
+    title: "Meet Your Coaches",
+    subtitle: "Highly engaged coaches committed to form quality, progression, and accountability.",
+    items: [
+      { name: "Coach Mara", role: "Head Strength Coach", specialty: "Powerlifting & Fundamentals", yearsExperience: "8 years", imageUrl: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=800&q=80" },
+      { name: "Coach Nico", role: "Performance Coach", specialty: "Conditioning & Fat Loss", yearsExperience: "6 years", imageUrl: "https://images.unsplash.com/photo-1614283233556-f35b0c801ef1?w=800&q=80" },
+      { name: "Coach Aya", role: "Mobility Coach", specialty: "Recovery & Movement Quality", yearsExperience: "5 years", imageUrl: "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=800&q=80" },
+    ],
+  },
+  gymResults: {
+    title: "Member Results",
+    subtitle: "Progress stories from members who committed to structured training.",
+    stories: [
+      { name: "Anne P.", result: "-8kg and improved posture", timeframe: "12 weeks", quote: "I finally have a routine that I can sustain.", beforeImage: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=700&q=80", afterImage: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=700&q=80" },
+      { name: "Carlo M.", result: "+35kg deadlift PR", timeframe: "16 weeks", quote: "The coaching cues and structure made a huge difference.", beforeImage: "https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?w=700&q=80", afterImage: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=700&q=80" },
+    ],
+  },
+  gymFacility: {
+    title: "Facility Highlights",
+    subtitle: "Train in a clean, high-performance environment with complete equipment.",
+    items: [
+      { name: "Strength Zone", description: "Racks, platforms, and calibrated plates for serious lifting.", icon: "Dumbbell", imageUrl: "https://images.unsplash.com/photo-1570829460005-c840387bb1ca?w=1000&q=80" },
+      { name: "Conditioning Turf", description: "Sled lanes and functional equipment for high-intensity sessions.", icon: "Activity", imageUrl: "https://images.unsplash.com/photo-1558611848-73f7eb4001a1?w=1000&q=80" },
+      { name: "Recovery Corner", description: "Stretching and mobility space to reduce soreness and injury risk.", icon: "HeartPulse", imageUrl: "https://images.unsplash.com/photo-1599058917765-a780eda07a3e?w=1000&q=80" },
+    ],
+  },
+  gymClassTypes: {
+    title: "Class Types",
+    subtitle: "Choose your class format by intensity, duration, and fitness objective.",
+    items: [
+      { name: "Strength 45", duration: "45 mins", level: "Beginner to Intermediate", description: "Foundational barbell and dumbbell work with coaching support.", icon: "Dumbbell" },
+      { name: "MetCon 30", duration: "30 mins", level: "All Levels", description: "Short, efficient conditioning circuits for stamina and fat loss.", icon: "Flame" },
+      { name: "Mobility Reset", duration: "40 mins", level: "All Levels", description: "Recovery-focused movement sessions for flexibility and joint health.", icon: "HeartPulse" },
+    ],
+  },
+  gymFaq: {
+    title: "Gym FAQs",
+    subtitle: "Quick answers before your first session.",
+    items: [
+      { question: "Do I need prior gym experience?", answer: "No. We have beginner-friendly options and guided onboarding sessions." },
+      { question: "Can I freeze my membership?", answer: "Yes, freeze policies depend on your selected membership plan." },
+      { question: "Is there parking available?", answer: "Yes, we provide nearby parking options for members." },
+    ],
+  },
+};
+
+const GYM_HARDCORE_CONTENT: PresetContent = {
+  ...GYM_BOUTIQUE_CONTENT,
+  brand: { name: "Iron District Gym", logoUrl: "https://placehold.co/80x80/111827/ffffff?text=ID" },
+  hero: {
+    ...GYM_BOUTIQUE_CONTENT.hero,
+    layout: "hardcore",
+    title: "No Excuses. Just Work.",
+    subtitle: "Heavy lifts, hard conditioning, and coaches that push your limits safely.",
+    benefitText: "Powerlifting + Conditioning",
+    promoText: "7-Day Trial Pass",
+    backgroundImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
+  },
+};
+
+const GYM_FUNCTIONAL_CONTENT: PresetContent = {
+  ...GYM_BOUTIQUE_CONTENT,
+  brand: { name: "Pulse Functional Club", logoUrl: "https://placehold.co/80x80/0f766e/ffffff?text=PF" },
+  hero: {
+    ...GYM_BOUTIQUE_CONTENT.hero,
+    layout: "functional",
+    title: "Move Better. Feel Stronger.",
+    subtitle: "Functional training for mobility, stamina, and sustainable strength.",
+    benefitText: "Mobility + Conditioning",
+    promoText: "Free Intro Workout",
+    backgroundImage: "https://images.unsplash.com/photo-1599058918144-1ffabb6ab9a0?w=1200&q=80",
+  },
+};
+
 export const GENRE_PRESETS: Record<string, GenrePreset> = {
+  gym_boutique: {
+    theme: "gym",
+    colorTheme: "gym-boutique",
+    typographyStyle: "bold",
+    activeSections: ["hero", "gym--programs", "gym--class-types", "gym--schedule", "gym--trainers", "gym--results", "gym--facility", "gym--memberships", "gym--faq", "testimonials", "contact"],
+    content: GYM_BOUTIQUE_CONTENT,
+  },
+  gym_hardcore: {
+    theme: "gym",
+    colorTheme: "gym-hardcore",
+    typographyStyle: "bold",
+    activeSections: ["hero", "gym--programs", "gym--class-types", "gym--schedule", "gym--trainers", "gym--results", "gym--facility", "gym--memberships", "gym--faq", "testimonials", "contact"],
+    content: GYM_HARDCORE_CONTENT,
+  },
+  gym_functional: {
+    theme: "gym",
+    colorTheme: "gym-functional",
+    typographyStyle: "modern",
+    activeSections: ["hero", "gym--programs", "gym--class-types", "gym--schedule", "gym--trainers", "gym--results", "gym--facility", "gym--memberships", "gym--faq", "testimonials", "contact-with-map"],
+    content: GYM_FUNCTIONAL_CONTENT,
+  },
   cleaning: {
     theme: "cleaning",
     colorTheme: "eco-clean",
@@ -1169,6 +1317,9 @@ export const GENRE_PRESETS: Record<string, GenrePreset> = {
 };
 
 export const GENRE_LABELS: Record<string, string> = {
+  gym_boutique: "Gym Boutique",
+  gym_hardcore: "Gym Hardcore",
+  gym_functional: "Gym Functional",
   lawyer: "Lawyer",
   pest_control: "Pest Control",
   hvac: "HVAC / Plumber",

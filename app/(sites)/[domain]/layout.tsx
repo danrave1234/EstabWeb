@@ -78,6 +78,8 @@ const VALID_COLOR_THEMES = [
   "dark-green-ivory", "fiesta-red-yellow", "barangay-blue", "tropical-teal", "luxury-black-gold", "facebook-blue",
   // Existing tech themes
   "nebula", "flow", "mono",
+  // Gym themes
+  "gym-boutique", "gym-hardcore", "gym-functional",
 ] as const;
 
 export default async function SiteLayout({
@@ -149,6 +151,7 @@ export default async function SiteLayout({
     >
       <head>
         <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         {dbConf && (
           <>
             {/* Site-wide WebSite schema - always present */}

@@ -409,6 +409,81 @@
   --border: rgba(255, 255, 255, 0.2);
 }
 
+/* Gym - Boutique */
+[data-theme="gym-boutique"] {
+  --font-sans: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+  --font-serif: var(--font-playfair-display), Georgia, serif;
+  --background: #faf5ff;
+  --foreground: #2e1065;
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
+  --accent: #f59e0b;
+  --muted: #f3e8ff;
+  --muted-foreground: #5b21b6;
+  --border: rgba(124, 58, 237, 0.15);
+}
+
+[data-theme="gym-boutique"][data-mode="dark"] {
+  --background: #12052a;
+  --foreground: #f3e8ff;
+  --primary: #c4b5fd;
+  --primary-foreground: #12052a;
+  --accent: #fbbf24;
+  --muted: #1f0a42;
+  --muted-foreground: #ddd6fe;
+  --border: rgba(196, 181, 253, 0.14);
+}
+
+/* Gym - Hardcore */
+[data-theme="gym-hardcore"] {
+  --font-sans: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-serif: var(--font-bebas-neue), system-ui, sans-serif;
+  --background: #f9fafb;
+  --foreground: #111827;
+  --primary: #dc2626;
+  --primary-foreground: #ffffff;
+  --accent: #111827;
+  --muted: #e5e7eb;
+  --muted-foreground: #374151;
+  --border: rgba(220, 38, 38, 0.15);
+}
+
+[data-theme="gym-hardcore"][data-mode="dark"] {
+  --background: #05070b;
+  --foreground: #f9fafb;
+  --primary: #ef4444;
+  --primary-foreground: #05070b;
+  --accent: #9ca3af;
+  --muted: #111827;
+  --muted-foreground: #d1d5db;
+  --border: rgba(239, 68, 68, 0.14);
+}
+
+/* Gym - Functional */
+[data-theme="gym-functional"] {
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-serif: var(--font-source-serif-4), Georgia, serif;
+  --background: #f0fdfa;
+  --foreground: #134e4a;
+  --primary: #0f766e;
+  --primary-foreground: #ffffff;
+  --accent: #84cc16;
+  --muted: #ccfbf1;
+  --muted-foreground: #0f766e;
+  --border: rgba(15, 118, 110, 0.14);
+}
+
+[data-theme="gym-functional"][data-mode="dark"] {
+  --background: #042f2e;
+  --foreground: #ccfbf1;
+  --primary: #5eead4;
+  --primary-foreground: #042f2e;
+  --accent: #bef264;
+  --muted: #0b3b39;
+  --muted-foreground: #99f6e4;
+  --border: rgba(94, 234, 212, 0.14);
+}
+
 /* New Requested Color Themes */
 /* 7. Dark Pink and White */
 [data-theme="dark-pink-white"] {

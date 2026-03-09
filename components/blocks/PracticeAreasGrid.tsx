@@ -55,7 +55,7 @@ export default function PracticeAreasGrid({
             )}
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
           {items.map((item, index) => {
             const href = item.href ?? "#";
             const hasImage = Boolean(item.imageUrl);
@@ -80,7 +80,7 @@ export default function PracticeAreasGrid({
                   {item.title}
                 </h3>
 
-                <p className="text-sm sm:text-lg text-muted-foreground font-medium opacity-70 group-hover:opacity-100 transition-opacity duration-300 mb-8 sm:mb-10 leading-relaxed flex-grow">
+                <p className="hidden md:block text-sm sm:text-lg text-muted-foreground font-medium opacity-70 group-hover:opacity-100 transition-opacity duration-300 mb-8 sm:mb-10 leading-relaxed flex-grow">
                   {item.description}
                 </p>
 

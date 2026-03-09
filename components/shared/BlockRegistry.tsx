@@ -11,6 +11,7 @@ export const HeroClinic = dynamicWithSkeleton(() => import("@/components/blocks/
 export const HeroCleaning = dynamicWithSkeleton(() => import("@/components/blocks/HeroCleaning"), { className: "h-[600px]" });
 export const HeroPool = dynamicWithSkeleton(() => import("@/components/blocks/HeroPool"), { className: "h-[600px]" });
 export const HeroPestControl = dynamicWithSkeleton(() => import("@/components/blocks/HeroPestControl"), { className: "h-[600px]" });
+export const HeroGym = dynamicWithSkeleton(() => import("@/components/blocks/HeroGym"), { className: "h-[620px]" });
 export const HeroEmergency = dynamicWithSkeleton(() => import("@/components/blocks/HeroEmergency"), { className: "h-[400px]" });
 export const HeroBlock = dynamicWithSkeleton(() => import("@/components/blocks/HeroBlock"), { className: "h-[600px]" });
 
@@ -61,6 +62,14 @@ export const CommonPestsGrid = dynamicWithSkeleton(() => import("@/components/bl
 export const TreatmentProcessTimeline = dynamicWithSkeleton(() => import("@/components/blocks/TreatmentProcessTimeline"), { className: "h-[600px]" });
 export const SafetySection = dynamicWithSkeleton(() => import("@/components/blocks/SafetySection"), { className: "h-[600px]" });
 export const WarrantyGuaranteeBlock = dynamicWithSkeleton(() => import("@/components/blocks/WarrantyGuaranteeBlock"), { className: "h-[400px]" });
+export const GymPrograms = dynamicWithSkeleton(() => import("@/components/blocks/GymPrograms"), { className: "h-[640px]" });
+export const GymClassSchedule = dynamicWithSkeleton(() => import("@/components/blocks/GymClassSchedule"), { className: "h-[640px]" });
+export const GymMembershipTiers = dynamicWithSkeleton(() => import("@/components/blocks/GymMembershipTiers"), { className: "h-[640px]" });
+export const GymTrainers = dynamicWithSkeleton(() => import("@/components/blocks/GymTrainers"), { className: "h-[640px]" });
+export const GymResultsStories = dynamicWithSkeleton(() => import("@/components/blocks/GymResultsStories"), { className: "h-[640px]" });
+export const GymFacilityHighlights = dynamicWithSkeleton(() => import("@/components/blocks/GymFacilityHighlights"), { className: "h-[640px]" });
+export const GymClassTypes = dynamicWithSkeleton(() => import("@/components/blocks/GymClassTypes"), { className: "h-[640px]" });
+export const GymFaq = dynamicWithSkeleton(() => import("@/components/blocks/GymFaq"), { className: "h-[560px]" });
 
 export const BeforeAfterGalleryGrid = dynamicWithSkeleton(() => import("@/components/blocks/BeforeAfterGalleryGrid"), { className: "h-[600px]" });
 export const PhotoGalleryGrid = dynamicWithSkeleton(() => import("@/components/blocks/PhotoGalleryGrid"), { className: "h-[600px]" });

@@ -26,7 +26,10 @@ export const metadata: Metadata = {
     "website builder philippines",
     "monthly website subscription philippines",
     "website maintenance cost per month philippines",
-    "custom domain website philippines"
+    "custom domain website philippines",
+    "gym website design philippines",
+    "gym website creation philippines",
+    "fitness website builder philippines"
   ],
   authors: [{ name: "EstabWeb Team" }],
   creator: "EstabWeb",
@@ -111,6 +114,7 @@ export default async function HubLayout({
     >
       <head>
         <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <StructuredData
           data={{
             "@context": "https://schema.org",

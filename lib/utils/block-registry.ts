@@ -109,6 +109,15 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
   { id: "comparison--vs", dataKey: "acTypes", navEntry: undefined, previewKind: "cards-3", sectionType: "comparison", variant: "vs", label: "Us vs Others", purpose: "High-conversion why-choose-us layout" },
   // type: specialty_listings  (real-estate featured properties)
   { id: "specialty_listings", dataKey: "featuredListings", navEntry: undefined, previewKind: "cards-3", sectionType: "specialty_listings", variant: "standard", label: "Featured Listings", purpose: "Best for real estate and portfolio sites" },
+  // type: gym  | variants: programs, schedule, memberships
+  { id: "gym--programs", dataKey: "gymPrograms", navEntry: { name: "Programs", href: "#programs" }, previewKind: "cards-3", sectionType: "gym", variant: "programs", label: "Gym Programs", purpose: "Program tracks with goals, schedule, and coach info" },
+  { id: "gym--schedule", dataKey: "gymSchedule", navEntry: { name: "Schedule", href: "#schedule" }, previewKind: "timeline", sectionType: "gym", variant: "schedule", label: "Gym Schedule", purpose: "Weekly class schedule by day and time slot" },
+  { id: "gym--memberships", dataKey: "gymMemberships", navEntry: { name: "Memberships", href: "#memberships" }, previewKind: "pricing", sectionType: "gym", variant: "memberships", label: "Membership Tiers", purpose: "Pricing tiers with perks and conversion CTA" },
+  { id: "gym--trainers", dataKey: "gymTrainers", navEntry: { name: "Trainers", href: "#trainers" }, previewKind: "cards-3", sectionType: "gym", variant: "trainers", label: "Gym Trainers", purpose: "Coach profiles with specialization and credentials" },
+  { id: "gym--results", dataKey: "gymResults", navEntry: { name: "Results", href: "#results" }, previewKind: "gallery", sectionType: "gym", variant: "results", label: "Results Stories", purpose: "Transformation stories with before/after proof" },
+  { id: "gym--facility", dataKey: "gymFacility", navEntry: { name: "Facility", href: "#facility" }, previewKind: "cards-3", sectionType: "gym", variant: "facility", label: "Facility Highlights", purpose: "Equipment, amenities, and training environment highlights" },
+  { id: "gym--class-types", dataKey: "gymClassTypes", navEntry: { name: "Classes", href: "#class-types" }, previewKind: "cards-3", sectionType: "gym", variant: "class-types", label: "Class Types", purpose: "Class format overview by level and duration" },
+  { id: "gym--faq", dataKey: "gymFaq", navEntry: { name: "FAQ", href: "#gym-faq" }, previewKind: "faq", sectionType: "gym", variant: "faq", label: "Gym FAQ", purpose: "Membership, schedule, and onboarding FAQs" },
   // legacy aliases
   { id: "features", dataKey: "features", navEntry: { name: "Services", href: "#services" }, previewKind: "cards-3", legacy: true },
   { id: "features-modern", dataKey: "features", navEntry: { name: "Services", href: "#services" }, previewKind: "cards-3", legacy: true },
@@ -307,6 +316,19 @@ export const SECTION_CATEGORIES: { label: string; ids: string[] }[] = [
     ],
   },
   {
+    label: "Gym",
+    ids: [
+      "gym--programs",
+      "gym--schedule",
+      "gym--memberships",
+      "gym--trainers",
+      "gym--results",
+      "gym--facility",
+      "gym--class-types",
+      "gym--faq",
+    ],
+  },
+  {
     label: "Process & Info",
     ids: [
       "process",
@@ -418,6 +440,12 @@ export const SECTION_TYPE_GROUPS: SectionTypeGroup[] = [
     icon: "Wrench",
     label: "Services & Features",
     variantIds: ["services", "services--modern", "services--highlight", "service_detail", "service_detail--split", "comparison", "comparison--table", "comparison--vs", "specialty_listings"],
+  },
+  {
+    type: "gym",
+    icon: "Dumbbell",
+    label: "Gym",
+    variantIds: ["gym--programs", "gym--schedule", "gym--memberships", "gym--trainers", "gym--results", "gym--facility", "gym--class-types", "gym--faq"],
   },
   {
     type: "process",

@@ -27,6 +27,9 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
     'online store website philippines',
     'restaurant website philippines',
     'dental clinic website philippines',
+    'gym website design philippines',
+    'gym website creation philippines',
+    'fitness website builder philippines',
     'website builder philippines',
     'how much does it cost to create a website in the philippines'
   ]

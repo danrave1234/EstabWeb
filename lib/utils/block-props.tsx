@@ -1,6 +1,7 @@
 import React from "react";
-import { ACTypesGrid, AttorneyProfile, AwardsStrip, BeforeAfterGalleryGrid, BeforeAfterSlider, BlogGrid, CommonPestsGrid, ContactColumns, ContactForm, ContactMinimal, ContactSplit, ContactVisual, ContactWithMap, CoverageRadiusBlock, DeveloperPartnersLogos, EmergencyCTAStrip, FAQAccordion, FAQTwoColumn, FacebookReviewEmbed, FeatureHighlightZigzag, FeaturedListingsGrid, FeaturesGrid, FeaturesModern, FinancingSection, FreeConsultationForm, Header, HeroAuthority, HeroBlock, HeroChiropractor, HeroCleaning, HeroClinic, HeroDentist, HeroEmergency, HeroPestControl, HeroPool, HeroSaas, HowItWorksSteps, LogoCloud, MaintenancePlans, MessengerStickyCTA, PatientFaq, PaymentOptionsStrip, PhotoGalleryGrid, PracticeAreasGrid, PricePreviewStrip, PricingTable, PromoCTASection, ReviewTrustBar, ReviewsGrid, SafetySection, ServiceAreaMap, StatsSection, TeamCarousel, TeamGrid, TreatmentProcessTimeline, TrustBadgesGrid, TrustBar, WarrantyGuaranteeBlock, WhyChooseMe } from "@/components/shared/BlockRegistry";
+import { ACTypesGrid, AttorneyProfile, AwardsStrip, BeforeAfterGalleryGrid, BeforeAfterSlider, BlogGrid, CommonPestsGrid, ContactColumns, ContactForm, ContactMinimal, ContactSplit, ContactVisual, ContactWithMap, CoverageRadiusBlock, DeveloperPartnersLogos, EmergencyCTAStrip, FAQAccordion, FAQTwoColumn, FacebookReviewEmbed, FeatureHighlightZigzag, FeaturedListingsGrid, FeaturesGrid, FeaturesModern, FinancingSection, FreeConsultationForm, GymClassSchedule, GymClassTypes, GymFacilityHighlights, GymFaq, GymMembershipTiers, GymPrograms, GymResultsStories, GymTrainers, Header, HeroAuthority, HeroBlock, HeroChiropractor, HeroCleaning, HeroClinic, HeroDentist, HeroEmergency, HeroGym, HeroPestControl, HeroPool, HeroSaas, HowItWorksSteps, LogoCloud, MaintenancePlans, MessengerStickyCTA, PatientFaq, PaymentOptionsStrip, PhotoGalleryGrid, PracticeAreasGrid, PricePreviewStrip, PricingTable, PromoCTASection, ReviewTrustBar, ReviewsGrid, SafetySection, ServiceAreaMap, StatsSection, TeamCarousel, TeamGrid, TreatmentProcessTimeline, TrustBadgesGrid, TrustBar, WarrantyGuaranteeBlock, WhyChooseMe } from "@/components/shared/BlockRegistry";
 import { SECTION_NAV_MAP } from "@/lib/utils/blocks";
+import { DEFAULT_GYM_CLASS_TYPES, DEFAULT_GYM_FACILITY, DEFAULT_GYM_FAQ, DEFAULT_GYM_MEMBERSHIPS, DEFAULT_GYM_PROGRAMS, DEFAULT_GYM_RESULTS, DEFAULT_GYM_SCHEDULE, DEFAULT_GYM_TRAINERS } from "@/config/dashboard-config";
 
 export function normalizeToArray(value: unknown): any[] {
   if (Array.isArray(value)) return value;
@@ -57,6 +58,14 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
     statsSection = {},
     faqAccordion = {},
     logoCloud = {},
+    gymPrograms = {},
+    gymSchedule = {},
+    gymMemberships = {},
+    gymTrainers = {},
+    gymResults = {},
+    gymFacility = {},
+    gymClassTypes = {},
+    gymFaq = {},
   } = data;
 
   const heroProps = {
@@ -172,6 +181,7 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
     pool: <HeroPool key="hero" {...heroPoolProps} />,
     cleaning: <HeroCleaning key="hero" {...heroCleaningProps} />,
     "pest-control": <HeroPestControl key="hero" {...heroPestControlProps} />,
+    gym: <HeroGym key="hero" {...heroProps} />,
     startup: <HeroSaas key="hero" {...heroProps} />,
     generic: <HeroBlock key="hero" {...heroProps} />,
   };
@@ -718,6 +728,86 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
           plans={maintenancePlans.plans}
           signUpNowLabel={maintenancePlans.signUpNowLabel}
           signUpNowUrl={maintenancePlans.signUpNowUrl}
+        />
+      );
+      break;
+    case "gym--programs":
+      sectionContent = (
+        <GymPrograms
+          key={key}
+          title={gymPrograms.title ?? DEFAULT_GYM_PROGRAMS.title}
+          subtitle={gymPrograms.subtitle ?? DEFAULT_GYM_PROGRAMS.subtitle}
+          items={Array.isArray(gymPrograms.items) && gymPrograms.items.length > 0 ? gymPrograms.items : DEFAULT_GYM_PROGRAMS.items}
+        />
+      );
+      break;
+    case "gym--schedule":
+      sectionContent = (
+        <GymClassSchedule
+          key={key}
+          title={gymSchedule.title ?? DEFAULT_GYM_SCHEDULE.title}
+          subtitle={gymSchedule.subtitle ?? DEFAULT_GYM_SCHEDULE.subtitle}
+          days={Array.isArray(gymSchedule.days) && gymSchedule.days.length > 0 ? gymSchedule.days : DEFAULT_GYM_SCHEDULE.days}
+        />
+      );
+      break;
+    case "gym--memberships":
+      sectionContent = (
+        <GymMembershipTiers
+          key={key}
+          title={gymMemberships.title ?? DEFAULT_GYM_MEMBERSHIPS.title}
+          subtitle={gymMemberships.subtitle ?? DEFAULT_GYM_MEMBERSHIPS.subtitle}
+          tiers={Array.isArray(gymMemberships.tiers) && gymMemberships.tiers.length > 0 ? gymMemberships.tiers : DEFAULT_GYM_MEMBERSHIPS.tiers}
+        />
+      );
+      break;
+    case "gym--trainers":
+      sectionContent = (
+        <GymTrainers
+          key={key}
+          title={gymTrainers.title ?? DEFAULT_GYM_TRAINERS.title}
+          subtitle={gymTrainers.subtitle ?? DEFAULT_GYM_TRAINERS.subtitle}
+          items={Array.isArray(gymTrainers.items) && gymTrainers.items.length > 0 ? gymTrainers.items : DEFAULT_GYM_TRAINERS.items}
+        />
+      );
+      break;
+    case "gym--results":
+      sectionContent = (
+        <GymResultsStories
+          key={key}
+          title={gymResults.title ?? DEFAULT_GYM_RESULTS.title}
+          subtitle={gymResults.subtitle ?? DEFAULT_GYM_RESULTS.subtitle}
+          stories={Array.isArray(gymResults.stories) && gymResults.stories.length > 0 ? gymResults.stories : DEFAULT_GYM_RESULTS.stories}
+        />
+      );
+      break;
+    case "gym--facility":
+      sectionContent = (
+        <GymFacilityHighlights
+          key={key}
+          title={gymFacility.title ?? DEFAULT_GYM_FACILITY.title}
+          subtitle={gymFacility.subtitle ?? DEFAULT_GYM_FACILITY.subtitle}
+          items={Array.isArray(gymFacility.items) && gymFacility.items.length > 0 ? gymFacility.items : DEFAULT_GYM_FACILITY.items}
+        />
+      );
+      break;
+    case "gym--class-types":
+      sectionContent = (
+        <GymClassTypes
+          key={key}
+          title={gymClassTypes.title ?? DEFAULT_GYM_CLASS_TYPES.title}
+          subtitle={gymClassTypes.subtitle ?? DEFAULT_GYM_CLASS_TYPES.subtitle}
+          items={Array.isArray(gymClassTypes.items) && gymClassTypes.items.length > 0 ? gymClassTypes.items : DEFAULT_GYM_CLASS_TYPES.items}
+        />
+      );
+      break;
+    case "gym--faq":
+      sectionContent = (
+        <GymFaq
+          key={key}
+          title={gymFaq.title ?? DEFAULT_GYM_FAQ.title}
+          subtitle={gymFaq.subtitle ?? DEFAULT_GYM_FAQ.subtitle}
+          items={Array.isArray(gymFaq.items) && gymFaq.items.length > 0 ? gymFaq.items : DEFAULT_GYM_FAQ.items}
         />
       );
       break;

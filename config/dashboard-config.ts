@@ -44,6 +44,9 @@ export const COLOR_THEME_SWATCHES: Record<string, [string, string, string]> = {
   nebula: ["#6c5ce7", "#00cec9", "#0f172a"],
   flow: ["#4834d4", "#eb4d4b", "#ffffff"],
   mono: ["#000000", "#636e72", "#f1f2f6"],
+  "gym-boutique": ["#4c1d95", "#f59e0b", "#faf5ff"],
+  "gym-hardcore": ["#111827", "#ef4444", "#f9fafb"],
+  "gym-functional": ["#0f766e", "#84cc16", "#f0fdfa"],
 };
 
 export const TYPOGRAPHY_OPTIONS = [
@@ -398,6 +401,128 @@ export const DEFAULT_MAINTENANCE_PLANS = {
   ],
 };
 
+export const DEFAULT_GYM_PROGRAMS = {
+  title: "Programs Built for Real Progress",
+  subtitle: "Choose your training track and work with coaches who keep your momentum high.",
+  items: [
+    { name: "Strength Foundations", tagline: "Technique-first lifting for beginners.", schedule: "Mon/Wed/Fri - 6:00 PM", coach: "Coach Mara", intensity: "Beginner", icon: "Dumbbell" },
+    { name: "Hypertrophy Lab", tagline: "Muscle-building splits with smart volume.", schedule: "Tue/Thu/Sat - 7:30 PM", coach: "Coach Nico", intensity: "Intermediate", icon: "Flame" },
+    { name: "Athletic Conditioning", tagline: "Speed, power, and stamina circuits.", schedule: "Mon/Thu - 5:30 AM", coach: "Coach Lea", intensity: "Advanced", icon: "Zap" },
+  ],
+};
+
+export const DEFAULT_GYM_SCHEDULE = {
+  title: "Class Schedule",
+  subtitle: "Book your week in advance and train with structure.",
+  days: [
+    {
+      day: "Monday",
+      classes: [
+        { time: "6:00 AM", name: "Functional Strength", coach: "Coach Gio", studio: "Main Floor" },
+        { time: "6:30 PM", name: "Lower Body Build", coach: "Coach Mara", studio: "Strength Room" },
+      ],
+    },
+    {
+      day: "Wednesday",
+      classes: [
+        { time: "5:30 AM", name: "MetCon Express", coach: "Coach Lea", studio: "Performance Zone" },
+        { time: "7:00 PM", name: "Upper Body Power", coach: "Coach Nico", studio: "Main Floor" },
+      ],
+    },
+    {
+      day: "Saturday",
+      classes: [
+        { time: "8:00 AM", name: "Community Bootcamp", coach: "Coach Team", studio: "Open Turf" },
+        { time: "10:00 AM", name: "Mobility + Recovery", coach: "Coach Aya", studio: "Recovery Studio" },
+      ],
+    },
+  ],
+};
+
+export const DEFAULT_GYM_MEMBERSHIPS = {
+  title: "Membership Tiers",
+  subtitle: "Transparent plans for casual training, focused progress, and full coaching support.",
+  tiers: [
+    {
+      name: "Starter",
+      price: "PHP 1,990",
+      period: "/month",
+      description: "For members training 2 to 3 times weekly.",
+      perks: ["Gym floor access", "Intro assessment", "Locker access"],
+      ctaLabel: "Start Starter Plan",
+      ctaHref: "#contact",
+    },
+    {
+      name: "Performance",
+      price: "PHP 3,490",
+      period: "/month",
+      description: "Ideal for serious training and coached classes.",
+      perks: ["Unlimited class entry", "Monthly progress check", "Nutrition starter guide"],
+      isPopular: true,
+      ctaLabel: "Choose Performance",
+      ctaHref: "#contact",
+    },
+    {
+      name: "Elite Coaching",
+      price: "PHP 6,990",
+      period: "/month",
+      description: "High-accountability coaching and personalized programming.",
+      perks: ["1:1 weekly coaching", "Custom training plan", "Priority class slots"],
+      ctaLabel: "Apply for Elite",
+      ctaHref: "#contact",
+    },
+  ],
+};
+
+export const DEFAULT_GYM_TRAINERS = {
+  title: "Meet Your Coaches",
+  subtitle: "Certified trainers focused on safe progress and measurable performance improvements.",
+  items: [
+    { name: "Coach Mara", role: "Head Strength Coach", specialty: "Powerlifting & Form Correction", yearsExperience: "8 years", imageUrl: "" },
+    { name: "Coach Nico", role: "Conditioning Coach", specialty: "Fat Loss & Athletic Conditioning", yearsExperience: "6 years", imageUrl: "" },
+    { name: "Coach Aya", role: "Mobility Specialist", specialty: "Recovery, Mobility, Injury Prevention", yearsExperience: "5 years", imageUrl: "" },
+  ],
+};
+
+export const DEFAULT_GYM_RESULTS = {
+  title: "Member Results",
+  subtitle: "Transformation stories from consistent coaching and structured programming.",
+  stories: [
+    { name: "Anne P.", result: "-8kg and stronger core", timeframe: "12 weeks", quote: "The coaches made every session clear and motivating.", beforeImage: "", afterImage: "" },
+    { name: "Carlo M.", result: "+35kg deadlift PR", timeframe: "16 weeks", quote: "Programming was progressive and easy to follow.", beforeImage: "", afterImage: "" },
+  ],
+};
+
+export const DEFAULT_GYM_FACILITY = {
+  title: "Facility Highlights",
+  subtitle: "Purpose-built training zones and amenities that support performance and consistency.",
+  items: [
+    { name: "Strength Floor", description: "Olympic bars, racks, platforms, and calibrated plates.", icon: "Dumbbell", imageUrl: "" },
+    { name: "Conditioning Turf", description: "Sled tracks, battle ropes, and HIIT equipment.", icon: "Activity", imageUrl: "" },
+    { name: "Recovery Zone", description: "Mobility tools and guided cooldown space.", icon: "HeartPulse", imageUrl: "" },
+  ],
+};
+
+export const DEFAULT_GYM_CLASS_TYPES = {
+  title: "Class Types",
+  subtitle: "Find the right class format based on your current level and fitness goals.",
+  items: [
+    { name: "Strength 45", duration: "45 mins", level: "Beginner to Intermediate", description: "Technique-based compound lifts with progressive loading.", icon: "Dumbbell" },
+    { name: "MetCon 30", duration: "30 mins", level: "All Levels", description: "High-efficiency conditioning sessions to build endurance.", icon: "Flame" },
+    { name: "Mobility Reset", duration: "40 mins", level: "All Levels", description: "Recovery-focused sessions to improve movement quality.", icon: "HeartPulse" },
+  ],
+};
+
+export const DEFAULT_GYM_FAQ = {
+  title: "Gym FAQs",
+  subtitle: "Answers to the most common membership and class questions.",
+  items: [
+    { question: "Do I need prior gym experience?", answer: "No. Our beginner-friendly programs include onboarding and movement coaching." },
+    { question: "Can I freeze my membership?", answer: "Yes, you can freeze your membership based on your selected plan policy." },
+    { question: "What should I bring for my first session?", answer: "Bring water, training shoes, and comfortable workout clothes." },
+  ],
+};
+
 export const DEFAULT_FACEBOOK_REVIEW_EMBED = {
   title: "Highly Rated on Facebook",
   subtitle: "See why our customers love us",
@@ -545,6 +670,14 @@ export function sectionIdToKey(id: string) {
     'service_area--radius': 'deliveryCoverage',
     'contact_with_map': 'contactWithMap',
     'logo_cloud': 'logoCloud',
+    'gym--programs': 'gymPrograms',
+    'gym--schedule': 'gymSchedule',
+    'gym--memberships': 'gymMemberships',
+    'gym--trainers': 'gymTrainers',
+    'gym--results': 'gymResults',
+    'gym--facility': 'gymFacility',
+    'gym--class-types': 'gymClassTypes',
+    'gym--faq': 'gymFaq',
     'testimonials': 'testimonials',
     'testimonials--grid': 'reviewTrustBar',
     'testimonials--facebook': 'facebookReviewEmbed',
@@ -704,6 +837,14 @@ export function formatSectionLabel(id: string): string {
     'trust_badges': 'Trust Badges',
     'payment_options': 'Payment Options',
     'logo-cloud': 'Logo Cloud',
+    'gym--programs': 'Gym Programs',
+    'gym--schedule': 'Gym Schedule',
+    'gym--memberships': 'Membership Tiers',
+    'gym--trainers': 'Gym Trainers',
+    'gym--results': 'Results Stories',
+    'gym--facility': 'Facility Highlights',
+    'gym--class-types': 'Class Types',
+    'gym--faq': 'Gym FAQ',
     'trust-badges-grid': 'Trust Badges',
     'featured-properties-grid': 'Featured Listings',
     'financing-section': 'Financing Section',

@@ -24,6 +24,7 @@ import {
 import ClientDashboardPreview from "@/components/dashboard/ClientDashboardPreview"
 import UpgradeButton from "@/components/dashboard/UpgradeButton"
 import NoProjectRedeem from "@/components/dashboard/NoProjectRedeem"
+import PaymentSuccessHandler from "@/components/dashboard/PaymentSuccessHandler"
 
 export default function DashboardPage() {
   const searchParams = useSearchParams()
@@ -85,97 +86,108 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">Initializing Hub...</p>
+      <>
+        <PaymentSuccessHandler />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+            <p className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">Initializing Hub...</p>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
   // If a project is selected, show the high-fidelity editor/preview interface
   if (selectedProject) {
     return (
-      <ClientDashboardPreview
-        project={selectedProject}
-        user={user}
-        initialPlansConfig={{
-          PLANS: {}, // Mock or fetch if needed
-          ENABLE_ANNUAL_PLANS: false
-        }}
-      />
+      <>
+        <PaymentSuccessHandler />
+        <ClientDashboardPreview
+          project={selectedProject}
+          user={user}
+          initialPlansConfig={{
+            PLANS: {}, // Mock or fetch if needed
+            ENABLE_ANNUAL_PLANS: false
+          }}
+        />
+      </>
     )
   }
 
   // If no projects, show empty state with redemption option
   if (projects.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
-        <div className="max-w-md w-full bg-card border-2 border-dashed border-border rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
-          <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform duration-500">
-            <Globe className="w-10 h-10 text-primary" />
-          </div>
-          <h1 className="text-3xl font-black text-foreground mb-4 tracking-tight">Ready to Launch?</h1>
-          <p className="text-muted-foreground mb-10 font-medium leading-relaxed font-sans">
-            You haven&apos;t created any websites yet. Start building your professional online presence in minutes.
-          </p>
-
-          <div className="space-y-4">
-            <Link
-              href="/onboarding"
-              className="flex items-center justify-center gap-3 w-full px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20"
-            >
-              <Plus className="w-5 h-5" />
-              Create New Project
-            </Link>
-
-            <div className="flex items-center gap-4 my-8">
-              <div className="h-px bg-border flex-1" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">OR REDEEM CODE</span>
-              <div className="h-px bg-border flex-1" />
+      <>
+        <PaymentSuccessHandler />
+        <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
+          <div className="max-w-md w-full bg-card border-2 border-dashed border-border rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
+            <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform duration-500">
+              <Globe className="w-10 h-10 text-primary" />
             </div>
+            <h1 className="text-3xl font-black text-foreground mb-4 tracking-tight">Ready to Launch?</h1>
+            <p className="text-muted-foreground mb-10 font-medium leading-relaxed font-sans">
+              You haven&apos;t created any websites yet. Start building your professional online presence in minutes.
+            </p>
 
-            <NoProjectRedeem />
+            <div className="space-y-4">
+              <Link
+                href="/onboarding"
+                className="flex items-center justify-center gap-3 w-full px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20"
+              >
+                <Plus className="w-5 h-5" />
+                Create New Project
+              </Link>
+
+              <div className="flex items-center gap-4 my-8">
+                <div className="h-px bg-border flex-1" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">OR REDEEM CODE</span>
+                <div className="h-px bg-border flex-1" />
+              </div>
+
+              <NoProjectRedeem />
+            </div>
           </div>
         </div>
-      </div>
+      </>
     )
   }
 
   const getLeadCount = (id: string) => leadsCount[id] || 0
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8 sm:mb-12">
-        <div>
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">My Websites</h1>
-          <p className="text-xs sm:text-base text-muted-foreground mt-0.5 sm:mt-2 font-medium">Manage and optimize your digital assets.</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 sm:gap-6">
-          <Link
-            href="/onboarding"
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
-          >
-            <Plus className="w-4 h-4" />
-            Build New
-          </Link>
-          <div className="hidden sm:block h-10 w-px bg-border mx-2" />
-          <div className="w-full sm:w-auto">
-            <NoProjectRedeem />
+    <>
+      <PaymentSuccessHandler />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8 sm:mb-12">
+          <div>
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">My Websites</h1>
+            <p className="text-xs sm:text-base text-muted-foreground mt-0.5 sm:mt-2 font-medium">Manage and optimize your digital assets.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6">
+            <Link
+              href="/onboarding"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+            >
+              <Plus className="w-4 h-4" />
+              Build New
+            </Link>
+            <div className="hidden sm:block h-10 w-px bg-border mx-2" />
+            <div className="w-full sm:w-auto">
+              <NoProjectRedeem />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Mobile & Tablet View: Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:hidden mb-8">
-        {projects.map((project) => {
-          const siteName = (project.current_config as any)?.brand?.name || "My Website"
-          const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.${rootDomain}` : "Not set")
-          const previewUrl = project.custom_domain
-            ? `https://${project.custom_domain}`
-            : (project.subdomain ? `https://${project.subdomain}.${rootDomain}` : "#")
+        {/* Mobile & Tablet View: Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:hidden mb-8">
+          {projects.map((project) => {
+            const siteName = (project.current_config as any)?.brand?.name || "My Website"
+            const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.${rootDomain}` : "Not set")
+            const previewUrl = project.custom_domain
+              ? `https://${project.custom_domain}`
+              : (project.subdomain ? `https://${project.subdomain}.${rootDomain}` : "#")
 
           return (
             <div key={project.id} className="bg-card border border-border rounded-2xl p-4 shadow-sm space-y-4">
@@ -240,12 +252,12 @@ export default function DashboardPage() {
             </div>
           )
         })}
-      </div>
+        </div>
 
 
       {/* Desktop View: Table */}
-      <div className="hidden lg:block bg-card border border-border rounded-xl shadow-sm overflow-x-auto">
-        <Table>
+        <div className="hidden lg:block bg-card border border-border rounded-xl shadow-sm overflow-x-auto">
+          <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">
               <TableHead className="w-[40%] text-[11px] font-black uppercase tracking-widest py-5">Website</TableHead>
@@ -334,8 +346,9 @@ export default function DashboardPage() {
               )
             })}
           </TableBody>
-        </Table>
+          </Table>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

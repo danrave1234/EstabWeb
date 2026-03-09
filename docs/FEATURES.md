@@ -464,6 +464,9 @@ Each entry in `GENRE_PRESETS` is a `GenrePreset` object with:
 | `ecommerce` | E-commerce Shop |
 | `personal_portfolio` | Personal Portfolio |
 | `photobooth` | Photobooth |
+| `gym_boutique` | Gym Boutique |
+| `gym_hardcore` | Gym Hardcore |
+| `gym_functional` | Gym Functional |
 
 **Color themes (40+):** `partner`, `justice`, `modern`, `frost-fire`, `reliable`, `eco-clean`, `surgeon`, `wellness`, `holistic`, `clinical-gold`, `red-crimson`, `cyan-ocean`, `luxury-black-gold`, `nebula`, `flow`, `mono`, and many more — each a full Tailwind-compatible palette applied globally.
 
@@ -478,6 +481,7 @@ Clients can include any combination of **40+ named sections** on their site. Sec
 | Category | Sections |
 |---|---|
 | **Services** | Hero (locked), Services, Services Grid, Services Modern, Practice Areas, Product Types, Common Issues |
+| **Gym** | Gym Programs (`gym--programs`), Gym Schedule (`gym--schedule`), Membership Tiers (`gym--memberships`), Class Types (`gym--class-types`), Gym Trainers (`gym--trainers`), Results Stories (`gym--results`), Facility Highlights (`gym--facility`), Gym FAQ (`gym--faq`) |
 | **Trust** | Testimonials, Review Bar, Reviews Grid, Facebook Reviews, Trust & Certs, Certifications, Trust Badges, Warranty/Guarantee, Safety |
 | **Contact** | Contact, Contact with Map |
 | **Pricing** | Pricing, Packages & Pricing, Price Preview, Financing |
@@ -886,6 +890,7 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 | `HeroCleaning` | cleaning | Bright lifestyle image + free estimate CTA |
 | `HeroPool` | pool | Water imagery + inspection scheduling CTA |
 | `HeroPestControl` | pest-control | Urgency-focused + emergency CTA |
+| `HeroGym` | gym | Multi-style gym hero (`hero.layout`: boutique, hardcore, functional) |
 | `HeroEmergency` | emergency | High-contrast, phone number prominent |
 
 ### Content Blocks
@@ -902,6 +907,14 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 | `PricingTable` | Plan comparison table with CTA |
 | `PricePreviewStrip` | Compact horizontal pricing strip |
 | `MaintenancePlans` | Service plan cards (pool/cleaning) |
+| `GymPrograms` | Program cards for gym tracks/coaches (`gym--programs`) |
+| `GymClassSchedule` | Weekly class matrix by day/time (`gym--schedule`) |
+| `GymMembershipTiers` | Membership pricing cards with perks/CTA (`gym--memberships`) |
+| `GymClassTypes` | Class format cards with duration and level (`gym--class-types`) |
+| `GymTrainers` | Coach profile cards with specialization (`gym--trainers`) |
+| `GymResultsStories` | Transformation stories with before/after (`gym--results`) |
+| `GymFacilityHighlights` | Facility/equipment highlights and amenities (`gym--facility`) |
+| `GymFaq` | Gym-specific accordion FAQ (`gym--faq`) |
 
 ### Social Proof Blocks
 | Block | Description |

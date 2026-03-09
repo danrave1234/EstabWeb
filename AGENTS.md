@@ -32,6 +32,7 @@
 ### 3. Template & Preset Management
 - Global templates and genre presets are defined in `config/presets.ts` and managed via `/admin/templates`.
 - **Rule**: When adding new sections or features, always provide corresponding placeholder data in the genre presets so new generated sites look complete.
+- **Gym schema note**: Gym presets now include dedicated config keys for `gymPrograms`, `gymSchedule`, `gymMemberships`, `gymClassTypes`, `gymTrainers`, `gymResults`, `gymFacility`, and `gymFaq` mapped to `gym--*` section IDs. Keep `config/presets.ts`, `config/dashboard-config.ts`, section registry maps, and dashboard editor defaults in sync when changing these.
 
 ### 4. AI Integration (Section Editor & SEO)
 - AI (Gemini API) is tightly integrated into the dashboard editing experience (via the "AI Tools" tab).
@@ -80,3 +81,12 @@ When a paid subscription lapses (payment failure or expiry), **two code paths** 
 
 ### 10. Documentation & Sync
 - **Always update documentation**: Any change to the database schema, API contracts, or core configuration shapes **must** be reflected in `AGENTS.md`, `README.md`, and `docs/FEATURES.md` during the same task.
+
+### 11. Auth Session Recovery (Login Resilience)
+- `/login` must redirect authenticated users to the correct destination:
+  - `admin` / `sub_admin` → `/admin`
+  - all other authenticated users → `/dashboard`
+- Middleware (`lib/supabase/middleware.ts`) is the source of truth for auth-cookie recovery:
+  - if `supabase.auth.getUser()` fails on auth/admin/protected routes, clear Supabase auth cookies and recover to `/login?recovered=1`
+  - if it fails while already on `/login`, clear cookies in-place and render login cleanly
+- **Rule**: when adjusting auth flow, keep `middleware`, `app/(hub)/login/layout.tsx`, and `app/actions/auth.ts` redirect role checks aligned.

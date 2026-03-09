@@ -15,6 +15,9 @@ export const metadata: Metadata = {
     'landing page price philippines',
     'restaurant website philippines',
     'dental clinic website philippines',
+    'gym website design philippines',
+    'gym website creation philippines',
+    'fitness website builder philippines',
     'create website philippines'
   ],
 }

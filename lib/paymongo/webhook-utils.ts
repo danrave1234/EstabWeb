@@ -19,7 +19,7 @@ export function verifyPaymongoSignature(
   secret: string,
 ): string | null {
   if (!signatureHeader) return "Missing paymongo-signature header"
-  const parts = signatureHeader.split(",")
+  const parts = signatureHeader.split(",").map((part) => part.trim())
   const timestamp = parts.find((part) => part.startsWith("t="))?.slice(2)
   const v1 = parts.find((part) => part.startsWith("v1="))?.slice(3)
   if (!timestamp || !v1) return "Malformed signature header"
@@ -45,7 +45,7 @@ export function computePeriodEnd(attributes?: any): Date {
 }
 
 export function extractPaymongoEventType(body: any): string {
-  return body?.data?.attributes?.type || body?.type || ""
+  return body?.data?.attributes?.type || body?.data?.type || body?.type || ""
 }
 
 export function extractPaymongoEventId(body: any): string {

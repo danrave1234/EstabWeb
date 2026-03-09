@@ -36,6 +36,14 @@ EstabWeb is a multi-tenant SaaS platform for generating and managing industry-op
 - Hub Pages: `/(hub)`
 - API Routes: `/api/*`
 
+## Preset Config Notes
+
+- Gym templates (`gym_boutique`, `gym_hardcore`, `gym_functional`) use dedicated section keys in project config:
+  - `gymPrograms`, `gymSchedule`, `gymMemberships`, `gymClassTypes`, `gymTrainers`, `gymResults`, `gymFacility`, `gymFaq`
+- These map to section IDs:
+  - `gym--programs`, `gym--schedule`, `gym--memberships`, `gym--class-types`, `gym--trainers`, `gym--results`, `gym--facility`, `gym--faq`
+- If you add or rename a gym section, update all of: `config/presets.ts`, `config/dashboard-config.ts`, `lib/utils/block-registry.ts`, `lib/utils/block-props.tsx`, and dashboard section/editor mappings.
+
 ## Local Setup
 
 1. Create env vars from `.env.example` (or your existing `.env.local`):
@@ -104,6 +112,15 @@ When a paid client's subscription lapses (failed payment or expiry), features ar
 - **Feature gating** in `lib/subscription.ts` checks **both** `subscription_status` and `subscription_plan_id`. Never gate on `plan_id` alone.
 
 See `AGENTS.md § 9` for the authoritative rules and free-tier reset values.
+
+## Auth Session Recovery
+
+- Visiting `/login` while authenticated redirects by role:
+  - `admin` / `sub_admin` → `/admin`
+  - other authenticated users → `/dashboard`
+- Middleware automatically recovers broken auth states:
+  - if session decoding/refresh fails, Supabase auth cookies are cleared
+  - user is redirected to `/login?recovered=1` (or kept on `/login` with cleared cookies)
 
 ## Docs
 

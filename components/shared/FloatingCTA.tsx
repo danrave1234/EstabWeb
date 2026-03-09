@@ -46,10 +46,9 @@ export default function FloatingCTA({
 
   return (
     <div
-      className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] flex flex-col items-end gap-3 transition-all duration-500 transform pointer-events-none ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+      className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] flex flex-col items-end gap-2 transition-all duration-500 transform pointer-events-none ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
         }`}
     >
-
       {/* Back to Top */}
       {showScrollTop && (
         <button

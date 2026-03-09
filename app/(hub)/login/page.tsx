@@ -13,10 +13,16 @@ import Image from "next/image"
 function LoginContent() {
   const searchParams = useSearchParams()
   const initialMode = searchParams.get('mode') === 'signup' ? 'signup' : 'login'
+  const recovered = searchParams.get('recovered') === '1'
   
   const [isPending, setIsPending] = React.useState(false)
   const [isGooglePending, setIsGooglePending] = React.useState(false)
   const [mode, setMode] = React.useState<'login' | 'signup'>(initialMode)
+
+  React.useEffect(() => {
+    if (!recovered) return
+    toast.info('Session was reset. Please log in again.')
+  }, [recovered])
 
   async function handleGoogleLogin() {
     setIsGooglePending(true)

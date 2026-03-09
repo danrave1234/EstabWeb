@@ -35,6 +35,14 @@ import {
   DEFAULT_SERVICE_AREA_MAP,
   DEFAULT_LOGO_CLOUD,
   DEFAULT_FAQ_ACCORDION,
+  DEFAULT_GYM_PROGRAMS,
+  DEFAULT_GYM_SCHEDULE,
+  DEFAULT_GYM_MEMBERSHIPS,
+  DEFAULT_GYM_TRAINERS,
+  DEFAULT_GYM_RESULTS,
+  DEFAULT_GYM_FACILITY,
+  DEFAULT_GYM_CLASS_TYPES,
+  DEFAULT_GYM_FAQ,
 } from "@/config/dashboard-config"
 
 // ── Live-preview dynamic imports (ssr: false — section picker only) ──────────
@@ -80,6 +88,14 @@ const LivePreviewFAQTwoColumn = dynamic(() => import("@/components/blocks/FAQTwo
 const LivePreviewMaintenancePlans = dynamic(() => import("@/components/blocks/MaintenancePlans"), { ssr: false })
 const LivePreviewFreeConsultation = dynamic(() => import("@/components/blocks/FreeConsultationForm"), { ssr: false })
 const LivePreviewMessengerStickyCTA = dynamic(() => import("@/components/blocks/MessengerStickyCTA"), { ssr: false })
+const LivePreviewGymPrograms = dynamic(() => import("@/components/blocks/GymPrograms"), { ssr: false })
+const LivePreviewGymClassSchedule = dynamic(() => import("@/components/blocks/GymClassSchedule"), { ssr: false })
+const LivePreviewGymMembershipTiers = dynamic(() => import("@/components/blocks/GymMembershipTiers"), { ssr: false })
+const LivePreviewGymTrainers = dynamic(() => import("@/components/blocks/GymTrainers"), { ssr: false })
+const LivePreviewGymResultsStories = dynamic(() => import("@/components/blocks/GymResultsStories"), { ssr: false })
+const LivePreviewGymFacilityHighlights = dynamic(() => import("@/components/blocks/GymFacilityHighlights"), { ssr: false })
+const LivePreviewGymClassTypes = dynamic(() => import("@/components/blocks/GymClassTypes"), { ssr: false })
+const LivePreviewGymFaq = dynamic(() => import("@/components/blocks/GymFaq"), { ssr: false })
 
 // ── Prefetch on hover ────────────────────────────────────────────────────────
 export function prefetchSectionPreview(id: string) {
@@ -145,6 +161,22 @@ export function prefetchSectionPreview(id: string) {
       void import("@/components/blocks/WarrantyGuaranteeBlock"); return
     case "facebook-review-embed":
       void import("@/components/blocks/FacebookReviewEmbed"); return
+    case "gym--programs":
+      void import("@/components/blocks/GymPrograms"); return
+    case "gym--schedule":
+      void import("@/components/blocks/GymClassSchedule"); return
+    case "gym--memberships":
+      void import("@/components/blocks/GymMembershipTiers"); return
+    case "gym--trainers":
+      void import("@/components/blocks/GymTrainers"); return
+    case "gym--results":
+      void import("@/components/blocks/GymResultsStories"); return
+    case "gym--facility":
+      void import("@/components/blocks/GymFacilityHighlights"); return
+    case "gym--class-types":
+      void import("@/components/blocks/GymClassTypes"); return
+    case "gym--faq":
+      void import("@/components/blocks/GymFaq"); return
     default:
       return
   }
@@ -764,6 +796,70 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
             title={DEFAULT_FEATURED_LISTINGS.title}
             subtitle={DEFAULT_FEATURED_LISTINGS.subtitle}
             items={DEFAULT_FEATURED_LISTINGS.items as any}
+          />
+        )
+      case "gym--programs":
+        return (
+          <LivePreviewGymPrograms
+            title={DEFAULT_GYM_PROGRAMS.title}
+            subtitle={DEFAULT_GYM_PROGRAMS.subtitle}
+            items={DEFAULT_GYM_PROGRAMS.items as any}
+          />
+        )
+      case "gym--schedule":
+        return (
+          <LivePreviewGymClassSchedule
+            title={DEFAULT_GYM_SCHEDULE.title}
+            subtitle={DEFAULT_GYM_SCHEDULE.subtitle}
+            days={DEFAULT_GYM_SCHEDULE.days as any}
+          />
+        )
+      case "gym--memberships":
+        return (
+          <LivePreviewGymMembershipTiers
+            title={DEFAULT_GYM_MEMBERSHIPS.title}
+            subtitle={DEFAULT_GYM_MEMBERSHIPS.subtitle}
+            tiers={DEFAULT_GYM_MEMBERSHIPS.tiers as any}
+          />
+        )
+      case "gym--trainers":
+        return (
+          <LivePreviewGymTrainers
+            title={DEFAULT_GYM_TRAINERS.title}
+            subtitle={DEFAULT_GYM_TRAINERS.subtitle}
+            items={DEFAULT_GYM_TRAINERS.items as any}
+          />
+        )
+      case "gym--results":
+        return (
+          <LivePreviewGymResultsStories
+            title={DEFAULT_GYM_RESULTS.title}
+            subtitle={DEFAULT_GYM_RESULTS.subtitle}
+            stories={DEFAULT_GYM_RESULTS.stories as any}
+          />
+        )
+      case "gym--facility":
+        return (
+          <LivePreviewGymFacilityHighlights
+            title={DEFAULT_GYM_FACILITY.title}
+            subtitle={DEFAULT_GYM_FACILITY.subtitle}
+            items={DEFAULT_GYM_FACILITY.items as any}
+          />
+        )
+      case "gym--class-types":
+        return (
+          <LivePreviewGymClassTypes
+            title={DEFAULT_GYM_CLASS_TYPES.title}
+            subtitle={DEFAULT_GYM_CLASS_TYPES.subtitle}
+            items={DEFAULT_GYM_CLASS_TYPES.items as any}
+          />
+        )
+      case "gym--faq":
+        return (
+          <LivePreviewGymFaq
+            title={DEFAULT_GYM_FAQ.title}
+            subtitle={DEFAULT_GYM_FAQ.subtitle}
+            items={DEFAULT_GYM_FAQ.items as any}
           />
         )
       case "financing-section":

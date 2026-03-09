@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { COLOR_THEME_SWATCHES, DEFAULT_FOOTER, DEFAULT_BLUEPRINT_CONFIG, DEFAULT_EMERGENCY_CTA, DEFAULT_AWARDS_STRIP, DEFAULT_FAQ_ACCORDION, DEFAULT_BEFORE_AFTER_GALLERY, DEFAULT_BLOG, DEFAULT_HOW_IT_WORKS, DEFAULT_PRACTICE_AREAS, DEFAULT_TREATMENT_PROCESS, DEFAULT_COMMON_PESTS, DEFAULT_FEATURED_LISTINGS, DEFAULT_DEVELOPER_PARTNERS, DEFAULT_TESTIMONIALS, DEFAULT_REVIEW_TRUST_BAR, DEFAULT_FINANCING, DEFAULT_AC_TYPES, DEFAULT_PRICE_PREVIEW, DEFAULT_PRICING_TABLE, DEFAULT_MAINTENANCE_PLANS, DEFAULT_FACEBOOK_REVIEW_EMBED, DEFAULT_WHY_CHOOSE_ME, DEFAULT_SERVICE_AREA_MAP, DEFAULT_LOGO_CLOUD, DEFAULT_DELIVERY_COVERAGE, DEFAULT_CONTACT_WITH_MAP, DEFAULT_HERO, DEFAULT_HERO_EMERGENCY, DEFAULT_TRUST_BADGES, DEFAULT_TEAM_CAROUSEL, DEFAULT_ATTORNEY_PROFILE, DEFAULT_CTA, DEFAULT_PROMO_STRIP, DEFAULT_FREE_CONSULTATION, DEFAULT_GUARANTEE, DEFAULT_CONTACT, DEFAULT_FEATURES, sectionIdToKey, navigationToArray, ensureStringArray, deepMerge } from "@/config/dashboard-config"
+import { COLOR_THEME_SWATCHES, DEFAULT_FOOTER, DEFAULT_BLUEPRINT_CONFIG, DEFAULT_EMERGENCY_CTA, DEFAULT_AWARDS_STRIP, DEFAULT_FAQ_ACCORDION, DEFAULT_BEFORE_AFTER_GALLERY, DEFAULT_BLOG, DEFAULT_HOW_IT_WORKS, DEFAULT_PRACTICE_AREAS, DEFAULT_TREATMENT_PROCESS, DEFAULT_COMMON_PESTS, DEFAULT_FEATURED_LISTINGS, DEFAULT_DEVELOPER_PARTNERS, DEFAULT_TESTIMONIALS, DEFAULT_REVIEW_TRUST_BAR, DEFAULT_FINANCING, DEFAULT_AC_TYPES, DEFAULT_PRICE_PREVIEW, DEFAULT_PRICING_TABLE, DEFAULT_MAINTENANCE_PLANS, DEFAULT_FACEBOOK_REVIEW_EMBED, DEFAULT_WHY_CHOOSE_ME, DEFAULT_SERVICE_AREA_MAP, DEFAULT_LOGO_CLOUD, DEFAULT_DELIVERY_COVERAGE, DEFAULT_CONTACT_WITH_MAP, DEFAULT_HERO, DEFAULT_HERO_EMERGENCY, DEFAULT_TRUST_BADGES, DEFAULT_TEAM_CAROUSEL, DEFAULT_ATTORNEY_PROFILE, DEFAULT_CTA, DEFAULT_PROMO_STRIP, DEFAULT_FREE_CONSULTATION, DEFAULT_GUARANTEE, DEFAULT_CONTACT, DEFAULT_FEATURES, DEFAULT_GYM_PROGRAMS, DEFAULT_GYM_SCHEDULE, DEFAULT_GYM_MEMBERSHIPS, DEFAULT_GYM_TRAINERS, DEFAULT_GYM_RESULTS, DEFAULT_GYM_FACILITY, DEFAULT_GYM_CLASS_TYPES, DEFAULT_GYM_FAQ, sectionIdToKey, navigationToArray, ensureStringArray, deepMerge } from "@/config/dashboard-config"
 import { BLOCK_MAP } from "@/lib/utils/block-registry"
 import { categoryLabelForSection, slugify } from "@/lib/utils/blocks"
 import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo"
@@ -61,6 +61,14 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
     'contact--with-map': DEFAULT_CONTACT_WITH_MAP,
     'contact--columns': DEFAULT_CONTACT,
     'contact--split': DEFAULT_CONTACT,
+    'gym--programs': DEFAULT_GYM_PROGRAMS,
+    'gym--schedule': DEFAULT_GYM_SCHEDULE,
+    'gym--memberships': DEFAULT_GYM_MEMBERSHIPS,
+    'gym--trainers': DEFAULT_GYM_TRAINERS,
+    'gym--results': DEFAULT_GYM_RESULTS,
+    'gym--facility': DEFAULT_GYM_FACILITY,
+    'gym--class-types': DEFAULT_GYM_CLASS_TYPES,
+    'gym--faq': DEFAULT_GYM_FAQ,
     'announcement_bar': { text: 'Limited Promo: Get 20% off on all services this month!', buttonText: 'Book Now', buttonHref: '#contact', countdownDate: '' },
     'announcement_bar--promo': { text: 'Limited Promo: Get 20% off on all services this month!', buttonText: 'Book Now', buttonHref: '#contact', countdownDate: '' },
     'announcement_bar--emergency': { text: '24/7 Emergency Service Available — Call Now!', buttonText: 'Call Now', buttonHref: 'tel:+18005551234', countdownDate: '' },
@@ -376,6 +384,38 @@ export function useEditorState(project: any) {
             const b = (base || {}) as Record<string, any>
             const areas = Array.isArray(b.areas) ? b.areas : DEFAULT_DELIVERY_COVERAGE.areas
             setFormWithCollapsed({ ...DEFAULT_DELIVERY_COVERAGE, ...b, areas })
+        } else if (sectionKey === 'gymPrograms') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_GYM_PROGRAMS, ...b, items: normalizeArrayItems(b.items, DEFAULT_GYM_PROGRAMS.items) })
+        } else if (sectionKey === 'gymSchedule') {
+            const b = (base || {}) as Record<string, any>
+            const days = normalizeArrayItems(b.days, DEFAULT_GYM_SCHEDULE.days).map((day: any) => ({
+                ...day,
+                classes: normalizeArrayItems(day?.classes, []),
+            }))
+            setFormWithCollapsed({ ...DEFAULT_GYM_SCHEDULE, ...b, days })
+        } else if (sectionKey === 'gymMemberships') {
+            const b = (base || {}) as Record<string, any>
+            const tiers = normalizeArrayItems(b.tiers, DEFAULT_GYM_MEMBERSHIPS.tiers).map((tier: any) => ({
+                ...tier,
+                perks: normalizeArrayItems(tier?.perks, []),
+            }))
+            setFormWithCollapsed({ ...DEFAULT_GYM_MEMBERSHIPS, ...b, tiers })
+        } else if (sectionKey === 'gymTrainers') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_GYM_TRAINERS, ...b, items: normalizeArrayItems(b.items, DEFAULT_GYM_TRAINERS.items) })
+        } else if (sectionKey === 'gymResults') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_GYM_RESULTS, ...b, stories: normalizeArrayItems(b.stories, DEFAULT_GYM_RESULTS.stories) })
+        } else if (sectionKey === 'gymFacility') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_GYM_FACILITY, ...b, items: normalizeArrayItems(b.items, DEFAULT_GYM_FACILITY.items) })
+        } else if (sectionKey === 'gymClassTypes') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_GYM_CLASS_TYPES, ...b, items: normalizeArrayItems(b.items, DEFAULT_GYM_CLASS_TYPES.items) })
+        } else if (sectionKey === 'gymFaq') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_GYM_FAQ, ...b, items: normalizeArrayItems(b.items, DEFAULT_GYM_FAQ.items) })
         } else if (sectionKey === 'features' || sectionKey === 'services' || sectionKey === 'servicesGrid') {
             const b = (base || {}) as Record<string, any>
             setFormWithCollapsed({ ...DEFAULT_FEATURES, ...b, items: normalizeArrayItems(b.items ?? b.features, DEFAULT_FEATURES.items) })

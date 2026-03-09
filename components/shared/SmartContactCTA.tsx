@@ -68,10 +68,9 @@ export default function SmartContactCTA({
 
     return (
         <div className={cn(
-            "fixed bottom-6 right-6 z-[120] flex flex-col items-end gap-3 transition-all duration-500 pointer-events-none",
+            "fixed bottom-6 right-6 z-[120] flex flex-col items-end gap-2 transition-all duration-500 pointer-events-none",
             isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
         )}>
-
             {/* Scroll to Top */}
             {showScrollTop && (
                 <button

@@ -204,12 +204,31 @@ export function EditorFormPanel({
                         autoSaveSection('theme', val)
                       }}
                     >
-                      {['lawyer', 'startup', 'chiropractor', 'dentist', 'clinic', 'cleaning', 'pool', 'pest-control', 'real-estate-modern', 'before-after-split', 'industrial', 'clean-delivery', 'luxury-soft', 'academic-clean', 'hvac', 'hvac-blue', 'generic'].map((t) => (
+                      {['lawyer', 'startup', 'chiropractor', 'dentist', 'clinic', 'cleaning', 'pool', 'pest-control', 'real-estate-modern', 'before-after-split', 'industrial', 'clean-delivery', 'luxury-soft', 'academic-clean', 'hvac', 'hvac-blue', 'gym', 'generic'].map((t) => (
                         <option key={t} value={t}>
                           {t.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
                         </option>
                       ))}
                     </select>
+                    {globalConfig.theme === "gym" && (
+                      <div className="mt-4 rounded-xl border border-border/70 bg-muted/20 p-3">
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-primary">Gym Hero Style</label>
+                        <p className="mt-1 text-[10px] text-muted-foreground">Switch between boutique, hardcore, and functional looks without changing theme.</p>
+                        <select
+                          className="mt-2 w-full rounded-lg border border-border/80 bg-background p-2 text-xs outline-none focus:ring-2 focus:ring-primary/30"
+                          value={formValues.layout || "boutique"}
+                          onChange={(e) => {
+                            const next = { ...formValues, layout: e.target.value }
+                            setFormValues(next)
+                            autoSaveSection("hero", next)
+                          }}
+                        >
+                          <option value="boutique">Boutique</option>
+                          <option value="hardcore">Hardcore</option>
+                          <option value="functional">Functional</option>
+                        </select>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

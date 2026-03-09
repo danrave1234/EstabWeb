@@ -30,7 +30,7 @@ export async function login(formData: FormData) {
 
   revalidatePath('/', 'layout')
   
-  if (profile?.role === 'admin') {
+  if (profile?.role === 'admin' || profile?.role === 'sub_admin') {
     redirect('/admin')
   }
   redirect('/dashboard')
