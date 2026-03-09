@@ -146,10 +146,10 @@ export default function ClientDomainSettings({
             </button>
             {domainStatus && (
               <div className={`flex items-start gap-2 p-3 rounded-xl border text-xs ${domainStatus.status === 'verified'
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400'
-                  : domainStatus.status === 'invalid'
-                    ? 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400'
-                    : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-700 dark:text-yellow-400'
+                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                : domainStatus.status === 'invalid'
+                  ? 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400'
+                  : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-700 dark:text-yellow-400'
                 }`}>
                 {domainStatus.status === 'verified' && <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />}
                 {domainStatus.status === 'invalid' && <XCircle className="w-4 h-4 shrink-0 mt-0.5" />}
@@ -281,6 +281,21 @@ export default function ClientDomainSettings({
           </table>
         </div>
       )}
+
+      {/* SEO Tip */}
+      <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-800 dark:text-blue-300 space-y-2 mt-4">
+        <div className="flex items-center gap-2">
+          <Globe className="w-4 h-4 shrink-0" />
+          <h4 className="text-xs font-bold uppercase tracking-widest">Google Search Indexing (SEO)</h4>
+        </div>
+        <p className="text-xs leading-relaxed">
+          <strong>Good News:</strong> Every time you hit <strong>Publish</strong> on an active custom domain, we automatically ping Google with your updated <code className="bg-blue-500/20 px-1 py-0.5 rounded">sitemap.xml</code>. This tells Google to crawl your latest changes.
+        </p>
+        <p className="text-xs leading-relaxed mt-2 border-t border-blue-500/20 pt-2">
+          <strong>Best Practice:</strong> For the ultimate SEO control and analytics, highly consider claiming your domain on <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-600 dark:hover:text-blue-400">Google Search Console</a> and manually submitting your sitemap link (<code className="bg-blue-500/20 px-1 py-0.5 rounded">{customDomain ? `https://${customDomain}/sitemap.xml` : "https://yourdomain.com/sitemap.xml"}</code>).
+        </p>
+      </div>
+
     </div>
   )
 }
