@@ -156,6 +156,7 @@ export function EditorFormPanel({
               customDomain={(project as any).custom_domain ?? null}
               subscriptionStatus={project.subscription_status ?? null}
               subscriptionEnd={(project as any).subscription_end ?? null}
+              bingAuthId={(globalConfig.seo as any)?.bingAuthId}
             />
           ) : (
             <form onSubmit={(e) => e.preventDefault()} className="space-y-6">

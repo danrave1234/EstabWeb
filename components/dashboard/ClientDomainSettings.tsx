@@ -12,6 +12,7 @@ interface ClientDomainSettingsProps {
   rootDomain?: string
   subscriptionStatus?: string | null
   subscriptionEnd?: string | null
+  bingAuthId?: string
 }
 
 export default function ClientDomainSettings({
@@ -21,6 +22,7 @@ export default function ClientDomainSettings({
   rootDomain = "estabweb.com",
   subscriptionStatus,
   subscriptionEnd,
+  bingAuthId = "",
 }: ClientDomainSettingsProps) {
   const isPro = subscriptionStatus === 'active' || subscriptionStatus === 'trial' || subscriptionStatus === 'admin_granted'
   const isExpired = subscriptionEnd ? new Date(subscriptionEnd) < new Date() : false
@@ -30,6 +32,10 @@ export default function ClientDomainSettings({
   const [activated, setActivated] = useState(false)
   const [statusLoading, setStatusLoading] = useState(false)
   const [domainStatus, setDomainStatus] = useState<null | { status: 'verified' | 'pending' | 'invalid'; error?: string }>(null)
+
+  const [bingVal, setBingVal] = useState(bingAuthId)
+  const [bingLoading, setBingLoading] = useState(false)
+
   const router = useRouter()
 
   const subdomainUrl = subdomain ? `https://${subdomain}.${rootDomain}` : null
@@ -83,6 +89,28 @@ export default function ClientDomainSettings({
       toast.error("Network error. Please try again.")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleSaveBing = async () => {
+    setBingLoading(true)
+    try {
+      const res = await fetch("/api/domain/bing-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId, bingAuthId: bingVal.trim() })
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error || "Failed to save Bing Verification Code")
+        return
+      }
+      toast.success("Bing Webmaster Verification Code saved!")
+      router.refresh()
+    } catch {
+      toast.error("Network error. Please try again.")
+    } finally {
+      setBingLoading(false)
     }
   }
 
@@ -294,6 +322,34 @@ export default function ClientDomainSettings({
         <p className="text-xs leading-relaxed mt-2 border-t border-blue-500/20 pt-2">
           <strong>Best Practice:</strong> To ensure search engines index your website quickly, we highly recommend claiming your domain on <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-600 dark:hover:text-blue-400">Google Search Console</a> and <a href="https://www.bing.com/webmasters" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-600 dark:hover:text-blue-400">Bing Webmaster Tools</a> (usually by adding a simple TXT record to your domain's DNS). Once verified, manually submit your sitemap link (<code className="bg-blue-500/20 px-1 py-0.5 rounded">{customDomain ? `https://${customDomain}/sitemap.xml` : "https://yourdomain.com/sitemap.xml"}</code>) to both platforms.
         </p>
+
+        {customDomain && (
+          <div className="mt-4 pt-3 border-t border-blue-500/20">
+            <label className="text-xs font-bold text-blue-900 dark:text-blue-200 block mb-1">Bing Webmaster XML Verification (Optional)</label>
+            <p className="text-[10px] opacity-80 mb-2">If you prefer verifying Bing via XML file instead of DNS, paste your unique code here.</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={bingVal}
+                onChange={(e) => setBingVal(e.target.value)}
+                placeholder="e.g. 1A2B3D4C5E6F..."
+                className="flex-1 px-3 py-1.5 text-[11px] border border-blue-500/30 rounded-lg bg-background/50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+              <button
+                onClick={handleSaveBing}
+                disabled={bingLoading}
+                className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-[11px] font-bold hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                {bingLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Save Code"}
+              </button>
+            </div>
+            {bingVal && !bingLoading && (
+              <p className="text-[10px] mt-1.5 opacity-80">
+                Your XML file will be live at: <a href={`https://${customDomain}/BingSiteAuth.xml`} target="_blank" className="underline font-mono">/BingSiteAuth.xml</a>
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
     </div>
