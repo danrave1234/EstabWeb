@@ -102,7 +102,8 @@ export default function Header({
                   alt={brandName}
                   width={40}
                   height={40}
-                  className="rounded-xl object-contain w-10 h-10"
+                  className="object-contain w-10 h-10"
+                  style={{ background: "transparent" }}
                 />
               ) : (
                 <Image
@@ -110,7 +111,8 @@ export default function Header({
                   alt={brandName}
                   width={40}
                   height={40}
-                  className="rounded-xl object-contain"
+                  className="object-contain"
+                  style={{ background: "transparent" }}
                 />
               )
             ) : (

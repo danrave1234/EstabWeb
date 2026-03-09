@@ -377,6 +377,7 @@ export default function SiteEditorSidebar() {
                             updateData({ ...data, brand: { ...data.brand, logoUrl: url } });
                           }}
                         />
+                        <p className="text-[10px] text-amber-500 leading-snug">⚠️ Use a <strong>PNG or SVG with a transparent background</strong> — logos with a solid background will show a black box in the header.</p>
                       </div>
                     </div>
                   </div>
@@ -574,6 +575,7 @@ export default function SiteEditorSidebar() {
                             updateData({ ...data, brand: { ...data.brand, logoUrl: url } });
                           }}
                         />
+                        <p className="text-[10px] text-amber-500 leading-snug">⚠️ Use a <strong>PNG or SVG with a transparent background</strong> — logos with a solid background will show a black box in the header.</p>
                       </div>
                     </div>
                   </div>

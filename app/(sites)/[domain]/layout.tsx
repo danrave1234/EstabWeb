@@ -50,7 +50,7 @@ export async function generateMetadata({
   const brand = config?.brand || {};
   const rawBrandName = brand.name === "Your Business Name" ? "" : brand.name;
   const fallbackBrandName = rawBrandName || formatDomainAsBrand(domain);
-  const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
+  const iconUrl = brand.favicon || brand.logoUrl || "/globe.svg";
 
   return {
     // Fallback title - page.tsx and [slug]/page.tsx override this per-route.
