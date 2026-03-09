@@ -140,14 +140,6 @@ export async function POST(req: Request) {
     const newCountToday = (updatePayload as any).publish_count_today as number
     await logAudit(supabase, 'publish', user.id, projectId, { version: nextVersion })
 
-    // If there is a custom domain and it's a Pro plan, auto-ping Google Sitemap
-    if (proj.custom_domain && isProPlan(proj)) {
-      const sitemapUrl = `https://${proj.custom_domain}/sitemap.xml`
-      fetch(`https://www.google.com/ping?sitemap=${sitemapUrl}`)
-        .then(() => console.log(`[SEO] Successfully pinged Google with sitemap: ${sitemapUrl}`))
-        .catch((err) => console.error(`[SEO] Failed to ping Google sitemap:`, err))
-    }
-
     return NextResponse.json({
       success: true,
       version: nextVersion,

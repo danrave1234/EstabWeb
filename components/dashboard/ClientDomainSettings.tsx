@@ -289,10 +289,10 @@ export default function ClientDomainSettings({
           <h4 className="text-xs font-bold uppercase tracking-widest">Google Search Indexing (SEO)</h4>
         </div>
         <p className="text-xs leading-relaxed">
-          <strong>Good News:</strong> Every time you hit <strong>Publish</strong> on an active custom domain, we automatically ping Google with your updated <code className="bg-blue-500/20 px-1 py-0.5 rounded">sitemap.xml</code>. This tells Google to crawl your latest changes.
+          <strong>Automatic Setup:</strong> We automatically generate a valid <code className="bg-blue-500/20 px-1 py-0.5 rounded">sitemap.xml</code> and <code className="bg-blue-500/20 px-1 py-0.5 rounded">robots.txt</code> file for your custom domain, so your website is technically capable of being crawled by search engines right out of the box.
         </p>
         <p className="text-xs leading-relaxed mt-2 border-t border-blue-500/20 pt-2">
-          <strong>Best Practice:</strong> For the ultimate SEO control and analytics, highly consider claiming your domain on <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-600 dark:hover:text-blue-400">Google Search Console</a> and manually submitting your sitemap link (<code className="bg-blue-500/20 px-1 py-0.5 rounded">{customDomain ? `https://${customDomain}/sitemap.xml` : "https://yourdomain.com/sitemap.xml"}</code>).
+          <strong>Best Practice:</strong> To ensure Google indexes your website quickly, we highly recommend claiming your domain on <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-600 dark:hover:text-blue-400">Google Search Console</a> and manually submitting your sitemap link (<code className="bg-blue-500/20 px-1 py-0.5 rounded">{customDomain ? `https://${customDomain}/sitemap.xml` : "https://yourdomain.com/sitemap.xml"}</code>).
         </p>
       </div>
 
