@@ -324,9 +324,14 @@ export default function ClientDomainSettings({
         </p>
 
         {customDomain && (
-          <div className="mt-4 pt-3 border-t border-blue-500/20">
-            <label className="text-xs font-bold text-blue-900 dark:text-blue-200 block mb-1">Bing Webmaster XML Verification (Optional)</label>
-            <p className="text-[10px] opacity-80 mb-2">If you prefer verifying Bing via XML file instead of DNS, paste your unique code here.</p>
+          <div className="mt-4 pt-4 border-t border-blue-500/20">
+            <label className="text-xs font-bold text-blue-900 dark:text-blue-200 block mb-2">Bing Webmaster XML Verification (Optional)</label>
+            <ol className="text-[11px] opacity-90 mb-3 space-y-1.5 list-decimal pl-4">
+              <li>Go to <a href="https://www.bing.com/webmasters" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-600 dark:hover:text-blue-400">Bing Webmaster Tools</a> and add your domain.</li>
+              <li>Choose <strong>XML File</strong> verification and copy the unique code string (e.g. <code className="bg-blue-500/10 px-1 py-0.5 rounded">1A2B3D4C5E6F...</code>) from the file they provide.</li>
+              <li>Paste the code here and click <strong>Save Code</strong>.</li>
+              <li>Go back to Bing and click <strong>Verify</strong>!</li>
+            </ol>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -338,14 +343,14 @@ export default function ClientDomainSettings({
               <button
                 onClick={handleSaveBing}
                 disabled={bingLoading}
-                className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-[11px] font-bold hover:bg-blue-600 transition-colors disabled:opacity-50"
+                className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-[11px] font-bold hover:bg-blue-600 transition-colors disabled:opacity-50 shrink-0"
               >
                 {bingLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Save Code"}
               </button>
             </div>
             {bingVal && !bingLoading && (
-              <p className="text-[10px] mt-1.5 opacity-80">
-                Your XML file will be live at: <a href={`https://${customDomain}/BingSiteAuth.xml`} target="_blank" className="underline font-mono">/BingSiteAuth.xml</a>
+              <p className="text-[10px] mt-2 opacity-80">
+                Your XML file is live at: <a href={`https://${customDomain}/BingSiteAuth.xml`} target="_blank" rel="noopener noreferrer" className="underline font-mono">/BingSiteAuth.xml</a>
               </p>
             )}
           </div>
