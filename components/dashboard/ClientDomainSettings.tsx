@@ -286,13 +286,13 @@ export default function ClientDomainSettings({
       <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-800 dark:text-blue-300 space-y-2 mt-4">
         <div className="flex items-center gap-2">
           <Globe className="w-4 h-4 shrink-0" />
-          <h4 className="text-xs font-bold uppercase tracking-widest">Google Search Indexing (SEO)</h4>
+          <h4 className="text-xs font-bold uppercase tracking-widest">Search Engine Indexing (SEO)</h4>
         </div>
         <p className="text-xs leading-relaxed">
           <strong>Automatic Setup:</strong> We automatically generate a valid <code className="bg-blue-500/20 px-1 py-0.5 rounded">sitemap.xml</code> and <code className="bg-blue-500/20 px-1 py-0.5 rounded">robots.txt</code> file for your custom domain, so your website is technically capable of being crawled by search engines right out of the box.
         </p>
         <p className="text-xs leading-relaxed mt-2 border-t border-blue-500/20 pt-2">
-          <strong>Best Practice:</strong> To ensure Google indexes your website quickly, we highly recommend claiming your domain on <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-600 dark:hover:text-blue-400">Google Search Console</a> and manually submitting your sitemap link (<code className="bg-blue-500/20 px-1 py-0.5 rounded">{customDomain ? `https://${customDomain}/sitemap.xml` : "https://yourdomain.com/sitemap.xml"}</code>).
+          <strong>Best Practice:</strong> To ensure search engines index your website quickly, we highly recommend claiming your domain on both <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-600 dark:hover:text-blue-400">Google Search Console</a> and <a href="https://www.bing.com/webmasters" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-600 dark:hover:text-blue-400">Bing Webmaster Tools</a>. Once claimed, manually submit your sitemap link (<code className="bg-blue-500/20 px-1 py-0.5 rounded">{customDomain ? `https://${customDomain}/sitemap.xml` : "https://yourdomain.com/sitemap.xml"}</code>) to both platforms.
         </p>
       </div>
 
