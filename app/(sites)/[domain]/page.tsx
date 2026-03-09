@@ -6,7 +6,7 @@ import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
 import { getCachedSiteConfig } from "@/lib/utils/site-config";
 import { getPageBySlug, normalizePages, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
 import { isProPlan } from "@/lib/subscription";
-import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo";
+import { buildAutoSeoDefaults, formatDomainAsBrand } from "@/lib/seo/autoSeo";
 
 export const revalidate = 120;
 
@@ -37,7 +37,7 @@ export async function generateMetadata({
     domain,
   });
   const brand = config?.brand || {};
-  const brandName = brand.name || domain;
+  const brandName = brand.name || formatDomainAsBrand(domain);
   const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
   const canonical = `https://${preferredHost}${resolvedSeo.canonical}`;
 
@@ -108,15 +108,15 @@ export default async function Home({
   const homePage = getPageBySlug(pages, "");
   const dataForPage = homePage
     ? {
-        ...initialData,
-        projectId: project?.id,
-        activeSections: homePage.activeSections ?? initialData.activeSections,
-        seo: homePage.seo ?? initialData.seo,
-      }
+      ...initialData,
+      projectId: project?.id,
+      activeSections: homePage.activeSections ?? initialData.activeSections,
+      seo: homePage.seo ?? initialData.seo,
+    }
     : {
-        ...initialData,
-        projectId: project?.id
-      };
+      ...initialData,
+      projectId: project?.id
+    };
 
   // If preview mode is ON, we wrap in a Client Component that listens for postMessage
   if (preview) {

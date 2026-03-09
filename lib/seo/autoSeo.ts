@@ -65,6 +65,17 @@ function humanizeSlug(slug: string): string {
     .join(" ")
 }
 
+export function formatDomainAsBrand(domain: string): string {
+  if (!domain) return "Business"
+  // e.g. 'lawthings.online' -> 'lawthings'
+  const withoutTld = domain.split(".")[0] || domain
+  // e.g. 'law-things' -> 'Law Things', 'lawthings' -> 'Lawthings'
+  return withoutTld
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ")
+}
+
 function sanitizeKeyword(value: unknown): string {
   const text = asText(value)
   if (!text) return ""
@@ -207,13 +218,14 @@ export function buildAutoSeoDefaults({
     page?.seo && typeof page.seo === "object"
       ? page.seo
       : config?.seo && typeof config.seo === "object"
-      ? config.seo
-      : {}
+        ? config.seo
+        : {}
   ) as Record<string, any>
 
   const slug = asText(pageSlug ?? page?.slug).replace(/^\/+|\/+$/g, "").toLowerCase()
   const label = pickFirstText(pageLabel, page?.label, humanizeSlug(slug))
-  const brandName = pickFirstText(config?.brand?.name, domain, "Business")
+  const formattedDomain = domain ? formatDomainAsBrand(domain) : "Business"
+  const brandName = pickFirstText(config?.brand?.name, formattedDomain)
   const location = getLocation(config)
   const theme = asText(config?.theme).replace(/-/g, " ")
 
@@ -251,15 +263,15 @@ export function buildAutoSeoDefaults({
     configuredKeywords.length > 0
       ? configuredKeywords
       : [
-          label,
-          `${label} services`,
-          brandName,
-          theme ? `${theme} services` : "",
-          serviceHints[0],
-          serviceHints[1],
-          location,
-          `${brandName} ${serviceHints[0] || "services"}`,
-        ],
+        label,
+        `${label} services`,
+        brandName,
+        theme ? `${theme} services` : "",
+        serviceHints[0],
+        serviceHints[1],
+        location,
+        `${brandName} ${serviceHints[0] || "services"}`,
+      ],
     8
   )
 

@@ -12,7 +12,7 @@ import { GoogleAnalytics, FacebookPixel, AnalyticsProvider } from "@/components/
 import { generateSchema } from "@/lib/utils/schema";
 import NetworkOfflineBanner from "@/components/shared/NetworkOfflineBanner";
 import { getPageBySlug, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
-import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo";
+import { buildAutoSeoDefaults, formatDomainAsBrand } from "@/lib/seo/autoSeo";
 import { isProPlan } from "@/lib/subscription";
 
 /**
@@ -48,12 +48,13 @@ export async function generateMetadata({
   });
 
   const brand = config?.brand || {};
+  const fallbackBrandName = brand.name || formatDomainAsBrand(domain);
   const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
 
   return {
     // Fallback title - page.tsx and [slug]/page.tsx override this per-route.
-    title: resolvedSeo.title || brand.name || domain,
-    description: resolvedSeo.description || `Welcome to ${brand.name || domain}`,
+    title: resolvedSeo.title || fallbackBrandName,
+    description: resolvedSeo.description || `Welcome to ${fallbackBrandName}`,
     metadataBase: new URL(`https://${preferredHost}`),
     icons: {
       icon: iconUrl,

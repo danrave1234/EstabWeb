@@ -13,7 +13,7 @@ import {
   normalizePagesWithDefaults,
 } from "@/lib/utils/site-pages";
 import { isProPlan } from "@/lib/subscription";
-import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo";
+import { buildAutoSeoDefaults, formatDomainAsBrand } from "@/lib/seo/autoSeo";
 
 export const revalidate = 120;
 
@@ -45,7 +45,7 @@ export async function generateMetadata({
   });
 
   const brand = config?.brand || {};
-  const brandName = brand.name || domain;
+  const brandName = brand.name || formatDomainAsBrand(domain);
   const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
   const canonical = `https://${preferredHost}${resolvedSeo.canonical}`;
 
