@@ -204,11 +204,47 @@ export function buildConfigSummary(
         parts.push(`steps: ${sd.steps.length}${firstPreview}`)
       }
 
-      // Plans / pricing
+      // Plans / tiers / pricing
       if (Array.isArray(sd.plans) && sd.plans.length > 0) {
         const first = sd.plans[0]
         const firstPreview = typeof first?.name === "string" ? ` (e.g. "${first.name}")` : ""
         parts.push(`plans: ${sd.plans.length}${firstPreview}`)
+      }
+      if (Array.isArray(sd.tiers) && sd.tiers.length > 0) {
+        const first = sd.tiers[0]
+        const firstPreview = typeof first?.name === "string" ? ` (e.g. "${first.name}")` : ""
+        parts.push(`tiers: ${sd.tiers.length}${firstPreview}`)
+      }
+
+      // Gym / Schedule classes
+      if (Array.isArray(sd.days) && sd.days.length > 0) {
+        parts.push(`schedule_days: ${sd.days.length}`)
+      }
+
+      // Results / Success stories
+      if (Array.isArray(sd.stories) && sd.stories.length > 0) {
+        const testText = sd.stories
+          .slice(0, 3)
+          .map((t: any) => t.quote ?? t.result ?? "")
+          .filter(Boolean)
+          .join(" | ")
+        if (testText) parts.push(`stories: ${testText.slice(0, 150)}`)
+      }
+
+      // Coverage / Maps
+      if (Array.isArray(sd.cities) && sd.cities.length > 0) {
+        const t = sd.cities.slice(0, 5).filter((c: any) => typeof c === "string").join(", ")
+        if (t) parts.push(`cities: ${t}`)
+      }
+      if (Array.isArray(sd.areas) && sd.areas.length > 0) {
+        const t = sd.areas.slice(0, 5).filter((c: any) => typeof c === "string").join(", ")
+        if (t) parts.push(`areas: ${t}`)
+      }
+
+      // Blogs / articles
+      if (Array.isArray(sd.posts) && sd.posts.length > 0) {
+        const t = sd.posts.slice(0, 3).map((p: any) => p.title ?? p.headline).filter(Boolean).join(", ")
+        if (t) parts.push(`posts: ${t}`)
       }
 
       if (parts.length) lines.push(`  [${id}]: ${parts.join(", ")}`)
@@ -219,8 +255,8 @@ export function buildConfigSummary(
   const navLinks: any[] = Array.isArray(config.navigation?.links)
     ? config.navigation.links
     : Array.isArray(config.navigation)
-    ? config.navigation
-    : []
+      ? config.navigation
+      : []
   if (navLinks.length > 0) {
     lines.push(`\nNavbar links: ${navLinks.map((l: any) => l.label ?? l.name ?? l.href).join(", ")}`)
   }
