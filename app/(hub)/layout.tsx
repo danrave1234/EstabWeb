@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import HubLayoutClient from "@/components/shared/HubLayoutClient";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://estabweb.com";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.estabweb.com";
 
 export const metadata: Metadata = {
   title: {

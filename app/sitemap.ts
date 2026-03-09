@@ -13,7 +13,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const isRoot = host === ROOT_DOMAIN || host === `www.${ROOT_DOMAIN}` || host.includes('localhost')
 
   if (isRoot) {
-    const baseUrl = `https://${ROOT_DOMAIN}`
+    // Use www to match what Vercel actually serves (non-www redirects to www)
+    const baseUrl = `https://www.${ROOT_DOMAIN}`
     return [
       '',
       '/pricing',
@@ -43,8 +44,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const maxPages = getMaxPagesForProject(project, planLimits)
   const paidPages = canUseMultiPage(project)
     ? pages
-        .filter((page) => page.slug && !isLegalPageSlug(page.slug) && !page?.seo?.robots?.noindex)
-        .slice(0, maxPages)
+      .filter((page) => page.slug && !isLegalPageSlug(page.slug) && !page?.seo?.robots?.noindex)
+      .slice(0, maxPages)
     : []
 
   const routes = [

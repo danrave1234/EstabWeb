@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: "Cookie Policy",
   description: "How EstabWeb uses cookies and similar technologies to run and improve the platform.",
   alternates: {
-    canonical: "/cookies",
+    canonical: "https://www.estabweb.com/cookies",
   },
 };
 

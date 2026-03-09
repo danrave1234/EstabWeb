@@ -15,17 +15,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async redirects() {
-    return [
-      // Permanently redirect www → non-www for the main EstabWeb domain
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "www.estabweb.com" }],
-        destination: "https://estabweb.com/:path*",
-        permanent: true,
-      },
-    ];
-  },
 };
 
 export default nextConfig;

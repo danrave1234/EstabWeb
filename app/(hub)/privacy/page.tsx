@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description:
     "How EstabWeb collects, uses, stores, and protects personal data for clients and visitors in the Philippines.",
   alternates: {
-    canonical: "/privacy",
+    canonical: "https://www.estabweb.com/privacy",
   },
 };
 

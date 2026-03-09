@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description:
     "Terms and conditions for using EstabWeb website services, subscriptions, and dashboard tools.",
   alternates: {
-    canonical: "/terms",
+    canonical: "https://www.estabweb.com/terms",
   },
 };
 
