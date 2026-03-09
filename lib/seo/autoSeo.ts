@@ -231,7 +231,11 @@ export function buildAutoSeoDefaults({
   const slug = asText(pageSlug ?? page?.slug).replace(/^\/+|\/+$/g, "").toLowerCase()
   const label = pickFirstText(pageLabel, page?.label, humanizeSlug(slug))
   const formattedDomain = domain ? formatDomainAsBrand(domain) : "Business"
-  const brandName = pickFirstText(config?.brand?.name, formattedDomain)
+  let rawBrandName = asText(config?.brand?.name)
+  if (rawBrandName.toLowerCase() === "your business name") {
+    rawBrandName = ""
+  }
+  const brandName = pickFirstText(rawBrandName, formattedDomain)
   const location = getLocation(config)
   const theme = asText(config?.theme).replace(/-/g, " ")
 

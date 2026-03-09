@@ -37,7 +37,8 @@ export async function generateMetadata({
     domain,
   });
   const brand = config?.brand || {};
-  const brandName = brand.name || formatDomainAsBrand(domain);
+  const rawBrandName = brand.name === "Your Business Name" ? "" : brand.name;
+  const brandName = rawBrandName || formatDomainAsBrand(domain);
   const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
   const canonical = `https://${preferredHost}${resolvedSeo.canonical}`;
 

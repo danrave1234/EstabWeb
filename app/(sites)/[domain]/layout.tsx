@@ -48,7 +48,8 @@ export async function generateMetadata({
   });
 
   const brand = config?.brand || {};
-  const fallbackBrandName = brand.name || formatDomainAsBrand(domain);
+  const rawBrandName = brand.name === "Your Business Name" ? "" : brand.name;
+  const fallbackBrandName = rawBrandName || formatDomainAsBrand(domain);
   const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
 
   return {
