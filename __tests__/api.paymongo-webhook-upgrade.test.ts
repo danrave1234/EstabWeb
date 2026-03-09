@@ -19,7 +19,7 @@ const WEBHOOK_SECRET = "test-webhook-secret"
 function signPayload(raw: string, secret: string): string {
   const timestamp = "1700000000"
   const digest = crypto.createHmac("sha256", secret).update(`${timestamp}.${raw}`).digest("hex")
-  return `t=${timestamp},v1=${digest}`
+  return `t=${timestamp},te=${digest}`
 }
 
 function makeRequest(body: unknown): Request {

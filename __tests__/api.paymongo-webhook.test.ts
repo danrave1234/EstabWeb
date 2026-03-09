@@ -13,7 +13,7 @@ jest.mock("@/lib/supabase/service", () => ({
 function signPayload(raw: string, secret: string): string {
   const timestamp = "1700000000"
   const digest = crypto.createHmac("sha256", secret).update(`${timestamp}.${raw}`).digest("hex")
-  return `t=${timestamp},v1=${digest}`
+  return `t=${timestamp},te=${digest}`
 }
 
 function makeRequest(body: unknown, signature: string): Request {
@@ -60,7 +60,7 @@ describe("POST /api/paymongo/webhook", () => {
 
   it("returns 401 for invalid signatures", async () => {
     const body = { id: "evt_1", type: "payment.paid" }
-    const req = makeRequest(body, "t=1700000000,v1=invalid")
+    const req = makeRequest(body, "t=1700000000,te=invalid")
 
     const res = await POST(req)
     const json = await res.json()
