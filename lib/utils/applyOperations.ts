@@ -104,6 +104,7 @@ export const SECTION_KEY_TO_CONFIG_PROP: Record<string, string> = {
   "lead_capture--multi-step": "freeConsultation",
   "free-consultation": "freeConsultation",
   "booking-cta": "freeConsultation",
+  "custom-html": "customHtml",
   // contact variants — all read from config.contact
   "contact": "contact",
   "contact--standard": "contact",

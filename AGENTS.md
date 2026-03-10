@@ -106,3 +106,15 @@ When a paid subscription lapses (payment failure or expiry), **two code paths** 
   - tenant: `app/(sites)/[domain]/llms.txt/route.ts`, `app/(sites)/[domain]/llms-full.txt/route.ts`
 - Tenant llms generation logic is in `lib/seo/tenant-llms.ts` and `lib/seo/llms.ts`.
 - **Rule**: when adding, renaming, or removing public pages, keep sitemap and llms outputs aligned so crawlers and AI systems receive consistent URL inventories.
+
+### 13. AI Custom HTML Section (Pro+ Gate)
+- Section ID: `custom-html`
+- Config key: `customHtml` (stored in project `draft_config` / `current_config`)
+- Rendering pipeline updates must stay in sync across:
+  - `lib/utils/block-registry.ts`
+  - `config/dashboard-config.ts` (`sectionIdToKey`, labels, defaults)
+  - `hooks/dashboard/useEditorState.ts` default section seed map
+  - `lib/utils/block-props.tsx` + `components/shared/BlockRegistry.tsx`
+- **Plan gate rule**: custom HTML section is available only for plan IDs `pro`, `ecommerce`, `custom` with status `active`/`trial` (or `admin_granted`). Use `hasProOrHigher()` from `lib/subscription.ts` rather than ad hoc checks.
+- **Security rule**: only `custom-html` may carry raw HTML/CSS fields (`html`, `css`), and those must pass sanitization via `lib/security/custom-section-sanitizer.ts` and `validateOperations()`.
+- **AI rule**: `app/api/ai/editor-command/route.ts` must keep strict prompt constraints so HTML is allowed only for `custom-html.html/css`; all other fields remain plain text.

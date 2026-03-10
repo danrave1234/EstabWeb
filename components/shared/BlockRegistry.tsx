@@ -39,6 +39,7 @@ export const BlogGrid = dynamicWithSkeleton(() => import("@/components/blocks/Bl
 export const FeaturesModern = dynamicWithSkeleton(() => import("@/components/blocks/FeaturesModern"), { className: "h-[600px]" });
 export const ReviewsGrid = dynamicWithSkeleton(() => import("@/components/blocks/ReviewsGrid"), { className: "h-[600px]" });
 export const FAQTwoColumn = dynamicWithSkeleton(() => import("@/components/blocks/FAQTwoColumn"), { className: "h-[500px]" });
+export const CustomHtmlSection = dynamicWithSkeleton(() => import("@/components/blocks/CustomHtmlSection"), { className: "h-[420px]" });
 
 // PH Specific Blocks
 export const MessengerStickyCTA = dynamicWithSkeleton(() => import("@/components/blocks/MessengerStickyCTA"), { className: "h-0" });

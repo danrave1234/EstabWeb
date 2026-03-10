@@ -15,10 +15,12 @@ import type { Operation } from "@/lib/utils/applyOperations"
 import { COLOR_THEME_SWATCHES, TYPOGRAPHY_OPTIONS } from "@/config/dashboard-config"
 import { buildConfigSummary } from "@/lib/ai/buildConfigSummary"
 import { getPlansConfig } from "@/lib/plans-config-server"
+import { hasProOrHigher } from "@/lib/subscription"
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent"
+const CUSTOM_HTML_SECTION_ID = "custom-html"
 
 /** Canonical (non-legacy) section IDs exposed to the AI */
 const VALID_SECTION_IDS = BLOCK_REGISTRY.filter((b) => !b.legacy).map((b) => b.id)
@@ -266,6 +268,8 @@ const SECTION_FIELD_SCHEMA: Record<string, string[]> = {
   // Certifications / Logos
   certifications: ["title", "items[].name"],
   logo_cloud: ["title", "items[].name"],
+  // Custom AI section (Pro+ only)
+  "custom-html": ["title", "subtitle", "html", "css", "aiPrompt"],
 }
 
 function buildSystemPrompt(
@@ -362,7 +366,7 @@ STRICT RULES:
 - Never hallucinate unknown section keys — only use keys from VALID SECTION KEYS above.
 - Never remove the "hero" section from the homepage. You may remove it from other pages (using pageSlug) if appropriate.
 - Never modify domain, subscription_status, script, pages, activeSections directly, or any field not listed above.
-- Never include raw HTML in any string value.
+- Never include raw HTML in any string value, EXCEPT inside update_section for sectionKey "custom-html" using fields "html" and "css".
 - For update_global, only set colorTheme, typographyStyle, darkMode, footerStyle, or footer sub-fields — nothing else.
 - For update_section, never set activeSections, pages, colorTheme, typographyStyle, darkMode, domain, or subscription fields inside changes.
 - colorTheme must be one of the VALID COLOR THEMES listed above.
@@ -375,6 +379,16 @@ STRICT RULES:
 
 EXAMPLE OUTPUT:
 {"summary":"Updated hero messaging for urgency and switched to a bold red theme.","operations":[{"type":"update_section","sectionKey":"hero","changes":{"title":"24/7 Emergency Service – We Respond in 30 Minutes","ctaText":"Call Now"}},{"type":"update_global","changes":{"colorTheme":"red-crimson","typographyStyle":"bold"}}]}`
+}
+
+function touchesCustomHtmlSection(op: Operation): boolean {
+  if (op.type === "reorder_sections") {
+    return op.newOrder.includes(CUSTOM_HTML_SECTION_ID)
+  }
+  if (op.type === "update_global" || op.type === "add_page") {
+    return false
+  }
+  return op.sectionKey === CUSTOM_HTML_SECTION_ID
 }
 
 export async function POST(req: NextRequest) {
@@ -459,8 +473,15 @@ export async function POST(req: NextRequest) {
     // Use plan-based limits — not a hardcoded default
     const planLimits = await getPlanLimits(supabase)
     const maxPages = getMaxPagesForProject(proj, planLimits)
-    const isPro = proj.subscription_status === "active" || proj.subscription_status === "trial" || proj.subscription_status === "admin_granted"
-    const maxSections = isPro ? 20 : 15
+    const isPaidStatus =
+      proj.subscription_status === "active" ||
+      proj.subscription_status === "trial" ||
+      proj.subscription_status === "admin_granted"
+    const maxSections = isPaidStatus ? 20 : 15
+    const canUseCustomHtmlSection = hasProOrHigher(proj as any)
+    const validSections = canUseCustomHtmlSection
+      ? VALID_SECTION_IDS
+      : VALID_SECTION_IDS.filter((id) => id !== CUSTOM_HTML_SECTION_ID)
 
     const currentColorTheme = typeof config.colorTheme === "string" ? config.colorTheme : "partner"
     const currentTypographyStyle = typeof config.typographyStyle === "string" ? config.typographyStyle : "elegant"
@@ -468,7 +489,7 @@ export async function POST(req: NextRequest) {
     const systemPrompt = buildSystemPrompt(
       activeSections,
       config,
-      VALID_SECTION_IDS,
+      validSections,
       currentColorTheme,
       currentTypographyStyle,
       maxSections,
@@ -519,13 +540,23 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    if (!canUseCustomHtmlSection && parsed.operations.some((op) => touchesCustomHtmlSection(op))) {
+      return NextResponse.json(
+        { error: "AI custom HTML sections are available on Pro, Ecommerce, and Custom plans only." },
+        { status: 403 }
+      )
+    }
+
     // Validate operations using plan-based section limit
     const validation = validateOperations(
       parsed.operations,
       activeSections,
       maxSections,
       maxPages,
-      currentPageCount
+      currentPageCount,
+      {
+        disallowedSectionIds: canUseCustomHtmlSection ? undefined : new Set([CUSTOM_HTML_SECTION_ID]),
+      }
     )
 
     // If there are hard errors AND no valid operations survived, reject

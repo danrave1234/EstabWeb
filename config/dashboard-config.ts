@@ -167,6 +167,31 @@ export const DEFAULT_CONTACT = {
   buttonText: "Send Message",
 };
 
+export const DEFAULT_CUSTOM_HTML_SECTION = {
+  title: "Custom Section",
+  subtitle: "Generated with AI custom section builder.",
+  aiPrompt: "",
+  html: `<div class="grid gap-4 md:grid-cols-3">
+  <article class="card">
+    <h3>Fast Turnaround</h3>
+    <p>Publish polished updates in minutes, not days.</p>
+  </article>
+  <article class="card">
+    <h3>Built for Leads</h3>
+    <p>Conversion-focused layout with clear next actions.</p>
+  </article>
+  <article class="card">
+    <h3>Editable Anytime</h3>
+    <p>Refine content quickly from your dashboard editor.</p>
+  </article>
+</div>`,
+  css: `.custom-html-section .grid{display:grid;gap:1rem}
+.custom-html-section .card{padding:1rem;border:1px solid var(--color-border);border-radius:12px;background:var(--color-muted)}
+.custom-html-section h3{margin:0 0 .5rem;font-weight:700}
+.custom-html-section p{margin:0;color:var(--color-muted-foreground)}
+@media (min-width:768px){.custom-html-section .md\\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}}`,
+};
+
 export const DEFAULT_CTA = {
   title: "Ready to Build Your Defense?",
   subtitle: "Contact us today for a free, confidential consultation.",
@@ -728,6 +753,7 @@ export function sectionIdToKey(id: string) {
     'lead_capture': 'freeConsultation',
     'lead_capture--multi-step': 'freeConsultation',
     'free_consultation': 'freeConsultation',
+    'custom-html': 'customHtml',
     // canonical IDs — payment / guarantee / contact
     'guarantee': 'warranty',
     'guarantee--badge': 'warranty',
@@ -858,6 +884,7 @@ export function formatSectionLabel(id: string): string {
     'faculty-grid': 'Faculty Grid',
     'delivery-coverage': 'Delivery Coverage',
     'booking-cta': 'Booking CTA',
+    'custom-html': 'AI Custom Section',
     'footer': 'Footer Settings',
     'contact': 'Contact Info',
     'navigation': 'Navigation Menu',

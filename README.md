@@ -120,6 +120,26 @@ The platform now ships GEO-focused discoverability defaults for both the hub dom
 
 When updating public routes or page labels, keep `sitemap.xml` and llms outputs in sync.
 
+## AI Custom HTML Section (Prototype)
+
+The dashboard now includes an AI-driven custom section prototype:
+
+- Section ID: `custom-html`
+- Config key: `customHtml`
+- Public renderer block: `components/blocks/CustomHtmlSection.tsx`
+- Sanitization: `lib/security/custom-section-sanitizer.ts`
+
+Plan gating:
+- Available only to `pro`, `ecommerce`, and `custom` plans with valid premium status (`active`/`trial`), plus `admin_granted`.
+- Gate helper: `hasProOrHigher()` in `lib/subscription.ts`.
+- Enforced in both:
+  - Add Section UI (`components/dashboard/AddSectionModal.tsx`)
+  - AI operation APIs (`app/api/ai/editor-command/route.ts`, `app/api/project-config/apply-operations/route.ts`)
+
+AI operation rules:
+- Raw HTML/CSS is allowed only for `update_section` on `sectionKey: "custom-html"` with fields `html` and `css`.
+- All other string fields remain sanitized as plain text.
+
 ## Module Boundaries
 
 See [docs/module-boundaries.md](docs/module-boundaries.md).

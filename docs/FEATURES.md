@@ -283,7 +283,10 @@ The following paths are never redirected to subdomains on the root domain:
 - The sidebar shows a drag-and-drop list of active sections and a palette of available sections to add.
 - Adding a section appends its key to `activeSections` and seeds default data for that section.
 - Removing a section removes its key from `activeSections` (data is preserved in config but not rendered).
-- Reordering updates the array order → `SiteBlockRenderer` renders sections in that exact order.
+- Reordering updates the array order -> `SiteBlockRenderer` renders sections in that exact order.
+
+- Custom AI section support uses section ID custom-html mapped to config key customHtml.
+- custom-html is gated to Pro+ (pro, ecommerce, custom) and admin_granted, with guards applied in dashboard UI and AI APIs.
 
 ---
 
@@ -867,6 +870,14 @@ All API routes are under `app/api/` and use Next.js Route Handlers.
 **`POST /api/project-config/apply-preset`**
 - Applies a full preset config (from `config/presets/`) to the project's draft.
 
+**`POST /api/ai/editor-command`**
+- Generates structured AI edit operations from dashboard prompts.
+- Enforces plan-gated section availability and blocks custom-html operations for non-Pro+ projects.
+
+**`POST /api/project-config/apply-operations`**
+- Applies validated AI operations to project draft_config.
+- Re-validates on server and rejects custom-html operations for non-Pro+ projects.
+
 ---
 
 ### 8.11 Cron Jobs
@@ -925,6 +936,7 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 | `PricingTable` | Plan comparison table with CTA |
 | `PricePreviewStrip` | Compact horizontal pricing strip |
 | `MaintenancePlans` | Service plan cards (pool/cleaning) |
+| `CustomHtmlSection` | AI-generated custom HTML/CSS block (`custom-html`, Pro+) |
 | `GymPrograms` | Program cards for gym tracks/coaches (`gym--programs`) |
 | `GymClassSchedule` | Weekly class matrix by day/time (`gym--schedule`) |
 | `GymMembershipTiers` | Membership pricing cards with perks/CTA (`gym--memberships`) |
@@ -1018,6 +1030,13 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 - Free: 1 page. Trial/Active: determined by `plan_limits` table (admin-configurable).
 - Legal pages (`privacy`, `terms`, `cookies`) are always unlimited.
 
+
+### Pro+ Custom HTML Gate
+- Gate helper: hasProOrHigher() in lib/subscription.ts.
+- Requires status active/trial plus plan ID pro/ecommerce/custom (or admin_granted).
+- Enforced in AddSectionModal, AiEditorModal, POST /api/ai/editor-command, and POST /api/project-config/apply-operations.
+- Raw HTML/CSS is allowed only for custom-html fields (html, css) and sanitized before apply/render.
+
 ---
 
 ## 11. Database Schema Summary
@@ -1041,4 +1060,5 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 
 ---
 
-*Last updated: 2026-03-10*
+*Last updated: 2026-03-11*
+

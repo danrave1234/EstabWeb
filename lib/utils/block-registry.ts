@@ -241,6 +241,8 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
   { id: "contact--with-map", dataKey: "contact", navEntry: { name: "Contact", href: "#contact" }, previewKind: "map", sectionType: "contact", variant: "with-map", label: "Contact With Map", purpose: "Best for businesses with a physical location" },
   { id: "contact--columns", dataKey: "contact", navEntry: { name: "Contact", href: "#contact" }, previewKind: "generic", sectionType: "contact", variant: "columns", label: "Contact Columns", purpose: "Multi-channel contact with social links" },
   { id: "contact--split", dataKey: "contact", navEntry: { name: "Contact", href: "#contact" }, previewKind: "generic", sectionType: "contact", variant: "split", label: "Contact Split", purpose: "Two-column split layout" },
+  // type: custom_html
+  { id: "custom-html", dataKey: "customHtml", navEntry: undefined, previewKind: "generic", sectionType: "custom_html", variant: "ai-html", label: "AI Custom Section", purpose: "Prompt AI to generate a custom HTML/CSS section (Pro+ only)" },
   // legacy aliases
   { id: "contact-minimal", dataKey: "contact", navEntry: { name: "Contact", href: "#contact" }, previewKind: "generic", legacy: true },
   { id: "contact-visual", dataKey: "contact", navEntry: { name: "Contact", href: "#contact" }, previewKind: "generic", legacy: true },
@@ -404,6 +406,12 @@ export const SECTION_CATEGORIES: { label: string; ids: string[] }[] = [
       "contact--split",
     ],
   },
+  {
+    label: "Custom",
+    ids: [
+      "custom-html",
+    ],
+  },
 ];
 
 /**
@@ -500,5 +508,11 @@ export const SECTION_TYPE_GROUPS: SectionTypeGroup[] = [
     icon: "Mail",
     label: "Contact",
     variantIds: ["contact", "contact--minimal", "contact--visual", "contact--with-map", "contact--columns", "contact--split"],
+  },
+  {
+    type: "custom_html",
+    icon: "Code2",
+    label: "Custom",
+    variantIds: ["custom-html"],
   },
 ];

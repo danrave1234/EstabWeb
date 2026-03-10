@@ -123,6 +123,20 @@ export function canPublishNow(project: ProjectSubscription): boolean {
   return remaining > 0 && remainingToday > 0
 }
 
+/** Pro-and-higher feature gate (pro, ecommerce, custom). */
+export function hasProOrHigher(project: ProjectSubscription | null | undefined): boolean {
+  if (!project) return false
+
+  const plan = getPlanType(project)
+  const status = (project?.subscription_status || "free").toLowerCase() as SubscriptionStatus
+
+  // Admin-granted projects should retain premium feature access.
+  if (status === "admin_granted") return true
+
+  if (!["active", "trial"].includes(status)) return false
+  return ["pro", "ecommerce", "custom"].includes(plan)
+}
+
 /** Whether the project is on a paid/active plan (custom domain + multipage allowed) */
 export function isProPlan(project: ProjectSubscription | null | undefined): boolean {
   if (!project) return false

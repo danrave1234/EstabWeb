@@ -12,6 +12,18 @@ import { toast } from "sonner"
 import type { Operation } from "@/lib/utils/applyOperations"
 import { applyOperations, resolveConfigProp } from "@/lib/utils/applyOperations"
 
+const CUSTOM_HTML_SECTION_ID = "custom-html"
+
+function touchesCustomHtmlSection(op: Operation): boolean {
+  if (op.type === "reorder_sections") {
+    return op.newOrder.includes(CUSTOM_HTML_SECTION_ID)
+  }
+  if (op.type === "update_global" || op.type === "add_page") {
+    return false
+  }
+  return op.sectionKey === CUSTOM_HTML_SECTION_ID
+}
+
 interface AiEditorModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -25,6 +37,8 @@ interface AiEditorModalProps {
   onPendingChange?: (hasPending: boolean) => void
   /** Whether the project is on a paid plan */
   isPro?: boolean
+  /** Whether Pro+ custom HTML sections are enabled for this project */
+  canUseCustomHtml?: boolean
 }
 
 interface ProposedChanges {
@@ -157,6 +171,7 @@ export function AiEditorModal({
   onPreview,
   onPendingChange,
   isPro = false,
+  canUseCustomHtml = false,
 }: AiEditorModalProps) {
   const [prompt, setPrompt] = React.useState("")
   const [loading, setLoading] = React.useState(false)
@@ -214,6 +229,16 @@ export function AiEditorModal({
       if (hasLockedPage) {
         setError(
           "This action requires a Pro plan. Adding new pages is only available on paid plans. Upgrade to continue, or rephrase your request to edit the existing page."
+        )
+        return
+      }
+
+      const hasLockedCustomHtml = !canUseCustomHtml && (data.operations as Operation[]).some(
+        (op) => touchesCustomHtmlSection(op)
+      )
+      if (hasLockedCustomHtml) {
+        setError(
+          "This action requires Pro or higher. AI custom HTML sections are available on Pro, Ecommerce, and Custom plans."
         )
         return
       }
@@ -352,7 +377,7 @@ export function AiEditorModal({
                   Action blocked
                 </p>
                 <p className="text-sm text-amber-700 dark:text-amber-400">{error}</p>
-                {!isPro && error.includes("Pro plan") && (
+                {error.includes("Pro") && (
                   <a
                     href="/pricing"
                     className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-amber-800 dark:text-amber-300 underline underline-offset-2 hover:opacity-80"
@@ -385,7 +410,9 @@ export function AiEditorModal({
         {/* Proposed changes panel */}
         {proposed && (() => {
           const hasPageOp = proposed.operations.some(op => op.type === "add_page")
-          const hasProGatedOp = !isPro && hasPageOp
+          const hasLockedPageOp = !isPro && hasPageOp
+          const hasLockedCustomOp = !canUseCustomHtml && proposed.operations.some((op) => touchesCustomHtmlSection(op))
+          const hasGatedOp = hasLockedPageOp || hasLockedCustomOp
           return (
           <div className="flex flex-col min-h-0 flex-1 mt-2">
             <div className="flex flex-col gap-4 overflow-y-auto min-h-0 flex-1 pr-1 pb-1">
@@ -412,7 +439,7 @@ export function AiEditorModal({
             </div>
 
             {/* Upgrade banner — shown when free plan and AI proposed a gated feature */}
-            {hasProGatedOp && (
+            {hasLockedPageOp && (
               <div className="rounded-xl border border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/40 dark:to-yellow-950/30 dark:border-amber-700 px-4 py-3.5 flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-amber-400 dark:bg-amber-600 flex items-center justify-center shrink-0 mt-0.5">
                   <Crown className="w-4 h-4 text-white" />
@@ -422,6 +449,25 @@ export function AiEditorModal({
                   <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">The AI suggested adding a new page, but your current plan only supports single-page sites. Upgrade to a paid plan to apply this change.</p>
                   <a
                     href="/dashboard"
+                    className="inline-flex items-center gap-1.5 mt-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 text-xs font-semibold transition-colors"
+                  >
+                    <Crown className="w-3.5 h-3.5" />
+                    View Plans
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {hasLockedCustomOp && (
+              <div className="rounded-xl border border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/40 dark:to-yellow-950/30 dark:border-amber-700 px-4 py-3.5 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-400 dark:bg-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <Crown className="w-4 h-4 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">Upgrade to Pro+ for AI custom HTML sections</p>
+                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">The AI suggested a custom HTML section. This feature is available on Pro, Ecommerce, and Custom plans.</p>
+                  <a
+                    href="/pricing"
                     className="inline-flex items-center gap-1.5 mt-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 text-xs font-semibold transition-colors"
                   >
                     <Crown className="w-3.5 h-3.5" />
@@ -450,7 +496,9 @@ export function AiEditorModal({
               </p>
               <ul className="flex flex-col gap-2">
                 {proposed.operations.map((op, i) => {
-                  const isLocked = !isPro && op.type === "add_page"
+                  const isLockedPage = !isPro && op.type === "add_page"
+                  const isLockedCustom = !canUseCustomHtml && touchesCustomHtmlSection(op)
+                  const isLocked = isLockedPage || isLockedCustom
                   return (
                   <li
                     key={i}
@@ -464,7 +512,7 @@ export function AiEditorModal({
                       </span>
                       <span className={`flex-1 ${isLocked ? "text-amber-700 dark:text-amber-400" : "text-foreground/90"}`}>{operationLabel(op)}</span>
                       {isLocked && (
-                        <span className="text-[10px] font-semibold uppercase tracking-wide bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded shrink-0">Pro</span>
+                        <span className="text-[10px] font-semibold uppercase tracking-wide bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded shrink-0">{isLockedCustom ? "Pro+" : "Pro"}</span>
                       )}
                     </div>
                     {!isLocked && <OperationDetail op={op} currentConfig={currentConfig} />}
@@ -486,7 +534,7 @@ export function AiEditorModal({
               <button
                 onClick={handleApply}
                 disabled={applying}
-                title={hasProGatedOp ? "Some changes require a paid plan and will be skipped" : undefined}
+                title={hasGatedOp ? "Some changes require an upgraded plan and may be skipped" : undefined}
                 className="inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-3 py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {applying ? (

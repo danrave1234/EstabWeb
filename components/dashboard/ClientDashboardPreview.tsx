@@ -14,6 +14,7 @@ import PreviewFrame from "@/components/dashboard/PreviewFrame"
 import { PreviewOverlay } from "@/components/dashboard/PreviewOverlay"
 import { useEditorState } from "@/hooks/dashboard/useEditorState"
 import { Layout, Eye, Layers } from "lucide-react"
+import { hasProOrHigher } from "@/lib/subscription"
 
 interface DashboardClientProps {
   project: any
@@ -26,6 +27,11 @@ interface DashboardClientProps {
 
 export default function ClientDashboardPreview({ project, user, initialPlansConfig }: DashboardClientProps) {
   const [overlayEnabled, setOverlayEnabled] = React.useState(true)
+  const canUseProPlusFeatures = React.useMemo(() => hasProOrHigher(project), [project])
+  const isPaidAiPlan = React.useMemo(() => {
+    const status = (project?.subscription_status || "").toLowerCase()
+    return status === "active" || status === "trial" || status === "admin_granted"
+  }, [project])
   const {
     iframeRef,
     selectedSection, setSelectedSection,
@@ -157,6 +163,7 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
           onOpenChange={setAddSectionOpen}
           activeSections={activeSections}
           addSection={addSection}
+          isProOrHigher={canUseProPlusFeatures}
         />
 
         {/* Main Content (Stage) */}
@@ -262,7 +269,8 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
           projectId={project.id}
           currentConfig={mergedConfig}
           onPreview={sendFullPreview}
-          isPro={project.subscription_status === 'pro'}
+          isPro={isPaidAiPlan}
+          canUseCustomHtml={canUseProPlusFeatures}
           onPendingChange={setAiHasPending}
           onApplied={(newDraft) => {
             setLocalDraftConfig(newDraft)

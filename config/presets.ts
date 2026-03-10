@@ -127,6 +127,7 @@ export type PresetContent = {
   gymFacility?: { title?: string; subtitle?: string; items: { name: string; description?: string; icon?: string; imageUrl?: string }[] };
   gymClassTypes?: { title?: string; subtitle?: string; items: { name: string; duration?: string; level?: string; description?: string; icon?: string }[] };
   gymFaq?: { title?: string; subtitle?: string; items: { question: string; answer: string }[] };
+  customHtml?: { title?: string; subtitle?: string; aiPrompt?: string; html?: string; css?: string };
   beforeAfterGallery?: { title?: string; subtitle?: string; items: { title: string; beforeImage: string; afterImage: string; description?: string }[] };
   promoCTA?: { title?: string; subtitle?: string; promoBadge?: string; buttonText?: string; buttonHref?: string; phone?: string; countdownEndDate?: string; backgroundImage?: string };
   featuredListings?: { title?: string; subtitle?: string; viewDetailsLabel?: string; sqmLabel?: string; items: { title: string; location: string; price: string; imageUrl: string; beds: number; baths: number; sqm: number; tag?: string }[] };
@@ -174,6 +175,30 @@ const GENERIC_CONTENT: PresetContent = {
     email: "contact@yourbusiness.com",
     phone: "+63 912 345 6789",
     address: "123 Main St, Your City",
+  },
+  customHtml: {
+    title: "Custom Section",
+    subtitle: "Generated with AI custom section builder.",
+    aiPrompt: "",
+    html: `<div class="grid gap-4 md:grid-cols-3">
+  <article class="card">
+    <h3>Fast Turnaround</h3>
+    <p>Publish polished updates in minutes, not days.</p>
+  </article>
+  <article class="card">
+    <h3>Built for Leads</h3>
+    <p>Conversion-focused layout with clear next actions.</p>
+  </article>
+  <article class="card">
+    <h3>Editable Anytime</h3>
+    <p>Refine content quickly from your dashboard editor.</p>
+  </article>
+</div>`,
+    css: `.custom-html-section .grid{display:grid;gap:1rem}
+.custom-html-section .card{padding:1rem;border:1px solid var(--color-border);border-radius:12px;background:var(--color-muted)}
+.custom-html-section h3{margin:0 0 .5rem;font-weight:700}
+.custom-html-section p{margin:0;color:var(--color-muted-foreground)}
+@media (min-width:768px){.custom-html-section .md\\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}}`,
   },
   practiceAreas: {
     title: "Our Services",

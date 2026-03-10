@@ -1,12 +1,13 @@
 /**
  * Validation Layer for AI Operations
  * Validates operations before showing them to the user.
- * Rejects unknown section keys, enforces guardrails.
+ * Rejects unknown section keys and enforces guardrails.
  */
 
 import { BLOCK_REGISTRY } from "@/lib/utils/block-registry"
 import type { Operation } from "@/lib/utils/applyOperations"
 import { isLegalPageSlug } from "@/lib/utils/site-pages"
+import { sanitizeCustomSectionCss, sanitizeCustomSectionHtml } from "@/lib/security/custom-section-sanitizer"
 
 /** All valid section IDs (canonical + legacy) */
 export const ALL_SECTION_IDS = new Set(BLOCK_REGISTRY.map((b) => b.id))
@@ -45,17 +46,23 @@ export interface ValidationResult {
   sanitizedOperations: Operation[]
 }
 
+export interface ValidationOptions {
+  /** Section IDs disallowed by plan/feature gating. */
+  disallowedSectionIds?: Set<string>
+}
+
 export function validateOperations(
   operations: Operation[],
   currentActiveSections: string[],
   maxSections: number = 20,
   maxPages: number = 1,
-  currentPageCount: number = 1
+  currentPageCount: number = 1,
+  options?: ValidationOptions
 ): ValidationResult {
   const errors: string[] = []
   const sanitized: Operation[] = []
+  const disallowedSectionIds = options?.disallowedSectionIds ?? new Set<string>()
 
-  // Guard: cap total operation count
   if (operations.length > MAX_OPERATIONS) {
     errors.push(
       `Too many operations (${operations.length}). Maximum allowed is ${MAX_OPERATIONS}.`
@@ -63,14 +70,18 @@ export function validateOperations(
     operations = operations.slice(0, MAX_OPERATIONS)
   }
 
-  // Simulate activeSections as we process ops to catch duplicates
+  // Simulate activeSections as we process ops to catch duplicates.
   const simulated = [...currentActiveSections]
 
   for (const op of operations) {
     switch (op.type) {
       case "add_section": {
+        if (disallowedSectionIds.has(op.sectionKey)) {
+          errors.push(`Section "${op.sectionKey}" is not available on your current plan.`)
+          continue
+        }
         if (!ALL_SECTION_IDS.has(op.sectionKey)) {
-          errors.push(`Unknown section key: "${op.sectionKey}" — rejected.`)
+          errors.push(`Unknown section key: "${op.sectionKey}" - rejected.`)
           continue
         }
         const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
@@ -80,16 +91,13 @@ export function validateOperations(
         }
 
         if (simulated.includes(op.sectionKey)) {
-          // Skip silently — already active, not an error
           continue
         }
         if (simulated.length >= maxSections) {
-          errors.push(
-            `Section limit reached (${maxSections}). Cannot add "${op.sectionKey}".`
-          )
+          errors.push(`Section limit reached (${maxSections}). Cannot add "${op.sectionKey}".`)
           continue
         }
-        // Clamp position to valid range
+
         const rawPos = op.position ?? simulated.length
         const safePos = Math.min(Math.max(rawPos, 0), simulated.length)
         simulated.splice(safePos, 0, op.sectionKey)
@@ -98,6 +106,10 @@ export function validateOperations(
       }
 
       case "remove_section": {
+        if (disallowedSectionIds.has(op.sectionKey)) {
+          errors.push(`Section "${op.sectionKey}" is not available on your current plan.`)
+          continue
+        }
         const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
         if (isRoot && PROTECTED_SECTIONS.has(op.sectionKey)) {
           errors.push(`Cannot remove protected section: "${op.sectionKey}" from homepage.`)
@@ -119,24 +131,30 @@ export function validateOperations(
       }
 
       case "update_section": {
-        if (!ALL_SECTION_IDS.has(op.sectionKey)) {
-          errors.push(`Unknown section key in update: "${op.sectionKey}" — rejected.`)
+        if (disallowedSectionIds.has(op.sectionKey)) {
+          errors.push(`Section "${op.sectionKey}" is not available on your current plan.`)
           continue
         }
-        // Strip blocked structural keys before sanitizing
+        if (!ALL_SECTION_IDS.has(op.sectionKey)) {
+          errors.push(`Unknown section key in update: "${op.sectionKey}" - rejected.`)
+          continue
+        }
+
         const filteredChanges: Record<string, any> = {}
         for (const [k, v] of Object.entries(op.changes)) {
           if (BLOCKED_SECTION_CHANGE_KEYS.has(k)) {
-            errors.push(`update_section: field "${k}" is a protected key — stripped.`)
+            errors.push(`update_section: field "${k}" is a protected key - stripped.`)
           } else {
             filteredChanges[k] = v
           }
         }
+
         if (Object.keys(filteredChanges).length === 0) {
-          errors.push(`update_section "${op.sectionKey}" had no allowed fields — skipped.`)
+          errors.push(`update_section "${op.sectionKey}" had no allowed fields - skipped.`)
           continue
         }
-        const safeChanges = sanitizeChanges(filteredChanges)
+
+        const safeChanges = sanitizeChanges(filteredChanges, op.sectionKey)
         sanitized.push({ ...op, changes: safeChanges })
         break
       }
@@ -145,14 +163,18 @@ export function validateOperations(
         const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
         const unknownKeys = op.newOrder.filter((k) => !ALL_SECTION_IDS.has(k))
         if (unknownKeys.length > 0) {
-          errors.push(`Unknown section keys in reorder: ${unknownKeys.join(", ")} — rejected.`)
+          errors.push(`Unknown section keys in reorder: ${unknownKeys.join(", ")} - rejected.`)
+          continue
+        }
+        const lockedKeys = op.newOrder.filter((k) => disallowedSectionIds.has(k))
+        if (lockedKeys.length > 0) {
+          errors.push(`Reorder includes locked sections: ${lockedKeys.join(", ")} - rejected.`)
           continue
         }
 
-        // Ensure no duplicates
         const deduped = [...new Set(op.newOrder)]
         if (deduped.length !== op.newOrder.length) {
-          errors.push(`Reorder contains duplicate section keys — deduplicated.`)
+          errors.push(`Reorder contains duplicate section keys - deduplicated.`)
         }
 
         if (!isRoot) {
@@ -165,17 +187,16 @@ export function validateOperations(
           continue
         }
 
-        // Ensure set equality: no sections silently dropped or added
         const currentSet = new Set(simulated)
         const newSet = new Set(deduped)
         const dropped = [...currentSet].filter((k) => !newSet.has(k))
         const added = [...newSet].filter((k) => !currentSet.has(k))
         if (dropped.length > 0) {
-          errors.push(`Reorder would silently drop sections: ${dropped.join(", ")} — rejected.`)
+          errors.push(`Reorder would silently drop sections: ${dropped.join(", ")} - rejected.`)
           continue
         }
         if (added.length > 0) {
-          errors.push(`Reorder cannot introduce new sections: ${added.join(", ")} — rejected.`)
+          errors.push(`Reorder cannot introduce new sections: ${added.join(", ")} - rejected.`)
           continue
         }
         sanitized.push({ ...op, newOrder: deduped })
@@ -183,17 +204,28 @@ export function validateOperations(
       }
 
       case "update_global": {
-        // Only allow colorTheme, typographyStyle, darkMode, footerStyle, footer — strip everything else
-        const ALLOWED_GLOBAL_KEYS = new Set(["colorTheme", "typographyStyle", "darkMode", "footerStyle", "footer", "brand", "navigation", "headerStyle"])
+        const allowedGlobalKeys = new Set([
+          "colorTheme",
+          "typographyStyle",
+          "darkMode",
+          "footerStyle",
+          "footer",
+          "brand",
+          "navigation",
+          "headerStyle",
+        ])
+
         const filteredChanges: Record<string, any> = {}
         for (const [k, v] of Object.entries(op.changes)) {
-          if (ALLOWED_GLOBAL_KEYS.has(k)) filteredChanges[k] = v
-          else errors.push(`update_global: field "${k}" is not allowed — stripped.`)
+          if (allowedGlobalKeys.has(k)) filteredChanges[k] = v
+          else errors.push(`update_global: field "${k}" is not allowed - stripped.`)
         }
+
         if (Object.keys(filteredChanges).length === 0) {
-          errors.push(`update_global had no allowed fields — skipped.`)
+          errors.push(`update_global had no allowed fields - skipped.`)
           continue
         }
+
         const safeChanges = sanitizeChanges(filteredChanges)
         sanitized.push({ ...op, changes: safeChanges })
         break
@@ -201,10 +233,11 @@ export function validateOperations(
 
       case "add_page": {
         if (currentPageCount >= maxPages) {
-          // Hard failure — entire request must be rejected, not just this op stripped
           return {
             valid: false,
-            errors: [`Adding new pages requires a Pro plan. Upgrade to continue, or rephrase your request to edit the existing page.`],
+            errors: [
+              "Adding new pages requires a Pro plan. Upgrade to continue, or rephrase your request to edit the existing page.",
+            ],
             sanitizedOperations: [],
           }
         }
@@ -230,30 +263,44 @@ export function validateOperations(
 }
 
 /**
- * Recursively strip raw HTML tags, script-like content, and enforce string length limits.
- * Handles deeply nested objects and arrays.
+ * Recursively strip unsafe markup and enforce max length limits.
+ * For custom-html section:
+ * - `html` allows sanitized markup
+ * - `css` allows sanitized CSS
  */
-function sanitizeChanges(changes: Record<string, any>): Record<string, any> {
+function sanitizeChanges(changes: Record<string, any>, sectionKey?: string): Record<string, any> {
   const out: Record<string, any> = {}
   for (const [key, value] of Object.entries(changes)) {
-    out[key] = sanitizeValue(value)
+    out[key] = sanitizeValue(value, key, sectionKey)
   }
   return out
 }
 
-function sanitizeValue(value: unknown): unknown {
+function sanitizeValue(value: unknown, path: string, sectionKey?: string): unknown {
   if (typeof value === "string") {
+    if (sectionKey === "custom-html") {
+      if (path === "html") return sanitizeCustomSectionHtml(value)
+      if (path === "css") return sanitizeCustomSectionCss(value)
+    }
+
     const stripped = value.replace(/<[^>]*>/g, "").trim()
-    // Enforce max string length
     return stripped.length > MAX_STRING_LENGTH
       ? stripped.slice(0, MAX_STRING_LENGTH)
       : stripped
   }
+
   if (Array.isArray(value)) {
-    return value.map(sanitizeValue)
+    return value.map((item, index) => sanitizeValue(item, `${path}[${index}]`, sectionKey))
   }
+
   if (value !== null && typeof value === "object") {
-    return sanitizeChanges(value as Record<string, any>)
+    const out: Record<string, any> = {}
+    for (const [k, v] of Object.entries(value as Record<string, any>)) {
+      const nextPath = path ? `${path}.${k}` : k
+      out[k] = sanitizeValue(v, nextPath, sectionKey)
+    }
+    return out
   }
+
   return value
 }

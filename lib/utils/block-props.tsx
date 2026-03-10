@@ -1,5 +1,5 @@
 import React from "react";
-import { ACTypesGrid, AttorneyProfile, AwardsStrip, BeforeAfterGalleryGrid, BeforeAfterSlider, BlogGrid, CommonPestsGrid, ContactColumns, ContactForm, ContactMinimal, ContactSplit, ContactVisual, ContactWithMap, CoverageRadiusBlock, DeveloperPartnersLogos, EmergencyCTAStrip, FAQAccordion, FAQTwoColumn, FacebookReviewEmbed, FeatureHighlightZigzag, FeaturedListingsGrid, FeaturesGrid, FeaturesModern, FinancingSection, FreeConsultationForm, GymClassSchedule, GymClassTypes, GymFacilityHighlights, GymFaq, GymMembershipTiers, GymPrograms, GymResultsStories, GymTrainers, Header, HeroAuthority, HeroBlock, HeroChiropractor, HeroCleaning, HeroClinic, HeroDentist, HeroEmergency, HeroGym, HeroPestControl, HeroPool, HeroSaas, HowItWorksSteps, LogoCloud, MaintenancePlans, MessengerStickyCTA, PatientFaq, PaymentOptionsStrip, PhotoGalleryGrid, PracticeAreasGrid, PricePreviewStrip, PricingTable, PromoCTASection, ReviewTrustBar, ReviewsGrid, SafetySection, ServiceAreaMap, StatsSection, TeamCarousel, TeamGrid, TreatmentProcessTimeline, TrustBadgesGrid, TrustBar, WarrantyGuaranteeBlock, WhyChooseMe } from "@/components/shared/BlockRegistry";
+import { ACTypesGrid, AttorneyProfile, AwardsStrip, BeforeAfterGalleryGrid, BeforeAfterSlider, BlogGrid, CommonPestsGrid, ContactColumns, ContactForm, ContactMinimal, ContactSplit, ContactVisual, ContactWithMap, CoverageRadiusBlock, CustomHtmlSection, DeveloperPartnersLogos, EmergencyCTAStrip, FAQAccordion, FAQTwoColumn, FacebookReviewEmbed, FeatureHighlightZigzag, FeaturedListingsGrid, FeaturesGrid, FeaturesModern, FinancingSection, FreeConsultationForm, GymClassSchedule, GymClassTypes, GymFacilityHighlights, GymFaq, GymMembershipTiers, GymPrograms, GymResultsStories, GymTrainers, Header, HeroAuthority, HeroBlock, HeroChiropractor, HeroCleaning, HeroClinic, HeroDentist, HeroEmergency, HeroGym, HeroPestControl, HeroPool, HeroSaas, HowItWorksSteps, LogoCloud, MaintenancePlans, MessengerStickyCTA, PatientFaq, PaymentOptionsStrip, PhotoGalleryGrid, PracticeAreasGrid, PricePreviewStrip, PricingTable, PromoCTASection, ReviewTrustBar, ReviewsGrid, SafetySection, ServiceAreaMap, StatsSection, TeamCarousel, TeamGrid, TreatmentProcessTimeline, TrustBadgesGrid, TrustBar, WarrantyGuaranteeBlock, WhyChooseMe } from "@/components/shared/BlockRegistry";
 import { SECTION_NAV_MAP } from "@/lib/utils/blocks";
 import { DEFAULT_GYM_CLASS_TYPES, DEFAULT_GYM_FACILITY, DEFAULT_GYM_FAQ, DEFAULT_GYM_MEMBERSHIPS, DEFAULT_GYM_PROGRAMS, DEFAULT_GYM_RESULTS, DEFAULT_GYM_SCHEDULE, DEFAULT_GYM_TRAINERS } from "@/config/dashboard-config";
 
@@ -58,6 +58,7 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
     statsSection = {},
     faqAccordion = {},
     logoCloud = {},
+    customHtml = {},
     gymPrograms = {},
     gymSchedule = {},
     gymMemberships = {},
@@ -980,6 +981,17 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
           title={trustBadgesGrid.title}
           subtitle={trustBadgesGrid.subtitle}
           items={Array.isArray(trustBadgesGrid.items) ? trustBadgesGrid.items : []}
+        />
+      );
+      break;
+    case "custom-html":
+      sectionContent = (
+        <CustomHtmlSection
+          key={key}
+          title={customHtml.title}
+          subtitle={customHtml.subtitle}
+          html={customHtml.html}
+          css={customHtml.css}
         />
       );
       break;

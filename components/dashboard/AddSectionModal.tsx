@@ -14,6 +14,7 @@ interface AddSectionModalProps {
   onOpenChange: (open: boolean) => void
   activeSections: string[]
   addSection: (id: string) => void
+  isProOrHigher: boolean
 }
 
 function SectionTypeIcon({ name, className }: { name: string; className?: string }) {
@@ -22,10 +23,26 @@ function SectionTypeIcon({ name, className }: { name: string; className?: string
   return <Icon className={className} />
 }
 
-export function AddSectionModal({ open, onOpenChange, activeSections, addSection }: AddSectionModalProps) {
+export function AddSectionModal({ open, onOpenChange, activeSections, addSection, isProOrHigher }: AddSectionModalProps) {
   const [selectedType, setSelectedType] = React.useState<SectionTypeGroup | null>(null)
   const [selectedVariantId, setSelectedVariantId] = React.useState<string | null>(null)
   const backdropPointerDownRef = React.useRef(false)
+
+  const isVariantAllowed = React.useCallback((id: string) => {
+    if (id === "custom-html" && !isProOrHigher) return false
+    return true
+  }, [isProOrHigher])
+
+  const availableTypeGroups = React.useMemo(
+    () =>
+      SECTION_TYPE_GROUPS
+        .map((group) => ({
+          ...group,
+          variantIds: group.variantIds.filter(isVariantAllowed),
+        }))
+        .filter((group) => group.variantIds.length > 0),
+    [isVariantAllowed]
+  )
 
   // Reset state when modal closes
   React.useEffect(() => {
@@ -49,11 +66,11 @@ export function AddSectionModal({ open, onOpenChange, activeSections, addSection
       setSelectedVariantId(null)
       return
     }
-    const firstId = selectedType.variantIds.find((id) => id !== "hero" && BLOCK_MAP[id])
+    const firstId = selectedType.variantIds.find((id) => id !== "hero" && BLOCK_MAP[id] && isVariantAllowed(id))
     setSelectedVariantId(firstId ?? null)
     // Prefetch all variants for this type
-    selectedType.variantIds.forEach((id) => prefetchSectionPreview(id))
-  }, [selectedType])
+    selectedType.variantIds.filter((id) => isVariantAllowed(id)).forEach((id) => prefetchSectionPreview(id))
+  }, [selectedType, isVariantAllowed])
 
   const handleAdd = (id: string) => {
     addSection(id)
@@ -129,7 +146,7 @@ export function AddSectionModal({ open, onOpenChange, activeSections, addSection
           {!selectedType && (
             <div className="w-full overflow-y-auto p-6">
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 max-w-5xl mx-auto">
-                {SECTION_TYPE_GROUPS.map((group) => {
+                {availableTypeGroups.map((group) => {
                   const addedCount = group.variantIds.filter((id) => activeSections.includes(id)).length
                   const totalVariants = group.variantIds.length
                   return (
@@ -169,6 +186,7 @@ export function AddSectionModal({ open, onOpenChange, activeSections, addSection
                 <div className="space-y-1.5">
                   {selectedType.variantIds.map((id) => {
                     if (id === "hero") return null
+                    if (!isVariantAllowed(id)) return null
                     const block = BLOCK_MAP[id]
                     if (!block) return null
                     const isAdded = activeSections.includes(id)
