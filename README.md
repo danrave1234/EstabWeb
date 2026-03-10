@@ -99,6 +99,27 @@ npm run dev
 - `npm run migrate`: run migration helper script
 - `npm run migrate:status`: migration status
 
+## GEO SEO (AI Searchability)
+
+The platform now ships GEO-focused discoverability defaults for both the hub domain and tenant domains:
+
+- AI crawler-aware `robots.txt` policy:
+  - Root: `app/robots.ts`
+  - Tenant: `app/(sites)/[domain]/robots.txt/route.ts`
+- `llms.txt` discovery files:
+  - Root: `/llms.txt`, `/llms-full.txt`
+  - Tenant: `/{domain}/llms.txt`, `/{domain}/llms-full.txt` (via host-based rewrite in production)
+- Shared generators:
+  - `lib/seo/ai-crawlers.ts`
+  - `lib/seo/llms.ts`
+  - `lib/seo/hub-llms.ts`
+  - `lib/seo/tenant-llms.ts`
+- Crawler policy mode (optional env):
+  - `GEO_CRAWLER_POLICY_MODE=max-visibility` (default)
+  - `GEO_CRAWLER_POLICY_MODE=training-restricted`
+
+When updating public routes or page labels, keep `sitemap.xml` and llms outputs in sync.
+
 ## Module Boundaries
 
 See [docs/module-boundaries.md](docs/module-boundaries.md).

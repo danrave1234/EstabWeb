@@ -93,3 +93,16 @@ When a paid subscription lapses (payment failure or expiry), **two code paths** 
   - if `supabase.auth.getUser()` fails on auth/admin/protected routes, clear Supabase auth cookies and recover to `/login?recovered=1`
   - if it fails while already on `/login`, clear cookies in-place and render login cleanly
 - **Rule**: when adjusting auth flow, keep `middleware`, `app/(hub)/login/layout.tsx`, and `app/actions/auth.ts` redirect role checks aligned.
+
+### 12. GEO SEO & AI Search Discoverability
+- AI crawler policy is centralized in `lib/seo/ai-crawlers.ts` and used by both:
+  - root robots metadata route: `app/robots.ts`
+  - tenant robots route: `app/(sites)/[domain]/robots.txt/route.ts`
+- Crawler behavior supports policy modes via `GEO_CRAWLER_POLICY_MODE`:
+  - `max-visibility` (default): allows major AI discovery/search crawlers, blocks only low-value aggressive bots
+  - `training-restricted`: keeps core answer/search crawlers, blocks discovery/training-focused crawlers
+- `llms.txt` support exists for both hub and tenant domains:
+  - hub: `app/llms.txt/route.ts`, `app/llms-full.txt/route.ts`
+  - tenant: `app/(sites)/[domain]/llms.txt/route.ts`, `app/(sites)/[domain]/llms-full.txt/route.ts`
+- Tenant llms generation logic is in `lib/seo/tenant-llms.ts` and `lib/seo/llms.ts`.
+- **Rule**: when adding, renaming, or removing public pages, keep sitemap and llms outputs aligned so crawlers and AI systems receive consistent URL inventories.

@@ -97,6 +97,7 @@ export default async function SiteLayout({
   let dbConf: any = null;
   let domain = "";
   let host = "";
+  let preferredHost = "";
   let projectId: string | undefined = undefined;
   let homeSeoDefaults: ReturnType<typeof buildAutoSeoDefaults> | null = null;
   let homeSeoSettings: Record<string, any> = {};
@@ -110,6 +111,14 @@ export default async function SiteLayout({
     dbConf = siteData.config;
     const project = siteData.project;
     projectId = project?.id;
+    const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase();
+    const hostWithoutPort = (host.split(":")[0] || domain).toLowerCase();
+    preferredHost =
+      project?.custom_domain && isProPlan(project)
+        ? project.custom_domain.toLowerCase()
+        : project?.subdomain
+          ? `${project.subdomain}.${ROOT_DOMAIN}`.toLowerCase()
+          : hostWithoutPort;
 
     if (dbConf) {
       const dbPages = normalizePagesWithDefaults(dbConf?.pages);
@@ -145,6 +154,18 @@ export default async function SiteLayout({
 
   const rawBrandName = dbConf?.brand?.name === "Your Business Name" ? "" : dbConf?.brand?.name;
   const fallbackBrandName = rawBrandName || formatDomainAsBrand(domain);
+  const hostWithoutPort = (host.split(":")[0] || domain).toLowerCase();
+  const schemaHost = preferredHost || hostWithoutPort;
+  const origin = `https://${schemaHost}`;
+  const websiteSchemaId = `${origin}/#website`;
+  const organizationSchemaId = `${origin}/#organization`;
+  const footerSocial = dbConf?.footer?.social || {};
+  const sameAs = [
+    footerSocial.facebookEnabled !== false ? footerSocial.facebook : undefined,
+    footerSocial.instagramEnabled !== false ? footerSocial.instagram : undefined,
+    footerSocial.linkedinEnabled !== false ? footerSocial.linkedin : undefined,
+    footerSocial.twitterEnabled !== false ? footerSocial.twitter : undefined,
+  ].filter((url: unknown): url is string => typeof url === "string" && url.trim().length > 0);
 
   return (
     <html
@@ -164,9 +185,33 @@ export default async function SiteLayout({
               data={{
                 "@context": "https://schema.org",
                 "@type": "WebSite",
+                "@id": websiteSchemaId,
                 "name": fallbackBrandName,
-                "url": `https://${host}`,
+                "url": origin,
                 "description": homeSeoDefaults?.description || `Welcome to ${fallbackBrandName}`,
+                "inLanguage": "en-PH",
+                "publisher": {
+                  "@id": organizationSchemaId,
+                },
+              }}
+            />
+            <StructuredData
+              data={{
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "@id": organizationSchemaId,
+                "name": fallbackBrandName,
+                "url": origin,
+                "logo": dbConf.brand?.logoUrl || undefined,
+                "email": dbConf.contact?.email || undefined,
+                "telephone": dbConf.contact?.phone || undefined,
+                "sameAs": sameAs.length > 0 ? sameAs : undefined,
+                "address": dbConf.contact?.address
+                  ? {
+                    "@type": "PostalAddress",
+                    "streetAddress": dbConf.contact.address,
+                  }
+                  : undefined,
               }}
             />
             {(() => {
@@ -185,7 +230,7 @@ export default async function SiteLayout({
                   "@context": "https://schema.org",
                   "@type": schemaType,
                   "name": fallbackBrandName,
-                  "url": `https://${host}`,
+                  "url": origin,
                 };
                 if (dbConf.brand?.logoUrl) defaultSchema["image"] = dbConf.brand.logoUrl;
                 if (dbConf.contact?.email) defaultSchema["email"] = dbConf.contact.email;
@@ -198,7 +243,7 @@ export default async function SiteLayout({
             {(() => {
               const homeSeo = homeSeoSettings;
               if (homeSeo.structuredData?.enabled) {
-                const schema = generateSchema(homeSeo.structuredData.type, dbConf);
+                const schema = generateSchema(homeSeo.structuredData.type, { ...dbConf, siteUrl: origin });
                 if (schema) return <StructuredData data={schema} />;
               }
               return null;

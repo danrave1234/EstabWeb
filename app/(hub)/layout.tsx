@@ -11,6 +11,16 @@ import HubLayoutClient from "@/components/shared/HubLayoutClient";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.estabweb.com";
+const normalizedSiteUrl = siteUrl.replace(/\/+$/g, "");
+const websiteSchemaId = `${normalizedSiteUrl}/#website`;
+const organizationSchemaId = `${normalizedSiteUrl}/#organization`;
+const organizationSameAs = [
+  process.env.NEXT_PUBLIC_ESTABWEB_FACEBOOK_URL,
+  process.env.NEXT_PUBLIC_ESTABWEB_INSTAGRAM_URL,
+  process.env.NEXT_PUBLIC_ESTABWEB_LINKEDIN_URL,
+  process.env.NEXT_PUBLIC_ESTABWEB_YOUTUBE_URL,
+  process.env.NEXT_PUBLIC_ESTABWEB_X_URL,
+].filter((url): url is string => typeof url === "string" && url.trim().length > 0);
 
 export const metadata: Metadata = {
   title: {
@@ -119,9 +129,34 @@ export default async function HubLayout({
           data={{
             "@context": "https://schema.org",
             "@type": "WebSite",
+            "@id": websiteSchemaId,
             "name": "EstabWeb",
-            "url": siteUrl,
+            "url": normalizedSiteUrl,
             "description": "Affordable business websites in the Philippines with easy editing, monthly subscription, and design support.",
+            "inLanguage": "en-PH",
+            "publisher": {
+              "@id": organizationSchemaId,
+            },
+          }}
+        />
+        <StructuredData
+          data={{
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "@id": organizationSchemaId,
+            "name": "EstabWeb",
+            "url": normalizedSiteUrl,
+            "logo": `${normalizedSiteUrl}/Logo.png`,
+            "contactPoint": [
+              {
+                "@type": "ContactPoint",
+                "contactType": "customer support",
+                "url": `${normalizedSiteUrl}/contact`,
+                "areaServed": "PH",
+                "availableLanguage": ["en", "fil"],
+              },
+            ],
+            "sameAs": organizationSameAs.length > 0 ? organizationSameAs : undefined,
           }}
         />
       </head>

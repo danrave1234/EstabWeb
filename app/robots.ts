@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
 import { headers } from 'next/headers'
+import { buildGeoRobotsRules } from '@/lib/seo/ai-crawlers'
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const headersList = await headers()
@@ -22,22 +23,22 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
 
   if (isRoot) {
     return {
-      rules: {
+      rules: buildGeoRobotsRules({
         userAgent: '*',
         allow: '/',
         disallow: ['/admin/', '/api/', '/auth/', '/dashboard/', '/subscribe/', '/onboarding', '/login', '/success'],
-      },
+      }) as MetadataRoute.Robots['rules'],
       sitemap: `https://${ROOT_DOMAIN}/sitemap.xml`,
     }
   }
 
   // For client sites
   return {
-    rules: {
+    rules: buildGeoRobotsRules({
       userAgent: '*',
       allow: '/',
       disallow: ['/api/'],
-    },
+    }) as MetadataRoute.Robots['rules'],
     sitemap: `https://${host}/sitemap.xml`,
   }
 }

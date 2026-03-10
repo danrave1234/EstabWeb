@@ -34,6 +34,7 @@ This document describes every major feature of the EstabWeb platform: what it do
    - 6.4 [Multi-Page Support](#64-multi-page-support)
    - 6.5 [SEO & Metadata](#65-seo--metadata)
    - 6.6 [Sitemap & Robots](#66-sitemap--robots)
+   - 6.7 [GEO SEO & llms.txt](#67-geo-seo--llmstxt)
 7. [Platform Hub](#7-platform-hub)
    - 7.1 [Landing Page](#71-landing-page)
    - 7.2 [Pricing Page](#72-pricing-page)
@@ -122,7 +123,7 @@ These headers are read by layouts and page components since `searchParams` is no
 
 ### Reserved Root Paths
 The following paths are never redirected to subdomains on the root domain:
-`api, admin, login, dashboard, onboarding, auth, preview, pricing, terms, privacy, cookies, contact, success`
+`api, admin, login, dashboard, onboarding, auth, preview, pricing, faq, terms, privacy, cookies, contact, success, sitemap.xml, robots.txt, llms.txt, llms-full.txt`
 
 ---
 
@@ -654,33 +655,50 @@ SiteTemplate
 - Legal pages (`privacy`, `terms`, `cookies`) are always available regardless of plan.
 
 ---
-
 ### 6.5 SEO & Metadata
 
-**File:** `app/(sites)/[domain]/page.tsx` — `generateMetadata()`
+**Files:** `app/(sites)/[domain]/page.tsx`, `app/(sites)/[domain]/[slug]/page.tsx`, `app/(sites)/[domain]/layout.tsx`
 
 **What it does:** Each public site page gets fully dynamic Open Graph, Twitter Card, and standard meta tags derived from the site config.
 
 **Logic:**
-- Title: `seo.title` → page label → `hero.title` → `features.title` → `brand.name + " | Professional Website"`
-- Description: `seo.description` → `hero.subtitle` → `contact.tagline` → fallback string
+- Title: `seo.title` -> page label -> `hero.title` -> `features.title` -> `brand.name + " | Professional Website"`
+- Description: `seo.description` -> `hero.subtitle` -> `contact.tagline` -> fallback string
 - Keywords: `seo.keywords` array, or auto-built from brand name, theme, hero text (deduped, max 12)
 - OG image: `brand.logoUrl`
-- Favicon: `brand.favicon` → `brand.logoUrl` → `/Logo.png`
+- Favicon: `brand.favicon` -> `brand.logoUrl` -> `/Logo.png`
 - `metadataBase` is set to `https://{host}` so relative URLs resolve correctly per domain.
+- The site layout injects linked `WebSite` + `Organization` JSON-LD for stronger entity clarity in AI and search systems.
 
 ---
 
 ### 6.6 Sitemap & Robots
 
-**Files:** `app/(sites)/[domain]/sitemap.xml/route.ts`, `app/(sites)/[domain]/robots.txt/route.ts`
+**Files:** `app/sitemap.ts`, `app/robots.ts`, `app/(sites)/[domain]/sitemap.xml/route.ts`, `app/(sites)/[domain]/robots.txt/route.ts`
 
-**What it does:** Each client site automatically gets its own `sitemap.xml` and `robots.txt`.
+**What it does:** Both the hub domain and client domains expose crawl directives and sitemap entries with host-aware URLs.
 
 **Implementation:**
-- `sitemap.xml`: Fetches the project config, iterates all pages, outputs `<url>` entries with `lastmod` and `changefreq`.
-- `robots.txt`: Returns `Allow: /` with `Sitemap: https://{domain}/sitemap.xml`.
-- Both are served as dynamic routes under the `[domain]` segment, so each domain gets its own correct URLs.
+- `sitemap.xml`: Uses project config, plan limits, and page-level noindex flags to emit canonical URLs.
+- `robots.txt`: Uses centralized crawler policy from `lib/seo/ai-crawlers.ts`, including explicit AI crawler directives and sitemap links.
+- Crawler policy mode is controlled by env `GEO_CRAWLER_POLICY_MODE`:
+  - `max-visibility` (default): broad AI crawler allowance
+  - `training-restricted`: blocks training/discovery-focused crawlers while keeping core search-answer crawlers
+- Tenant routes are served under the `[domain]` segment; root-domain routes are served from app-level metadata routes.
+
+---
+
+### 6.7 GEO SEO & llms.txt
+
+**Files:** `app/llms.txt/route.ts`, `app/llms-full.txt/route.ts`, `app/(sites)/[domain]/llms.txt/route.ts`, `app/(sites)/[domain]/llms-full.txt/route.ts`, `lib/seo/llms.ts`, `lib/seo/hub-llms.ts`, `lib/seo/tenant-llms.ts`
+
+**What it does:** Publishes `llms.txt` and `llms-full.txt` for hub and tenant domains so AI systems can parse page inventories, business facts, and contact details from a stable machine-readable text file.
+
+**Implementation:**
+- Hub llms files are built from marketing-site public pages and product facts.
+- Tenant llms files are built from page config (`pages`), legal routes, plan-aware page limits, and available contact/service signals.
+- `llms.txt` is concise; `llms-full.txt` includes richer per-page descriptions.
+- Outputs are served as text and cached with short TTLs.
 
 ---
 
@@ -1023,4 +1041,4 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 
 ---
 
-*Last updated: 2026-02-24*
+*Last updated: 2026-03-10*
