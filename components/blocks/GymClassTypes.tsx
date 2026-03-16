@@ -1,6 +1,7 @@
 "use client";
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import Reveal from "@/components/shared/Reveal";
 
 type GymClassType = {
   name: string;
@@ -22,7 +23,7 @@ export default function GymClassTypes({
   items = [],
 }: GymClassTypesProps) {
   return (
-    <section id="class-types" className="reveal border-b border-border bg-muted/10">
+    <Reveal as="section" id="class-types" className="border-b border-border bg-muted/10">
       <div className="container mx-auto px-4 py-14 sm:py-20">
         <div className="mx-auto mb-10 max-w-3xl text-center">
           <h2 className="font-serif text-3xl font-black tracking-tight text-foreground sm:text-4xl">{title}</h2>
@@ -43,7 +44,6 @@ export default function GymClassTypes({
           ))}
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 }
-

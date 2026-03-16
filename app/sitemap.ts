@@ -18,6 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [
       '',
       '/pricing',
+      '/website-design-price-philippines',
       '/faq',
       '/contact',
       '/privacy',

@@ -1,6 +1,7 @@
 "use client";
 
 import DynamicIcon from "@/components/shared/DynamicIcon";
+import Reveal from "@/components/shared/Reveal";
 
 type GymFacilityItem = {
   name: string;
@@ -21,7 +22,7 @@ export default function GymFacilityHighlights({
   items = [],
 }: GymFacilityHighlightsProps) {
   return (
-    <section id="facility" className="reveal border-b border-border bg-background">
+    <Reveal as="section" id="facility" className="border-b border-border bg-background">
       <div className="container mx-auto px-4 py-14 sm:py-20">
         <div className="mx-auto mb-10 max-w-3xl text-center">
           <h2 className="font-serif text-3xl font-black tracking-tight text-foreground sm:text-4xl">{title}</h2>
@@ -46,7 +47,6 @@ export default function GymFacilityHighlights({
           ))}
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 }
-

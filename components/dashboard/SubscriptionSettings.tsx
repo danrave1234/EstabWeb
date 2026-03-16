@@ -189,6 +189,7 @@ export default function SubscriptionSettings({ project, initialPlansConfig }: Su
           <UpgradeButton
             projectId={project.id}
             subscriptionStatus={status}
+            subscriptionPlanId={project.subscription_plan_id}
             variant="inline"
           />
         </div>

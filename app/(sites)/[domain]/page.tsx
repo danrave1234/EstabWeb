@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, permanentRedirect, redirect } from "next/navigation";
 import SiteTemplate from "@/components/shared/SiteTemplate";
+import SiteOffline from "@/components/shared/SiteOffline";
 import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
 import { getCachedSiteConfig } from "@/lib/utils/site-config";
 import { getPageBySlug, normalizePages, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
@@ -103,6 +104,21 @@ export default async function Home({
   // Final fallback to error UI if nothing found
   if (!initialData) {
     notFound();
+  }
+
+  // Show offline page for disabled or archived sites (preview always bypasses)
+  const siteStatus = project?.site_status || 'active'
+  if (!preview && siteStatus !== 'active') {
+    const brandName = initialData?.brand?.name && initialData.brand.name !== 'Your Business Name'
+      ? initialData.brand.name
+      : null
+    return (
+      <SiteOffline
+        status={siteStatus as 'disabled' | 'archived'}
+        reason={project?.site_status_reason ?? null}
+        brandName={brandName}
+      />
+    )
   }
 
   const pages = normalizePages(initialData?.pages);

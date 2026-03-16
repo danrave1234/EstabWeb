@@ -43,6 +43,29 @@ EstabWeb is a multi-tenant SaaS platform for generating and managing industry-op
 - These map to section IDs:
   - `gym--programs`, `gym--schedule`, `gym--memberships`, `gym--class-types`, `gym--trainers`, `gym--results`, `gym--facility`, `gym--faq`
 - If you add or rename a gym section, update all of: `config/presets.ts`, `config/dashboard-config.ts`, `lib/utils/block-registry.ts`, `lib/utils/block-props.tsx`, and dashboard section/editor mappings.
+- Pricing comparison variant uses:
+  - section ID: `pricing--comparison` (legacy alias: `pricing-comparison-table`)
+  - config key: `pricingComparisonTable`
+- If you add or rename this pricing variant, update: `config/presets.ts`, `config/dashboard-config.ts`, `lib/utils/block-registry.ts`, `lib/utils/block-props.tsx`, and dashboard section/editor mappings.
+- Animated testimonials variant uses:
+  - section ID: `testimonials--animated`
+  - config key: `animatedTestimonials`
+- If you add or rename this variant, update: `config/presets.ts`, `config/dashboard-config.ts`, `lib/utils/block-registry.ts`, `lib/utils/block-props.tsx`, and dashboard section/editor mappings.
+- Pricing section comparison variant uses:
+  - section ID: `pricing--feature-comparison` (legacy alias: `pricing-section-with-comparison`)
+  - config key: `pricingSectionComparison`
+- If you add or rename this variant, update: `config/presets.ts`, `config/dashboard-config.ts`, `lib/utils/block-registry.ts`, `lib/utils/block-props.tsx`, and dashboard section/editor mappings.
+- Hero showcase variant uses:
+  - section ID: `hero--showcase` (legacy alias: `hero-showcase`)
+  - config key: `heroShowcase`
+- Services bento variant uses:
+  - section ID: `services--bento` (legacy alias: `services-bento`)
+  - config key: `featuresBento`
+- If you add or rename either variant, update: `config/presets.ts`, `config/dashboard-config.ts`, `lib/utils/block-registry.ts`, `lib/utils/block-props.tsx`, `components/dashboard/SectionLivePreview.tsx`, and `app/admin/dashboard/requests/[id]/RequestReviewClient.tsx`.
+- Gallery carousel variant uses:
+  - section ID: `gallery--carousel`
+  - config key: `gallery4`
+- If you add or rename this variant, update: `config/presets.ts`, `config/dashboard-config.ts`, `lib/utils/block-registry.ts`, `lib/utils/block-props.tsx`, `components/shared/BlockRegistry.tsx`, `components/dashboard/SectionLivePreview.tsx`, `hooks/dashboard/useEditorState.ts`, `lib/ai/section-field-schema.ts`, and `app/admin/dashboard/requests/[id]/RequestReviewClient.tsx`.
 
 ## Local Setup
 
@@ -128,6 +151,7 @@ The dashboard now includes an AI-driven custom section prototype:
 - Config key: `customHtml`
 - Public renderer block: `components/blocks/CustomHtmlSection.tsx`
 - Sanitization: `lib/security/custom-section-sanitizer.ts`
+- Dashboard editor mode: raw code fields are hidden for `custom-html`; users edit only content-level controls (title/subtitle, parsed text, links, images), and section labels are derived from content/title.
 
 Plan gating:
 - Available only to `pro`, `ecommerce`, and `custom` plans with valid premium status (`active`/`trial`), plus `admin_granted`.
@@ -139,6 +163,9 @@ Plan gating:
 AI operation rules:
 - Raw HTML/CSS is allowed only for `update_section` on `sectionKey: "custom-html"` with fields `html` and `css`.
 - All other string fields remain sanitized as plain text.
+- AI-editable field allowlists are centralized in `lib/ai/section-field-schema.ts` and enforced in `lib/utils/validateOperations.ts`.
+- AI prompt generation now accepts the live editor snapshot (`currentConfig`) so section positions and counts match unsaved local edits.
+- Applying AI operations first syncs the snapshot to `draft_config`, then applies operations to prevent stale ordering/position issues.
 
 ## Module Boundaries
 
@@ -170,3 +197,7 @@ See `AGENTS.md § 9` for the authoritative rules and free-tier reset values.
 - `docs/whitelabel-flow.md`
 - `docs/PAYMONGO.md`
 - `README_DEPLOY.md`
+
+
+
+

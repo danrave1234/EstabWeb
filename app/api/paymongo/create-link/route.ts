@@ -43,6 +43,13 @@ export async function POST(req: Request) {
     const { PLANS } = await getPlansConfig()
     const plan = PLANS[activePlanId as keyof typeof PLANS] || PLANS.basic
 
+    if (activePlanId === 'ecommerce' || (plan as any)?.comingSoon) {
+      return NextResponse.json(
+        { error: `${plan.name || 'Selected'} plan is coming soon and not available for checkout yet.` },
+        { status: 409 }
+      )
+    }
+
     // Determine price and description based on shared config
     const amount = resolveAmountFromPlans(PLANS, activePlanId, !!proj.has_paid_initial, interval)
     const description = resolveDescriptionFromPlans(PLANS, activePlanId, !!proj.has_paid_initial, interval)

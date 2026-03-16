@@ -50,7 +50,6 @@ export default function Reveal({
     <Tag
       ref={ref as any}
       className={resolvedClass}
-      data-reveal-managed
       {...rest}
     >
       {children}

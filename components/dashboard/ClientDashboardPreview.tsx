@@ -90,6 +90,7 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
     addSection,
     updatePages,
     updateActivePage,
+    updateActivePageSections,
   } = useEditorState(project);
 
   const router = useRouter();
@@ -212,6 +213,7 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
               initialPlansConfig={initialPlansConfig}
               pages={pages}
               updatePages={updatePages}
+              updateActivePageSections={updateActivePageSections}
               canUsePages={canUsePages}
               selectedPageIndex={selectedPageIndex}
               setSelectedPageIndex={setSelectedPageIndex}
@@ -219,6 +221,7 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
               mergedConfig={mergedConfig}
               globalConfig={globalConfig}
               activePage={activePage}
+              activeSections={activeSections}
               setColorPaletteOpen={setColorPaletteOpen}
               setTypographyOpen={setTypographyOpen}
               setUpgradeLoading={setUpgradeLoading}

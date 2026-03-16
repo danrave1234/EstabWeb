@@ -18,7 +18,6 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
     let dbConf: any;
 
     if (requestId) {
-      console.log(`[getSiteConfig] Fetching by requestId: ${requestId}`);
       const { data: request, error: reqError } = await supabase
         .from('change_requests')
         .select('*, projects(*)')
@@ -33,8 +32,6 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
         const project = Array.isArray(request.projects) ? request.projects[0] : request.projects;
         const sectionId = request.section_id;
         const requestedChanges = request.requested_changes;
-
-        console.log(`[getSiteConfig] Applying changes for section: ${sectionId}`);
 
         if (!sectionId || sectionId === 'full-site') {
           dbConf = requestedChanges;
@@ -51,7 +48,6 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
       let dbRow: any | undefined;
 
       if (projectId) {
-        console.log(`[getSiteConfig] Searching by projectId: ${projectId}`);
         const { data } = await supabase
           .from("projects")
           .select("id,subdomain,custom_domain,current_config,draft_config")
@@ -59,8 +55,6 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
           .limit(1);
         dbRow = data?.[0];
       } else {
-        console.log(`[getSiteConfig] Searching by domain: "${domain}"`);
-
         // 1. Try exact match
         const { data, error, count } = await supabase
           .from("projects")
@@ -74,7 +68,6 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
           const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com').toLowerCase();
           if (domain.endsWith(`.${ROOT_DOMAIN}`)) {
             const sub = domain.slice(0, -(ROOT_DOMAIN.length + 1));
-            console.log(`[getSiteConfig] No exact match for "${domain}", trying subdomain "${sub}"`);
             const { data: subData } = await supabase
               .from("projects")
               .select("id,subdomain,custom_domain,current_config,draft_config")
@@ -86,7 +79,6 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
 
         // 3. Fallback: Case-insensitive search
         if (!dbRow) {
-          console.log(`[getSiteConfig] Still no match, trying case-insensitive search for "${domain}"`);
           const { data: ciData } = await supabase
             .from("projects")
             .select("id,subdomain,custom_domain,current_config,draft_config")
@@ -101,7 +93,6 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
       }
 
       if (dbRow) {
-        console.log(`[getSiteConfig] Found project in DB: ${dbRow.id}`);
         if (isPreview) {
           const hasDraft = dbRow?.draft_config && Object.keys(dbRow.draft_config).length > 0;
           dbConf = hasDraft ? dbRow.draft_config : dbRow.current_config;
@@ -110,7 +101,6 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
           dbConf = hasCurrent ? dbRow.current_config : dbRow.draft_config;
         }
       } else if (domain === 'master') {
-        console.log(`[getSiteConfig] Fetching master template config`);
         const { data } = await supabase
           .from("site_config")
           .select("payload")
@@ -121,7 +111,6 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
           dbConf = data.payload;
         }
       } else if (domain === 'localhost' || domain === 'localhost:3000' || domain === 'localhost:3001') {
-        console.log(`[getSiteConfig] Falling back to global site_config for: ${domain}`);
         // Look for global config in site_config table
         const { data } = await supabase
           .from("site_config")
@@ -132,8 +121,6 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
         if (data) {
           dbConf = data.payload;
         }
-      } else {
-        console.log(`[getSiteConfig] No project found for domain: ${domain}`);
       }
     }
 
@@ -149,7 +136,6 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
     const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
     const fileData = JSON.parse(raw);
 
-    console.log(`[getSiteConfig] Using file fallback for domain: "${domain}"`);
     if (domain === 'master') {
       try {
         const supabase = await createClient();
@@ -205,10 +191,15 @@ export const getSiteConfigWithProject = cache(async (domain: string, headersList
   let project: any | null = null;
 
   try {
-    const supabase = await createClient();
+    // Use service client (bypasses RLS) for preview and projectId-based lookups
+    // so the preview iframe loads correctly even without an authenticated session.
+    // Use the regular session client only for domain-based public lookups where
+    // RLS correctly limits visibility to the project owner.
+    const supabase = (isPreview || projectId || requestId)
+      ? createServiceClient()
+      : await createClient();
 
     if (requestId) {
-      console.log(`[getSiteConfigWithProject] Fetching by requestId: ${requestId}`);
       const { data: request, error: reqError } = await supabase
         .from('change_requests')
         .select('*, projects(*)')
@@ -223,8 +214,6 @@ export const getSiteConfigWithProject = cache(async (domain: string, headersList
         project = Array.isArray(request.projects) ? request.projects[0] : request.projects;
         const sectionId = request.section_id;
         const requestedChanges = request.requested_changes;
-
-        console.log(`[getSiteConfigWithProject] Applying changes for section: ${sectionId}`);
 
         if (!sectionId || sectionId === 'full-site') {
           config = requestedChanges;
@@ -241,19 +230,16 @@ export const getSiteConfigWithProject = cache(async (domain: string, headersList
       let dbRow: any | undefined;
 
       if (projectId) {
-        console.log(`[getSiteConfigWithProject] Searching by projectId: ${projectId}`);
         const { data } = await supabase
           .from("projects")
-          .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+          .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at,site_status,site_status_reason")
           .eq("id", projectId)
           .limit(1);
         dbRow = data?.[0];
       } else {
-        console.log(`[getSiteConfigWithProject] Searching by domain: "${domain}"`);
-
         const { data, error } = await supabase
           .from("projects")
-          .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+          .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at,site_status,site_status_reason")
           .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`);
 
         dbRow = data?.[0];
@@ -262,10 +248,9 @@ export const getSiteConfigWithProject = cache(async (domain: string, headersList
           const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com').toLowerCase();
           if (domain.endsWith(`.${ROOT_DOMAIN}`)) {
             const sub = domain.slice(0, -(ROOT_DOMAIN.length + 1));
-            console.log(`[getSiteConfigWithProject] No exact match for "${domain}", trying subdomain "${sub}"`);
             const { data: subData } = await supabase
               .from("projects")
-              .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+              .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at,site_status,site_status_reason")
               .eq("subdomain", sub)
               .limit(1);
             dbRow = subData?.[0];
@@ -273,10 +258,9 @@ export const getSiteConfigWithProject = cache(async (domain: string, headersList
         }
 
         if (!dbRow) {
-          console.log(`[getSiteConfigWithProject] Still no match, trying case-insensitive search for "${domain}"`);
           const { data: ciData } = await supabase
             .from("projects")
-            .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+            .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at,site_status,site_status_reason")
             .ilike("subdomain", domain)
             .limit(1);
           dbRow = ciData?.[0];
@@ -289,7 +273,6 @@ export const getSiteConfigWithProject = cache(async (domain: string, headersList
 
       if (dbRow) {
         project = dbRow;
-        console.log(`[getSiteConfigWithProject] Found project in DB: ${dbRow.id}`);
         if (isPreview) {
           const hasDraft = dbRow?.draft_config && Object.keys(dbRow.draft_config).length > 0;
           config = hasDraft ? dbRow.draft_config : dbRow.current_config;
@@ -298,7 +281,6 @@ export const getSiteConfigWithProject = cache(async (domain: string, headersList
           config = hasCurrent ? dbRow.current_config : dbRow.draft_config;
         }
       } else if (domain === 'master') {
-        console.log(`[getSiteConfigWithProject] Fetching master template config`);
         const { data } = await supabase
           .from("site_config")
           .select("payload")
@@ -309,7 +291,6 @@ export const getSiteConfigWithProject = cache(async (domain: string, headersList
           config = data.payload;
         }
       } else if (domain === 'localhost' || domain === 'localhost:3000' || domain === 'localhost:3001') {
-        console.log(`[getSiteConfigWithProject] Falling back to global site_config for: ${domain}`);
         const { data } = await supabase
           .from("site_config")
           .select("payload")
@@ -319,8 +300,6 @@ export const getSiteConfigWithProject = cache(async (domain: string, headersList
         if (data) {
           config = data.payload;
         }
-      } else {
-        console.log(`[getSiteConfigWithProject] No project found for domain: ${domain}`);
       }
     }
 
@@ -335,7 +314,6 @@ export const getSiteConfigWithProject = cache(async (domain: string, headersList
     const raw = await fs.readFile(SITE_DATA_PATH, "utf-8");
     const fileData = JSON.parse(raw);
 
-    console.log(`[getSiteConfigWithProject] Using file fallback for domain: "${domain}"`);
     if (domain === 'master') {
       try {
         const supabase = await createClient();
@@ -405,7 +383,7 @@ async function fetchSiteConfigFromDB(domain: string): Promise<{ config: any | nu
 
     const { data } = await supabase
       .from("projects")
-      .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+      .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at,site_status,site_status_reason")
       .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`)
       .limit(1);
 
@@ -417,7 +395,7 @@ async function fetchSiteConfigFromDB(domain: string): Promise<{ config: any | nu
         const sub = domain.slice(0, -(ROOT_DOMAIN.length + 1));
         const { data: subData } = await supabase
           .from("projects")
-          .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+          .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at,site_status,site_status_reason")
           .eq("subdomain", sub)
           .limit(1);
         dbRow = subData?.[0];
@@ -427,7 +405,7 @@ async function fetchSiteConfigFromDB(domain: string): Promise<{ config: any | nu
     if (!dbRow) {
       const { data: ciData } = await supabase
         .from("projects")
-        .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at")
+        .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at,site_status,site_status_reason")
         .ilike("subdomain", domain)
         .limit(1);
       dbRow = ciData?.[0];

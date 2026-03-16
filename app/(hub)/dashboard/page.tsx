@@ -11,7 +11,14 @@ import {
   ChevronRight,
   BarChart3,
   Globe,
-  Sparkles
+  Sparkles,
+  MoreVertical,
+  EyeOff,
+  Eye,
+  Archive,
+  AlertTriangle,
+  X,
+  Trash2
 } from "lucide-react"
 import {
   Table,
@@ -36,6 +43,9 @@ export default function DashboardPage() {
   const [selectedProject, setSelectedProject] = useState<any | null>(null)
   const [leadsCount, setLeadsCount] = useState<Record<string, number>>({})
   const [user, setUser] = useState<any>(null)
+  const [statusMenuOpen, setStatusMenuOpen] = useState<string | null>(null)
+  const [confirmAction, setConfirmAction] = useState<{ projectId: string; action: string } | null>(null)
+  const [statusLoading, setStatusLoading] = useState<string | null>(null)
 
   useEffect(() => {
     async function init() {
@@ -73,6 +83,7 @@ export default function DashboardPage() {
     }
     init()
   }, [])
+
 
   useEffect(() => {
     if (projectIdFromUrl && projects.length > 0) {
@@ -156,9 +167,70 @@ export default function DashboardPage() {
 
   const getLeadCount = (id: string) => leadsCount[id] || 0
 
+  async function handleDeleteProject(projectId: string) {
+    setStatusLoading(projectId)
+    setConfirmAction(null)
+    setStatusMenuOpen(null)
+    try {
+      const res = await fetch(`/api/project/${projectId}/site-status`, {
+        method: "DELETE",
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        alert(err.error || "Failed to delete project")
+      } else {
+        // Remove from list
+        setProjects(prev => prev.filter(p => p.id !== projectId))
+      }
+    } catch {
+      alert("Network error. Please try again.")
+    } finally {
+      setStatusLoading(null)
+    }
+  }
+
+  async function handleSiteStatus(projectId: string, action: string) {
+    setStatusLoading(projectId)
+    setConfirmAction(null)
+    setStatusMenuOpen(null)
+    try {
+      const res = await fetch(`/api/project/${projectId}/site-status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        alert(err.error || "Failed to update site status")
+      } else {
+        // Refresh project list
+        const supabase = createClient()
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        if (authUser) {
+          const { data: projs } = await supabase
+            .from("projects")
+            .select("*")
+            .eq("client_id", authUser.id)
+            .order("created_at", { ascending: false })
+          setProjects(projs || [])
+        }
+      }
+    } catch {
+      alert("Network error. Please try again.")
+    } finally {
+      setStatusLoading(null)
+    }
+  }
+
   return (
     <>
       <PaymentSuccessHandler />
+      {statusMenuOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setStatusMenuOpen(null)}
+        />
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8 sm:mb-12">
           <div>
@@ -203,7 +275,12 @@ export default function DashboardPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-bold text-foreground truncate">{siteName}</h3>
-                    <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} variant="badge" />
+                    <UpgradeButton
+                      projectId={project.id}
+                      subscriptionStatus={project.subscription_status}
+                      subscriptionPlanId={project.subscription_plan_id}
+                      variant="badge"
+                    />
                   </div>
                   <div className="flex items-center gap-1.5 min-w-0">
                     {project.custom_domain ? (
@@ -220,6 +297,14 @@ export default function DashboardPage() {
 
               <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground pt-2 border-t border-border">
                 <span>Created: {new Date(project.created_at).toLocaleDateString()}</span>
+                {project.site_status && project.site_status !== "active" && (
+                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest ${
+                    project.site_status === "disabled" ? "bg-yellow-500/10 text-yellow-600" : "bg-red-500/10 text-red-500"
+                  }`}>
+                    {project.site_status === "disabled" ? <EyeOff className="w-2.5 h-2.5" /> : <Archive className="w-2.5 h-2.5" />}
+                    {project.site_status}
+                  </span>
+                )}
               </div>
 
               <div className="flex flex-col gap-2 pt-2 border-t border-border mt-auto">
@@ -247,7 +332,68 @@ export default function DashboardPage() {
                   >
                     <ExternalLink className="w-4 h-4" />
                   </a>
+                  {/* Site status dropdown */}
+                  <div className="relative shrink-0">
+                    <button
+                      onClick={() => setStatusMenuOpen(statusMenuOpen === project.id ? null : project.id)}
+                      disabled={statusLoading === project.id}
+                      className="p-3 bg-muted hover:bg-muted/80 rounded-xl text-foreground transition-all active:scale-95 disabled:opacity-50"
+                      title="Site Options"
+                    >
+                      {statusLoading === project.id
+                        ? <span className="w-4 h-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin block" />
+                        : <MoreVertical className="w-4 h-4" />}
+                    </button>
+                    {statusMenuOpen === project.id && (
+                      <div className="absolute bottom-full right-0 mb-2 w-44 border border-border rounded-xl shadow-xl z-50 overflow-hidden" style={{ background: 'var(--muted)' }}>
+                        {project.site_status !== "archived" && (
+                          project.site_status === "disabled"
+                            ? <button onClick={() => handleSiteStatus(project.id, "enable")} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-emerald-600">
+                                <Eye className="w-3.5 h-3.5" /> Enable Site
+                              </button>
+                            : <button onClick={() => setConfirmAction({ projectId: project.id, action: "disable" })} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-yellow-600">
+                                <EyeOff className="w-3.5 h-3.5" /> Disable Site
+                              </button>
+                    )}
+                    {project.site_status !== "archived" && (
+                      <button onClick={() => setConfirmAction({ projectId: project.id, action: "archive" })} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-destructive border-t border-border">
+                        <Archive className="w-3.5 h-3.5" /> Archive Site
+                      </button>
+                    )}
+                    {project.site_status === "archived" && (
+                      <button onClick={() => setConfirmAction({ projectId: project.id, action: "delete" })} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-destructive">
+                        <Trash2 className="w-3.5 h-3.5" /> Delete Site
+                      </button>
+                    )}
+                    <button onClick={() => setStatusMenuOpen(null)} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-muted-foreground border-t border-border">
+                          <X className="w-3.5 h-3.5" /> Cancel
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
+                {/* Inline confirm for mobile */}
+                {confirmAction?.projectId === project.id && (
+                  <div className="flex flex-col gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded-xl">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-destructive">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                      {confirmAction.action === "delete"
+                        ? "Permanently delete this site? This cannot be undone."
+                        : confirmAction.action === "archive" ? "Archive this site? This cannot be undone by you." : "Take this site offline?"}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => confirmAction.action === "delete" ? handleDeleteProject(project.id) : handleSiteStatus(project.id, confirmAction.action)}
+                        className="flex-1 px-3 py-2 bg-destructive text-destructive-foreground rounded-lg text-[10px] font-black uppercase tracking-widest"
+                      >
+                        Confirm
+                      </button>
+                      <button onClick={() => setConfirmAction(null)} className="flex-1 px-3 py-2 bg-muted text-foreground rounded-lg text-[10px] font-black uppercase tracking-widest">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )
@@ -290,7 +436,12 @@ export default function DashboardPage() {
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-foreground group-hover:text-primary transition-colors">{siteName}</span>
-                          <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} variant="badge" />
+                          <UpgradeButton
+                            projectId={project.id}
+                            subscriptionStatus={project.subscription_status}
+                            subscriptionPlanId={project.subscription_plan_id}
+                            variant="badge"
+                          />
                         </div>
                       </div>
                     </Link>
@@ -316,6 +467,14 @@ export default function DashboardPage() {
                   </TableCell>
                   <TableCell className="py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      {project.site_status && project.site_status !== "active" && (
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
+                          project.site_status === "disabled" ? "bg-yellow-500/10 text-yellow-600" : "bg-red-500/10 text-red-500"
+                        }`}>
+                          {project.site_status === "disabled" ? <EyeOff className="w-3 h-3" /> : <Archive className="w-3 h-3" />}
+                          {project.site_status}
+                        </span>
+                      )}
                       <Link
                         href={`/dashboard?projectId=${project.id}`}
                         className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20"
@@ -340,6 +499,71 @@ export default function DashboardPage() {
                       >
                         <ExternalLink className="w-4 h-4" />
                       </a>
+                      {/* Site status dropdown */}
+                      <div className="relative">
+                        <button
+                          onClick={() => setStatusMenuOpen(statusMenuOpen === project.id ? null : project.id)}
+                          disabled={statusLoading === project.id}
+                          className="p-2.5 bg-muted text-foreground rounded-xl hover:bg-muted/80 transition-all border border-border disabled:opacity-50"
+                          title="Site Options"
+                        >
+                          {statusLoading === project.id
+                            ? <span className="w-4 h-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin block" />
+                            : <MoreVertical className="w-4 h-4" />}
+                        </button>
+                        {statusMenuOpen === project.id && (
+                          <div className="absolute top-full right-0 mt-2 w-48 border border-border rounded-xl shadow-xl z-50 overflow-hidden" style={{ background: 'var(--muted)' }}>
+                            {project.site_status !== "archived" && (
+                              project.site_status === "disabled"
+                                ? <button onClick={() => handleSiteStatus(project.id, "enable")} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-emerald-600">
+                                    <Eye className="w-3.5 h-3.5" /> Enable Site
+                                  </button>
+                                : <button onClick={() => setConfirmAction({ projectId: project.id, action: "disable" })} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-yellow-600">
+                                    <EyeOff className="w-3.5 h-3.5" /> Disable Site
+                                  </button>
+                            )}
+                            {project.site_status !== "archived" && (
+                              <button onClick={() => setConfirmAction({ projectId: project.id, action: "archive" })} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-destructive border-t border-border">
+                                <Archive className="w-3.5 h-3.5" /> Archive Site
+                              </button>
+                            )}
+                            {project.site_status === "archived" && (
+                              <button onClick={() => setConfirmAction({ projectId: project.id, action: "delete" })} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-destructive">
+                                <Trash2 className="w-3.5 h-3.5" /> Delete Site
+                              </button>
+                            )}
+                            <button onClick={() => setStatusMenuOpen(null)} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-muted-foreground border-t border-border">
+                              <X className="w-3.5 h-3.5" /> Cancel
+                            </button>
+                          </div>
+                        )}
+                        {/* Inline confirm panel */}
+                        {confirmAction?.projectId === project.id && (
+                          <div className="absolute top-full right-0 mt-2 w-64 border border-destructive/40 rounded-xl shadow-xl z-50 p-4" style={{ background: 'var(--muted)' }}>
+                            <div className="flex items-start gap-2 mb-3">
+                              <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+                              <p className="text-[10px] font-bold text-foreground leading-relaxed">
+                                {confirmAction.action === "delete"
+                                  ? "Permanently delete this site? All data will be lost and cannot be recovered."
+                                  : confirmAction.action === "archive"
+                                  ? "Archive this site? It will go offline and only an admin can restore it."
+                                  : "Take this site offline? Visitors will see an offline page."}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => confirmAction.action === "delete" ? handleDeleteProject(project.id) : handleSiteStatus(project.id, confirmAction.action)}
+                                className="flex-1 px-3 py-2 bg-destructive text-destructive-foreground rounded-lg text-[9px] font-black uppercase tracking-widest hover:opacity-90 transition-opacity"
+                              >
+                                Confirm
+                              </button>
+                              <button onClick={() => setConfirmAction(null)} className="flex-1 px-3 py-2 bg-muted text-foreground rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-muted/80 transition-colors">
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>

@@ -1,5 +1,7 @@
 "use client";
 
+import Reveal from "@/components/shared/Reveal";
+
 type ScheduleClass = {
   time: string;
   name: string;
@@ -24,7 +26,7 @@ export default function GymClassSchedule({
   days = [],
 }: GymClassScheduleProps) {
   return (
-    <section id="schedule" className="reveal border-b border-border bg-muted/10">
+    <Reveal as="section" id="schedule" className="border-b border-border bg-muted/10">
       <div className="container mx-auto px-4 py-14 sm:py-20">
         <div className="mb-10 text-center">
           <h2 className="font-serif text-3xl font-black tracking-tight text-foreground sm:text-4xl">{title}</h2>
@@ -49,7 +51,6 @@ export default function GymClassSchedule({
           ))}
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 }
-

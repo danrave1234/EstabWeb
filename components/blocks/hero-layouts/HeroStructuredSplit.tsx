@@ -57,14 +57,20 @@ export default function HeroStructuredSplit({
 
             <div className="lg:col-span-5 order-1 lg:order-2">
               <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] border-[12px] border-background">
-                <Image
-                  src={backgroundImage}
-                  alt={title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 40vw"
-                  priority
-                />
+                {backgroundImage ? (
+                  <Image
+                    src={backgroundImage}
+                    alt={title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <DynamicIcon name="Image" className="w-12 h-12 text-muted-foreground/20" />
+                  </div>
+                )}
                 {/* Academic seal/badge overlay */}
                 <div className="absolute bottom-6 right-6 w-24 h-24 bg-background rounded-full shadow-xl flex items-center justify-center p-2 border border-border">
                   <div className="w-full h-full rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center">

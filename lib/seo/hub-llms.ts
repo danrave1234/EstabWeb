@@ -42,6 +42,12 @@ export function buildHubLlmsPayload(host: string): {
         description: "Plan comparisons for website setup, subscriptions, and publishing capabilities.",
       },
       {
+        slug: "website-design-price-philippines",
+        label: "Website Design Price Philippines Guide",
+        description:
+          "Practical guide covering setup cost, monthly website pricing, maintenance, and launch timelines for local businesses.",
+      },
+      {
         slug: "faq",
         label: "FAQ",
         description: "Answers about setup, plans, domains, publishing, and support.",

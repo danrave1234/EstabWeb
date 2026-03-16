@@ -238,10 +238,18 @@ export function EditorHeader({
                     <span className="text-[10px] text-muted-foreground mt-0.5 truncate">Changes here are local to your browser until you click &quot;Save Draft&quot; in the dashboard.</span>
                 </div>
                 <div className="min-[350px]:flex xs:hidden shrink-0 scale-75 origin-left">
-                    <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} />
+                    <UpgradeButton
+                        projectId={project.id}
+                        subscriptionStatus={project.subscription_status}
+                        subscriptionPlanId={project.subscription_plan_id}
+                    />
                 </div>
                 <div className="hidden xs:block shrink-0">
-                    <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} />
+                    <UpgradeButton
+                        projectId={project.id}
+                        subscriptionStatus={project.subscription_status}
+                        subscriptionPlanId={project.subscription_plan_id}
+                    />
                 </div>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 ml-auto">

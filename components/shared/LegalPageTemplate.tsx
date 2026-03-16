@@ -3,6 +3,8 @@
 import React from "react";
 import { useLivePreview } from "./LivePreviewProvider";
 import Header from "@/components/shared/Header";
+import TubelightHeader from "@/components/shared/TubelightHeader";
+import MegamenuHeader from "@/components/shared/MegamenuHeader";
 import LeadMagnetFooter from "@/components/blocks/LeadMagnetFooter";
 import SimpleFooter from "@/components/blocks/SimpleFooter";
 import MinimalFooter from "@/components/blocks/MinimalFooter";
@@ -121,14 +123,32 @@ export default function LegalPageTemplate({ title, lastUpdated, content, serverD
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header
-        brandName={brand.name}
-        logoUrl={brand.logoUrl}
-        navigation={navigationFromSections}
-        ctaText={brand.ctaText ?? hero.primaryCTA}
-        ctaHref={brand.ctaHref ?? "#contact"}
-        headerStyle={headerStyle}
-      />
+      {headerStyle === "tubelight" ? (
+        <TubelightHeader
+          brandName={brand.name}
+          logoUrl={brand.logoUrl}
+          navigation={navigationFromSections}
+          ctaText={brand.ctaText ?? hero.primaryCTA}
+          ctaHref={brand.ctaHref ?? "#contact"}
+        />
+      ) : headerStyle === "megamenu" ? (
+        <MegamenuHeader
+          brandName={brand.name}
+          logoUrl={brand.logoUrl}
+          navigation={navigationFromSections}
+          ctaText={brand.ctaText ?? hero.primaryCTA}
+          ctaHref={brand.ctaHref ?? "#contact"}
+        />
+      ) : (
+        <Header
+          brandName={brand.name}
+          logoUrl={brand.logoUrl}
+          navigation={navigationFromSections}
+          ctaText={brand.ctaText ?? hero.primaryCTA}
+          ctaHref={brand.ctaHref ?? "#contact"}
+          headerStyle={headerStyle}
+        />
+      )}
 
       <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl">
         <h1 className="text-2xl sm:text-4xl font-black mb-4 tracking-tight">{displayTitle}</h1>

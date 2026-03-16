@@ -1,6 +1,7 @@
 "use client";
 
 import { trackEvent, trackLead } from "@/components/shared/Analytics";
+import Reveal from "@/components/shared/Reveal";
 
 type MembershipTier = {
   name: string;
@@ -25,7 +26,7 @@ export default function GymMembershipTiers({
   tiers = [],
 }: GymMembershipTiersProps) {
   return (
-    <section id="memberships" className="reveal bg-background">
+    <Reveal as="section" id="memberships" className="bg-background">
       <div className="container mx-auto px-4 py-14 sm:py-20">
         <div className="mx-auto mb-10 max-w-3xl text-center">
           <h2 className="font-serif text-3xl font-black tracking-tight text-foreground sm:text-4xl">{title}</h2>
@@ -70,7 +71,6 @@ export default function GymMembershipTiers({
           ))}
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 }
-

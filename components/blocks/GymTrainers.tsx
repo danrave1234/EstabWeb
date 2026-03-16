@@ -1,5 +1,7 @@
 "use client";
 
+import Reveal from "@/components/shared/Reveal";
+
 type GymTrainer = {
   name: string;
   role: string;
@@ -20,7 +22,7 @@ export default function GymTrainers({
   items = [],
 }: GymTrainersProps) {
   return (
-    <section id="trainers" className="reveal border-b border-border bg-background">
+    <Reveal as="section" id="trainers" className="border-b border-border bg-background">
       <div className="container mx-auto px-4 py-14 sm:py-20">
         <div className="mx-auto mb-10 max-w-3xl text-center">
           <h2 className="font-serif text-3xl font-black tracking-tight text-foreground sm:text-4xl">{title}</h2>
@@ -51,7 +53,6 @@ export default function GymTrainers({
           ))}
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 }
-

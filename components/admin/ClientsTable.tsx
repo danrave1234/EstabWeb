@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Globe, ExternalLink, Search, ChevronDown, ChevronUp, Users, ShieldCheck } from "lucide-react"
 import SubscriptionManage from "@/components/admin/SubscriptionManage"
 import DomainManage from "@/components/admin/DomainManage"
+import SiteStatusManage from "@/components/admin/SiteStatusManage"
 import { updateUserRole } from "@/app/admin/actions"
 
 const ROLE_LABELS: Record<string, string> = {
@@ -70,6 +71,8 @@ interface ProjectRow {
   trial_ends_at?: string | null
   publish_limit?: number | null
   publish_count?: number | null
+  site_status?: string | null
+  site_status_reason?: string | null
 }
 
 interface ClientRow {
@@ -317,6 +320,13 @@ export default function ClientsTable({ rows, rootDomain }: ClientsTableProps) {
                                 </p>
                                 <SubscriptionManage project={proj as any} />
                               </div>
+                            </div>
+                            {/* Site visibility */}
+                            <div className="rounded-lg border border-border bg-muted/20 px-4 py-3 mt-4">
+                              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                                Site Visibility
+                              </p>
+                              <SiteStatusManage project={proj as any} />
                             </div>
                             {/* Role management — only shown on last project row to avoid duplication */}
                             {idx === 0 && (

@@ -68,7 +68,14 @@ export default function RequestReviewClient({ request }: RequestReviewClientProp
   }
 
   const sectionId = request.section_id
-  const sectionKey = sectionId === 'hero-emergency' ? 'heroEmergency' : 
+    const sectionKey = sectionId === 'hero-emergency' ? 'heroEmergency' : 
+                     sectionId === 'hero--showcase' ? 'heroShowcase' :
+                     sectionId === 'hero--elegant-carousel' ? 'heroElegantCarousel' :
+                     sectionId === 'hero--modern' ? 'heroModern' :
+                     sectionId === 'hero--group-images' ? 'heroGroupImages' :
+                     sectionId === 'hero--v6' ? 'heroV6' :
+                     sectionId === 'hero--minimalism' ? 'heroMinimalism' :
+                     sectionId === 'hero-showcase' ? 'heroShowcase' :
                      sectionId === 'practice-areas' ? 'practiceAreas' :
                      sectionId === 'attorney-profile' ? 'attorneyProfile' :
                      sectionId === 'free-consultation' ? 'freeConsultation' :
@@ -76,8 +83,19 @@ export default function RequestReviewClient({ request }: RequestReviewClientProp
                      sectionId === 'review-trust-bar' ? 'reviewTrustBar' :
                      sectionId === 'feature-highlight' ? 'featureHighlight' :
                      sectionId === 'team-carousel' ? 'teamCarousel' :
+                     sectionId === 'team--showcase' ? 'teamShowcase' :
                      sectionId === 'patient-faq' ? 'patientFaq' :
+                     sectionId === 'testimonials--animated' ? 'animatedTestimonials' :
+                     sectionId === 'testimonials--v2' ? 'testimonialsV2' :
                      sectionId === 'pricing' ? 'pricingTable' :
+                     sectionId === 'pricing--comparison' ? 'pricingComparisonTable' :
+                     sectionId === 'pricing--feature-comparison' ? 'pricingSectionComparison' :
+                     sectionId === 'services--bento' ? 'featuresBento' :
+                     sectionId === 'services-bento' ? 'featuresBento' :
+                     sectionId === 'features--steps' ? 'featureSteps' :
+                     sectionId === 'features--spotlight' ? 'featureSpotlight' :
+                     sectionId === 'gallery--carousel' ? 'gallery4' :
+                     sectionId === 'gallery--grid' ? 'galleryGrid' :
                      sectionId === 'awards' ? 'awardsStrip' :
                      sectionId;
 
@@ -252,3 +270,4 @@ export default function RequestReviewClient({ request }: RequestReviewClientProp
     </div>
   )
 }
+

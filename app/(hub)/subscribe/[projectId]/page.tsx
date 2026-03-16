@@ -42,11 +42,17 @@ export default async function SubscribePage({ params, searchParams }: Props) {
   if (proj.subscription_status === 'active') redirect(`/dashboard?projectId=${projectId}`)
 
   const plansConfig = await getPlansConfig()
+  const requestedPlan = planId ? ((plansConfig.PLANS as any)?.[planId] ?? null) : null
+  const isComingSoonPlan = planId === "ecommerce" || Boolean(requestedPlan?.comingSoon)
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {!planId ? (
-        <PlanPicker projectId={projectId} initialPlansConfig={plansConfig} />
+      {!planId || isComingSoonPlan ? (
+        <PlanPicker
+          projectId={projectId}
+          initialPlansConfig={plansConfig}
+          notice={isComingSoonPlan ? "E-commerce plan is marked as soon available and cannot be purchased yet." : undefined}
+        />
       ) : (
         <SubscribeCardForm
           projectId={projectId}

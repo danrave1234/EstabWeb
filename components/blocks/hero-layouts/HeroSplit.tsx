@@ -57,14 +57,20 @@ export default function HeroSplit({
           {/* Mobile Image - inserted here to be below subtitle and above buttons */}
           <div className="lg:hidden my-10 -ml-6 w-[calc(100%+1.5rem)]">
             <div className="relative aspect-[4/3] rounded-sm overflow-hidden shadow-2xl grayscale-[0.15]">
-              <Image
-                src={backgroundImage}
-                alt={title}
-                fill
-                className="object-cover"
-                sizes="100vw"
-                priority
-              />
+              {backgroundImage ? (
+                <Image
+                  src={backgroundImage}
+                  alt={title}
+                  fill
+                  className="object-cover"
+                  sizes="100vw"
+                  priority
+                />
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <span className="text-muted-foreground">No Image</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -87,14 +93,20 @@ export default function HeroSplit({
         {/* Desktop Image Column */}
         <div className="hidden lg:block lg:col-span-7 relative">
           <div className="relative aspect-[4/3] rounded-sm overflow-hidden shadow-2xl grayscale-[0.15] hover:grayscale-0 transition-all duration-700">
-            <Image
-              src={backgroundImage}
-              alt={title}
-              fill
-              className="object-cover"
-              sizes="50vw"
-              priority
-            />
+            {backgroundImage ? (
+              <Image
+                src={backgroundImage}
+                alt={title}
+                fill
+                className="object-cover"
+                sizes="50vw"
+                priority
+              />
+            ) : (
+              <div className="w-full h-full bg-muted flex items-center justify-center">
+                <span className="text-muted-foreground">No Image</span>
+              </div>
+            )}
             <div
               className="absolute inset-0 bg-gradient-to-tr from-foreground/5 to-transparent pointer-events-none"
               aria-hidden

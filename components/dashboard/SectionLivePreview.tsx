@@ -15,6 +15,7 @@
 import * as React from "react"
 import dynamic from "next/dynamic"
 import { BadgeDollarSign, ShieldCheck, Star, CheckCircle, Lock, Leaf, ClipboardList } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { getPreviewKind } from "@/lib/utils/block-registry"
 import {
   DEFAULT_PRACTICE_AREAS,
@@ -26,14 +27,18 @@ import {
   DEFAULT_FEATURED_LISTINGS,
   DEFAULT_DEVELOPER_PARTNERS,
   DEFAULT_REVIEW_TRUST_BAR,
+  DEFAULT_ANIMATED_TESTIMONIALS,
   DEFAULT_FINANCING,
+  DEFAULT_FEATURES_BENTO,
   DEFAULT_AC_TYPES,
   DEFAULT_PRICE_PREVIEW,
+  DEFAULT_PRICING_COMPARISON_TABLE,
   DEFAULT_PRICING_TABLE,
   DEFAULT_FACEBOOK_REVIEW_EMBED,
   DEFAULT_WHY_CHOOSE_ME,
   DEFAULT_SERVICE_AREA_MAP,
   DEFAULT_LOGO_CLOUD,
+  DEFAULT_HERO_SHOWCASE,
   DEFAULT_FAQ_ACCORDION,
   DEFAULT_GYM_PROGRAMS,
   DEFAULT_GYM_SCHEDULE,
@@ -43,10 +48,36 @@ import {
   DEFAULT_GYM_FACILITY,
   DEFAULT_GYM_CLASS_TYPES,
   DEFAULT_GYM_FAQ,
+  DEFAULT_TESTIMONIALS_COMMUNITY,
+  DEFAULT_TESTIMONIALS_V2,
+  DEFAULT_CTA_BEAMS,
+  DEFAULT_GALLERY4,
+  DEFAULT_GALLERY_GRID,
+  DEFAULT_HERO_MINIMALISM,
+  DEFAULT_HERO_MODERN,
+  DEFAULT_HERO_GROUP_IMAGES,
+  DEFAULT_HERO_V6,
+  DEFAULT_TEAM_SHOWCASE,
+  DEFAULT_FEATURE_STEPS,
+  DEFAULT_FEATURE_SPOTLIGHT,
+  DEFAULT_HERO_ELEGANT_CAROUSEL,
+  DEFAULT_HERO_AERO_3,
+  DEFAULT_HERO_EMERGENCY,
+  DEFAULT_HERO,
+  DEFAULT_HERO_CHIROPRACTOR,
+  DEFAULT_HERO_DENTIST,
+  DEFAULT_HERO_CLINIC,
+  DEFAULT_HERO_CLEANING,
+  DEFAULT_HERO_POOL,
+  DEFAULT_HERO_PEST_CONTROL,
+  DEFAULT_HERO_LAWYER,
+  DEFAULT_HERO_GYM,
+  DEFAULT_HERO_STARTUP,
 } from "@/config/dashboard-config"
 
 // ── Live-preview dynamic imports (ssr: false — section picker only) ──────────
 const LivePreviewFeaturesGrid = dynamic(() => import("@/components/blocks/FeaturesGrid"), { ssr: false })
+const LivePreviewFeaturesBento = dynamic(() => import("@/components/blocks/FeaturesBento"), { ssr: false })
 const LivePreviewFeaturesModern = dynamic(() => import("@/components/blocks/FeaturesModern"), { ssr: false })
 const LivePreviewPracticeAreas = dynamic(() => import("@/components/blocks/PracticeAreasGrid"), { ssr: false })
 const LivePreviewHowItWorks = dynamic(() => import("@/components/blocks/HowItWorksSteps"), { ssr: false })
@@ -59,6 +90,8 @@ const LivePreviewSafetySection = dynamic(() => import("@/components/blocks/Safet
 const LivePreviewLogoCloud = dynamic(() => import("@/components/blocks/LogoCloud"), { ssr: false })
 const LivePreviewACTypes = dynamic(() => import("@/components/blocks/ACTypesGrid"), { ssr: false })
 const LivePreviewPricingTable = dynamic(() => import("@/components/blocks/PricingTable"), { ssr: false })
+const LivePreviewPricingComparisonTable = dynamic(() => import("@/components/blocks/PricingComparisonTable"), { ssr: false })
+const LivePreviewPricingSectionWithComparison = dynamic(() => import("@/components/blocks/PricingSectionWithComparisonBlock"), { ssr: false })
 const LivePreviewFeaturedListings = dynamic(() => import("@/components/blocks/FeaturedListingsGrid"), { ssr: false })
 const LivePreviewFinancingSection = dynamic(() => import("@/components/blocks/FinancingSection"), { ssr: false })
 const LivePreviewDeveloperPartners = dynamic(() => import("@/components/blocks/DeveloperPartnersLogos"), { ssr: false })
@@ -74,8 +107,10 @@ const LivePreviewFAQAccordion = dynamic(() => import("@/components/blocks/FAQAcc
 const LivePreviewCommonPests = dynamic(() => import("@/components/blocks/CommonPestsGrid"), { ssr: false })
 const LivePreviewWarrantyBlock = dynamic(() => import("@/components/blocks/WarrantyGuaranteeBlock"), { ssr: false })
 const LivePreviewFacebookReviewEmbed = dynamic(() => import("@/components/blocks/FacebookReviewEmbed"), { ssr: false })
+const LivePreviewAnimatedTestimonials = dynamic(() => import("@/components/blocks/AnimatedTestimonialsBlock"), { ssr: false })
 const LivePreviewTeamGrid = dynamic(() => import("@/components/blocks/TeamGrid"), { ssr: false })
 const LivePreviewTeamCarousel = dynamic(() => import("@/components/blocks/TeamCarousel"), { ssr: false })
+const LivePreviewTeamShowcase = dynamic(() => import("@/components/blocks/TeamShowcaseBlock"), { ssr: false })
 const LivePreviewAttorneyProfile = dynamic(() => import("@/components/blocks/AttorneyProfile"), { ssr: false })
 const LivePreviewBlogGrid = dynamic(() => import("@/components/blocks/BlogGrid"), { ssr: false })
 const LivePreviewContactMinimal = dynamic(() => import("@/components/blocks/ContactMinimal"), { ssr: false })
@@ -88,6 +123,8 @@ const LivePreviewFAQTwoColumn = dynamic(() => import("@/components/blocks/FAQTwo
 const LivePreviewMaintenancePlans = dynamic(() => import("@/components/blocks/MaintenancePlans"), { ssr: false })
 const LivePreviewFreeConsultation = dynamic(() => import("@/components/blocks/FreeConsultationForm"), { ssr: false })
 const LivePreviewMessengerStickyCTA = dynamic(() => import("@/components/blocks/MessengerStickyCTA"), { ssr: false })
+const LivePreviewHeroShowcase = dynamic(() => import("@/components/blocks/HeroShowcase"), { ssr: false })
+const LivePreviewHeroMinimalism = dynamic(() => import("@/components/blocks/HeroMinimalismBlock"), { ssr: false })
 const LivePreviewGymPrograms = dynamic(() => import("@/components/blocks/GymPrograms"), { ssr: false })
 const LivePreviewGymClassSchedule = dynamic(() => import("@/components/blocks/GymClassSchedule"), { ssr: false })
 const LivePreviewGymMembershipTiers = dynamic(() => import("@/components/blocks/GymMembershipTiers"), { ssr: false })
@@ -96,6 +133,31 @@ const LivePreviewGymResultsStories = dynamic(() => import("@/components/blocks/G
 const LivePreviewGymFacilityHighlights = dynamic(() => import("@/components/blocks/GymFacilityHighlights"), { ssr: false })
 const LivePreviewGymClassTypes = dynamic(() => import("@/components/blocks/GymClassTypes"), { ssr: false })
 const LivePreviewGymFaq = dynamic(() => import("@/components/blocks/GymFaq"), { ssr: false })
+const LivePreviewAnimatedTestimonialsCommunity = dynamic(() => import("@/components/blocks/AnimatedTestimonialsCommunityBlock"), { ssr: false })
+const LivePreviewTestimonialsV2 = dynamic(() => import("@/components/blocks/TestimonialsV2Block"), { ssr: false })
+const LivePreviewBackgroundBeamsCTA = dynamic(() => import("@/components/blocks/BackgroundBeamsCTABlock"), { ssr: false })
+const LivePreviewGallery4 = dynamic(() => import("@/components/blocks/Gallery4Block"), { ssr: false })
+const LivePreviewGalleryGrid = dynamic(() => import("@/components/blocks/GalleryGridBlock"), { ssr: false })
+const LivePreviewFeatureSteps = dynamic(() => import("@/components/blocks/FeatureStepsBlock"), { ssr: false })
+const LivePreviewFeatureSpotlight = dynamic(() => import("@/components/blocks/FeatureSpotlightBlock"), { ssr: false })
+
+// Hero variants
+const LivePreviewHeroBlock = dynamic(() => import("@/components/blocks/HeroBlock"), { ssr: false })
+const LivePreviewHeroEmergency = dynamic(() => import("@/components/blocks/HeroEmergency"), { ssr: false })
+const LivePreviewHeroAero3 = dynamic(() => import("@/components/blocks/HeroAero3"), { ssr: false })
+const LivePreviewHeroAuthority = dynamic(() => import("@/components/blocks/HeroAuthority"), { ssr: false })
+const LivePreviewHeroSaas = dynamic(() => import("@/components/blocks/HeroSaas"), { ssr: false })
+const LivePreviewHeroChiropractor = dynamic(() => import("@/components/blocks/HeroChiropractor"), { ssr: false })
+const LivePreviewHeroDentist = dynamic(() => import("@/components/blocks/HeroDentist"), { ssr: false })
+const LivePreviewHeroClinic = dynamic(() => import("@/components/blocks/HeroClinic"), { ssr: false })
+const LivePreviewHeroCleaning = dynamic(() => import("@/components/blocks/HeroCleaning"), { ssr: false })
+const LivePreviewHeroPool = dynamic(() => import("@/components/blocks/HeroPool"), { ssr: false })
+const LivePreviewHeroPestControl = dynamic(() => import("@/components/blocks/HeroPestControl"), { ssr: false })
+const LivePreviewHeroGym = dynamic(() => import("@/components/blocks/HeroGym"), { ssr: false })
+const LivePreviewElegantCarousel = dynamic(() => import("@/components/blocks/ElegantCarouselBlock"), { ssr: false })
+const LivePreviewModernHero = dynamic(() => import("@/components/blocks/ModernHeroBlock"), { ssr: false })
+const LivePreviewHeroGroupImages = dynamic(() => import("@/components/blocks/HeroWithGroupImagesBlock"), { ssr: false })
+const LivePreviewHeroV6 = dynamic(() => import("@/components/blocks/HeroV6Block"), { ssr: false })
 
 // ── Prefetch on hover ────────────────────────────────────────────────────────
 export function prefetchSectionPreview(id: string) {
@@ -106,6 +168,9 @@ export function prefetchSectionPreview(id: string) {
     case "programs-grid":
     case "faculty-grid":
       void import("@/components/blocks/FeaturesGrid"); return
+    case "services--bento":
+    case "services-bento":
+      void import("@/components/blocks/FeaturesBento"); return
     case "features-modern":
       void import("@/components/blocks/FeaturesModern"); return
     case "practice-areas":
@@ -131,6 +196,12 @@ export function prefetchSectionPreview(id: string) {
       void import("@/components/blocks/ACTypesGrid"); return
     case "pricing":
       void import("@/components/blocks/PricingTable"); return
+    case "pricing--comparison":
+    case "pricing-comparison-table":
+      void import("@/components/blocks/PricingComparisonTable"); return
+    case "pricing--feature-comparison":
+    case "pricing-section-with-comparison":
+      void import("@/components/blocks/PricingSectionWithComparisonBlock"); return
     case "featured-properties-grid":
       void import("@/components/blocks/FeaturedListingsGrid"); return
     case "financing-section":
@@ -161,6 +232,21 @@ export function prefetchSectionPreview(id: string) {
       void import("@/components/blocks/WarrantyGuaranteeBlock"); return
     case "facebook-review-embed":
       void import("@/components/blocks/FacebookReviewEmbed"); return
+    case "testimonials--animated":
+      void import("@/components/blocks/AnimatedTestimonialsBlock"); return
+    case "hero--showcase":
+    case "hero-showcase":
+      void import("@/components/blocks/HeroShowcase"); return
+    case "hero--minimalism":
+      void import("@/components/blocks/HeroMinimalismBlock"); return
+    case "hero--elegant-carousel":
+      void import("@/components/blocks/ElegantCarouselBlock"); return
+    case "hero--modern":
+      void import("@/components/blocks/ModernHeroBlock"); return
+    case "hero--group-images":
+      void import("@/components/blocks/HeroWithGroupImagesBlock"); return
+    case "hero--v6":
+      void import("@/components/blocks/HeroV6Block"); return
     case "gym--programs":
       void import("@/components/blocks/GymPrograms"); return
     case "gym--schedule":
@@ -177,6 +263,22 @@ export function prefetchSectionPreview(id: string) {
       void import("@/components/blocks/GymClassTypes"); return
     case "gym--faq":
       void import("@/components/blocks/GymFaq"); return
+    case "testimonials--community":
+      void import("@/components/blocks/AnimatedTestimonialsCommunityBlock"); return
+    case "testimonials--v2":
+      void import("@/components/blocks/TestimonialsV2Block"); return
+    case "cta--beams":
+      void import("@/components/blocks/BackgroundBeamsCTABlock"); return
+    case "gallery--carousel":
+      void import("@/components/blocks/Gallery4Block"); return
+    case "gallery--grid":
+      void import("@/components/blocks/GalleryGridBlock"); return
+    case "team--showcase":
+      void import("@/components/blocks/TeamShowcaseBlock"); return
+    case "features--steps":
+      void import("@/components/blocks/FeatureStepsBlock"); return
+    case "features--spotlight":
+      void import("@/components/blocks/FeatureSpotlightBlock"); return
     default:
       return
   }
@@ -184,9 +286,26 @@ export function prefetchSectionPreview(id: string) {
 
 // ── Minimal skeleton previews ────────────────────────────────────────────────
 function MinimalSectionPreview({ kind }: { kind: ReturnType<typeof getPreviewKind> }) {
+  const isHero = kind === "hero"
   return (
-    <div className="w-full aspect-video rounded-lg border border-border/60 bg-muted/20 overflow-hidden">
+    <div className={cn(
+      "w-full rounded-lg border border-border/60 bg-muted/20 overflow-hidden",
+      isHero ? "aspect-[16/14]" : "aspect-video"
+    )}>
       <div className="w-full h-full p-3 animate-pulse">
+        {kind === "hero" && (
+          <div className="space-y-4">
+            <div className="h-4 w-1/3 rounded bg-muted" />
+            <div className="h-12 w-3/4 rounded bg-muted" />
+            <div className="h-4 w-1/2 rounded bg-muted" />
+            <div className="flex gap-2 pt-2">
+              <div className="h-10 w-28 rounded bg-muted" />
+              <div className="h-10 w-28 rounded bg-muted" />
+            </div>
+            <div className="mt-8 h-40 rounded-xl bg-muted/50 border border-muted" />
+          </div>
+        )}
+
         {kind === "strip" && (
           <>
             <div className="h-3 w-2/3 rounded bg-muted" />
@@ -352,8 +471,10 @@ export function SectionLivePreview({ id }: { id: string }) {
   const [hovered, setHovered] = React.useState(false)
   const prefetchedRef = React.useRef(false)
 
+  const kind = getPreviewKind(id)
+  const isHero = kind === "hero"
   const STAGE_W = 1920
-  const STAGE_H = 1080
+  const STAGE_H = isHero ? 1680 : 1080
 
   const viewportRef = React.useRef<HTMLDivElement | null>(null)
   const [scale, setScale] = React.useState(0.18)
@@ -414,12 +535,18 @@ export function SectionLivePreview({ id }: { id: string }) {
           <div ref={viewportRef} className="w-full h-full overflow-hidden bg-background">
             <div className="pointer-events-none">
               <div
-                className="origin-top-left"
+                className="origin-top-left client-site"
+                data-mode="light"
+                data-theme="partner"
                 style={{
                   width: STAGE_W,
                   height: STAGE_H,
                   transform: `scale(${scale})`,
-                }}
+                  backgroundColor: "#ffffff",
+                  color: "#1a2b3c",
+                  "--background": "#ffffff",
+                  "--foreground": "#1a2b3c",
+                } as any}
               >
                 {content ?? (
                   <div className="w-full h-full flex items-center justify-center">
@@ -438,8 +565,11 @@ export function SectionLivePreview({ id }: { id: string }) {
 }
 
 // ── Full-panel always-visible preview (used in AddSectionModal right panel) ──
-export const SectionLivePreviewPanel = React.memo(function SectionLivePreviewPanel({ id }: { id: string }) {
+export const SectionLivePreviewPanel = React.memo(function SectionLivePreviewPanel({ id, className }: { id: string; className?: string }) {
   const STAGE_W = 1280
+  const kind = getPreviewKind(id)
+  const isHero = kind === "hero"
+
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const [scale, setScale] = React.useState(0.7)
 
@@ -459,10 +589,27 @@ export const SectionLivePreviewPanel = React.memo(function SectionLivePreviewPan
   const content = React.useMemo(() => buildSectionPreviewContent(id), [id])
 
   return (
-    <div ref={containerRef} className="w-full rounded-xl border border-border bg-background overflow-hidden shadow-sm">
+    <div
+      ref={containerRef}
+      className={cn(
+        "w-full rounded-xl border border-border bg-background overflow-hidden shadow-sm transition-all duration-500",
+        className ?? (isHero ? "aspect-[16/14] max-h-[75vh]" : "aspect-video")
+      )}
+    >
       <div
-        className="pointer-events-none origin-top-left"
-        style={{ width: STAGE_W, transform: `scale(${scale})`, transformOrigin: "top left", height: `calc(100% / ${scale})` }}
+        className="pointer-events-auto origin-top-left client-site"
+        data-mode="light"
+        data-theme="partner"
+        style={{
+          width: STAGE_W,
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
+          height: `calc(100% / ${scale})`,
+          backgroundColor: "#ffffff",
+          color: "#1a2b3c",
+          "--background": "#ffffff",
+          "--foreground": "#1a2b3c",
+        } as any}
       >
         {content ?? (
           <div className="w-full py-24 flex items-center justify-center">
@@ -512,6 +659,15 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
           />
         )
       }
+      case "services--bento":
+      case "services-bento":
+        return (
+          <LivePreviewFeaturesBento
+            title={DEFAULT_FEATURES_BENTO.title}
+            subtitle={DEFAULT_FEATURES_BENTO.subtitle}
+            items={DEFAULT_FEATURES_BENTO.items as any}
+          />
+        )
       case "services--highlight":
       case "practice-areas":
         return (
@@ -575,7 +731,6 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
           />
         )
       case "gallery":
-      case "gallery--grid":
         return (
           <div className="py-16 px-8 bg-background">
             <div className="max-w-5xl mx-auto">
@@ -600,6 +755,23 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
               </div>
             </div>
           </div>
+        )
+      case "gallery--grid":
+        return (
+          <LivePreviewGalleryGrid
+            badgeLabel={DEFAULT_GALLERY_GRID.badgeLabel}
+            title={DEFAULT_GALLERY_GRID.title}
+            subtitle={DEFAULT_GALLERY_GRID.subtitle}
+            images={DEFAULT_GALLERY_GRID.images as any}
+          />
+        )
+      case "gallery--carousel":
+        return (
+          <LivePreviewGallery4
+            title={DEFAULT_GALLERY4.title}
+            description={DEFAULT_GALLERY4.description}
+            items={DEFAULT_GALLERY4.items as any}
+          />
         )
       case "case_study":
       case "case_study--detail":
@@ -642,6 +814,19 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
             ]}
           />
         )
+      case "pricing--comparison":
+      case "pricing-comparison-table":
+        return (
+          <LivePreviewPricingComparisonTable
+            features={DEFAULT_PRICING_COMPARISON_TABLE.features as any}
+            plans={DEFAULT_PRICING_COMPARISON_TABLE.plans as any}
+            defaultPlan={DEFAULT_PRICING_COMPARISON_TABLE.defaultPlan as any}
+            defaultInterval={DEFAULT_PRICING_COMPARISON_TABLE.defaultInterval as any}
+          />
+        )
+      case "pricing--feature-comparison":
+      case "pricing-section-with-comparison":
+        return <LivePreviewPricingSectionWithComparison />
       case "pricing--subscription":
       case "maintenance-plans":
         return (
@@ -1235,6 +1420,14 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
           />
         )
       // ── Team grid / carousel ─────────────────────────────────────────────
+      case "testimonials--animated":
+        return (
+          <LivePreviewAnimatedTestimonials
+            testimonials={DEFAULT_ANIMATED_TESTIMONIALS.testimonials as any}
+            autoplay={Boolean(DEFAULT_ANIMATED_TESTIMONIALS.autoplay)}
+            className="py-6"
+          />
+        )
       case "team":
       case "team-grid":
         return (
@@ -1260,6 +1453,12 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
               { name: "Ana Cruz", specialty: "Customer Support", imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80" },
               { name: "Luis Torres", specialty: "Field Technician", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80" },
             ]}
+          />
+        )
+      case "team--showcase":
+        return (
+          <LivePreviewTeamShowcase
+            members={DEFAULT_TEAM_SHOWCASE.members as any}
           />
         )
       case "team--spotlight":
@@ -1379,20 +1578,149 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
           />
         )
       // ── Hero variants ────────────────────────────────────────────────────
-      case "hero":
-      case "hero--emergency":
+    case "hero":
+    case "hero--lawyer":
+    case "hero--startup":
+    case "hero--chiropractor":
+    case "hero--dentist":
+    case "hero--clinic":
+    case "hero--cleaning":
+    case "hero--pool":
+    case "hero--pest-control":
+    case "hero--gym":
+    case "hero--real-estate-modern":
+    case "hero--before-after-split":
+    case "hero--industrial":
+    case "hero--clean-delivery":
+    case "hero--luxury-soft":
+    case "hero--academic-clean":
+    case "hero--hvac":
+    case "hero--hvac-blue":
+    case "hero--generic":
+    case "hero--emergency":
+    case "hero--showcase":
+    case "hero--aero-3":
+    case "hero--elegant-carousel":
+    case "hero--minimalism":
+    case "hero--modern":
+    case "hero--group-images":
+    case "hero--v6":
+      return (
+        <HeroPreview theme={id.includes("--") ? id.split("--")[1] : "generic"} />
+      )
+      case "testimonials--community":
         return (
-          <LivePreviewFeaturesGrid
-            title="Professional Services"
-            subtitle="Fast, reliable, trusted"
-            features={[
-              { title: "24/7 Service", description: "Always available when you need us", icon: "Clock" },
-              { title: "Licensed & Insured", description: "Fully certified professionals", icon: "ShieldCheck" },
-              { title: "Free Estimates", description: "No obligation quotes", icon: "BadgeDollarSign" },
-            ]}
+          <LivePreviewAnimatedTestimonialsCommunity
+            title={DEFAULT_TESTIMONIALS_COMMUNITY.title}
+            subtitle={DEFAULT_TESTIMONIALS_COMMUNITY.subtitle}
+            badgeText={DEFAULT_TESTIMONIALS_COMMUNITY.badgeText}
+            testimonials={DEFAULT_TESTIMONIALS_COMMUNITY.testimonials as any}
+            autoRotateInterval={DEFAULT_TESTIMONIALS_COMMUNITY.autoRotateInterval}
+            trustedCompanies={DEFAULT_TESTIMONIALS_COMMUNITY.trustedCompanies}
+            trustedCompaniesTitle={DEFAULT_TESTIMONIALS_COMMUNITY.trustedCompaniesTitle}
+          />
+        )
+      case "testimonials--v2":
+        return (
+          <LivePreviewTestimonialsV2
+            badge={DEFAULT_TESTIMONIALS_V2.badge}
+            title={DEFAULT_TESTIMONIALS_V2.title}
+            subtitle={DEFAULT_TESTIMONIALS_V2.subtitle}
+            items={DEFAULT_TESTIMONIALS_V2.items as any}
+          />
+        )
+      case "features--steps":
+        return (
+          <LivePreviewFeatureSteps
+            title={DEFAULT_FEATURE_STEPS.title}
+            features={DEFAULT_FEATURE_STEPS.features as any}
+            autoPlayInterval={DEFAULT_FEATURE_STEPS.autoPlayInterval}
+          />
+        )
+      case "features--spotlight":
+        return (
+          <LivePreviewFeatureSpotlight
+            {...DEFAULT_FEATURE_SPOTLIGHT}
+          />
+        )
+      case "cta--beams":
+        return (
+          <LivePreviewBackgroundBeamsCTA
+            title={DEFAULT_CTA_BEAMS.title}
+            subtitle={DEFAULT_CTA_BEAMS.subtitle}
+            ctaText={DEFAULT_CTA_BEAMS.ctaText}
+            ctaHref={DEFAULT_CTA_BEAMS.ctaHref}
+            showEmailInput={DEFAULT_CTA_BEAMS.showEmailInput}
           />
         )
       default:
         return null
     }
 }
+
+
+function HeroPreview({ theme }: { theme: string }) {
+  switch (theme) {
+    case "emergency": return <LivePreviewHeroEmergency {...(DEFAULT_HERO_EMERGENCY || {})} />
+    case "showcase": return (
+      <LivePreviewHeroShowcase
+        badge={DEFAULT_HERO_SHOWCASE.badge}
+        title={DEFAULT_HERO_SHOWCASE.title}
+        subtitle={DEFAULT_HERO_SHOWCASE.subtitle}
+        primaryCTA={DEFAULT_HERO_SHOWCASE.primaryCTA}
+        secondaryCTA={DEFAULT_HERO_SHOWCASE.secondaryCTA}
+        trustPoints={DEFAULT_HERO_SHOWCASE.trustPoints as any}
+        metrics={DEFAULT_HERO_SHOWCASE.metrics as any}
+      />
+    )
+    case "aero-3": return (
+      <LivePreviewHeroAero3 
+        title={DEFAULT_HERO_AERO_3.title}
+        subtitle={DEFAULT_HERO_AERO_3.subtitle}
+        backgroundImage={DEFAULT_HERO_AERO_3.backgroundImage}
+      />
+    )
+    case "minimalism": return <LivePreviewHeroMinimalism {...(DEFAULT_HERO_MINIMALISM || {})} />
+    case "elegant-carousel": return <LivePreviewElegantCarousel slides={DEFAULT_HERO_ELEGANT_CAROUSEL.slides as any} />
+    case "modern": return <LivePreviewModernHero {...(DEFAULT_HERO_MODERN || {})} />
+    case "group-images": return <LivePreviewHeroGroupImages {...(DEFAULT_HERO_GROUP_IMAGES || {})} />
+    case "v6": return <LivePreviewHeroV6 {...(DEFAULT_HERO_V6 || {})} />
+    case "chiropractor": return <LivePreviewHeroChiropractor {...(DEFAULT_HERO_CHIROPRACTOR as any)} />
+    case "dentist": return <LivePreviewHeroDentist {...(DEFAULT_HERO_DENTIST as any)} />
+    case "clinic": return <LivePreviewHeroClinic {...(DEFAULT_HERO_CLINIC as any)} />
+    case "cleaning": return <LivePreviewHeroCleaning {...(DEFAULT_HERO_CLEANING as any)} />
+    case "pool": return <LivePreviewHeroPool {...(DEFAULT_HERO_POOL as any)} />
+    case "pest-control": return <LivePreviewHeroPestControl {...(DEFAULT_HERO_PEST_CONTROL as any)} />
+    case "gym": return <LivePreviewHeroGym {...(DEFAULT_HERO_GYM as any)} />
+    case "startup": return <LivePreviewHeroSaas {...(DEFAULT_HERO_STARTUP as any)} />
+    case "lawyer": return <LivePreviewHeroBlock {...(DEFAULT_HERO_LAWYER as any)} />
+    case "before-after":
+    case "real-estate-modern":
+    case "industrial":
+    case "clean-delivery":
+    case "luxury-soft":
+    case "academic-clean":
+    case "hvac":
+    case "hvac-blue":
+    case "personal-portfolio":
+    case "photobooth": {
+      const layouts: Record<string, string> = {
+        "before-after": "before-after",
+        "real-estate-modern": "full-screen",
+        "industrial": "industrial",
+        "clean-delivery": "bright-clean",
+        "luxury-soft": "soft-luxury",
+        "academic-clean": "structured-split",
+        "hvac": "hvac-urgent",
+        "hvac-blue": "hvac-blue",
+        "cleaning": "cleaning-fresh",
+        "personal-portfolio": "full-screen",
+        "photobooth": "soft-luxury"
+      }
+      return <LivePreviewHeroAuthority {...(DEFAULT_HERO as any)} layout={layouts[theme] as any} />
+    }
+    case "authority": return <LivePreviewHeroAuthority {...(DEFAULT_HERO as any)} />
+    default: return <LivePreviewHeroBlock {...(DEFAULT_HERO as any)} />
+  }
+}
+

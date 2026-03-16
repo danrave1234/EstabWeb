@@ -1,5 +1,7 @@
 "use client";
 
+import Reveal from "@/components/shared/Reveal";
+
 type GymResultStory = {
   name: string;
   result: string;
@@ -21,7 +23,7 @@ export default function GymResultsStories({
   stories = [],
 }: GymResultsStoriesProps) {
   return (
-    <section id="results" className="reveal border-b border-border bg-muted/10">
+    <Reveal as="section" id="results" className="border-b border-border bg-muted/10">
       <div className="container mx-auto px-4 py-14 sm:py-20">
         <div className="mx-auto mb-10 max-w-3xl text-center">
           <h2 className="font-serif text-3xl font-black tracking-tight text-foreground sm:text-4xl">{title}</h2>
@@ -58,7 +60,6 @@ export default function GymResultsStories({
           ))}
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 }
-

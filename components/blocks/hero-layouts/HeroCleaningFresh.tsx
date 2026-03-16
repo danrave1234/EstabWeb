@@ -73,14 +73,20 @@ export default function HeroCleaningFresh({
 
             <div className="lg:col-span-6">
               <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] border-8 border-background bg-muted/20">
-                <Image
-                  src={backgroundImage}
-                  alt={title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 40vw"
-                  priority
-                />
+                {backgroundImage ? (
+                  <Image
+                    src={backgroundImage}
+                    alt={title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <DynamicIcon name="Image" className="w-12 h-12 text-muted-foreground/20" />
+                  </div>
+                )}
                 {/* Floating "Clean" badge */}
                 <div className="absolute top-8 right-8 w-20 h-20 bg-background rounded-full shadow-xl flex items-center justify-center border border-border animate-float">
                   <DynamicIcon name="Sparkles" className="w-10 h-10 text-primary opacity-20" />

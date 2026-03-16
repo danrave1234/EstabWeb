@@ -74,14 +74,20 @@ export default function HeroHvacUrgent({
 
             <div className="relative h-[400px] lg:h-full w-full">
               <div className="absolute inset-y-0 -right-4 lg:-right-24 w-full lg:w-[120%] z-0">
-                <Image
-                  src={backgroundImage}
-                  alt={title}
-                  fill
-                  className="object-cover lg:object-center grayscale-[0.2] contrast-110"
-                  sizes="(max-width: 1024px) 100vw, 60vw"
-                  priority
-                />
+                {backgroundImage ? (
+                  <Image
+                    src={backgroundImage}
+                    alt={title}
+                    fill
+                    className="object-cover lg:object-center grayscale-[0.2] contrast-110"
+                    sizes="(max-width: 1024px) 100vw, 60vw"
+                    priority
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-muted flex items-center justify-center">
+                    <DynamicIcon name="Image" className="w-12 h-12 text-muted-foreground/20" />
+                  </div>
+                )}
                 {layout === "hvac-blue" ? (
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-blue-50/10 to-transparent lg:from-blue-50 lg:via-blue-50/10 lg:to-transparent z-10" />
                 ) : (

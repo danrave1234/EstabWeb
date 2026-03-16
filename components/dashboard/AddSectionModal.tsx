@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { createPortal } from "react-dom"
 import * as LucideIcons from "lucide-react"
 import { Layout, ChevronRight, ChevronLeft, X, Check } from "lucide-react"
 import { SECTION_TYPE_GROUPS, BLOCK_MAP, type SectionTypeGroup } from "@/lib/utils/block-registry"
@@ -66,7 +67,7 @@ export function AddSectionModal({ open, onOpenChange, activeSections, addSection
       setSelectedVariantId(null)
       return
     }
-    const firstId = selectedType.variantIds.find((id) => id !== "hero" && BLOCK_MAP[id] && isVariantAllowed(id))
+    const firstId = selectedType.variantIds.find((id) => BLOCK_MAP[id] && isVariantAllowed(id))
     setSelectedVariantId(firstId ?? null)
     // Prefetch all variants for this type
     selectedType.variantIds.filter((id) => isVariantAllowed(id)).forEach((id) => prefetchSectionPreview(id))
@@ -79,7 +80,7 @@ export function AddSectionModal({ open, onOpenChange, activeSections, addSection
 
   if (!open) return null
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onPointerDown={(e) => {
@@ -185,7 +186,6 @@ export function AddSectionModal({ open, onOpenChange, activeSections, addSection
                 </p>
                 <div className="space-y-1.5">
                   {selectedType.variantIds.map((id) => {
-                    if (id === "hero") return null
                     if (!isVariantAllowed(id)) return null
                     const block = BLOCK_MAP[id]
                     if (!block) return null
@@ -271,6 +271,7 @@ export function AddSectionModal({ open, onOpenChange, activeSections, addSection
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

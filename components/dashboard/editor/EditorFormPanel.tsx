@@ -12,9 +12,15 @@ import SubscriptionSettings from "@/components/dashboard/SubscriptionSettings"
 import ClientDomainSettings from "@/components/dashboard/ClientDomainSettings"
 import { fieldLabel, sectionIdToKey, ensureStringArray, navigationToArray } from "@/config/dashboard-config"
 import { BLOCK_MAP } from "@/lib/utils/block-registry"
+import { HeroDesignModal } from "@/components/dashboard/HeroDesignModal"
 import { slugify } from "@/lib/utils/blocks"
 import { TITLE_MAX, DESC_MAX } from "@/lib/seo/seoAudit"
 import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo"
+import {
+  applyCustomHtmlPatch,
+  extractCustomHtmlEditableContent,
+  getCustomHtmlSectionTitle,
+} from "@/lib/utils/custom-html-editor"
 import { toast } from "sonner"
 
 const formatSectionLabel = (id: string) => BLOCK_MAP[id]?.label ?? id.replace(/[-_]/g, " ").replace(/--/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())
@@ -52,6 +58,7 @@ interface EditorFormPanelProps {
   initialPlansConfig: any;
   pages: any[];
   updatePages: (pages: any[]) => void;
+  updateActivePageSections: (sections: string[]) => void;
   canUsePages: boolean;
   selectedPageIndex: number;
   setSelectedPageIndex: (i: number) => void;
@@ -59,6 +66,7 @@ interface EditorFormPanelProps {
   mergedConfig: Record<string, any>;
   globalConfig: Record<string, any>;
   activePage: any;
+  activeSections: string[];
   setColorPaletteOpen: (b: boolean) => void;
   setTypographyOpen: (b: boolean) => void;
   setUpgradeLoading: (b: boolean) => void;
@@ -66,9 +74,21 @@ interface EditorFormPanelProps {
 }
 
 export function EditorFormPanel({
-  selectedSection, setSelectedSection, formValues, setFormValues, setModified, autoSaveSection, collapsedGroups, setCollapsedGroups, isSaving, project, initialPlansConfig, pages, updatePages, canUsePages, selectedPageIndex, setSelectedPageIndex, setAiSeoOpen, mergedConfig, globalConfig, activePage, setColorPaletteOpen, setTypographyOpen, setUpgradeLoading, backdropPointerDownRef,
+  selectedSection, setSelectedSection, formValues, setFormValues, setModified, autoSaveSection, collapsedGroups, setCollapsedGroups, isSaving, project, initialPlansConfig, pages, updatePages, updateActivePageSections, canUsePages, selectedPageIndex, setSelectedPageIndex, setAiSeoOpen, mergedConfig, globalConfig, activePage, activeSections, setColorPaletteOpen, setTypographyOpen, setUpgradeLoading, backdropPointerDownRef,
 }: EditorFormPanelProps) {
+  const [heroModalOpen, setHeroModalOpen] = React.useState(false)
+
   if (!selectedSection) return null;
+  const isCustomHtmlSection = selectedSection === "custom-html";
+  const customHtmlTitle = isCustomHtmlSection ? getCustomHtmlSectionTitle(formValues) : "";
+  const customHtmlEditable = extractCustomHtmlEditableContent((typeof formValues.html === "string" ? formValues.html : ""))
+
+  const saveCustomHtmlForm = (nextForm: Record<string, any>) => {
+    const sectionKey = sectionIdToKey(selectedSection)
+    setFormValues(nextForm)
+    setModified((m) => ({ ...m, [sectionKey]: nextForm }))
+    autoSaveSection(selectedSection, nextForm)
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-6">
@@ -76,10 +96,10 @@ export function EditorFormPanel({
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         aria-hidden
         onPointerDown={() => {
-          backdropPointerDownRef.current = true
+          if (!heroModalOpen) backdropPointerDownRef.current = true
         }}
         onClick={() => {
-          if (backdropPointerDownRef.current) setSelectedSection(null)
+          if (backdropPointerDownRef.current && !heroModalOpen) setSelectedSection(null)
           backdropPointerDownRef.current = false
         }}
       />
@@ -118,7 +138,9 @@ export function EditorFormPanel({
                     ? 'Subscription & Plan'
                     : selectedSection === 'domain'
                       ? 'Domain Settings'
-                      : formatSectionLabel(selectedSection || '')}
+                      : isCustomHtmlSection
+                        ? customHtmlTitle
+                        : formatSectionLabel(selectedSection || '')}
                 </h2>
                 <p className="mt-1 text-[11px] sm:text-xs leading-relaxed text-muted-foreground">
                   {selectedSection === 'subscription'
@@ -127,7 +149,9 @@ export function EditorFormPanel({
                       ? 'Manage your subdomain and connect a custom domain.'
                       : selectedSection === 'seo'
                         ? 'Set your page title, meta description, and keywords for search engines.'
-                        : 'Edit the content, text, and images for this section.'}
+                        : isCustomHtmlSection
+                          ? 'Edit text, links, and images only. Layout code is hidden and kept locked.'
+                          : 'Edit the content, text, and images for this section.'}
                 </p>
               </div>
             </div>
@@ -160,6 +184,7 @@ export function EditorFormPanel({
             />
           ) : (
             <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+              {!isCustomHtmlSection && (
               <div className="flex items-center justify-between mb-2 px-1">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Fields</span>
                 <div className="flex items-center gap-3">
@@ -188,48 +213,72 @@ export function EditorFormPanel({
                   </button>
                 </div>
               </div>
-
-              {selectedSection === 'hero' && (
-                <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-border/60 bg-muted/10">
-                    <label className="text-xs font-bold uppercase tracking-widest text-primary">Layout Theme</label>
-                    <p className="text-[10px] text-muted-foreground mt-1">This controls the hero layout style for your site.</p>
+              )}
+              {selectedSection.startsWith('hero') && (
+                <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden shadow-sm">
+                  <div className="px-4 py-3 border-b border-border/60 bg-muted/10 flex items-center justify-between">
+                    <div>
+                      <label className="text-xs font-bold uppercase tracking-widest text-primary">Hero Design</label>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Choose a layout that fits your business style.</p>
+                    </div>
+                    <Zap className="w-4 h-4 text-primary animate-pulse" />
                   </div>
                   <div className="p-4">
-                    <select
-                      className="w-full p-2.5 bg-background border border-border/80 rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-colors"
-                      value={globalConfig.theme || 'lawyer'}
-                      onChange={(e) => {
-                        const val = e.target.value
-                        setModified((m) => ({ ...m, theme: val }))
-                        autoSaveSection('theme', val)
-                      }}
+                    <button
+                      type="button"
+                      onClick={() => setHeroModalOpen(true)}
+                      className="w-full flex items-center justify-between p-3 bg-background border border-border/80 rounded-xl hover:border-primary/40 hover:bg-muted/30 transition-all group"
                     >
-                      {['lawyer', 'startup', 'chiropractor', 'dentist', 'clinic', 'cleaning', 'pool', 'pest-control', 'real-estate-modern', 'before-after-split', 'industrial', 'clean-delivery', 'luxury-soft', 'academic-clean', 'hvac', 'hvac-blue', 'gym', 'generic'].map((t) => (
-                        <option key={t} value={t}>
-                          {t.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-                        </option>
-                      ))}
-                    </select>
-                    {globalConfig.theme === "gym" && (
-                      <div className="mt-4 rounded-xl border border-border/70 bg-muted/20 p-3">
-                        <label className="text-[11px] font-bold uppercase tracking-widest text-primary">Gym Hero Style</label>
-                        <p className="mt-1 text-[10px] text-muted-foreground">Switch between boutique, hardcore, and functional looks without changing theme.</p>
-                        <select
-                          className="mt-2 w-full rounded-lg border border-border/80 bg-background p-2 text-xs outline-none focus:ring-2 focus:ring-primary/30"
-                          value={formValues.layout || "boutique"}
-                          onChange={(e) => {
-                            const next = { ...formValues, layout: e.target.value }
-                            setFormValues(next)
-                            autoSaveSection("hero", next)
-                          }}
-                        >
-                          <option value="boutique">Boutique</option>
-                          <option value="hardcore">Hardcore</option>
-                          <option value="functional">Functional</option>
-                        </select>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <Layout className="w-5 h-5" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-xs font-bold">
+                            {selectedSection === 'hero' 
+                              ? (globalConfig.theme || 'standard').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                              : (BLOCK_MAP[selectedSection]?.label ?? selectedSection)}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">Change Layout Design</p>
+                        </div>
                       </div>
-                    )}
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                    </button>
+
+                    <HeroDesignModal 
+                      open={heroModalOpen}
+                      onOpenChange={setHeroModalOpen}
+                      currentTheme={globalConfig.theme || 'generic'}
+                      currentActiveSections={activeSections}
+                      onSelect={(variantId, theme) => {
+                         // 1. If it's a theme for the standard 'hero', update the theme.
+                        if (variantId.startsWith('hero--') && !['hero--aero-3', 'hero--showcase', 'hero--emergency', 'hero--group-images', 'hero--v6', 'hero--minimalism', 'hero--elegant-carousel', 'hero--modern'].includes(variantId)) {
+                          const t = variantId.split('--')[1];
+                          setModified((m) => ({ ...m, theme: t }));
+                          autoSaveSection('theme', t);
+                          
+                          // If current selected section is a specific hero variant, swap it back to the standard 'hero' block in activeSections
+                          if (selectedSection !== 'hero') {
+                              const nextActive = activeSections.map(s => s === selectedSection ? 'hero' : s);
+                              updateActivePageSections(nextActive);
+                              setSelectedSection('hero');
+                          }
+                        } else {
+                          // 2. It's a separate block ID.
+                          const newId = variantId === 'hero--generic' ? 'hero' : variantId;
+                          if (newId !== selectedSection) {
+                              const nextActive = activeSections.map(s => s === selectedSection ? newId : s);
+                              updateActivePageSections(nextActive);
+                              setSelectedSection(newId);
+                          } else if (newId === 'hero') {
+                            // same block ID but maybe theme changed? 
+                            const t = variantId.split('--')[1] || 'generic';
+                            setModified((m) => ({ ...m, theme: t }));
+                            autoSaveSection('theme', t);
+                          }
+                        }
+                      }}
+                    />
                   </div>
                 </div>
               )}
@@ -680,8 +729,176 @@ export function EditorFormPanel({
                 )
               })()}
 
+              {isCustomHtmlSection && (
+                <div className="space-y-5">
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+                    <p className="text-xs font-semibold text-foreground">Content-only editing</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      This section hides raw HTML/CSS. Edit copy, images, and links while the layout stays locked.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Section title</label>
+                      <input
+                        type="text"
+                        value={(formValues.title as string) || ""}
+                        maxLength={120}
+                        onChange={(e) => {
+                          saveCustomHtmlForm({ ...formValues, title: e.target.value })
+                        }}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                        placeholder="Enter section title"
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Section subtitle</label>
+                      <textarea
+                        value={(formValues.subtitle as string) || ""}
+                        maxLength={240}
+                        onChange={(e) => {
+                          saveCustomHtmlForm({ ...formValues, subtitle: e.target.value })
+                        }}
+                        className="w-full min-h-[90px] px-3 py-2 bg-background border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                        placeholder="Enter section subtitle"
+                      />
+                    </div>
+                  </div>
+
+                  {customHtmlEditable.textFields.length > 0 && (
+                    <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden">
+                      <div className="px-4 py-3 border-b border-border/60 bg-muted/10">
+                        <p className="text-xs font-bold uppercase tracking-widest text-primary">Text Content</p>
+                      </div>
+                      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {customHtmlEditable.textFields.map((field) => {
+                          const isLongField = field.maxLength > 180
+                          const currentLength = field.value.length
+                          return (
+                            <div key={`custom-text-${field.index}`} className={`space-y-1.5 ${isLongField ? "sm:col-span-2" : ""}`}>
+                              <label className="text-[10px] font-bold text-muted-foreground uppercase flex items-center justify-between">
+                                <span>{field.label}</span>
+                                <span className={`text-[9px] font-bold ${currentLength >= field.maxLength ? "text-red-500" : "text-muted-foreground/60"}`}>
+                                  {currentLength}<span className="font-normal opacity-60">/{field.maxLength}</span>
+                                </span>
+                              </label>
+                              {isLongField ? (
+                                <textarea
+                                  value={field.value}
+                                  maxLength={field.maxLength}
+                                  onChange={(e) => {
+                                    const nextHtml = applyCustomHtmlPatch(
+                                      (typeof formValues.html === "string" ? formValues.html : ""),
+                                      { text: { [field.index]: e.target.value } }
+                                    )
+                                    saveCustomHtmlForm({ ...formValues, html: nextHtml })
+                                  }}
+                                  className="w-full min-h-[100px] px-3 py-2 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-primary/30"
+                                />
+                              ) : (
+                                <input
+                                  type="text"
+                                  value={field.value}
+                                  maxLength={field.maxLength}
+                                  onChange={(e) => {
+                                    const nextHtml = applyCustomHtmlPatch(
+                                      (typeof formValues.html === "string" ? formValues.html : ""),
+                                      { text: { [field.index]: e.target.value } }
+                                    )
+                                    saveCustomHtmlForm({ ...formValues, html: nextHtml })
+                                  }}
+                                  className="w-full px-3 py-2 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-primary/30"
+                                />
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {customHtmlEditable.imageFields.length > 0 && (
+                    <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden">
+                      <div className="px-4 py-3 border-b border-border/60 bg-muted/10">
+                        <p className="text-xs font-bold uppercase tracking-widest text-primary">Images</p>
+                      </div>
+                      <div className="p-4 space-y-4">
+                        {customHtmlEditable.imageFields.map((imageField) => (
+                          <div key={`custom-image-${imageField.index}`} className="space-y-2 p-3 bg-background border border-border rounded-xl">
+                            <label className="text-[10px] font-bold text-muted-foreground uppercase">{imageField.label}</label>
+                            <ImageUpload
+                              value={imageField.src}
+                              onChange={(url) => {
+                                const nextHtml = applyCustomHtmlPatch(
+                                  (typeof formValues.html === "string" ? formValues.html : ""),
+                                  { images: { [imageField.index]: { src: url } } }
+                                )
+                                saveCustomHtmlForm({ ...formValues, html: nextHtml })
+                              }}
+                            />
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-muted-foreground uppercase">Alt text</label>
+                              <input
+                                type="text"
+                                value={imageField.alt}
+                                maxLength={140}
+                                onChange={(e) => {
+                                  const nextHtml = applyCustomHtmlPatch(
+                                    (typeof formValues.html === "string" ? formValues.html : ""),
+                                    { images: { [imageField.index]: { alt: e.target.value } } }
+                                  )
+                                  saveCustomHtmlForm({ ...formValues, html: nextHtml })
+                                }}
+                                className="w-full px-3 py-2 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-primary/30"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {customHtmlEditable.linkFields.length > 0 && (
+                    <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden">
+                      <div className="px-4 py-3 border-b border-border/60 bg-muted/10">
+                        <p className="text-xs font-bold uppercase tracking-widest text-primary">Links</p>
+                      </div>
+                      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {customHtmlEditable.linkFields.map((linkField) => (
+                          <div key={`custom-link-${linkField.index}`} className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-muted-foreground uppercase">{linkField.label}</label>
+                            <input
+                              type="text"
+                              value={linkField.href}
+                              maxLength={500}
+                              onChange={(e) => {
+                                const nextHtml = applyCustomHtmlPatch(
+                                  (typeof formValues.html === "string" ? formValues.html : ""),
+                                  { links: { [linkField.index]: e.target.value } }
+                                )
+                                saveCustomHtmlForm({ ...formValues, html: nextHtml })
+                              }}
+                              className="w-full px-3 py-2 bg-background border border-border rounded text-xs outline-none focus:ring-1 focus:ring-primary/30"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {customHtmlEditable.textFields.length === 0 &&
+                    customHtmlEditable.imageFields.length === 0 &&
+                    customHtmlEditable.linkFields.length === 0 && (
+                      <div className="rounded-xl border border-dashed border-border bg-muted/20 p-4 text-xs text-muted-foreground">
+                        No editable content was detected yet. Generate this section with AI first, then edit the text and images here.
+                      </div>
+                    )}
+                </div>
+              )}
+
               {/* 1) Text, Boolean, and Nested Object fields - use grid for horizontal layout */}
-              {selectedSection !== 'seo' && (<div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {selectedSection !== 'seo' && !isCustomHtmlSection && (<div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {Object.entries(formValues)
                   .filter(([key]) => {
                     if (selectedSection === 'hero') {
@@ -951,7 +1168,7 @@ export function EditorFormPanel({
               </div>)}
 
               {/* 2) Array Items detection (the powerful part) */}
-              {selectedSection !== 'seo' && Object.entries(formValues)
+              {selectedSection !== 'seo' && !isCustomHtmlSection && Object.entries(formValues)
                 .filter(([key, v]) => {
                   if (selectedSection === 'hero') {
                     return Array.isArray(v) && !['trustbadges', 'trustsignals'].includes(key.toLowerCase());
@@ -1346,6 +1563,8 @@ export function EditorFormPanel({
                                     </div>
                                     <textarea value={(itemObj.description as string) || ''} maxLength={500} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, description: e.target.value }; updateItems(next) }} placeholder="Description (suggested 300, max 500)" rows={2} className="w-full px-2 py-1.5 text-[10px] text-muted-foreground bg-background border border-border rounded resize-none outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/50" />
                                     {hasProp(itemObj, 'buttonText') && <input value={(itemObj.buttonText as string) || ''} maxLength={45} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, buttonText: e.target.value }; updateItems(next) }} placeholder="Button text (max 45)" className="w-full px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />}
+                                    {hasProp(itemObj, 'buttonLabel') && <input value={(itemObj.buttonLabel as string) || ''} maxLength={45} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, buttonLabel: e.target.value }; updateItems(next) }} placeholder="Button label (max 45)" className="w-full px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />}
+                                    {hasProp(itemObj, 'ctaUrl') && <input value={(itemObj.ctaUrl as string) || ''} maxLength={200} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, ctaUrl: e.target.value }; updateItems(next) }} placeholder="CTA URL (e.g. #contact)" className="w-full px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />}
                                     <div>
                                       <span className="text-[9px] font-bold text-muted-foreground uppercase block mb-1">Features</span>
                                       {isPricingStyle ? (
@@ -1458,6 +1677,36 @@ export function EditorFormPanel({
                               )
                             }
 
+                            const hasPricingFeatureRowStructure = key === 'features' && isObject && hasProp(itemObj, 'name') && hasProp(itemObj, 'values') && Array.isArray(itemObj.values)
+                            if (hasPricingFeatureRowStructure) {
+                              const vals = itemObj.values as (boolean | string | null)[]
+                              return (
+                                <div key={idx} className="p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-3 relative group hover:border-primary/15 transition-colors overflow-visible">
+                                  <div className="absolute -top-1 -left-1 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded-lg shadow-md p-1">
+                                    <button type="button" onClick={() => { if (idx > 0) { const next = [...typedItems];[next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↑</button>
+                                    <button type="button" onClick={() => { if (idx < typedItems.length - 1) { const next = [...typedItems];[next[idx + 1], next[idx]] = [next[idx], next[idx + 1]]; updateItems(next); } }} className="p-1 hover:bg-muted rounded text-[9px]">↓</button>
+                                    <button type="button" onClick={() => { const next = typedItems.filter((_, i) => i !== idx); updateItems(next); }} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><Trash2 className="w-3 h-3" /></button>
+                                  </div>
+                                  <input value={(itemObj.name as string) || ''} maxLength={80} onChange={(e) => { const next = [...typedItems]; next[idx] = { ...item, name: e.target.value }; updateItems(next) }} placeholder="Feature name (max 80)" className="w-full px-2 py-1.5 text-xs font-bold bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30 placeholder:text-muted-foreground/60" />
+                                  <div>
+                                    <span className="text-[9px] font-bold text-muted-foreground uppercase block mb-1">Values per plan (✓ = check, - = dash, or text)</span>
+                                    {vals.map((v, vi) => (
+                                      <div key={vi} className="flex items-center gap-2 mb-1">
+                                        <span className="text-[9px] text-muted-foreground w-12 shrink-0">Plan {vi + 1}</span>
+                                        {typeof v === 'boolean' ? (
+                                          <label className="flex items-center gap-1.5 flex-1">
+                                            <input type="checkbox" checked={v} onChange={(e) => { const nextV = [...vals]; nextV[vi] = e.target.checked; const next = [...typedItems]; next[idx] = { ...item, values: nextV }; updateItems(next) }} className="h-3 w-3 rounded border-border text-primary" />
+                                            <span className="text-[9px]">{v ? 'Included' : 'Not included'}</span>
+                                          </label>
+                                        ) : (
+                                          <input value={(v as string) || ''} maxLength={40} onChange={(e) => { const nextV = [...vals]; nextV[vi] = e.target.value || null; const next = [...typedItems]; next[idx] = { ...item, values: nextV }; updateItems(next) }} placeholder="Text or leave blank for dash" className="flex-1 px-2 py-1 text-[10px] bg-background border border-border rounded outline-none focus:ring-1 focus:ring-primary/30" />
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )
+                            }
                             return (
                               <div key={idx} className="p-4 rounded-xl bg-background/80 border border-border/80 shadow-sm space-y-4 relative group hover:border-primary/15 transition-colors">
                                 <div className="flex justify-between items-start">

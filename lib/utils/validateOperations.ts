@@ -8,6 +8,7 @@ import { BLOCK_REGISTRY } from "@/lib/utils/block-registry"
 import type { Operation } from "@/lib/utils/applyOperations"
 import { isLegalPageSlug } from "@/lib/utils/site-pages"
 import { sanitizeCustomSectionCss, sanitizeCustomSectionHtml } from "@/lib/security/custom-section-sanitizer"
+import { getAllowedTopLevelFields } from "@/lib/ai/section-field-schema"
 
 /** All valid section IDs (canonical + legacy) */
 export const ALL_SECTION_IDS = new Set(BLOCK_REGISTRY.map((b) => b.id))
@@ -39,6 +40,34 @@ const BLOCKED_SECTION_CHANGE_KEYS = new Set([
 /** Hard limits to prevent abuse */
 const MAX_OPERATIONS = 10
 const MAX_STRING_LENGTH = 500
+
+function filterSectionPayload(
+  sectionKey: string,
+  payload: unknown,
+  errors: string[],
+  operationLabel: "add_section" | "update_section"
+): Record<string, any> | undefined {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return undefined
+  }
+
+  const allowedTopLevelFields = getAllowedTopLevelFields(sectionKey)
+  const filtered: Record<string, any> = {}
+
+  for (const [k, v] of Object.entries(payload as Record<string, any>)) {
+    if (BLOCKED_SECTION_CHANGE_KEYS.has(k)) {
+      errors.push(`${operationLabel}: field "${k}" is a protected key - stripped.`)
+      continue
+    }
+    if (allowedTopLevelFields && !allowedTopLevelFields.has(k)) {
+      errors.push(`${operationLabel} "${sectionKey}": field "${k}" is not allowed by schema - stripped.`)
+      continue
+    }
+    filtered[k] = v
+  }
+
+  return Object.keys(filtered).length > 0 ? filtered : undefined
+}
 
 export interface ValidationResult {
   valid: boolean
@@ -84,9 +113,15 @@ export function validateOperations(
           errors.push(`Unknown section key: "${op.sectionKey}" - rejected.`)
           continue
         }
+
+        const safeData = filterSectionPayload(op.sectionKey, op.data, errors, "add_section")
+        const sanitizedAddOp: Operation = safeData
+          ? { ...op, data: sanitizeChanges(safeData, op.sectionKey) }
+          : { ...op, data: undefined }
+
         const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
         if (!isRoot) {
-          sanitized.push(op)
+          sanitized.push(sanitizedAddOp)
           continue
         }
 
@@ -101,7 +136,7 @@ export function validateOperations(
         const rawPos = op.position ?? simulated.length
         const safePos = Math.min(Math.max(rawPos, 0), simulated.length)
         simulated.splice(safePos, 0, op.sectionKey)
-        sanitized.push({ ...op, position: safePos })
+        sanitized.push({ ...sanitizedAddOp, position: safePos })
         break
       }
 
@@ -140,16 +175,9 @@ export function validateOperations(
           continue
         }
 
-        const filteredChanges: Record<string, any> = {}
-        for (const [k, v] of Object.entries(op.changes)) {
-          if (BLOCKED_SECTION_CHANGE_KEYS.has(k)) {
-            errors.push(`update_section: field "${k}" is a protected key - stripped.`)
-          } else {
-            filteredChanges[k] = v
-          }
-        }
+        const filteredChanges = filterSectionPayload(op.sectionKey, op.changes, errors, "update_section")
 
-        if (Object.keys(filteredChanges).length === 0) {
+        if (!filteredChanges || Object.keys(filteredChanges).length === 0) {
           errors.push(`update_section "${op.sectionKey}" had no allowed fields - skipped.`)
           continue
         }

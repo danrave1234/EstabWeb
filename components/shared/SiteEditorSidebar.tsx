@@ -1000,8 +1000,8 @@ export default function SiteEditorSidebar() {
                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                       <PanelTop className="w-4 h-4 text-primary" /> Header Style
                     </h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      {["solid", "floating"].map((style) => (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {["solid", "floating", "tubelight", "megamenu"].map((style) => (
                         <button
                           key={style}
                           onClick={() => updateData({ ...data, headerStyle: style })}

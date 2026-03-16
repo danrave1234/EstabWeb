@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { COLOR_THEME_SWATCHES, DEFAULT_FOOTER, DEFAULT_BLUEPRINT_CONFIG, DEFAULT_EMERGENCY_CTA, DEFAULT_AWARDS_STRIP, DEFAULT_FAQ_ACCORDION, DEFAULT_BEFORE_AFTER_GALLERY, DEFAULT_BLOG, DEFAULT_HOW_IT_WORKS, DEFAULT_PRACTICE_AREAS, DEFAULT_TREATMENT_PROCESS, DEFAULT_COMMON_PESTS, DEFAULT_FEATURED_LISTINGS, DEFAULT_DEVELOPER_PARTNERS, DEFAULT_TESTIMONIALS, DEFAULT_REVIEW_TRUST_BAR, DEFAULT_FINANCING, DEFAULT_AC_TYPES, DEFAULT_PRICE_PREVIEW, DEFAULT_PRICING_TABLE, DEFAULT_MAINTENANCE_PLANS, DEFAULT_FACEBOOK_REVIEW_EMBED, DEFAULT_WHY_CHOOSE_ME, DEFAULT_SERVICE_AREA_MAP, DEFAULT_LOGO_CLOUD, DEFAULT_DELIVERY_COVERAGE, DEFAULT_CONTACT_WITH_MAP, DEFAULT_HERO, DEFAULT_HERO_EMERGENCY, DEFAULT_TRUST_BADGES, DEFAULT_TEAM_CAROUSEL, DEFAULT_ATTORNEY_PROFILE, DEFAULT_CTA, DEFAULT_PROMO_STRIP, DEFAULT_FREE_CONSULTATION, DEFAULT_GUARANTEE, DEFAULT_CONTACT, DEFAULT_FEATURES, DEFAULT_GYM_PROGRAMS, DEFAULT_GYM_SCHEDULE, DEFAULT_GYM_MEMBERSHIPS, DEFAULT_GYM_TRAINERS, DEFAULT_GYM_RESULTS, DEFAULT_GYM_FACILITY, DEFAULT_GYM_CLASS_TYPES, DEFAULT_GYM_FAQ, DEFAULT_CUSTOM_HTML_SECTION, sectionIdToKey, navigationToArray, ensureStringArray, deepMerge } from "@/config/dashboard-config"
+import { COLOR_THEME_SWATCHES, DEFAULT_FOOTER, DEFAULT_BLUEPRINT_CONFIG, DEFAULT_EMERGENCY_CTA, DEFAULT_ANIMATED_TESTIMONIALS, DEFAULT_AWARDS_STRIP, DEFAULT_FAQ_ACCORDION, DEFAULT_BEFORE_AFTER_GALLERY, DEFAULT_BLOG, DEFAULT_HOW_IT_WORKS, DEFAULT_PRACTICE_AREAS, DEFAULT_TREATMENT_PROCESS, DEFAULT_COMMON_PESTS, DEFAULT_FEATURED_LISTINGS, DEFAULT_DEVELOPER_PARTNERS, DEFAULT_TESTIMONIALS, DEFAULT_REVIEW_TRUST_BAR, DEFAULT_FINANCING, DEFAULT_AC_TYPES, DEFAULT_PRICE_PREVIEW, DEFAULT_PRICING_COMPARISON_TABLE, DEFAULT_PRICING_SECTION_COMPARISON, DEFAULT_PRICING_TABLE, DEFAULT_MAINTENANCE_PLANS, DEFAULT_FACEBOOK_REVIEW_EMBED, DEFAULT_WHY_CHOOSE_ME, DEFAULT_SERVICE_AREA_MAP, DEFAULT_LOGO_CLOUD, DEFAULT_DELIVERY_COVERAGE, DEFAULT_CONTACT_WITH_MAP, DEFAULT_HERO, DEFAULT_HERO_EMERGENCY, DEFAULT_HERO_SHOWCASE, DEFAULT_HERO_AERO_3, DEFAULT_HERO_ELEGANT_CAROUSEL, DEFAULT_HERO_MINIMALISM, DEFAULT_HERO_MODERN, DEFAULT_HERO_GROUP_IMAGES, DEFAULT_HERO_V6, DEFAULT_HERO_CHIROPRACTOR, DEFAULT_HERO_DENTIST, DEFAULT_HERO_CLINIC, DEFAULT_HERO_CLEANING, DEFAULT_HERO_POOL, DEFAULT_HERO_PEST_CONTROL, DEFAULT_HERO_LAWYER, DEFAULT_HERO_GYM, DEFAULT_HERO_STARTUP, DEFAULT_TRUST_BADGES, DEFAULT_TEAM_CAROUSEL, DEFAULT_TEAM_SHOWCASE, DEFAULT_ATTORNEY_PROFILE, DEFAULT_CTA, DEFAULT_PROMO_STRIP, DEFAULT_FREE_CONSULTATION, DEFAULT_GUARANTEE, DEFAULT_CONTACT, DEFAULT_FEATURES, DEFAULT_FEATURES_BENTO, DEFAULT_FEATURE_SPOTLIGHT, DEFAULT_GYM_PROGRAMS, DEFAULT_GYM_SCHEDULE, DEFAULT_GYM_MEMBERSHIPS, DEFAULT_GYM_TRAINERS, DEFAULT_GYM_RESULTS, DEFAULT_GYM_FACILITY, DEFAULT_GYM_CLASS_TYPES, DEFAULT_GYM_FAQ, DEFAULT_TESTIMONIALS_V2, DEFAULT_CUSTOM_HTML_SECTION, DEFAULT_GALLERY4, DEFAULT_GALLERY_GRID, DEFAULT_TESTIMONIALS_COMMUNITY, DEFAULT_CTA_BEAMS, DEFAULT_FEATURE_STEPS, DEFAULT_STATS_SECTION, DEFAULT_PAYMENT_OPTIONS_STRIP, DEFAULT_PROMO_CTA_SECTION, DEFAULT_BEFORE_AFTER_SLIDER, DEFAULT_FEATURE_HIGHLIGHT_ZIGZAG, DEFAULT_PATIENT_FAQ, DEFAULT_CASE_STUDY_DETAIL, sectionIdToKey, navigationToArray, ensureStringArray, deepMerge } from "@/config/dashboard-config"
 import { BLOCK_MAP } from "@/lib/utils/block-registry"
 import { categoryLabelForSection, slugify } from "@/lib/utils/blocks"
 import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo"
@@ -9,15 +9,46 @@ import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo"
 const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
     'hero': DEFAULT_HERO,
     'hero--emergency': DEFAULT_HERO_EMERGENCY,
+    'hero--showcase': DEFAULT_HERO_SHOWCASE,
+    'hero--aero-3': DEFAULT_HERO_AERO_3,
+    'hero--minimalism': DEFAULT_HERO_MINIMALISM,
+    'hero--elegant-carousel': DEFAULT_HERO_ELEGANT_CAROUSEL,
+    'hero--modern': DEFAULT_HERO_MODERN,
+    'hero--group-images': DEFAULT_HERO_GROUP_IMAGES,
+    'hero--v6': DEFAULT_HERO_V6,
+    'hero--generic': DEFAULT_HERO,
+    'hero--lawyer': DEFAULT_HERO_LAWYER,
+    'hero--dentist': DEFAULT_HERO_DENTIST,
+    'hero--clinic': DEFAULT_HERO_CLINIC,
+    'hero--gym': DEFAULT_HERO_GYM,
+    'hero--startup': DEFAULT_HERO_STARTUP,
+    'hero--chiropractor': DEFAULT_HERO_CHIROPRACTOR,
+    'hero--cleaning': DEFAULT_HERO_CLEANING,
+    'hero--pool': DEFAULT_HERO_POOL,
+    'hero--pest-control': DEFAULT_HERO_PEST_CONTROL,
+    'hero--real-estate-modern': DEFAULT_HERO_LAWYER,
+    'hero--before-after-split': DEFAULT_HERO_LAWYER,
+    'hero--industrial': DEFAULT_HERO_LAWYER,
+    'hero--clean-delivery': DEFAULT_HERO_LAWYER,
+    'hero--luxury-soft': DEFAULT_HERO_LAWYER,
+    'hero--academic-clean': DEFAULT_HERO_LAWYER,
+    'hero--hvac': DEFAULT_HERO_LAWYER,
+    'hero--hvac-blue': DEFAULT_HERO_LAWYER,
     'trust_badges': DEFAULT_TRUST_BADGES,
     'certifications': DEFAULT_AWARDS_STRIP,
     'testimonials': DEFAULT_TESTIMONIALS,
     'testimonials--grid': DEFAULT_REVIEW_TRUST_BAR,
+    'testimonials--animated': DEFAULT_ANIMATED_TESTIMONIALS,
+    'testimonials--community': DEFAULT_TESTIMONIALS_COMMUNITY,
+    'testimonials--v2': DEFAULT_TESTIMONIALS_V2,
     'testimonials--facebook': DEFAULT_FACEBOOK_REVIEW_EMBED,
     'logo_cloud': DEFAULT_LOGO_CLOUD,
     'services': DEFAULT_FEATURES,
+    'services--bento': DEFAULT_FEATURES_BENTO,
     'services--modern': DEFAULT_FEATURES,
-    'services--highlight': DEFAULT_FEATURES,
+    'services--highlight': DEFAULT_FEATURE_HIGHLIGHT_ZIGZAG,
+    'features--highlight': DEFAULT_FEATURE_HIGHLIGHT_ZIGZAG,
+    'feature-highlight': DEFAULT_FEATURE_HIGHLIGHT_ZIGZAG,
     'service_detail': DEFAULT_FEATURES,
     'service_detail--split': DEFAULT_FEATURES,
     'comparison': DEFAULT_AC_TYPES,
@@ -28,34 +59,52 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
     'process--timeline': DEFAULT_TREATMENT_PROCESS,
     'faq': DEFAULT_FAQ_ACCORDION,
     'faq--two-column': DEFAULT_PRACTICE_AREAS,
+    'faq--patient': DEFAULT_PATIENT_FAQ,
+    'faq--clinic': DEFAULT_PATIENT_FAQ,
+    'patient_faq': DEFAULT_PATIENT_FAQ,
     'blog_preview': DEFAULT_BLOG,
-    'stats': { title: "By the Numbers", items: [] },
+    'stats': DEFAULT_STATS_SECTION,
+    'stats--bar': DEFAULT_STATS_SECTION,
     'team': DEFAULT_TEAM_CAROUSEL,
     'team--carousel': DEFAULT_TEAM_CAROUSEL,
+    'team--showcase': DEFAULT_TEAM_SHOWCASE,
     'team--profile': DEFAULT_ATTORNEY_PROFILE,
     'team--spotlight': DEFAULT_WHY_CHOOSE_ME,
     'pricing': DEFAULT_PRICING_TABLE,
+    'pricing--comparison': DEFAULT_PRICING_COMPARISON_TABLE,
+    'pricing--feature-comparison': DEFAULT_PRICING_SECTION_COMPARISON,
+    'pricing-comparison-table': DEFAULT_PRICING_COMPARISON_TABLE,
+    'pricing-section-with-comparison': DEFAULT_PRICING_SECTION_COMPARISON,
     'pricing--subscription': DEFAULT_MAINTENANCE_PLANS,
     'price_preview': DEFAULT_PRICE_PREVIEW,
     'service_area': DEFAULT_SERVICE_AREA_MAP,
     'service_area--radius': DEFAULT_DELIVERY_COVERAGE,
     'gallery': DEFAULT_BEFORE_AFTER_GALLERY,
-    'gallery--slider': DEFAULT_BEFORE_AFTER_GALLERY,
+    'gallery--slider': DEFAULT_BEFORE_AFTER_SLIDER,
+    'before-after-slider': DEFAULT_BEFORE_AFTER_SLIDER,
+    'gallery--carousel': DEFAULT_GALLERY4,
+    'gallery--grid': DEFAULT_GALLERY_GRID,
     'case_study': DEFAULT_BEFORE_AFTER_GALLERY,
-    'case_study--detail': DEFAULT_BEFORE_AFTER_GALLERY,
+    'case_study--detail': DEFAULT_CASE_STUDY_DETAIL,
     'cta': DEFAULT_CTA,
     'cta--emergency': DEFAULT_HERO_EMERGENCY,
-    'cta--promo-strip': DEFAULT_PROMO_STRIP,
-    'cta--sticky': DEFAULT_PROMO_STRIP,
+    'cta--promo-strip': DEFAULT_PROMO_CTA_SECTION,
+    'cta--sticky': DEFAULT_PROMO_CTA_SECTION,
+    'promo_cta': DEFAULT_PROMO_CTA_SECTION,
+    'promo-cta-section': DEFAULT_PROMO_CTA_SECTION,
+    'cta--beams': DEFAULT_CTA_BEAMS,
+    'features--steps': DEFAULT_FEATURE_STEPS,
+    'features--spotlight': DEFAULT_FEATURE_SPOTLIGHT,
     'booking': DEFAULT_FREE_CONSULTATION,
     'lead_capture': DEFAULT_FREE_CONSULTATION,
     'lead_capture--multi-step': DEFAULT_FREE_CONSULTATION,
     'free_consultation': DEFAULT_FREE_CONSULTATION,
     'custom-html': DEFAULT_CUSTOM_HTML_SECTION,
-    'payment_options': { title: "Payment Options", items: [] },
+    'payment_options': DEFAULT_PAYMENT_OPTIONS_STRIP,
     'guarantee': DEFAULT_GUARANTEE,
     'guarantee--badge': DEFAULT_GUARANTEE,
     'guarantee--safety': DEFAULT_GUARANTEE,
+    'warranty-block': DEFAULT_GUARANTEE,
     'contact': DEFAULT_CONTACT,
     'contact--minimal': DEFAULT_CONTACT,
     'contact--visual': DEFAULT_CONTACT,
@@ -97,6 +146,7 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
     'features': DEFAULT_FEATURES,
     'features-modern': DEFAULT_FEATURES,
     'services-grid': DEFAULT_FEATURES,
+    'services-bento': DEFAULT_FEATURES_BENTO,
     'product_grid': DEFAULT_FEATURES,
     'project-gallery': DEFAULT_FEATURES,
     'programs-grid': DEFAULT_FEATURES,
@@ -319,6 +369,27 @@ export function useEditorState(project: any) {
         } else if (sectionKey === 'beforeAfterGallery') {
             const b = (base || {}) as Record<string, any>
             setFormWithCollapsed({ ...DEFAULT_BEFORE_AFTER_GALLERY, ...b, items: normalizeArrayItems(b.items, DEFAULT_BEFORE_AFTER_GALLERY.items) })
+        } else if (sectionKey === 'gallery4') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_GALLERY4, ...b, items: normalizeArrayItems(b.items, DEFAULT_GALLERY4.items) })
+        } else if (sectionKey === 'galleryGrid') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_GALLERY_GRID, ...b, images: normalizeArrayItems(b.images, DEFAULT_GALLERY_GRID.images) })
+        } else if (sectionKey === 'teamShowcase') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_TEAM_SHOWCASE, ...b, members: normalizeArrayItems(b.members, DEFAULT_TEAM_SHOWCASE.members) })
+        } else if (sectionKey === 'heroElegantCarousel') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_HERO_ELEGANT_CAROUSEL, ...b, slides: normalizeArrayItems(b.slides, DEFAULT_HERO_ELEGANT_CAROUSEL.slides) })
+        } else if (sectionKey === 'heroModern') {
+            const b = (base || {}) as Record<string, any>
+            const reviews = { ...DEFAULT_HERO_MODERN.reviews, ...(typeof b.reviews === 'object' && b.reviews !== null ? b.reviews : {}) }
+            reviews.avatars = normalizeArrayItems(reviews.avatars, DEFAULT_HERO_MODERN.reviews.avatars)
+            setFormWithCollapsed({ ...DEFAULT_HERO_MODERN, ...b, reviews })
+        } else if (sectionKey === 'heroGroupImages') {
+            setFormWithCollapsed({ ...DEFAULT_HERO_GROUP_IMAGES, ...(base as Record<string, any>) })
+        } else if (sectionKey === 'heroV6') {
+            setFormWithCollapsed({ ...DEFAULT_HERO_V6, ...(base as Record<string, any>) })
         } else if (sectionKey === 'blog') {
             const b = (base || {}) as Record<string, any>
             setFormWithCollapsed({ ...DEFAULT_BLOG, ...b, posts: normalizeArrayItems(b.posts, DEFAULT_BLOG.posts) })
@@ -348,6 +419,22 @@ export function useEditorState(project: any) {
         } else if (sectionKey === 'reviewTrustBar') {
             const b = (base || {}) as Record<string, any>
             setFormWithCollapsed({ ...DEFAULT_REVIEW_TRUST_BAR, ...b, testimonials: normalizeArrayItems(b.testimonials, DEFAULT_REVIEW_TRUST_BAR.testimonials) })
+        } else if (sectionKey === 'animatedTestimonials') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({
+                ...DEFAULT_ANIMATED_TESTIMONIALS,
+                ...b,
+                testimonials: normalizeArrayItems(b.testimonials, DEFAULT_ANIMATED_TESTIMONIALS.testimonials),
+            })
+        } else if (sectionKey === 'testimonialsV2') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({
+                ...DEFAULT_TESTIMONIALS_V2,
+                ...b,
+                items: normalizeArrayItems(b.items, DEFAULT_TESTIMONIALS_V2.items),
+            })
+        } else if (sectionKey === 'featureSpotlight') {
+            setFormWithCollapsed({ ...DEFAULT_FEATURE_SPOTLIGHT, ...(base as Record<string, any>) })
         } else if (sectionKey === 'financing') {
             const b = (base || {}) as Record<string, any>
             setFormWithCollapsed({ ...DEFAULT_FINANCING, ...b, items: normalizeArrayItems(b.items, DEFAULT_FINANCING.items) })
@@ -363,6 +450,22 @@ export function useEditorState(project: any) {
         } else if (sectionKey === 'pricingTable') {
             const b = (base || {}) as Record<string, any>
             setFormWithCollapsed({ ...DEFAULT_PRICING_TABLE, ...b, plans: normalizeArrayItems(b.plans, DEFAULT_PRICING_TABLE.plans) })
+        } else if (sectionKey === 'pricingComparisonTable') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({
+                ...DEFAULT_PRICING_COMPARISON_TABLE,
+                ...b,
+                features: normalizeArrayItems(b.features, DEFAULT_PRICING_COMPARISON_TABLE.features),
+                plans: normalizeArrayItems(b.plans, DEFAULT_PRICING_COMPARISON_TABLE.plans),
+            })
+        } else if (sectionKey === 'pricingSectionComparison') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({
+                ...DEFAULT_PRICING_SECTION_COMPARISON,
+                ...b,
+                plans: normalizeArrayItems(b.plans, DEFAULT_PRICING_SECTION_COMPARISON.plans),
+                features: normalizeArrayItems(b.features, DEFAULT_PRICING_SECTION_COMPARISON.features),
+            })
         } else if (sectionKey === 'maintenancePlans') {
             const b = (base || {}) as Record<string, any>
             setFormWithCollapsed({ ...DEFAULT_MAINTENANCE_PLANS, ...b, plans: normalizeArrayItems(b.plans, DEFAULT_MAINTENANCE_PLANS.plans) })
@@ -385,6 +488,14 @@ export function useEditorState(project: any) {
             const b = (base || {}) as Record<string, any>
             const areas = Array.isArray(b.areas) ? b.areas : DEFAULT_DELIVERY_COVERAGE.areas
             setFormWithCollapsed({ ...DEFAULT_DELIVERY_COVERAGE, ...b, areas })
+        } else if (sectionKey === 'heroShowcase') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({
+                ...DEFAULT_HERO_SHOWCASE,
+                ...b,
+                trustPoints: normalizeArrayItems(b.trustPoints, DEFAULT_HERO_SHOWCASE.trustPoints),
+                metrics: normalizeArrayItems(b.metrics, DEFAULT_HERO_SHOWCASE.metrics),
+            })
         } else if (sectionKey === 'gymPrograms') {
             const b = (base || {}) as Record<string, any>
             setFormWithCollapsed({ ...DEFAULT_GYM_PROGRAMS, ...b, items: normalizeArrayItems(b.items, DEFAULT_GYM_PROGRAMS.items) })
@@ -420,6 +531,9 @@ export function useEditorState(project: any) {
         } else if (sectionKey === 'features' || sectionKey === 'services' || sectionKey === 'servicesGrid') {
             const b = (base || {}) as Record<string, any>
             setFormWithCollapsed({ ...DEFAULT_FEATURES, ...b, items: normalizeArrayItems(b.items ?? b.features, DEFAULT_FEATURES.items) })
+        } else if (sectionKey === 'featuresBento') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_FEATURES_BENTO, ...b, items: normalizeArrayItems(b.items, DEFAULT_FEATURES_BENTO.items) })
         } else {
             // Generic fallback — merge with any matching DEFAULT if available
             const defaultData = DEFAULT_SECTION_DATA_MAP[selectedSection]
@@ -714,3 +828,6 @@ export function useEditorState(project: any) {
         updateActivePageSections
     }
 }
+
+
+

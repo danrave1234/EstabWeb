@@ -287,6 +287,15 @@ The following paths are never redirected to subdomains on the root domain:
 
 - Custom AI section support uses section ID custom-html mapped to config key customHtml.
 - custom-html is gated to Pro+ (pro, ecommerce, custom) and admin_granted, with guards applied in dashboard UI and AI APIs.
+- Interactive pricing comparison variant uses section ID `pricing--comparison` mapped to config key `pricingComparisonTable` (legacy alias: `pricing-comparison-table`).
+- Animated testimonials variant uses section ID `testimonials--animated` mapped to config key `animatedTestimonials`.
+- Pricing section comparison variant uses section ID `pricing--feature-comparison` mapped to config key `pricingSectionComparison` (legacy alias: `pricing-section-with-comparison`).
+- Hero showcase variant uses section ID `hero--showcase` mapped to config key `heroShowcase` (legacy alias: `hero-showcase`).
+- Services bento variant uses section ID `services--bento` mapped to config key `featuresBento` (legacy alias: `services-bento`).
+- Community testimonials variant uses section ID `testimonials--community` mapped to config key `testimonialsCommunity`. Supports star ratings, avatar images, dot navigation, slide animation, and optional logo cloud (trustedCompanies).
+- Background beams CTA variant uses section ID `cta--beams` mapped to config key `ctaBeams`. The animated SVG beam primitive lives in `components/ui/background-beams.tsx`.
+- Gallery carousel variant uses section ID gallery--carousel mapped to config key gallery4. It renders horizontally scrolling project cards with title, description, CTA link, and image items.
+- Feature steps variant uses section ID `features--steps` mapped to config key `featureSteps`. The animated step-by-step walkthrough primitive lives in `components/ui/feature-section.tsx`. Supports an image panel that transitions between steps with progress-based auto-rotation.
 
 ---
 
@@ -893,7 +902,41 @@ All API routes are under `app/api/` and use Next.js Route Handlers.
 
 ---
 
-### 8.12 Track Lead API
+### 8.12 Site Status API
+
+**`PATCH /api/project/[id]/site-status`** *(Client-owned projects)*
+- Auth: required (must own project)
+- Body: `{ status: 'active' | 'disabled' | 'archived', reason?: string }`
+- Allowed client transitions: `active ↔ disabled`, `active → archived`
+- Restriction: clients cannot restore from `archived` (admin-only)
+- Side effect: archiving removes custom domain from Vercel and clears `custom_domain`
+- Writes audit log entry (`site_disabled` / `site_enabled` / `site_archived`)
+
+**`PATCH /api/admin/projects/[id]/site-status`** *(Admin only)*
+- Auth: requires `admin` or `sub_admin` role
+- Body: `{ status: 'active' | 'disabled' | 'archived', reason?: string }`
+- Allows all status transitions including restoring archived sites
+- Uses service client to bypass RLS for cross-user project access
+- Writes audit log entry (restore from archive logs as `site_restored`)
+
+**`DELETE /api/admin/projects/[id]/site-status`** *(Admin only — irreversible)*
+- Auth: requires `admin` or `sub_admin` role
+- Permanently hard-deletes the project row
+- Removes custom domain from Vercel first
+- Writes `site_deleted` audit log entry before deletion
+
+**Public rendering:**
+- `app/(sites)/[domain]/page.tsx` checks `project.site_status` and renders `components/shared/SiteOffline.tsx` for `disabled` or `archived` sites
+- Preview mode (`x-preview-mode: true`) always bypasses the status gate
+
+**Database columns (migration `010_add_site_status.sql`):**
+- `site_status text NOT NULL DEFAULT 'active' CHECK (site_status IN ('active','disabled','archived'))`
+- `site_status_updated_at timestamptz`
+- `site_status_reason text`
+
+---
+
+### 8.13 Track Lead API
 
 **`POST /api/track-lead`**
 - No auth required (public endpoint).
@@ -921,11 +964,13 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 | `HeroPestControl` | pest-control | Urgency-focused + emergency CTA |
 | `HeroGym` | gym | Multi-style gym hero (`hero.layout`: boutique, hardcore, functional) |
 | `HeroEmergency` | emergency | High-contrast, phone number prominent |
+| `HeroShowcase` | showcase | Trust-first hero with proof points + metrics (`hero--showcase`) |
 
 ### Content Blocks
 | Block | Description |
 |---|---|
 | `FeaturesGrid` | Icon + title + description grid (3–4 columns) |
+| `FeaturesBento` | Bento-style service cards for modern landing sections (`services--bento`) |
 | `FeaturesModern` | Alternating image/text feature rows |
 | `FeatureHighlightZigzag` | Zigzag layout for feature highlights |
 | `HowItWorksSteps` | Numbered step-by-step process |
@@ -934,6 +979,8 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 | `FAQTwoColumn` | Two-column FAQ layout |
 | `BlogGrid` | Card grid of blog post previews |
 | `PricingTable` | Plan comparison table with CTA |
+| `PricingComparisonTable` | Interactive feature matrix with monthly/yearly toggle |
+| `PricingSectionWithComparisonBlock` | Static pricing cards plus feature comparison grid (`pricing--feature-comparison`) |
 | `PricePreviewStrip` | Compact horizontal pricing strip |
 | `MaintenancePlans` | Service plan cards (pool/cleaning) |
 | `CustomHtmlSection` | AI-generated custom HTML/CSS block (`custom-html`, Pro+) |
@@ -951,6 +998,7 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 |---|---|
 | `ReviewsGrid` | Star-rated review cards grid |
 | `ReviewTrustBar` | Compact horizontal trust/review bar |
+| `AnimatedTestimonialsBlock` | Stacked-photo animated testimonial carousel (`testimonials--animated`) |
 | `TrustBar` | Logo + text trust indicators |
 | `TrustBadgesGrid` | Certification/badge grid |
 | `TeamGrid` | Staff photo + name + role grid |
@@ -1003,7 +1051,7 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 | `SimpleFooter` | Standard footer with links and copyright |
 | `MinimalFooter` | Single-line minimal footer |
 | `PromoBannerStrip` | Top-of-page promotional banner |
-| `Header` | Site navigation header (shared, not in activeSections) |
+| `Header` | Site navigation header (shared, not in activeSections). Supports `headerStyle` variants: `"solid"`, `"floating"`, `"tubelight"` (Tubelight navbar layout), and `"megamenu"` (dropdown megamenu with icons). |
 
 ---
 
@@ -1060,5 +1108,6 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 
 ---
 
-*Last updated: 2026-03-11*
+*Last updated: 2026-03-12*
+
 

@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { ArrowRightIcon, LightningIcon, DeviceMobileIcon, ShieldCheckIcon, LayoutIcon, GlobeIcon, CheckCircleIcon, ArrowLeftIcon } from "@phosphor-icons/react"
 import { User as SupabaseUser } from '@supabase/supabase-js'
 import { useAuth } from '@/components/providers/AuthProvider'
+import { HeroSection } from '@/components/ui/hero-section-6'
 
 export default function LandingPageClient({ initialUser }: { initialUser: SupabaseUser | null }) {
   const { user } = useAuth()
@@ -17,22 +18,6 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
   const [canScrollLeft, setCanScrollLeft] = React.useState(false)
   const [canScrollRight, setCanScrollRight] = React.useState(true)
   const [autoScrollPaused, setAutoScrollPaused] = React.useState(false)
-
-  const googleSearchPhrases = [
-    'website design philippines price',
-    'small business website philippines',
-    'affordable web design philippines',
-    'website maintenance cost per month philippines',
-    'landing page price philippines',
-    'online store website philippines',
-    'restaurant website philippines',
-    'dental clinic website philippines',
-    'gym website design philippines',
-    'gym website creation philippines',
-    'fitness website builder philippines',
-    'website builder philippines',
-    'how much does it cost to create a website in the philippines'
-  ]
   const templatePreviews = [
     {
       name: 'Car Detailing',
@@ -148,39 +133,23 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
     <div className="flex flex-col min-h-screen bg-background">
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative pt-20 pb-16 lg:pt-24 lg:pb-20 overflow-hidden reveal">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,var(--primary)/10,transparent)]" />
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="max-w-4xl mx-auto text-center space-y-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-xs font-bold uppercase tracking-widest border border-primary/20">
-                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                For Local Businesses in the Philippines
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1]">
-                Your Business Website, <br className="hidden sm:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Ready Fast and Easy to Edit.</span>
-              </h1>
-              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4 sm:px-0">
-                Start with a ready template, add your logo and details, then publish. Keep it affordable with a small setup and monthly subscription, plus request design updates when you need them.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 pt-4 w-full max-w-sm mx-auto">
-                <Link
-                  href={primaryHref}
-                  className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-full text-sm font-bold hover:scale-105 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2"
-                >
-                  {primaryLabel}
-                  <ArrowRightIcon weight="duotone" className="w-4 h-4" />
-                </Link>
-                <Link
-                  href="/pricing"
-                  className="flex-1 px-6 py-3 bg-background border border-border rounded-full text-sm font-bold hover:bg-muted transition-all flex items-center justify-center gap-2"
-                >
-                  View Monthly Plans
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
+        <HeroSection
+          className="reveal"
+          primaryHref={primaryHref}
+          primaryLabel={primaryLabel}
+          secondaryHref={undefined}
+          secondaryLabel={undefined}
+          templatePreviews={templatePreviews}
+          previewMode={previewMode}
+          badgeLabel={undefined}
+          title="Affordable Website Design Philippines"
+          description="Looking for website design price in the Philippines or monthly website maintenance? Start with ready templates, launch fast, and edit anytime."
+          points={[
+            'Transparent setup + monthly plans',
+            'SEO-ready pages for local search',
+            'Launch fast with editable templates',
+          ]}
+        />
 
         {/* Commitments */}
         <section className="py-12 sm:py-24 border-y border-border bg-muted/30 reveal">
@@ -203,26 +172,65 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
           </div>
         </section>
 
-        {/* SEO Search Intent */}
-        <section id="searches" className="py-16 sm:py-24 bg-background reveal">
+        {/* Pricing + Launch */}
+        <section id="pricing-preview" className="py-16 sm:py-24 bg-background reveal">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center space-y-4">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-                Common Google Searches from <span className="text-primary">Business Owners</span>
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
+                How Much Does a <span className="text-primary">Business Website Cost</span> in the Philippines?
               </h2>
-              <p className="text-muted-foreground text-base sm:text-lg">
-                These are popular search phrases people use in the Philippines when looking for website help. EstabWeb is built around these real needs.
+              <p className="mx-auto max-w-2xl text-muted-foreground text-sm sm:text-lg">
+                Most businesses need one clear answer: affordable setup, predictable monthly cost, and a fast launch. Here is the simple version.
               </p>
             </div>
-            <div className="mt-8 flex flex-wrap gap-2 sm:gap-3 justify-center">
-              {googleSearchPhrases.map((phrase) => (
-                <span
-                  key={phrase}
-                  className="px-3 py-2 rounded-full text-xs sm:text-sm border border-border bg-muted/40 text-foreground"
-                >
-                  {phrase}
-                </span>
+            <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+              {[
+                {
+                  title: 'Setup Cost',
+                  value: 'Start Small',
+                  desc: 'One-time setup to launch your website with your branding, content, and business details.'
+                },
+                {
+                  title: 'Monthly Cost',
+                  value: 'Predictable Plans',
+                  desc: 'Clear monthly pricing for hosting, maintenance, and ongoing support.'
+                },
+                {
+                  title: 'Time to Launch',
+                  value: 'Days, Not Months',
+                  desc: 'Use ready templates and go live quickly without long development delays.'
+                },
+              ].map((item) => (
+                <div key={item.title} className="rounded-2xl border border-border bg-muted/30 p-5 text-left">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{item.title}</p>
+                  <h3 className="mt-2 text-xl font-bold text-foreground">{item.value}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.desc}</p>
+                </div>
               ))}
+            </div>
+
+            <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-border bg-background p-6 text-left">
+              <h3 className="text-lg font-bold text-foreground">What You Usually Need First</h3>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                <li>1. A professional homepage and service pages</li>
+                <li>2. Fast mobile-friendly layout and custom domain support</li>
+                <li>3. Easy editing so your team can update content anytime</li>
+                <li>4. SEO-ready page titles, descriptions, and structure</li>
+              </ul>
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition hover:opacity-90"
+                >
+                  View Monthly Plans
+                </Link>
+                <Link
+                  href="/website-design-price-philippines"
+                  className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted"
+                >
+                  Read Full Cost Guide
+                </Link>
+              </div>
             </div>
           </div>
         </section>

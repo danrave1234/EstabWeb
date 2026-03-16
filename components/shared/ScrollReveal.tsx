@@ -4,9 +4,9 @@ import { useEffect } from "react";
 
 /**
  * ScrollReveal
- * Note: To avoid hydration mismatches, we defer attaching observers until after the
- * window "load" event (or when document is already complete). This prevents the
- * "active" class from being added before React finishes hydrating server markup.
+ * Note: To avoid hydration mismatches, we use an internal WeakSet to track
+ * which elements are being observed, rather than adding attributes or classes
+ * to the DOM. This prevents React from seeing any mismatches during hydration.
  */
 export default function ScrollReveal() {
   useEffect(() => {
@@ -17,6 +17,9 @@ export default function ScrollReveal() {
     } as const;
 
     let observer: IntersectionObserver | null = null;
+    const observedElements = new WeakSet<Element>();
+    const managedElements = new Set<Element>();
+
     const ensureObserver = () => {
       if (!observer) {
         observer = new IntersectionObserver((entries) => {
@@ -32,14 +35,20 @@ export default function ScrollReveal() {
 
     const updateObservers = () => {
       const obs = ensureObserver();
-      const reveals = document.querySelectorAll(".reveal:not([data-reveal-managed])");
+      // Find all elements with .reveal class
+      const reveals = document.querySelectorAll(".reveal");
       reveals.forEach((el) => {
-        obs.observe(el);
+        // If we haven't already attached an observer to this element
+        if (!observedElements.has(el)) {
+          observedElements.add(el);
+          managedElements.add(el);
+          obs.observe(el);
+        }
       });
     };
 
     const start = () => {
-      // Double RAF to let hydration across nested routes fully settle
+      // Defer slightly to ensure initial hydration is likely finished
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           updateObservers();
@@ -50,8 +59,6 @@ export default function ScrollReveal() {
           mutationObserver.observe(document.body, {
             childList: true,
             subtree: true,
-            attributes: true,
-            attributeFilter: ["class"],
           });
 
           // Cleanup
@@ -62,14 +69,27 @@ export default function ScrollReveal() {
 
     const cleanupFns: Array<() => void> = [];
 
-    // Always defer until after load or a short timeout to avoid hydration mismatches
+    // Always defer until after page load + idle period
+    const scheduleStart = () => {
+      const deferStart = () => {
+        const t = window.setTimeout(start, 300);
+        cleanupFns.push(() => window.clearTimeout(t));
+      };
+
+      if (typeof window.requestIdleCallback === "function") {
+        const idleId = window.requestIdleCallback(deferStart, { timeout: 1500 });
+        cleanupFns.push(() => window.cancelIdleCallback(idleId));
+      } else {
+        const t = window.setTimeout(deferStart, 450);
+        cleanupFns.push(() => window.clearTimeout(t));
+      }
+    };
+
     if (document.readyState === "complete") {
-      const t = window.setTimeout(start, 120);
-      cleanupFns.push(() => window.clearTimeout(t));
+      scheduleStart();
     } else {
       const onLoad = () => {
-        const t = window.setTimeout(start, 60);
-        cleanupFns.push(() => window.clearTimeout(t));
+        scheduleStart();
       };
       window.addEventListener("load", onLoad, { once: true });
       cleanupFns.push(() => window.removeEventListener("load", onLoad));
@@ -78,6 +98,9 @@ export default function ScrollReveal() {
     return () => {
       cleanupFns.forEach((fn) => fn());
       if (observer) observer.disconnect();
+      // We don't remove "active" class on cleanup to avoid layout shifts,
+      // but we do clear our tracking sets.
+      managedElements.clear();
     };
   }, []);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Reveal from "@/components/shared/Reveal";
 
 type GymFaqItem = {
   question: string;
@@ -21,7 +22,7 @@ export default function GymFaq({
   const [openIndex, setOpenIndex] = React.useState<number | null>(0);
 
   return (
-    <section id="gym-faq" className="reveal bg-background">
+    <Reveal as="section" id="gym-faq" className="bg-background">
       <div className="container mx-auto px-4 py-14 sm:py-20">
         <div className="mx-auto mb-10 max-w-3xl text-center">
           <h2 className="font-serif text-3xl font-black tracking-tight text-foreground sm:text-4xl">{title}</h2>
@@ -46,7 +47,6 @@ export default function GymFaq({
           })}
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 }
-
