@@ -135,11 +135,11 @@ export function GalleryGridBlock({
           </Badge>
           <h2
             id="gallery-heading"
-            className="mb-4 text-4xl font-bold tracking-tight"
+            className="mb-4 break-words text-4xl font-bold tracking-tight"
           >
             {title}
           </h2>
-          <p className="mx-auto max-w-2xl text-muted-foreground">
+          <p className="mx-auto max-w-2xl break-words text-muted-foreground">
             {subtitle}
           </p>
         </motion.div>
@@ -210,7 +210,7 @@ export function GalleryGridBlock({
                       aria-hidden="true"
                     >
                       <ZoomIn className="mb-2 h-8 w-8 text-muted-foreground" />
-                      <h3 className="mb-1 text-center text-lg font-semibold text-muted-foreground">
+                      <h3 className="mb-1 break-words text-center text-lg font-semibold text-muted-foreground">
                         {image.title}
                       </h3>
                       <Badge variant="secondary">{image.category}</Badge>
@@ -242,13 +242,13 @@ export function GalleryGridBlock({
                 exit={{ scale: 0.8, opacity: 0 }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 onClick={(e) => e.stopPropagation()}
-                className="relative max-h-[90vh] max-w-5xl"
+                className="relative w-full max-h-[90vh] max-w-5xl"
               >
                 {/* Close Button */}
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="absolute -right-12 top-0 text-muted-foreground hover:bg-white/10"
+                  className="absolute right-2 top-2 text-muted-foreground hover:bg-white/10 md:-right-12 md:top-0"
                   onClick={() => setSelectedImage(null)}
                   aria-label="Close gallery dialog"
                 >
@@ -259,7 +259,7 @@ export function GalleryGridBlock({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:bg-white/10"
+                  className="absolute left-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:bg-white/10 md:left-4"
                   onClick={(e) => {
                     e.stopPropagation();
                     handlePrev();
@@ -271,7 +271,7 @@ export function GalleryGridBlock({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:bg-white/10"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:bg-white/10 md:right-4"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleNext();
@@ -286,7 +286,7 @@ export function GalleryGridBlock({
                   key={selectedImage}
                   src={selectedImageData.url}
                   alt={selectedImageData.title}
-                  className="max-h-[80vh] w-auto rounded-lg"
+                  className="max-h-[80vh] max-w-full w-auto rounded-lg"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.2 }}
@@ -301,7 +301,7 @@ export function GalleryGridBlock({
                   id="gallery-dialog-description"
                 >
                   <h3
-                    className="mb-2 text-xl font-semibold"
+                    className="mb-2 break-words text-xl font-semibold"
                     id="gallery-dialog-title"
                   >
                     {selectedImageData.title}

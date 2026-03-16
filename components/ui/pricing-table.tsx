@@ -92,7 +92,7 @@ export function PricingTable({
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row">
           {plans.map((plan) => (
             <button
               key={plan.name}
@@ -105,8 +105,8 @@ export function PricingTable({
                   "ring-2 ring-primary",
               )}
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">{plan.name}</span>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <span className="break-words text-sm font-medium">{plan.name}</span>
                 {plan.popular && (
                   <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                     Popular
@@ -123,10 +123,10 @@ export function PricingTable({
                   value={isYearly ? plan.price.yearly : plan.price.monthly}
                   className="text-2xl font-bold"
                 />
-                <span className="text-sm font-normal text-muted-foreground">
-                  /{isYearly ? "year" : "month"}
-                </span>
-              </div>
+                  <span className="shrink-0 text-sm font-normal text-muted-foreground">
+                    /{isYearly ? "year" : "month"}
+                  </span>
+                </div>
             </button>
           ))}
         </div>
@@ -185,7 +185,7 @@ export function PricingTable({
         <div className="mt-8 text-center">
           <Button
             className={cn(
-              "w-full sm:w-auto px-8 py-2 rounded-xl",
+              "h-auto w-full rounded-xl px-6 py-2 text-center whitespace-normal sm:w-auto sm:px-8",
               buttonClassName,
             )}
           >

@@ -140,7 +140,7 @@ export default function ElegantCarousel({ slides = DEFAULT_SLIDES }: ElegantCaro
 
   return (
     <div
-      className="relative min-h-[560px] overflow-hidden bg-background"
+      className="relative grid h-[760px] grid-rows-[1fr_auto] overflow-hidden bg-background sm:h-[800px] md:h-[680px] lg:h-[720px]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
@@ -155,10 +155,10 @@ export default function ElegantCarousel({ slides = DEFAULT_SLIDES }: ElegantCaro
         }}
       />
 
-      <div className="relative mx-auto flex min-h-[560px] max-w-7xl flex-col gap-8 px-4 py-12 md:flex-row md:items-center md:gap-12 md:px-6 lg:gap-16 lg:px-8">
+      <div className="relative mx-auto flex h-full w-full max-w-7xl flex-col justify-center gap-6 px-4 py-8 md:flex-row md:items-center md:gap-12 md:px-6 md:py-10 lg:gap-16 lg:px-8">
         {/* Left: Text Content */}
         <div className="flex flex-1 flex-col justify-center md:min-w-[320px]">
-          <div className="space-y-4">
+          <div className="space-y-2 sm:space-y-3">
             {/* Collection number */}
             <div
               className={cn(
@@ -173,14 +173,31 @@ export default function ElegantCarousel({ slides = DEFAULT_SLIDES }: ElegantCaro
             </div>
 
             {/* Title */}
-            <h2
-              className={cn(
-                "text-3xl font-semibold tracking-tight text-foreground transition-all duration-300 md:text-4xl lg:text-5xl",
-                transitionClass
-              )}
-            >
-              {currentSlide.title}
-            </h2>
+            <div className={cn("flex items-start justify-between gap-3", transitionClass)}>
+              <h2
+                className={cn(
+                  "break-words text-3xl font-semibold tracking-tight text-foreground md:text-4xl lg:text-5xl",
+                )}
+              >
+                {currentSlide.title}
+              </h2>
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  onClick={goPrev}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-foreground/20 text-foreground transition-colors hover:bg-foreground/10 hover:border-foreground/40 md:h-10 md:w-10"
+                  aria-label="Previous slide"
+                >
+                  <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
+                </button>
+                <button
+                  onClick={goNext}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-foreground/20 text-foreground transition-colors hover:bg-foreground/10 hover:border-foreground/40 md:h-10 md:w-10"
+                  aria-label="Next slide"
+                >
+                  <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
+                </button>
+              </div>
+            </div>
 
             {/* Subtitle */}
             <p
@@ -196,45 +213,27 @@ export default function ElegantCarousel({ slides = DEFAULT_SLIDES }: ElegantCaro
             {/* Description */}
             <p
               className={cn(
-                "max-w-md text-sm leading-relaxed text-muted-foreground transition-all duration-300 md:text-base",
+                "max-w-md max-h-[6.5rem] overflow-hidden break-words text-sm leading-relaxed text-muted-foreground transition-all duration-300 md:max-h-[8rem] md:text-base",
                 transitionClass
               )}
             >
               {currentSlide.description}
             </p>
-
-            {/* Navigation Arrows */}
-            <div className={cn("flex items-center gap-2 transition-all duration-300", transitionClass)}>
-              <button
-                onClick={goPrev}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-foreground/20 text-foreground transition-colors hover:bg-foreground/10 hover:border-foreground/40"
-                aria-label="Previous slide"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={goNext}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-foreground/20 text-foreground transition-colors hover:bg-foreground/10 hover:border-foreground/40"
-                aria-label="Next slide"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </div>
           </div>
         </div>
 
         {/* Right: Image */}
-        <div className="relative flex-shrink-0 md:w-[45%] lg:w-[50%]">
+        <div className="relative mx-auto w-full max-w-[300px] flex-shrink-0 sm:max-w-[360px] md:mx-0 md:w-[42%] md:max-w-none lg:w-[46%]">
           <div
             className={cn(
-              "relative overflow-hidden rounded-lg transition-all duration-500",
+              "relative aspect-[3/4] w-full overflow-hidden rounded-lg transition-all duration-500",
               transitionClass
             )}
           >
             <img
               src={currentSlide.imageUrl}
               alt={currentSlide.title}
-              className="aspect-[3/4] w-full object-cover"
+              className="h-full w-full object-cover"
             />
             <div
               className="absolute inset-0"
@@ -257,13 +256,13 @@ export default function ElegantCarousel({ slides = DEFAULT_SLIDES }: ElegantCaro
       </div>
 
       {/* Progress Indicators */}
-      <div className="absolute bottom-0 left-0 right-0 flex flex-wrap justify-center gap-4 border-t border-foreground/10 bg-background/80 px-4 py-4 backdrop-blur-sm">
+      <div className="relative z-10 flex flex-wrap justify-center gap-3 border-t border-foreground/10 bg-background/80 px-3 py-4 backdrop-blur-sm sm:gap-4 sm:px-4">
         {safeSlides.map((slide, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
             className={cn(
-              "group flex flex-col items-center gap-1.5 transition-opacity",
+              "group flex max-w-[7rem] flex-col items-center gap-1.5 transition-opacity",
               index === currentIndex ? "opacity-100" : "opacity-60 hover:opacity-80"
             )}
             aria-label={`Go to slide ${index + 1}`}
@@ -277,7 +276,7 @@ export default function ElegantCarousel({ slides = DEFAULT_SLIDES }: ElegantCaro
                 }}
               />
             </div>
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground group-hover:text-foreground">
+            <span className="w-full truncate text-center text-[10px] font-medium uppercase tracking-wider text-muted-foreground group-hover:text-foreground">
               {slide.title}
             </span>
           </button>

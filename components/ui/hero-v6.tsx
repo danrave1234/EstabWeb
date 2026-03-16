@@ -47,7 +47,7 @@ export function HeroV6({
     const [menuState, setMenuState] = useState(false)
 
     return (
-        <div className={cn("bg-background", className)}>
+        <div className={cn("bg-background overflow-x-hidden", className)}>
             {showHeader && (
                 <header>
                     <nav
@@ -120,19 +120,19 @@ export function HeroV6({
                                 {badgeText && (
                                     <Link
                                         href={badgeHref}
-                                        className="rounded-lg mx-auto flex w-fit items-center gap-2 border p-1 pr-3 lg:ml-0">
+                                        className="rounded-lg mx-auto flex max-w-full w-fit flex-wrap items-center justify-center gap-2 border p-1 pr-3 text-left lg:ml-0 lg:flex-nowrap lg:justify-start">
                                         <span className="bg-muted rounded-[calc(var(--radius)-0.25rem)] px-2 py-1 text-xs">{badgeText}</span>
-                                        <span className="text-sm">{badgeTag}</span>
-                                        <span className="bg-(--color-border) block h-4 w-px"></span>
+                                        <span className="max-w-full break-words text-xs sm:text-sm">{badgeTag}</span>
+                                        <span className="bg-(--color-border) hidden h-4 w-px sm:block"></span>
 
                                         <ArrowRight className="size-4" />
                                     </Link>
                                 )}
 
-                                <h1 className="mt-10 text-balance text-4xl font-bold md:text-5xl xl:text-5xl text-foreground">
+                                <h1 className="mt-10 text-balance break-words text-4xl font-bold text-foreground md:text-5xl xl:text-5xl">
                                     {title}
                                 </h1>
-                                <p className="mt-8 text-muted-foreground">
+                                <p className="mt-8 break-words text-muted-foreground">
                                     {description}
                                 </p>
 
@@ -166,9 +166,9 @@ export function HeroV6({
                                     </form>
 
                                     {features.length > 0 && (
-                                        <ul className="list-inside list-disc space-y-2 text-muted-foreground">
+                                        <ul className="mx-auto max-w-sm list-inside list-disc space-y-2 text-left text-muted-foreground lg:mx-0">
                                             {features.map((feature, i) => (
-                                                <li key={i}>{feature}</li>
+                                                <li key={i} className="break-words">{feature}</li>
                                             ))}
                                         </ul>
                                     )}

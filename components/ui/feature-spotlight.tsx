@@ -73,7 +73,7 @@ export function FeaturedSpotlight({
         {/* Title - responsive text sizes */}
         <h2 className="relative">
           <span
-            className="block text-4xl font-normal tracking-tight text-foreground transition-all duration-700 sm:text-5xl md:text-5xl lg:text-7xl"
+            className="block break-words text-4xl font-normal tracking-tight text-foreground transition-all duration-700 sm:text-5xl md:text-5xl lg:text-7xl"
             style={{
               transform: isHovered ? "translateY(-2px)" : "translateY(0)",
               transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
@@ -82,7 +82,7 @@ export function FeaturedSpotlight({
             {title1}
           </span>
           <span
-            className="block text-4xl font-normal tracking-tight text-foreground transition-all duration-700 sm:text-5xl md:text-5xl lg:text-7xl"
+            className="block break-words text-4xl font-normal tracking-tight text-foreground transition-all duration-700 sm:text-5xl md:text-5xl lg:text-7xl"
             style={{
               transform: isHovered ? "translateX(12px)" : "translateX(0)",
               transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
@@ -94,7 +94,7 @@ export function FeaturedSpotlight({
 
         {/* Description - responsive spacing */}
         <p
-          className="mt-6 max-w-[260px] text-sm leading-relaxed transition-all duration-700 md:mt-8 md:max-w-[220px] md:text-base lg:mt-10 lg:max-w-[280px]"
+          className="mt-6 max-w-[260px] break-words text-sm leading-relaxed transition-all duration-700 md:mt-8 md:max-w-[220px] md:text-base lg:mt-10 lg:max-w-[280px]"
           style={{
             color: isHovered ? "hsl(var(--muted-foreground))" : "hsl(var(--muted-foreground) / 0.6)",
             transform: isHovered ? "translateY(-4px)" : "translateY(0)",

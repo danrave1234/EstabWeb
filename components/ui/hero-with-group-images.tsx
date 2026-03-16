@@ -31,7 +31,7 @@ function HeroWithGroupImages({
   className,
 }: HeroWithGroupImagesProps) {
   return (
-    <div className={cn("w-full py-20 lg:py-40 bg-background", className)}>
+    <div className={cn("w-full overflow-x-hidden py-20 lg:py-40 bg-background", className)}>
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 gap-8 items-center md:grid-cols-2">
           <div className="flex gap-4 flex-col">
@@ -41,20 +41,20 @@ function HeroWithGroupImages({
               </div>
             )}
             <div className="flex gap-4 flex-col">
-              <h1 className="text-5xl md:text-7xl max-w-lg tracking-tighter text-left font-regular text-foreground">
+              <h1 className="max-w-lg break-words text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tighter text-left font-regular text-foreground">
                 {title}
               </h1>
-              <p className="text-xl leading-relaxed tracking-tight text-muted-foreground max-w-md text-left">
+              <p className="max-w-md break-words text-base sm:text-lg md:text-xl leading-relaxed tracking-tight text-muted-foreground text-left">
                 {description}
               </p>
             </div>
-            <div className="flex flex-row gap-4">
-              <Button asChild size="lg" className="gap-4" variant="outline">
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4">
+              <Button asChild size="lg" className="w-full gap-4 sm:w-auto" variant="outline">
                 <a href={secondaryButtonHref}>
                   {secondaryButtonText} <PhoneCall className="w-4 h-4" />
                 </a>
               </Button>
-              <Button asChild size="lg" className="gap-4">
+              <Button asChild size="lg" className="w-full gap-4 sm:w-auto">
                 <a href={primaryButtonHref}>
                   {primaryButtonText} <MoveRight className="w-4 h-4" />
                 </a>

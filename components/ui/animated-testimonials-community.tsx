@@ -105,9 +105,9 @@ export function AnimatedTestimonialsCommunity({
                 </div>
               )}
 
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">{title}</h2>
+              <h2 className="break-words text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">{title}</h2>
 
-              <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed">{subtitle}</p>
+              <p className="max-w-[600px] break-words text-muted-foreground md:text-xl/relaxed">{subtitle}</p>
 
               <div className="flex items-center gap-3 pt-4">
                 {testimonials.map((_, index) => (
@@ -125,7 +125,7 @@ export function AnimatedTestimonialsCommunity({
           </motion.div>
 
           {/* Right side: Testimonial cards */}
-          <motion.div variants={itemVariants} className="relative h-full mr-10 min-h-[300px] md:min-h-[400px]">
+          <motion.div variants={itemVariants} className="relative h-full min-h-[320px] md:mr-10 md:min-h-[400px]">
             {testimonials.map((testimonial, index) => (
               <motion.div
                 key={testimonial.id}
@@ -139,7 +139,7 @@ export function AnimatedTestimonialsCommunity({
                 transition={{ duration: 0.5, ease: "easeInOut" }}
                 style={{ zIndex: activeIndex === index ? 10 : 0 }}
               >
-                <div className="bg-card border shadow-lg rounded-xl p-8 h-full flex flex-col">
+                <div className="bg-card border shadow-lg rounded-xl p-8 h-full min-w-0 flex flex-col">
                   <div className="mb-6 flex gap-2">
                     {Array(testimonial.rating)
                       .fill(0)
@@ -150,7 +150,7 @@ export function AnimatedTestimonialsCommunity({
 
                   <div className="relative mb-6 flex-1">
                     <Quote className="absolute -top-2 -left-2 h-8 w-8 text-primary/20 rotate-180" />
-                    <p className="relative z-10 text-lg font-medium leading-relaxed">&ldquo;{testimonial.content}&rdquo;</p>
+                    <p className="relative z-10 break-words text-lg font-medium leading-relaxed">&ldquo;{testimonial.content}&rdquo;</p>
                   </div>
 
                   <Separator className="my-4" />
@@ -161,8 +161,8 @@ export function AnimatedTestimonialsCommunity({
                       <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="font-semibold">{testimonial.name}</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="break-words font-semibold">{testimonial.name}</h3>
+                      <p className="break-words text-sm text-muted-foreground">
                         {testimonial.role}, {testimonial.company}
                       </p>
                     </div>
@@ -180,10 +180,10 @@ export function AnimatedTestimonialsCommunity({
         {/* Logo cloud */}
         {trustedCompanies.length > 0 && (
           <motion.div variants={itemVariants} initial="hidden" animate={controls} className="mt-24 text-center">
-            <h3 className="text-sm font-medium text-muted-foreground mb-8">{trustedCompaniesTitle}</h3>
+            <h3 className="mb-8 break-words text-sm font-medium text-muted-foreground">{trustedCompaniesTitle}</h3>
             <div className="flex flex-wrap justify-center gap-x-12 gap-y-8">
               {trustedCompanies.map((company) => (
-                <div key={company} className="text-2xl font-semibold text-muted-foreground/50">
+                <div key={company} className="break-words text-2xl font-semibold text-muted-foreground/50">
                   {company}
                 </div>
               ))}

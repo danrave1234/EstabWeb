@@ -59,10 +59,10 @@ const TestimonialsColumn = (props: {
                     boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)",
                     transition: { type: "spring", stiffness: 400, damping: 17 }
                   }}
-                  className="p-8 md:p-10 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-lg shadow-black/5 max-w-xs w-full bg-white dark:bg-neutral-900 transition-all duration-300 cursor-default select-none group focus:outline-none focus:ring-2 focus:ring-primary/30" 
+                  className="w-full max-w-[17.5rem] rounded-3xl border border-neutral-200 bg-white p-6 shadow-lg shadow-black/5 transition-all duration-300 cursor-default select-none group focus:outline-none focus:ring-2 focus:ring-primary/30 dark:border-neutral-800 dark:bg-neutral-900 sm:max-w-xs md:p-10" 
                 >
                   <blockquote className="m-0 p-0 text-left">
-                    <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed font-normal m-0 transition-colors duration-300">
+                    <p className="m-0 break-words font-normal leading-relaxed text-neutral-600 transition-colors duration-300 dark:text-neutral-400">
                       {text}
                     </p>
                     <footer className="flex items-center gap-3 mt-6">
@@ -131,10 +131,10 @@ export default function TestimonialV2({
             </div>
           )}
 
-          <h2 id="testimonials-heading" className="text-4xl md:text-5xl font-extrabold tracking-tight mt-6 text-center text-neutral-900 dark:text-white transition-colors">
+          <h2 id="testimonials-heading" className="mt-6 break-words text-center text-4xl font-extrabold tracking-tight text-neutral-900 transition-colors dark:text-white md:text-5xl">
             {title}
           </h2>
-          <p className="text-center mt-5 text-neutral-500 dark:text-neutral-400 text-lg leading-relaxed max-w-sm transition-colors">
+          <p className="mt-5 max-w-sm break-words text-center text-lg leading-relaxed text-neutral-500 transition-colors dark:text-neutral-400">
             {subtitle}
           </p>
         </div>
@@ -144,7 +144,7 @@ export default function TestimonialV2({
           role="region"
           aria-label="Scrolling Testimonials"
         >
-          {firstColumn.length > 0 && <TestimonialsColumn testimonials={firstColumn} duration={15} />}
+          {firstColumn.length > 0 && <TestimonialsColumn testimonials={firstColumn} className="w-full max-w-[17.5rem] sm:max-w-xs" duration={15} />}
           {secondColumn.length > 0 && <TestimonialsColumn testimonials={secondColumn} className="hidden md:block" duration={19} />}
           {thirdColumn.length > 0 && <TestimonialsColumn testimonials={thirdColumn} className="hidden lg:block" duration={17} />}
         </div>

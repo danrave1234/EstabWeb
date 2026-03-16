@@ -104,10 +104,10 @@ const Gallery4 = ({
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-end justify-between md:mb-14 lg:mb-16">
           <div className="flex flex-col gap-4">
-            <h2 className="text-3xl font-medium md:text-4xl lg:text-5xl">
+            <h2 className="break-words text-3xl font-medium md:text-4xl lg:text-5xl">
               {title}
             </h2>
-            <p className="max-w-lg text-muted-foreground">{description}</p>
+            <p className="max-w-lg break-words text-muted-foreground">{description}</p>
           </div>
           <div className="hidden shrink-0 gap-2 md:flex">
             <Button
@@ -161,7 +161,7 @@ const Gallery4 = ({
                     />
                     <div className="absolute inset-0 h-full bg-[linear-gradient(hsl(var(--primary)/0),hsl(var(--primary)/0.4),hsl(var(--primary)/0.8)_100%)] mix-blend-multiply" />
                     <div className="absolute inset-x-0 bottom-0 flex flex-col items-start p-6 text-primary-foreground md:p-8">
-                      <div className="mb-2 text-xl font-semibold md:mb-3">
+                      <div className="mb-2 line-clamp-2 break-words text-xl font-semibold md:mb-3">
                         {item.title}
                       </div>
                       <div className="mb-8 line-clamp-2 md:mb-12 lg:mb-9">

@@ -56,23 +56,25 @@ const ModernHero = ({
   },
   className,
 }: ModernHeroProps) => {
+  const visibleAvatars = (reviews.avatars ?? []).slice(0, 5);
+
   return (
     <section className={cn("py-32 bg-background", className)}>
       <div className="container px-4 mx-auto text-center">
         <div className="mx-auto flex max-w-screen-lg flex-col gap-6">
-          <h1 className="text-4xl font-extrabold lg:text-7xl tracking-tight text-foreground">
+          <h1 className="break-words text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-7xl">
             {heading}
           </h1>
           <p className="text-balance text-muted-foreground lg:text-xl max-w-2xl mx-auto leading-relaxed">
             {description}
           </p>
         </div>
-        <Button asChild size="lg" className="mt-10 rounded-full px-10 h-14 text-lg">
+        <Button asChild size="lg" className="mt-10 h-auto min-h-14 max-w-full whitespace-normal rounded-full px-6 py-3 text-base text-center sm:px-10 sm:text-lg">
           <a href={button.url}>{button.text}</a>
         </Button>
-        <div className="mx-auto mt-12 flex w-fit flex-col items-center gap-4 sm:flex-row">
-          <span className="mx-4 inline-flex items-center -space-x-4">
-            {reviews.avatars.map((avatar, index) => (
+        <div className="mx-auto mt-12 flex w-full flex-col items-center justify-center gap-4 sm:flex-row">
+          <span className="mx-4 inline-flex max-w-full items-center -space-x-4 overflow-hidden">
+            {visibleAvatars.map((avatar, index) => (
               <Avatar key={index} className="size-14 border-2 border-background ring-offset-2 ring-1 ring-neutral-200 dark:ring-neutral-800">
                 <AvatarImage src={avatar.src} alt={avatar.alt} className="object-cover" />
               </Avatar>

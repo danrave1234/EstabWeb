@@ -224,7 +224,9 @@ export default function ClientDomainSettings({
             <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400">
               <Info className="w-4 h-4 shrink-0" />
               <p className="text-xs font-medium">
-                Domain activated! Point your domain's CNAME to{" "}
+                Domain activated! Set <span className="font-mono">A @</span> to{" "}
+                <span className="font-mono">76.76.21.21</span> and{" "}
+                <span className="font-mono">CNAME www</span> to{" "}
                 <span className="font-mono">cname.vercel-dns.com</span>.
               </p>
             </div>
@@ -271,7 +273,7 @@ export default function ClientDomainSettings({
                 <tr>
                   <td className="pt-1 pr-2 font-mono font-semibold">A</td>
                   <td className="pt-1 pr-2 font-mono">@</td>
-                  <td className="pt-1 font-mono">216.198.79.1</td>
+                  <td className="pt-1 font-mono">76.76.21.21</td>
                 </tr>
               </tbody>
             </table>
@@ -303,7 +305,7 @@ export default function ClientDomainSettings({
               <tr>
                 <td className="pt-1 pr-2 font-mono font-semibold">A</td>
                 <td className="pt-1 pr-2 font-mono">@</td>
-                <td className="pt-1 font-mono">216.198.79.1</td>
+                <td className="pt-1 font-mono">76.76.21.21</td>
               </tr>
             </tbody>
           </table>

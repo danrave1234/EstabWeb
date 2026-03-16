@@ -27,32 +27,36 @@ export function FeatureSteps({
   autoPlayInterval = 3000,
   imageHeight = "h-[400px]",
 }: FeatureStepsProps) {
+  const safeFeatures = Array.isArray(features) ? features : []
   const [currentFeature, setCurrentFeature] = useState(0)
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {
     const timer = setInterval(() => {
+      if (safeFeatures.length === 0) return
       if (progress < 100) {
         setProgress((prev) => prev + 100 / (autoPlayInterval / 100))
       } else {
-        setCurrentFeature((prev) => (prev + 1) % features.length)
+        setCurrentFeature((prev) => (prev + 1) % safeFeatures.length)
         setProgress(0)
       }
     }, 100)
 
     return () => clearInterval(timer)
-  }, [progress, features.length, autoPlayInterval])
+  }, [progress, safeFeatures.length, autoPlayInterval])
+
+  if (safeFeatures.length === 0) return null
 
   return (
     <div className={cn("p-8 md:p-12", className)}>
       <div className="max-w-7xl mx-auto w-full">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-10 text-center">
+        <h2 className="mb-10 break-words text-center text-3xl font-bold md:text-4xl lg:text-5xl">
           {title}
         </h2>
 
         <div className="flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-10">
           <div className="order-2 md:order-1 space-y-8">
-            {features.map((feature, index) => (
+            {safeFeatures.map((feature, index) => (
               <motion.div
                 key={index}
                 className="flex items-center gap-6 md:gap-8"
@@ -76,10 +80,10 @@ export function FeatureSteps({
                 </motion.div>
 
                 <div className="flex-1">
-                  <h3 className="text-xl md:text-2xl font-semibold">
+                  <h3 className="break-words text-xl md:text-2xl font-semibold">
                     {feature.title || feature.step}
                   </h3>
-                  <p className="text-sm md:text-lg text-muted-foreground">
+                  <p className="break-words text-sm md:text-lg text-muted-foreground">
                     {feature.content}
                   </p>
                 </div>
@@ -93,7 +97,7 @@ export function FeatureSteps({
             )}
           >
             <AnimatePresence mode="wait">
-              {features.map(
+              {safeFeatures.map(
                 (feature, index) =>
                   index === currentFeature && (
                     <motion.div

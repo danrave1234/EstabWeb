@@ -74,26 +74,27 @@ function Pricing({
         <div className="flex text-center justify-center items-center gap-4 flex-col">
           <Badge>{badge}</Badge>
           <div className="flex gap-2 flex-col">
-            <h2 className="text-3xl md:text-5xl tracking-tighter max-w-xl text-center font-regular">
+            <h2 className="max-w-xl break-words text-center text-3xl tracking-tighter font-regular md:text-5xl">
               {title}
             </h2>
-            <p className="text-lg leading-relaxed tracking-tight text-muted-foreground max-w-xl text-center">
+            <p className="max-w-xl break-words text-center text-lg leading-relaxed tracking-tight text-muted-foreground">
               {subtitle}
             </p>
           </div>
-          <div className="grid text-left w-full grid-cols-3 lg:grid-cols-4 divide-x divide-border pt-20">
-            <div className="col-span-3 lg:col-span-1"></div>
+          <div className="w-full overflow-x-auto pt-12 lg:pt-20">
+            <div className="grid min-w-[760px] w-full grid-cols-4 divide-x divide-border text-left">
+            <div className="col-span-1"></div>
             {plans.map((plan, i) => (
               <div key={i} className="px-3 py-1 md:px-6 md:py-4 gap-2 flex flex-col">
-                <p className="text-2xl">{plan.name}</p>
-                <p className="text-sm text-muted-foreground">{plan.description}</p>
+                <p className="break-words text-2xl">{plan.name}</p>
+                <p className="break-words text-sm text-muted-foreground">{plan.description}</p>
                 <p className="flex flex-col lg:flex-row lg:items-center gap-2 text-xl mt-8">
                   <span className="text-4xl">{plan.price}</span>
                   <span className="text-sm text-muted-foreground"> / month</span>
                 </p>
                 <Button
                   variant={plan.buttonVariant ?? "outline"}
-                  className="gap-4 mt-8"
+                  className="mt-8 h-auto w-full gap-4 whitespace-normal text-center"
                   asChild
                 >
                   <a href={plan.ctaUrl ?? "#contact"}>
@@ -108,7 +109,7 @@ function Pricing({
               </div>
             ))}
             {/* Features header row */}
-            <div className="px-3 lg:px-6 col-span-3 lg:col-span-1 py-4 border-t border-border">
+            <div className="px-3 lg:px-6 col-span-1 py-4 border-t border-border">
               <b>Features</b>
             </div>
             {plans.map((_, i) => (
@@ -116,12 +117,12 @@ function Pricing({
             ))}
             {/* Feature rows */}
             {features.map((feature, fi) => (
-              <>
-                <div key={`name-${fi}`} className="px-3 lg:px-6 col-span-3 lg:col-span-1 py-4 border-t border-border">
+              <div key={`feature-row-${fi}`} className="contents">
+                <div className="px-3 lg:px-6 col-span-1 py-4 border-t border-border break-words">
                   {feature.name}
                 </div>
                 {feature.values.map((val, vi) => (
-                  <div key={`val-${fi}-${vi}`} className="px-3 py-1 md:px-6 md:py-4 flex justify-center border-t border-border">
+                  <div key={`val-${fi}-${vi}`} className="px-3 py-1 md:px-6 md:py-4 flex justify-center border-t border-border text-center">
                     {val === true ? (
                       <Check className="w-4 h-4 text-primary" />
                     ) : val === false ? (
@@ -129,12 +130,13 @@ function Pricing({
                     ) : val === null ? (
                       <Minus className="w-4 h-4 text-muted-foreground" />
                     ) : (
-                      <p className="text-muted-foreground text-sm">{val}</p>
+                      <p className="break-words text-muted-foreground text-sm">{val}</p>
                     )}
                   </div>
                 ))}
-              </>
+              </div>
             ))}
+            </div>
           </div>
         </div>
       </div>

@@ -89,9 +89,9 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/Logo.png",
-    shortcut: "/Logo.png",
-    apple: "/Logo.png",
+    icon: "/LogowithBG.png",
+    shortcut: "/LogowithBG.png",
+    apple: "/LogowithBG.png",
   },
   metadataBase: new URL(siteUrl),
   alternates: {

@@ -87,7 +87,7 @@ To support client subdomains (e.g., `client.estabweb.com`) and custom domains:
 
 1. Add your root domain (`estabweb.com`) to your Vercel project.
 2. Add a wildcard domain (`*.estabweb.com`) to the same project.
-3. For client custom domains: clients CNAME their domain to `cname.vercel-dns.com`. The platform auto-registers the domain via `/api/vercel/add-domain` using the Vercel API.
+3. For client custom domains: clients should set `A @ -> 76.76.21.21` and `CNAME www -> cname.vercel-dns.com`. The platform auto-registers the domain via `/api/vercel/add-domain` using the Vercel API.
 
 ---
 

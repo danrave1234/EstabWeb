@@ -118,7 +118,7 @@ export default function TeamShowcase({ members = DEFAULT_MEMBERS }: TeamShowcase
       </div>
 
       {/* ── Right: member name list */}
-      <div className="flex flex-col sm:grid sm:grid-cols-2 md:flex md:flex-col gap-4 md:gap-5 pt-0 md:pt-2 flex-1 w-full">
+      <div className="flex flex-col sm:grid sm:grid-cols-2 md:flex md:flex-col gap-4 md:gap-5 pt-0 md:pt-2 flex-1 w-full min-w-0">
         {members.map((member) => (
           <MemberRow
             key={member.id}
@@ -196,7 +196,7 @@ function MemberRow({
       onMouseLeave={() => onHover(null)}
     >
       {/* Name + social */}
-      <div className="flex items-center gap-2.5">
+      <div className="flex min-w-0 flex-wrap items-center gap-2.5">
         <span
           className={cn(
             "w-4 h-3 rounded-[5px] flex-shrink-0 transition-all duration-300",
@@ -205,7 +205,7 @@ function MemberRow({
         />
         <span
           className={cn(
-            "text-base md:text-[18px] font-semibold leading-none tracking-tight transition-colors duration-300",
+            "break-words text-base md:text-[18px] font-semibold leading-none tracking-tight transition-colors duration-300",
             isActive ? "text-foreground" : "text-foreground/80",
           )}
         >

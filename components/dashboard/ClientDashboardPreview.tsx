@@ -26,7 +26,7 @@ interface DashboardClientProps {
 }
 
 export default function ClientDashboardPreview({ project, user, initialPlansConfig }: DashboardClientProps) {
-  const [overlayEnabled, setOverlayEnabled] = React.useState(true)
+  const [overlayEnabled, setOverlayEnabled] = React.useState(false)
   const canUseProPlusFeatures = React.useMemo(() => hasProOrHigher(project), [project])
   const isPaidAiPlan = React.useMemo(() => {
     const status = (project?.subscription_status || "").toLowerCase()

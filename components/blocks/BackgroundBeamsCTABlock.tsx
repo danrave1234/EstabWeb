@@ -20,10 +20,10 @@ export default function BackgroundBeamsCTABlock({
   return (
     <div className="relative w-full min-h-[36rem] flex flex-col items-center justify-center antialiased overflow-hidden bg-background">
       <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-foreground to-muted-foreground mb-6">
+        <h2 className="mb-6 break-words bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl md:text-5xl">
           {title}
         </h2>
-        <p className="text-muted-foreground text-base md:text-lg max-w-lg mx-auto mb-8">
+        <p className="mx-auto mb-8 max-w-lg break-words text-base text-muted-foreground md:text-lg">
           {subtitle}
         </p>
         {showEmailInput ? (
@@ -35,7 +35,7 @@ export default function BackgroundBeamsCTABlock({
             />
             <a
               href={ctaHref}
-              className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-6 h-10 text-sm font-medium hover:bg-primary/90 transition-colors whitespace-nowrap"
+              className="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-6 text-center text-sm font-medium text-primary-foreground transition-colors whitespace-normal hover:bg-primary/90 sm:w-auto sm:whitespace-nowrap"
             >
               {ctaText}
             </a>
@@ -43,7 +43,7 @@ export default function BackgroundBeamsCTABlock({
         ) : (
           <a
             href={ctaHref}
-            className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-8 h-11 text-sm font-medium hover:bg-primary/90 transition-colors"
+            className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-8 text-center text-sm font-medium text-primary-foreground transition-colors whitespace-normal hover:bg-primary/90 sm:w-auto"
           >
             {ctaText}
           </a>

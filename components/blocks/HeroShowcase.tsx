@@ -38,20 +38,20 @@ export default function HeroShowcase({
   const isExternalImage = imageUrl?.startsWith("http")
 
   return (
-    <section className="container mx-auto px-6 py-14 md:py-20 lg:py-28 reveal">
+    <section className="container mx-auto overflow-x-hidden px-4 py-14 sm:px-6 md:py-20 lg:py-28 reveal">
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
         <div className="space-y-6">
-          <span className="inline-flex items-center rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-semibold text-muted-foreground">
+          <span className="inline-flex max-w-full items-center rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-semibold text-muted-foreground">
             {badge}
           </span>
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl">
+          <h1 className="break-words text-3xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl">
             {title}
           </h1>
-          <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+          <p className="max-w-2xl break-words text-base leading-relaxed text-muted-foreground sm:text-lg">
             {subtitle}
           </p>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <a
               href={primaryCTAHref}
               onClick={() =>
@@ -61,7 +61,7 @@ export default function HeroShowcase({
                   cta_id: "primary",
                 })
               }
-              className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition hover:bg-primary/90"
+              className="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-primary px-6 py-3 text-center text-sm font-bold text-primary-foreground transition hover:bg-primary/90 sm:w-auto"
             >
               {primaryCTA}
             </a>
@@ -74,7 +74,7 @@ export default function HeroShowcase({
                   cta_id: "secondary",
                 })
               }
-              className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
+              className="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl border border-border bg-background px-6 py-3 text-center text-sm font-semibold text-foreground transition hover:bg-muted sm:w-auto"
             >
               {secondaryCTA}
             </a>
@@ -85,10 +85,10 @@ export default function HeroShowcase({
               {trustPoints.map((point, index) => (
                 <span
                   key={`${point}-${index}`}
-                  className="inline-flex items-center gap-2 rounded-lg border border-border/70 bg-background px-3 py-1.5 text-xs text-muted-foreground"
+                  className="inline-flex max-w-full items-center gap-2 rounded-lg border border-border/70 bg-background px-3 py-1.5 text-xs text-muted-foreground"
                 >
                   <DynamicIcon name="Check" className="h-3.5 w-3.5 text-primary" />
-                  {point}
+                  <span className="break-words">{point}</span>
                 </span>
               ))}
             </div>
@@ -115,8 +115,8 @@ export default function HeroShowcase({
             <div className="mt-4 grid grid-cols-2 gap-3">
               {metrics.slice(0, 4).map((metric, index) => (
                 <div key={`${metric.label}-${index}`} className="rounded-xl border border-border/70 bg-background p-3">
-                  <p className="text-lg font-bold text-foreground">{metric.value}</p>
-                  <p className="text-xs text-muted-foreground">{metric.label}</p>
+                  <p className="break-words text-lg font-bold text-foreground">{metric.value}</p>
+                  <p className="break-words text-xs text-muted-foreground">{metric.label}</p>
                 </div>
               ))}
             </div>
