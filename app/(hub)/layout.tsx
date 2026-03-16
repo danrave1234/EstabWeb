@@ -89,12 +89,9 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: [
-      { url: "/favicon-estabweb.png", type: "image/png", sizes: "48x48" },
-      { url: "/favicon.ico", sizes: "any" },
-    ],
-    shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: "/Logo.png",
+    shortcut: "/Logo.png",
+    apple: "/Logo.png",
   },
   metadataBase: new URL(siteUrl),
   alternates: {
