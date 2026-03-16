@@ -166,6 +166,21 @@ export default function DashboardPage() {
   }
 
   const getLeadCount = (id: string) => leadsCount[id] || 0
+  const getConfirmCopy = (action: string, variant: "mobile" | "desktop") => {
+    if (action === "delete") {
+      return variant === "mobile"
+        ? "Permanently delete this site? This cannot be undone."
+        : "Permanently delete this site? All data will be lost and cannot be recovered."
+    }
+    if (action === "archive") {
+      return variant === "mobile"
+        ? "Archive this site? This cannot be undone by you."
+        : "Archive this site? It will go offline and only an admin can restore it."
+    }
+    return variant === "mobile"
+      ? "Take this site offline?"
+      : "Take this site offline? Visitors will see an offline page."
+  }
 
   async function handleDeleteProject(projectId: string) {
     setStatusLoading(projectId)
@@ -260,6 +275,7 @@ export default function DashboardPage() {
             const previewUrl = project.custom_domain
               ? `https://${project.custom_domain}`
               : (project.subdomain ? `https://${project.subdomain}.${rootDomain}` : "#")
+            const pendingAction = confirmAction && confirmAction.projectId === project.id ? confirmAction.action : null
 
           return (
             <div key={project.id} className="bg-card border border-border rounded-2xl p-4 shadow-sm space-y-4">
@@ -373,17 +389,15 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 {/* Inline confirm for mobile */}
-                {confirmAction?.projectId === project.id && (
+                {pendingAction && (
                   <div className="flex flex-col gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded-xl">
                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-destructive">
                       <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                      {confirmAction.action === "delete"
-                        ? "Permanently delete this site? This cannot be undone."
-                        : confirmAction.action === "archive" ? "Archive this site? This cannot be undone by you." : "Take this site offline?"}
+                      {getConfirmCopy(pendingAction, "mobile")}
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => confirmAction.action === "delete" ? handleDeleteProject(project.id) : handleSiteStatus(project.id, confirmAction.action)}
+                        onClick={() => pendingAction === "delete" ? handleDeleteProject(project.id) : handleSiteStatus(project.id, pendingAction)}
                         className="flex-1 px-3 py-2 bg-destructive text-destructive-foreground rounded-lg text-[10px] font-black uppercase tracking-widest"
                       >
                         Confirm
@@ -420,6 +434,7 @@ export default function DashboardPage() {
               const previewUrl = project.custom_domain
                 ? `https://${project.custom_domain}`
                 : (project.subdomain ? `https://${project.subdomain}.${rootDomain}` : "#")
+              const pendingAction = confirmAction && confirmAction.projectId === project.id ? confirmAction.action : null
 
               return (
                 <TableRow key={project.id} className="group transition-colors hover:bg-muted/10">
@@ -538,21 +553,17 @@ export default function DashboardPage() {
                           </div>
                         )}
                         {/* Inline confirm panel */}
-                        {confirmAction?.projectId === project.id && (
+                        {pendingAction && (
                           <div className="absolute top-full right-0 mt-2 w-64 border border-destructive/40 rounded-xl shadow-xl z-50 p-4" style={{ background: 'var(--muted)' }}>
                             <div className="flex items-start gap-2 mb-3">
                               <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
                               <p className="text-[10px] font-bold text-foreground leading-relaxed">
-                                {confirmAction.action === "delete"
-                                  ? "Permanently delete this site? All data will be lost and cannot be recovered."
-                                  : confirmAction.action === "archive"
-                                  ? "Archive this site? It will go offline and only an admin can restore it."
-                                  : "Take this site offline? Visitors will see an offline page."}
+                                {getConfirmCopy(pendingAction, "desktop")}
                               </p>
                             </div>
                             <div className="flex gap-2">
                               <button
-                                onClick={() => confirmAction.action === "delete" ? handleDeleteProject(project.id) : handleSiteStatus(project.id, confirmAction.action)}
+                                onClick={() => pendingAction === "delete" ? handleDeleteProject(project.id) : handleSiteStatus(project.id, pendingAction)}
                                 className="flex-1 px-3 py-2 bg-destructive text-destructive-foreground rounded-lg text-[9px] font-black uppercase tracking-widest hover:opacity-90 transition-opacity"
                               >
                                 Confirm

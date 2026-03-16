@@ -236,7 +236,7 @@ export function EditorFormPanel({
                         <div className="text-left">
                           <p className="text-xs font-bold">
                             {selectedSection === 'hero' 
-                              ? (globalConfig.theme || 'standard').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                              ? (globalConfig.theme || 'standard').replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
                               : (BLOCK_MAP[selectedSection]?.label ?? selectedSection)}
                           </p>
                           <p className="text-[10px] text-muted-foreground">Change Layout Design</p>

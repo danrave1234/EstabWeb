@@ -4,6 +4,8 @@ import React, { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 export interface MinimalHeroProps {
+  brandName?: string;
+  ctaText?: string;
   kicker?: string;
   title?: string;
   subtitle?: string;
@@ -14,6 +16,8 @@ export interface MinimalHeroProps {
 }
 
 export default function MinimalHero({
+  brandName = "EstabWeb",
+  ctaText = "Explore",
   kicker = "Introducing",
   title = "Build fast. Ship clean.",
   subtitle = "A minimal React starter focused on clarity, speed, and maintainability.",
@@ -134,6 +138,33 @@ export default function MinimalHero({
   background: var(--bg);
   color: var(--fg);
   font-family: 'Hubot Sans', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+}
+
+.minimal-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px 0;
+}
+
+.minimal-brand {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.minimal-cta {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 /* hero center */
@@ -280,6 +311,11 @@ export default function MinimalHero({
 
       {/* Particles */}
       <canvas ref={canvasRef} className="minimal-particleCanvas" />
+
+      <div className="minimal-topbar">
+        <div className="minimal-brand">{brandName}</div>
+        <div className="minimal-cta">{ctaText}</div>
+      </div>
 
       {/* Accent Lines */}
       <div className="minimal-accent-lines">
