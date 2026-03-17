@@ -19,12 +19,18 @@ export function verifyPaymongoSignature(
   secret: string,
 ): string | null {
   if (!signatureHeader) return "Missing paymongo-signature header"
-  const parts = signatureHeader.split(",")
+  const parts = signatureHeader.split(",").map((part) => part.trim())
   const timestamp = parts.find((part) => part.startsWith("t="))?.slice(2)
-  const v1 = parts.find((part) => part.startsWith("v1="))?.slice(3)
-  if (!timestamp || !v1) return "Malformed signature header"
+  const te = parts.find((part) => part.startsWith("te="))?.slice(3)
+  const li = parts.find((part) => part.startsWith("li="))?.slice(3)
+
+  if (!timestamp || (!te && !li)) return "Malformed signature header"
+
   const expected = crypto.createHmac("sha256", secret).update(`${timestamp}.${raw}`).digest("hex")
-  return v1 === expected ? null : "Signature mismatch"
+  if (te === expected || li === expected) {
+    return null
+  }
+  return "Signature mismatch"
 }
 
 /** Compute period end - prefer payload dates, fall back to +1 month/year from now. */
@@ -45,7 +51,7 @@ export function computePeriodEnd(attributes?: any): Date {
 }
 
 export function extractPaymongoEventType(body: any): string {
-  return body?.data?.attributes?.type || body?.type || ""
+  return body?.data?.attributes?.type || body?.data?.type || body?.type || ""
 }
 
 export function extractPaymongoEventId(body: any): string {

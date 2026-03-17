@@ -34,6 +34,7 @@ This document describes every major feature of the EstabWeb platform: what it do
    - 6.4 [Multi-Page Support](#64-multi-page-support)
    - 6.5 [SEO & Metadata](#65-seo--metadata)
    - 6.6 [Sitemap & Robots](#66-sitemap--robots)
+   - 6.7 [GEO SEO & llms.txt](#67-geo-seo--llmstxt)
 7. [Platform Hub](#7-platform-hub)
    - 7.1 [Landing Page](#71-landing-page)
    - 7.2 [Pricing Page](#72-pricing-page)
@@ -122,7 +123,7 @@ These headers are read by layouts and page components since `searchParams` is no
 
 ### Reserved Root Paths
 The following paths are never redirected to subdomains on the root domain:
-`api, admin, login, dashboard, onboarding, auth, preview, pricing, terms, privacy, cookies, contact, success`
+`api, admin, login, dashboard, onboarding, auth, preview, pricing, faq, terms, privacy, cookies, contact, success, sitemap.xml, robots.txt, llms.txt, llms-full.txt`
 
 ---
 
@@ -282,7 +283,19 @@ The following paths are never redirected to subdomains on the root domain:
 - The sidebar shows a drag-and-drop list of active sections and a palette of available sections to add.
 - Adding a section appends its key to `activeSections` and seeds default data for that section.
 - Removing a section removes its key from `activeSections` (data is preserved in config but not rendered).
-- Reordering updates the array order → `SiteBlockRenderer` renders sections in that exact order.
+- Reordering updates the array order -> `SiteBlockRenderer` renders sections in that exact order.
+
+- Custom AI section support uses section ID custom-html mapped to config key customHtml.
+- custom-html is gated to Pro+ (pro, ecommerce, custom) and admin_granted, with guards applied in dashboard UI and AI APIs.
+- Interactive pricing comparison variant uses section ID `pricing--comparison` mapped to config key `pricingComparisonTable` (legacy alias: `pricing-comparison-table`).
+- Animated testimonials variant uses section ID `testimonials--animated` mapped to config key `animatedTestimonials`.
+- Pricing section comparison variant uses section ID `pricing--feature-comparison` mapped to config key `pricingSectionComparison` (legacy alias: `pricing-section-with-comparison`).
+- Hero showcase variant uses section ID `hero--showcase` mapped to config key `heroShowcase` (legacy alias: `hero-showcase`).
+- Services bento variant uses section ID `services--bento` mapped to config key `featuresBento` (legacy alias: `services-bento`).
+- Community testimonials variant uses section ID `testimonials--community` mapped to config key `testimonialsCommunity`. Supports star ratings, avatar images, dot navigation, slide animation, and optional logo cloud (trustedCompanies).
+- Background beams CTA variant uses section ID `cta--beams` mapped to config key `ctaBeams`. The animated SVG beam primitive lives in `components/ui/background-beams.tsx`.
+- Gallery carousel variant uses section ID gallery--carousel mapped to config key gallery4. It renders horizontally scrolling project cards with title, description, CTA link, and image items.
+- Feature steps variant uses section ID `features--steps` mapped to config key `featureSteps`. The animated step-by-step walkthrough primitive lives in `components/ui/feature-section.tsx`. Supports an image panel that transitions between steps with progress-based auto-rotation.
 
 ---
 
@@ -464,6 +477,9 @@ Each entry in `GENRE_PRESETS` is a `GenrePreset` object with:
 | `ecommerce` | E-commerce Shop |
 | `personal_portfolio` | Personal Portfolio |
 | `photobooth` | Photobooth |
+| `gym_boutique` | Gym Boutique |
+| `gym_hardcore` | Gym Hardcore |
+| `gym_functional` | Gym Functional |
 
 **Color themes (40+):** `partner`, `justice`, `modern`, `frost-fire`, `reliable`, `eco-clean`, `surgeon`, `wellness`, `holistic`, `clinical-gold`, `red-crimson`, `cyan-ocean`, `luxury-black-gold`, `nebula`, `flow`, `mono`, and many more — each a full Tailwind-compatible palette applied globally.
 
@@ -478,6 +494,7 @@ Clients can include any combination of **40+ named sections** on their site. Sec
 | Category | Sections |
 |---|---|
 | **Services** | Hero (locked), Services, Services Grid, Services Modern, Practice Areas, Product Types, Common Issues |
+| **Gym** | Gym Programs (`gym--programs`), Gym Schedule (`gym--schedule`), Membership Tiers (`gym--memberships`), Class Types (`gym--class-types`), Gym Trainers (`gym--trainers`), Results Stories (`gym--results`), Facility Highlights (`gym--facility`), Gym FAQ (`gym--faq`) |
 | **Trust** | Testimonials, Review Bar, Reviews Grid, Facebook Reviews, Trust & Certs, Certifications, Trust Badges, Warranty/Guarantee, Safety |
 | **Contact** | Contact, Contact with Map |
 | **Pricing** | Pricing, Packages & Pricing, Price Preview, Financing |
@@ -650,33 +667,50 @@ SiteTemplate
 - Legal pages (`privacy`, `terms`, `cookies`) are always available regardless of plan.
 
 ---
-
 ### 6.5 SEO & Metadata
 
-**File:** `app/(sites)/[domain]/page.tsx` — `generateMetadata()`
+**Files:** `app/(sites)/[domain]/page.tsx`, `app/(sites)/[domain]/[slug]/page.tsx`, `app/(sites)/[domain]/layout.tsx`
 
 **What it does:** Each public site page gets fully dynamic Open Graph, Twitter Card, and standard meta tags derived from the site config.
 
 **Logic:**
-- Title: `seo.title` → page label → `hero.title` → `features.title` → `brand.name + " | Professional Website"`
-- Description: `seo.description` → `hero.subtitle` → `contact.tagline` → fallback string
+- Title: `seo.title` -> page label -> `hero.title` -> `features.title` -> `brand.name + " | Professional Website"`
+- Description: `seo.description` -> `hero.subtitle` -> `contact.tagline` -> fallback string
 - Keywords: `seo.keywords` array, or auto-built from brand name, theme, hero text (deduped, max 12)
 - OG image: `brand.logoUrl`
-- Favicon: `brand.favicon` → `brand.logoUrl` → `/Logo.png`
+- Favicon: `brand.favicon` -> `brand.logoUrl` -> `/Logo.png`
 - `metadataBase` is set to `https://{host}` so relative URLs resolve correctly per domain.
+- The site layout injects linked `WebSite` + `Organization` JSON-LD for stronger entity clarity in AI and search systems.
 
 ---
 
 ### 6.6 Sitemap & Robots
 
-**Files:** `app/(sites)/[domain]/sitemap.xml/route.ts`, `app/(sites)/[domain]/robots.txt/route.ts`
+**Files:** `app/sitemap.ts`, `app/robots.ts`, `app/(sites)/[domain]/sitemap.xml/route.ts`, `app/(sites)/[domain]/robots.txt/route.ts`
 
-**What it does:** Each client site automatically gets its own `sitemap.xml` and `robots.txt`.
+**What it does:** Both the hub domain and client domains expose crawl directives and sitemap entries with host-aware URLs.
 
 **Implementation:**
-- `sitemap.xml`: Fetches the project config, iterates all pages, outputs `<url>` entries with `lastmod` and `changefreq`.
-- `robots.txt`: Returns `Allow: /` with `Sitemap: https://{domain}/sitemap.xml`.
-- Both are served as dynamic routes under the `[domain]` segment, so each domain gets its own correct URLs.
+- `sitemap.xml`: Uses project config, plan limits, and page-level noindex flags to emit canonical URLs.
+- `robots.txt`: Uses centralized crawler policy from `lib/seo/ai-crawlers.ts`, including explicit AI crawler directives and sitemap links.
+- Crawler policy mode is controlled by env `GEO_CRAWLER_POLICY_MODE`:
+  - `max-visibility` (default): broad AI crawler allowance
+  - `training-restricted`: blocks training/discovery-focused crawlers while keeping core search-answer crawlers
+- Tenant routes are served under the `[domain]` segment; root-domain routes are served from app-level metadata routes.
+
+---
+
+### 6.7 GEO SEO & llms.txt
+
+**Files:** `app/llms.txt/route.ts`, `app/llms-full.txt/route.ts`, `app/(sites)/[domain]/llms.txt/route.ts`, `app/(sites)/[domain]/llms-full.txt/route.ts`, `lib/seo/llms.ts`, `lib/seo/hub-llms.ts`, `lib/seo/tenant-llms.ts`
+
+**What it does:** Publishes `llms.txt` and `llms-full.txt` for hub and tenant domains so AI systems can parse page inventories, business facts, and contact details from a stable machine-readable text file.
+
+**Implementation:**
+- Hub llms files are built from marketing-site public pages and product facts.
+- Tenant llms files are built from page config (`pages`), legal routes, plan-aware page limits, and available contact/service signals.
+- `llms.txt` is concise; `llms-full.txt` includes richer per-page descriptions.
+- Outputs are served as text and cached with short TTLs.
 
 ---
 
@@ -845,6 +879,14 @@ All API routes are under `app/api/` and use Next.js Route Handlers.
 **`POST /api/project-config/apply-preset`**
 - Applies a full preset config (from `config/presets/`) to the project's draft.
 
+**`POST /api/ai/editor-command`**
+- Generates structured AI edit operations from dashboard prompts.
+- Enforces plan-gated section availability and blocks custom-html operations for non-Pro+ projects.
+
+**`POST /api/project-config/apply-operations`**
+- Applies validated AI operations to project draft_config.
+- Re-validates on server and rejects custom-html operations for non-Pro+ projects.
+
 ---
 
 ### 8.11 Cron Jobs
@@ -860,7 +902,41 @@ All API routes are under `app/api/` and use Next.js Route Handlers.
 
 ---
 
-### 8.12 Track Lead API
+### 8.12 Site Status API
+
+**`PATCH /api/project/[id]/site-status`** *(Client-owned projects)*
+- Auth: required (must own project)
+- Body: `{ status: 'active' | 'disabled' | 'archived', reason?: string }`
+- Allowed client transitions: `active ↔ disabled`, `active → archived`
+- Restriction: clients cannot restore from `archived` (admin-only)
+- Side effect: archiving removes custom domain from Vercel and clears `custom_domain`
+- Writes audit log entry (`site_disabled` / `site_enabled` / `site_archived`)
+
+**`PATCH /api/admin/projects/[id]/site-status`** *(Admin only)*
+- Auth: requires `admin` or `sub_admin` role
+- Body: `{ status: 'active' | 'disabled' | 'archived', reason?: string }`
+- Allows all status transitions including restoring archived sites
+- Uses service client to bypass RLS for cross-user project access
+- Writes audit log entry (restore from archive logs as `site_restored`)
+
+**`DELETE /api/admin/projects/[id]/site-status`** *(Admin only — irreversible)*
+- Auth: requires `admin` or `sub_admin` role
+- Permanently hard-deletes the project row
+- Removes custom domain from Vercel first
+- Writes `site_deleted` audit log entry before deletion
+
+**Public rendering:**
+- `app/(sites)/[domain]/page.tsx` checks `project.site_status` and renders `components/shared/SiteOffline.tsx` for `disabled` or `archived` sites
+- Preview mode (`x-preview-mode: true`) always bypasses the status gate
+
+**Database columns (migration `010_add_site_status.sql`):**
+- `site_status text NOT NULL DEFAULT 'active' CHECK (site_status IN ('active','disabled','archived'))`
+- `site_status_updated_at timestamptz`
+- `site_status_reason text`
+
+---
+
+### 8.13 Track Lead API
 
 **`POST /api/track-lead`**
 - No auth required (public endpoint).
@@ -886,12 +962,15 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 | `HeroCleaning` | cleaning | Bright lifestyle image + free estimate CTA |
 | `HeroPool` | pool | Water imagery + inspection scheduling CTA |
 | `HeroPestControl` | pest-control | Urgency-focused + emergency CTA |
+| `HeroGym` | gym | Multi-style gym hero (`hero.layout`: boutique, hardcore, functional) |
 | `HeroEmergency` | emergency | High-contrast, phone number prominent |
+| `HeroShowcase` | showcase | Trust-first hero with proof points + metrics (`hero--showcase`) |
 
 ### Content Blocks
 | Block | Description |
 |---|---|
 | `FeaturesGrid` | Icon + title + description grid (3–4 columns) |
+| `FeaturesBento` | Bento-style service cards for modern landing sections (`services--bento`) |
 | `FeaturesModern` | Alternating image/text feature rows |
 | `FeatureHighlightZigzag` | Zigzag layout for feature highlights |
 | `HowItWorksSteps` | Numbered step-by-step process |
@@ -900,14 +979,26 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 | `FAQTwoColumn` | Two-column FAQ layout |
 | `BlogGrid` | Card grid of blog post previews |
 | `PricingTable` | Plan comparison table with CTA |
+| `PricingComparisonTable` | Interactive feature matrix with monthly/yearly toggle |
+| `PricingSectionWithComparisonBlock` | Static pricing cards plus feature comparison grid (`pricing--feature-comparison`) |
 | `PricePreviewStrip` | Compact horizontal pricing strip |
 | `MaintenancePlans` | Service plan cards (pool/cleaning) |
+| `CustomHtmlSection` | AI-generated custom HTML/CSS block (`custom-html`, Pro+) |
+| `GymPrograms` | Program cards for gym tracks/coaches (`gym--programs`) |
+| `GymClassSchedule` | Weekly class matrix by day/time (`gym--schedule`) |
+| `GymMembershipTiers` | Membership pricing cards with perks/CTA (`gym--memberships`) |
+| `GymClassTypes` | Class format cards with duration and level (`gym--class-types`) |
+| `GymTrainers` | Coach profile cards with specialization (`gym--trainers`) |
+| `GymResultsStories` | Transformation stories with before/after (`gym--results`) |
+| `GymFacilityHighlights` | Facility/equipment highlights and amenities (`gym--facility`) |
+| `GymFaq` | Gym-specific accordion FAQ (`gym--faq`) |
 
 ### Social Proof Blocks
 | Block | Description |
 |---|---|
 | `ReviewsGrid` | Star-rated review cards grid |
 | `ReviewTrustBar` | Compact horizontal trust/review bar |
+| `AnimatedTestimonialsBlock` | Stacked-photo animated testimonial carousel (`testimonials--animated`) |
 | `TrustBar` | Logo + text trust indicators |
 | `TrustBadgesGrid` | Certification/badge grid |
 | `TeamGrid` | Staff photo + name + role grid |
@@ -960,7 +1051,7 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 | `SimpleFooter` | Standard footer with links and copyright |
 | `MinimalFooter` | Single-line minimal footer |
 | `PromoBannerStrip` | Top-of-page promotional banner |
-| `Header` | Site navigation header (shared, not in activeSections) |
+| `Header` | Site navigation header (shared, not in activeSections). Supports `headerStyle` variants: `"solid"`, `"floating"`, `"tubelight"` (Tubelight navbar layout), and `"megamenu"` (dropdown megamenu with icons). |
 
 ---
 
@@ -987,6 +1078,13 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 - Free: 1 page. Trial/Active: determined by `plan_limits` table (admin-configurable).
 - Legal pages (`privacy`, `terms`, `cookies`) are always unlimited.
 
+
+### Pro+ Custom HTML Gate
+- Gate helper: hasProOrHigher() in lib/subscription.ts.
+- Requires status active/trial plus plan ID pro/ecommerce/custom (or admin_granted).
+- Enforced in AddSectionModal, AiEditorModal, POST /api/ai/editor-command, and POST /api/project-config/apply-operations.
+- Raw HTML/CSS is allowed only for custom-html fields (html, css) and sanitized before apply/render.
+
 ---
 
 ## 11. Database Schema Summary
@@ -1010,4 +1108,6 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 
 ---
 
-*Last updated: 2026-02-24*
+*Last updated: 2026-03-12*
+
+

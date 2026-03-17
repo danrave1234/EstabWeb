@@ -13,6 +13,7 @@ const VALID_SECTIONS = [
   "stats", "case_study", "announcement_bar", "cta--sticky", "faq",
   "process", "trust_badges", "booking",
   "free_consultation", "service_detail", "lead_capture", "guarantee",
+  "gym--programs", "gym--schedule", "gym--memberships", "gym--class-types", "gym--trainers", "gym--results", "gym--facility", "gym--faq",
 ];
 
 // Sections that are only relevant when the business explicitly needs them.

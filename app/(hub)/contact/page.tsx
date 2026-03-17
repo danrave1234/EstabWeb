@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Contact Us",
   description: "Get in touch with the EstabWeb team for support, sales, or partnership inquiries.",
   alternates: {
-    canonical: "/contact",
+    canonical: "https://www.estabweb.com/contact",
   },
 };
 
@@ -50,7 +50,7 @@ export default async function ContactPage() {
                 <p className="text-[11px] text-muted-foreground font-medium">Philippines</p>
               </div>
             </div>
-            
+
             <div className="p-5 bg-muted/30 border border-border rounded-[24px] flex flex-col justify-between min-h-[120px]">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Office</h3>

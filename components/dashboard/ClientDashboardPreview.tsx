@@ -14,6 +14,7 @@ import PreviewFrame from "@/components/dashboard/PreviewFrame"
 import { PreviewOverlay } from "@/components/dashboard/PreviewOverlay"
 import { useEditorState } from "@/hooks/dashboard/useEditorState"
 import { Layout, Eye, Layers } from "lucide-react"
+import { hasProOrHigher } from "@/lib/subscription"
 
 interface DashboardClientProps {
   project: any
@@ -25,7 +26,12 @@ interface DashboardClientProps {
 }
 
 export default function ClientDashboardPreview({ project, user, initialPlansConfig }: DashboardClientProps) {
-  const [overlayEnabled, setOverlayEnabled] = React.useState(true)
+  const [overlayEnabled, setOverlayEnabled] = React.useState(false)
+  const canUseProPlusFeatures = React.useMemo(() => hasProOrHigher(project), [project])
+  const isPaidAiPlan = React.useMemo(() => {
+    const status = (project?.subscription_status || "").toLowerCase()
+    return status === "active" || status === "trial" || status === "admin_granted"
+  }, [project])
   const {
     iframeRef,
     selectedSection, setSelectedSection,
@@ -84,6 +90,7 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
     addSection,
     updatePages,
     updateActivePage,
+    updateActivePageSections,
   } = useEditorState(project);
 
   const router = useRouter();
@@ -157,6 +164,7 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
           onOpenChange={setAddSectionOpen}
           activeSections={activeSections}
           addSection={addSection}
+          isProOrHigher={canUseProPlusFeatures}
         />
 
         {/* Main Content (Stage) */}
@@ -205,6 +213,7 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
               initialPlansConfig={initialPlansConfig}
               pages={pages}
               updatePages={updatePages}
+              updateActivePageSections={updateActivePageSections}
               canUsePages={canUsePages}
               selectedPageIndex={selectedPageIndex}
               setSelectedPageIndex={setSelectedPageIndex}
@@ -212,6 +221,7 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
               mergedConfig={mergedConfig}
               globalConfig={globalConfig}
               activePage={activePage}
+              activeSections={activeSections}
               setColorPaletteOpen={setColorPaletteOpen}
               setTypographyOpen={setTypographyOpen}
               setUpgradeLoading={setUpgradeLoading}
@@ -262,7 +272,8 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
           projectId={project.id}
           currentConfig={mergedConfig}
           onPreview={sendFullPreview}
-          isPro={project.subscription_status === 'pro'}
+          isPro={isPaidAiPlan}
+          canUseCustomHtml={canUseProPlusFeatures}
           onPendingChange={setAiHasPending}
           onApplied={(newDraft) => {
             setLocalDraftConfig(newDraft)

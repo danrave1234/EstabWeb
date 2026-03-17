@@ -36,6 +36,37 @@ EstabWeb is a multi-tenant SaaS platform for generating and managing industry-op
 - Hub Pages: `/(hub)`
 - API Routes: `/api/*`
 
+## Preset Config Notes
+
+- Gym templates (`gym_boutique`, `gym_hardcore`, `gym_functional`) use dedicated section keys in project config:
+  - `gymPrograms`, `gymSchedule`, `gymMemberships`, `gymClassTypes`, `gymTrainers`, `gymResults`, `gymFacility`, `gymFaq`
+- These map to section IDs:
+  - `gym--programs`, `gym--schedule`, `gym--memberships`, `gym--class-types`, `gym--trainers`, `gym--results`, `gym--facility`, `gym--faq`
+- If you add or rename a gym section, update all of: `config/presets.ts`, `config/dashboard-config.ts`, `lib/utils/block-registry.ts`, `lib/utils/block-props.tsx`, and dashboard section/editor mappings.
+- Pricing comparison variant uses:
+  - section ID: `pricing--comparison` (legacy alias: `pricing-comparison-table`)
+  - config key: `pricingComparisonTable`
+- If you add or rename this pricing variant, update: `config/presets.ts`, `config/dashboard-config.ts`, `lib/utils/block-registry.ts`, `lib/utils/block-props.tsx`, and dashboard section/editor mappings.
+- Animated testimonials variant uses:
+  - section ID: `testimonials--animated`
+  - config key: `animatedTestimonials`
+- If you add or rename this variant, update: `config/presets.ts`, `config/dashboard-config.ts`, `lib/utils/block-registry.ts`, `lib/utils/block-props.tsx`, and dashboard section/editor mappings.
+- Pricing section comparison variant uses:
+  - section ID: `pricing--feature-comparison` (legacy alias: `pricing-section-with-comparison`)
+  - config key: `pricingSectionComparison`
+- If you add or rename this variant, update: `config/presets.ts`, `config/dashboard-config.ts`, `lib/utils/block-registry.ts`, `lib/utils/block-props.tsx`, and dashboard section/editor mappings.
+- Hero showcase variant uses:
+  - section ID: `hero--showcase` (legacy alias: `hero-showcase`)
+  - config key: `heroShowcase`
+- Services bento variant uses:
+  - section ID: `services--bento` (legacy alias: `services-bento`)
+  - config key: `featuresBento`
+- If you add or rename either variant, update: `config/presets.ts`, `config/dashboard-config.ts`, `lib/utils/block-registry.ts`, `lib/utils/block-props.tsx`, `components/dashboard/SectionLivePreview.tsx`, and `app/admin/dashboard/requests/[id]/RequestReviewClient.tsx`.
+- Gallery carousel variant uses:
+  - section ID: `gallery--carousel`
+  - config key: `gallery4`
+- If you add or rename this variant, update: `config/presets.ts`, `config/dashboard-config.ts`, `lib/utils/block-registry.ts`, `lib/utils/block-props.tsx`, `components/shared/BlockRegistry.tsx`, `components/dashboard/SectionLivePreview.tsx`, `hooks/dashboard/useEditorState.ts`, `lib/ai/section-field-schema.ts`, and `app/admin/dashboard/requests/[id]/RequestReviewClient.tsx`.
+
 ## Local Setup
 
 1. Create env vars from `.env.example` (or your existing `.env.local`):
@@ -91,6 +122,51 @@ npm run dev
 - `npm run migrate`: run migration helper script
 - `npm run migrate:status`: migration status
 
+## GEO SEO (AI Searchability)
+
+The platform now ships GEO-focused discoverability defaults for both the hub domain and tenant domains:
+
+- AI crawler-aware `robots.txt` policy:
+  - Root: `app/robots.ts`
+  - Tenant: `app/(sites)/[domain]/robots.txt/route.ts`
+- `llms.txt` discovery files:
+  - Root: `/llms.txt`, `/llms-full.txt`
+  - Tenant: `/{domain}/llms.txt`, `/{domain}/llms-full.txt` (via host-based rewrite in production)
+- Shared generators:
+  - `lib/seo/ai-crawlers.ts`
+  - `lib/seo/llms.ts`
+  - `lib/seo/hub-llms.ts`
+  - `lib/seo/tenant-llms.ts`
+- Crawler policy mode (optional env):
+  - `GEO_CRAWLER_POLICY_MODE=max-visibility` (default)
+  - `GEO_CRAWLER_POLICY_MODE=training-restricted`
+
+When updating public routes or page labels, keep `sitemap.xml` and llms outputs in sync.
+
+## AI Custom HTML Section (Prototype)
+
+The dashboard now includes an AI-driven custom section prototype:
+
+- Section ID: `custom-html`
+- Config key: `customHtml`
+- Public renderer block: `components/blocks/CustomHtmlSection.tsx`
+- Sanitization: `lib/security/custom-section-sanitizer.ts`
+- Dashboard editor mode: raw code fields are hidden for `custom-html`; users edit only content-level controls (title/subtitle, parsed text, links, images), and section labels are derived from content/title.
+
+Plan gating:
+- Available only to `pro`, `ecommerce`, and `custom` plans with valid premium status (`active`/`trial`), plus `admin_granted`.
+- Gate helper: `hasProOrHigher()` in `lib/subscription.ts`.
+- Enforced in both:
+  - Add Section UI (`components/dashboard/AddSectionModal.tsx`)
+  - AI operation APIs (`app/api/ai/editor-command/route.ts`, `app/api/project-config/apply-operations/route.ts`)
+
+AI operation rules:
+- Raw HTML/CSS is allowed only for `update_section` on `sectionKey: "custom-html"` with fields `html` and `css`.
+- All other string fields remain sanitized as plain text.
+- AI-editable field allowlists are centralized in `lib/ai/section-field-schema.ts` and enforced in `lib/utils/validateOperations.ts`.
+- AI prompt generation now accepts the live editor snapshot (`currentConfig`) so section positions and counts match unsaved local edits.
+- Applying AI operations first syncs the snapshot to `draft_config`, then applies operations to prevent stale ordering/position issues.
+
 ## Module Boundaries
 
 See [docs/module-boundaries.md](docs/module-boundaries.md).
@@ -105,6 +181,15 @@ When a paid client's subscription lapses (failed payment or expiry), features ar
 
 See `AGENTS.md § 9` for the authoritative rules and free-tier reset values.
 
+## Auth Session Recovery
+
+- Visiting `/login` while authenticated redirects by role:
+  - `admin` / `sub_admin` → `/admin`
+  - other authenticated users → `/dashboard`
+- Middleware automatically recovers broken auth states:
+  - if session decoding/refresh fails, Supabase auth cookies are cleared
+  - user is redirected to `/login?recovered=1` (or kept on `/login` with cleared cookies)
+
 ## Docs
 
 - `docs/FEATURES.md`
@@ -112,3 +197,7 @@ See `AGENTS.md § 9` for the authoritative rules and free-tier reset values.
 - `docs/whitelabel-flow.md`
 - `docs/PAYMONGO.md`
 - `README_DEPLOY.md`
+
+
+
+

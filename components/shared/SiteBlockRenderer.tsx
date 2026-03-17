@@ -6,7 +6,15 @@ import { SECTION_NAV_MAP, slugify, categoryLabelForSection } from "@/lib/utils/b
 import SmartContactCTA from "@/components/shared/SmartContactCTA";
 import SiteEditorSidebar from "@/components/shared/SiteEditorSidebar";
 
-import { Header, LeadMagnetFooter, SimpleFooter, MinimalFooter, PromoBannerStrip } from "@/components/shared/BlockRegistry";
+import {
+  Header,
+  TubelightHeader,
+  MegamenuHeader,
+  LeadMagnetFooter,
+  SimpleFooter,
+  MinimalFooter,
+  PromoBannerStrip,
+} from "@/components/shared/BlockRegistry";
 import { renderSection, normalizeToArray } from "@/lib/utils/block-props";
 
 interface SiteBlockRendererProps {
@@ -21,7 +29,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     theme = "lawyer",
     activeSections = ["hero"],
     brand = { name: "Site", logoUrl: "" },
-    headerStyle = "solid",
+    headerStyle = "sticky",
     footerStyle = "lead-magnet",
     hero = {},
     features = {},
@@ -166,14 +174,32 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
         />
       )}
       {showHeader && (
-        <Header
-          brandName={brand.name}
-          logoUrl={brand.logoUrl}
-          navigation={navigationFromSections}
-          ctaText={brand.ctaText ?? data.hero?.primaryCTA ?? "Get started"}
-          ctaHref={brand.ctaHref ?? "#contact"}
-          headerStyle={headerStyle}
-        />
+        headerStyle === "tubelight" ? (
+          <TubelightHeader
+            brandName={brand.name}
+            logoUrl={brand.logoUrl}
+            navigation={navigationFromSections}
+            ctaText={brand.ctaText ?? data.hero?.primaryCTA ?? "Get started"}
+            ctaHref={brand.ctaHref ?? "#contact"}
+          />
+        ) : headerStyle === "megamenu" ? (
+          <MegamenuHeader
+            brandName={brand.name}
+            logoUrl={brand.logoUrl}
+            navigation={navigationFromSections}
+            ctaText={brand.ctaText ?? data.hero?.primaryCTA ?? "Get started"}
+            ctaHref={brand.ctaHref ?? "#contact"}
+          />
+        ) : (
+          <Header
+            brandName={brand.name}
+            logoUrl={brand.logoUrl}
+            navigation={navigationFromSections}
+            ctaText={brand.ctaText ?? data.hero?.primaryCTA ?? "Get started"}
+            ctaHref={brand.ctaHref ?? "#contact"}
+            headerStyle={headerStyle}
+          />
+        )
       )}
       <main className="flex-1">
         {renderedSections.length === 0 && (

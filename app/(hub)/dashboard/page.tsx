@@ -11,7 +11,14 @@ import {
   ChevronRight,
   BarChart3,
   Globe,
-  Sparkles
+  Sparkles,
+  MoreVertical,
+  EyeOff,
+  Eye,
+  Archive,
+  AlertTriangle,
+  X,
+  Trash2
 } from "lucide-react"
 import {
   Table,
@@ -24,6 +31,7 @@ import {
 import ClientDashboardPreview from "@/components/dashboard/ClientDashboardPreview"
 import UpgradeButton from "@/components/dashboard/UpgradeButton"
 import NoProjectRedeem from "@/components/dashboard/NoProjectRedeem"
+import PaymentSuccessHandler from "@/components/dashboard/PaymentSuccessHandler"
 
 export default function DashboardPage() {
   const searchParams = useSearchParams()
@@ -35,6 +43,9 @@ export default function DashboardPage() {
   const [selectedProject, setSelectedProject] = useState<any | null>(null)
   const [leadsCount, setLeadsCount] = useState<Record<string, number>>({})
   const [user, setUser] = useState<any>(null)
+  const [statusMenuOpen, setStatusMenuOpen] = useState<string | null>(null)
+  const [confirmAction, setConfirmAction] = useState<{ projectId: string; action: string } | null>(null)
+  const [statusLoading, setStatusLoading] = useState<string | null>(null)
 
   useEffect(() => {
     async function init() {
@@ -73,6 +84,7 @@ export default function DashboardPage() {
     init()
   }, [])
 
+
   useEffect(() => {
     if (projectIdFromUrl && projects.length > 0) {
       const p = projects.find((x) => x.id === projectIdFromUrl)
@@ -85,97 +97,185 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">Initializing Hub...</p>
+      <>
+        <PaymentSuccessHandler />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+            <p className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">Initializing Hub...</p>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
   // If a project is selected, show the high-fidelity editor/preview interface
   if (selectedProject) {
     return (
-      <ClientDashboardPreview
-        project={selectedProject}
-        user={user}
-        initialPlansConfig={{
-          PLANS: {}, // Mock or fetch if needed
-          ENABLE_ANNUAL_PLANS: false
-        }}
-      />
+      <>
+        <PaymentSuccessHandler />
+        <ClientDashboardPreview
+          project={selectedProject}
+          user={user}
+          initialPlansConfig={{
+            PLANS: {}, // Mock or fetch if needed
+            ENABLE_ANNUAL_PLANS: false
+          }}
+        />
+      </>
     )
   }
 
   // If no projects, show empty state with redemption option
   if (projects.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
-        <div className="max-w-md w-full bg-card border-2 border-dashed border-border rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
-          <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform duration-500">
-            <Globe className="w-10 h-10 text-primary" />
-          </div>
-          <h1 className="text-3xl font-black text-foreground mb-4 tracking-tight">Ready to Launch?</h1>
-          <p className="text-muted-foreground mb-10 font-medium leading-relaxed font-sans">
-            You haven&apos;t created any websites yet. Start building your professional online presence in minutes.
-          </p>
-
-          <div className="space-y-4">
-            <Link
-              href="/onboarding"
-              className="flex items-center justify-center gap-3 w-full px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20"
-            >
-              <Plus className="w-5 h-5" />
-              Create New Project
-            </Link>
-
-            <div className="flex items-center gap-4 my-8">
-              <div className="h-px bg-border flex-1" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">OR REDEEM CODE</span>
-              <div className="h-px bg-border flex-1" />
+      <>
+        <PaymentSuccessHandler />
+        <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
+          <div className="max-w-md w-full bg-card border-2 border-dashed border-border rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
+            <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform duration-500">
+              <Globe className="w-10 h-10 text-primary" />
             </div>
+            <h1 className="text-3xl font-black text-foreground mb-4 tracking-tight">Ready to Launch?</h1>
+            <p className="text-muted-foreground mb-10 font-medium leading-relaxed font-sans">
+              You haven&apos;t created any websites yet. Start building your professional online presence in minutes.
+            </p>
 
-            <NoProjectRedeem />
+            <div className="space-y-4">
+              <Link
+                href="/onboarding"
+                className="flex items-center justify-center gap-3 w-full px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20"
+              >
+                <Plus className="w-5 h-5" />
+                Create New Project
+              </Link>
+
+              <div className="flex items-center gap-4 my-8">
+                <div className="h-px bg-border flex-1" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">OR REDEEM CODE</span>
+                <div className="h-px bg-border flex-1" />
+              </div>
+
+              <NoProjectRedeem />
+            </div>
           </div>
         </div>
-      </div>
+      </>
     )
   }
 
   const getLeadCount = (id: string) => leadsCount[id] || 0
+  const getConfirmCopy = (action: string, variant: "mobile" | "desktop") => {
+    if (action === "delete") {
+      return variant === "mobile"
+        ? "Permanently delete this site? This cannot be undone."
+        : "Permanently delete this site? All data will be lost and cannot be recovered."
+    }
+    if (action === "archive") {
+      return variant === "mobile"
+        ? "Archive this site? This cannot be undone by you."
+        : "Archive this site? It will go offline and only an admin can restore it."
+    }
+    return variant === "mobile"
+      ? "Take this site offline?"
+      : "Take this site offline? Visitors will see an offline page."
+  }
+
+  async function handleDeleteProject(projectId: string) {
+    setStatusLoading(projectId)
+    setConfirmAction(null)
+    setStatusMenuOpen(null)
+    try {
+      const res = await fetch(`/api/project/${projectId}/site-status`, {
+        method: "DELETE",
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        alert(err.error || "Failed to delete project")
+      } else {
+        // Remove from list
+        setProjects(prev => prev.filter(p => p.id !== projectId))
+      }
+    } catch {
+      alert("Network error. Please try again.")
+    } finally {
+      setStatusLoading(null)
+    }
+  }
+
+  async function handleSiteStatus(projectId: string, action: string) {
+    setStatusLoading(projectId)
+    setConfirmAction(null)
+    setStatusMenuOpen(null)
+    try {
+      const res = await fetch(`/api/project/${projectId}/site-status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        alert(err.error || "Failed to update site status")
+      } else {
+        // Refresh project list
+        const supabase = createClient()
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        if (authUser) {
+          const { data: projs } = await supabase
+            .from("projects")
+            .select("*")
+            .eq("client_id", authUser.id)
+            .order("created_at", { ascending: false })
+          setProjects(projs || [])
+        }
+      }
+    } catch {
+      alert("Network error. Please try again.")
+    } finally {
+      setStatusLoading(null)
+    }
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8 sm:mb-12">
-        <div>
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">My Websites</h1>
-          <p className="text-xs sm:text-base text-muted-foreground mt-0.5 sm:mt-2 font-medium">Manage and optimize your digital assets.</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 sm:gap-6">
-          <Link
-            href="/onboarding"
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
-          >
-            <Plus className="w-4 h-4" />
-            Build New
-          </Link>
-          <div className="hidden sm:block h-10 w-px bg-border mx-2" />
-          <div className="w-full sm:w-auto">
-            <NoProjectRedeem />
+    <>
+      <PaymentSuccessHandler />
+      {statusMenuOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setStatusMenuOpen(null)}
+        />
+      )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8 sm:mb-12">
+          <div>
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">My Websites</h1>
+            <p className="text-xs sm:text-base text-muted-foreground mt-0.5 sm:mt-2 font-medium">Manage and optimize your digital assets.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6">
+            <Link
+              href="/onboarding"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+            >
+              <Plus className="w-4 h-4" />
+              Build New
+            </Link>
+            <div className="hidden sm:block h-10 w-px bg-border mx-2" />
+            <div className="w-full sm:w-auto">
+              <NoProjectRedeem />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Mobile & Tablet View: Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:hidden mb-8">
-        {projects.map((project) => {
-          const siteName = (project.current_config as any)?.brand?.name || "My Website"
-          const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.${rootDomain}` : "Not set")
-          const previewUrl = project.custom_domain
-            ? `https://${project.custom_domain}`
-            : (project.subdomain ? `https://${project.subdomain}.${rootDomain}` : "#")
+        {/* Mobile & Tablet View: Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:hidden mb-8">
+          {projects.map((project) => {
+            const siteName = (project.current_config as any)?.brand?.name || "My Website"
+            const domain = project.custom_domain || (project.subdomain ? `${project.subdomain}.${rootDomain}` : "Not set")
+            const previewUrl = project.custom_domain
+              ? `https://${project.custom_domain}`
+              : (project.subdomain ? `https://${project.subdomain}.${rootDomain}` : "#")
+            const pendingAction = confirmAction && confirmAction.projectId === project.id ? confirmAction.action : null
 
           return (
             <div key={project.id} className="bg-card border border-border rounded-2xl p-4 shadow-sm space-y-4">
@@ -191,7 +291,12 @@ export default function DashboardPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-bold text-foreground truncate">{siteName}</h3>
-                    <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} variant="badge" />
+                    <UpgradeButton
+                      projectId={project.id}
+                      subscriptionStatus={project.subscription_status}
+                      subscriptionPlanId={project.subscription_plan_id}
+                      variant="badge"
+                    />
                   </div>
                   <div className="flex items-center gap-1.5 min-w-0">
                     {project.custom_domain ? (
@@ -208,6 +313,14 @@ export default function DashboardPage() {
 
               <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground pt-2 border-t border-border">
                 <span>Created: {new Date(project.created_at).toLocaleDateString()}</span>
+                {project.site_status && project.site_status !== "active" && (
+                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest ${
+                    project.site_status === "disabled" ? "bg-yellow-500/10 text-yellow-600" : "bg-red-500/10 text-red-500"
+                  }`}>
+                    {project.site_status === "disabled" ? <EyeOff className="w-2.5 h-2.5" /> : <Archive className="w-2.5 h-2.5" />}
+                    {project.site_status}
+                  </span>
+                )}
               </div>
 
               <div className="flex flex-col gap-2 pt-2 border-t border-border mt-auto">
@@ -235,17 +348,76 @@ export default function DashboardPage() {
                   >
                     <ExternalLink className="w-4 h-4" />
                   </a>
+                  {/* Site status dropdown */}
+                  <div className="relative shrink-0">
+                    <button
+                      onClick={() => setStatusMenuOpen(statusMenuOpen === project.id ? null : project.id)}
+                      disabled={statusLoading === project.id}
+                      className="p-3 bg-muted hover:bg-muted/80 rounded-xl text-foreground transition-all active:scale-95 disabled:opacity-50"
+                      title="Site Options"
+                    >
+                      {statusLoading === project.id
+                        ? <span className="w-4 h-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin block" />
+                        : <MoreVertical className="w-4 h-4" />}
+                    </button>
+                    {statusMenuOpen === project.id && (
+                      <div className="absolute bottom-full right-0 mb-2 w-44 border border-border rounded-xl shadow-xl z-50 overflow-hidden" style={{ background: 'var(--muted)' }}>
+                        {project.site_status !== "archived" && (
+                          project.site_status === "disabled"
+                            ? <button onClick={() => handleSiteStatus(project.id, "enable")} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-emerald-600">
+                                <Eye className="w-3.5 h-3.5" /> Enable Site
+                              </button>
+                            : <button onClick={() => setConfirmAction({ projectId: project.id, action: "disable" })} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-yellow-600">
+                                <EyeOff className="w-3.5 h-3.5" /> Disable Site
+                              </button>
+                    )}
+                    {project.site_status !== "archived" && (
+                      <button onClick={() => setConfirmAction({ projectId: project.id, action: "archive" })} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-destructive border-t border-border">
+                        <Archive className="w-3.5 h-3.5" /> Archive Site
+                      </button>
+                    )}
+                    {project.site_status === "archived" && (
+                      <button onClick={() => setConfirmAction({ projectId: project.id, action: "delete" })} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-destructive">
+                        <Trash2 className="w-3.5 h-3.5" /> Delete Site
+                      </button>
+                    )}
+                    <button onClick={() => setStatusMenuOpen(null)} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-muted-foreground border-t border-border">
+                          <X className="w-3.5 h-3.5" /> Cancel
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
+                {/* Inline confirm for mobile */}
+                {pendingAction && (
+                  <div className="flex flex-col gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded-xl">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-destructive">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                      {getConfirmCopy(pendingAction, "mobile")}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => pendingAction === "delete" ? handleDeleteProject(project.id) : handleSiteStatus(project.id, pendingAction)}
+                        className="flex-1 px-3 py-2 bg-destructive text-destructive-foreground rounded-lg text-[10px] font-black uppercase tracking-widest"
+                      >
+                        Confirm
+                      </button>
+                      <button onClick={() => setConfirmAction(null)} className="flex-1 px-3 py-2 bg-muted text-foreground rounded-lg text-[10px] font-black uppercase tracking-widest">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )
         })}
-      </div>
+        </div>
 
 
       {/* Desktop View: Table */}
-      <div className="hidden lg:block bg-card border border-border rounded-xl shadow-sm overflow-x-auto">
-        <Table>
+        <div className="hidden lg:block bg-card border border-border rounded-xl shadow-sm overflow-x-auto">
+          <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">
               <TableHead className="w-[40%] text-[11px] font-black uppercase tracking-widest py-5">Website</TableHead>
@@ -262,6 +434,7 @@ export default function DashboardPage() {
               const previewUrl = project.custom_domain
                 ? `https://${project.custom_domain}`
                 : (project.subdomain ? `https://${project.subdomain}.${rootDomain}` : "#")
+              const pendingAction = confirmAction && confirmAction.projectId === project.id ? confirmAction.action : null
 
               return (
                 <TableRow key={project.id} className="group transition-colors hover:bg-muted/10">
@@ -278,7 +451,12 @@ export default function DashboardPage() {
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-foreground group-hover:text-primary transition-colors">{siteName}</span>
-                          <UpgradeButton projectId={project.id} subscriptionStatus={project.subscription_status} variant="badge" />
+                          <UpgradeButton
+                            projectId={project.id}
+                            subscriptionStatus={project.subscription_status}
+                            subscriptionPlanId={project.subscription_plan_id}
+                            variant="badge"
+                          />
                         </div>
                       </div>
                     </Link>
@@ -304,6 +482,14 @@ export default function DashboardPage() {
                   </TableCell>
                   <TableCell className="py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      {project.site_status && project.site_status !== "active" && (
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
+                          project.site_status === "disabled" ? "bg-yellow-500/10 text-yellow-600" : "bg-red-500/10 text-red-500"
+                        }`}>
+                          {project.site_status === "disabled" ? <EyeOff className="w-3 h-3" /> : <Archive className="w-3 h-3" />}
+                          {project.site_status}
+                        </span>
+                      )}
                       <Link
                         href={`/dashboard?projectId=${project.id}`}
                         className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20"
@@ -328,14 +514,76 @@ export default function DashboardPage() {
                       >
                         <ExternalLink className="w-4 h-4" />
                       </a>
+                      {/* Site status dropdown */}
+                      <div className="relative">
+                        <button
+                          onClick={() => setStatusMenuOpen(statusMenuOpen === project.id ? null : project.id)}
+                          disabled={statusLoading === project.id}
+                          className="p-2.5 bg-muted text-foreground rounded-xl hover:bg-muted/80 transition-all border border-border disabled:opacity-50"
+                          title="Site Options"
+                        >
+                          {statusLoading === project.id
+                            ? <span className="w-4 h-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin block" />
+                            : <MoreVertical className="w-4 h-4" />}
+                        </button>
+                        {statusMenuOpen === project.id && (
+                          <div className="absolute top-full right-0 mt-2 w-48 border border-border rounded-xl shadow-xl z-50 overflow-hidden" style={{ background: 'var(--muted)' }}>
+                            {project.site_status !== "archived" && (
+                              project.site_status === "disabled"
+                                ? <button onClick={() => handleSiteStatus(project.id, "enable")} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-emerald-600">
+                                    <Eye className="w-3.5 h-3.5" /> Enable Site
+                                  </button>
+                                : <button onClick={() => setConfirmAction({ projectId: project.id, action: "disable" })} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-yellow-600">
+                                    <EyeOff className="w-3.5 h-3.5" /> Disable Site
+                                  </button>
+                            )}
+                            {project.site_status !== "archived" && (
+                              <button onClick={() => setConfirmAction({ projectId: project.id, action: "archive" })} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-destructive border-t border-border">
+                                <Archive className="w-3.5 h-3.5" /> Archive Site
+                              </button>
+                            )}
+                            {project.site_status === "archived" && (
+                              <button onClick={() => setConfirmAction({ projectId: project.id, action: "delete" })} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-destructive">
+                                <Trash2 className="w-3.5 h-3.5" /> Delete Site
+                              </button>
+                            )}
+                            <button onClick={() => setStatusMenuOpen(null)} className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-black uppercase tracking-widest text-left cursor-pointer hover:bg-foreground/10 transition-colors text-muted-foreground border-t border-border">
+                              <X className="w-3.5 h-3.5" /> Cancel
+                            </button>
+                          </div>
+                        )}
+                        {/* Inline confirm panel */}
+                        {pendingAction && (
+                          <div className="absolute top-full right-0 mt-2 w-64 border border-destructive/40 rounded-xl shadow-xl z-50 p-4" style={{ background: 'var(--muted)' }}>
+                            <div className="flex items-start gap-2 mb-3">
+                              <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+                              <p className="text-[10px] font-bold text-foreground leading-relaxed">
+                                {getConfirmCopy(pendingAction, "desktop")}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => pendingAction === "delete" ? handleDeleteProject(project.id) : handleSiteStatus(project.id, pendingAction)}
+                                className="flex-1 px-3 py-2 bg-destructive text-destructive-foreground rounded-lg text-[9px] font-black uppercase tracking-widest hover:opacity-90 transition-opacity"
+                              >
+                                Confirm
+                              </button>
+                              <button onClick={() => setConfirmAction(null)} className="flex-1 px-3 py-2 bg-muted text-foreground rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-muted/80 transition-colors">
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>
               )
             })}
           </TableBody>
-        </Table>
+          </Table>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

@@ -12,7 +12,8 @@ import { GoogleAnalytics, FacebookPixel, AnalyticsProvider } from "@/components/
 import { generateSchema } from "@/lib/utils/schema";
 import NetworkOfflineBanner from "@/components/shared/NetworkOfflineBanner";
 import { getPageBySlug, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
-import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo";
+import { buildAutoSeoDefaults, formatDomainAsBrand } from "@/lib/seo/autoSeo";
+import { isProPlan } from "@/lib/subscription";
 
 /**
  * Layout-level metadata provides sensible defaults and shared fields.
@@ -26,8 +27,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { domain } = await params;
   const heads = await headers();
-  const host = heads.get("host") || domain;
-  const { config } = await getSiteConfigWithProject(domain, heads);
+  const host = (heads.get("host") || domain).toLowerCase();
+  const { config, project } = await getSiteConfigWithProject(domain, heads);
+  const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase();
+  const preferredHost =
+    project?.custom_domain && isProPlan(project)
+      ? project.custom_domain.toLowerCase()
+      : project?.subdomain
+        ? `${project.subdomain}.${ROOT_DOMAIN}`.toLowerCase()
+        : host;
 
   const pages = normalizePagesWithDefaults(config?.pages);
   const homePage = getPageBySlug(pages, "");
@@ -40,20 +48,22 @@ export async function generateMetadata({
   });
 
   const brand = config?.brand || {};
-  const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
+  const rawBrandName = brand.name === "Your Business Name" ? "" : brand.name;
+  const fallbackBrandName = rawBrandName || formatDomainAsBrand(domain);
+  const iconUrl = brand.favicon || brand.logoUrl || "/globe.svg";
 
   return {
     // Fallback title - page.tsx and [slug]/page.tsx override this per-route.
-    title: resolvedSeo.title || brand.name || domain,
-    description: resolvedSeo.description || `Welcome to ${brand.name || domain}`,
-    metadataBase: new URL(`https://${host}`),
+    title: resolvedSeo.title || fallbackBrandName,
+    description: resolvedSeo.description || `Welcome to ${fallbackBrandName}`,
+    metadataBase: new URL(`https://${preferredHost}`),
     icons: {
       icon: iconUrl,
       shortcut: iconUrl,
       apple: iconUrl,
     },
     alternates: {
-      canonical: resolvedSeo.canonical || "/",
+      canonical: `https://${preferredHost}${resolvedSeo.canonical || "/"}`,
     },
   };
 }
@@ -70,6 +80,8 @@ const VALID_COLOR_THEMES = [
   "dark-green-ivory", "fiesta-red-yellow", "barangay-blue", "tropical-teal", "luxury-black-gold", "facebook-blue",
   // Existing tech themes
   "nebula", "flow", "mono",
+  // Gym themes
+  "gym-boutique", "gym-hardcore", "gym-functional",
 ] as const;
 
 export default async function SiteLayout({
@@ -85,6 +97,7 @@ export default async function SiteLayout({
   let dbConf: any = null;
   let domain = "";
   let host = "";
+  let preferredHost = "";
   let projectId: string | undefined = undefined;
   let homeSeoDefaults: ReturnType<typeof buildAutoSeoDefaults> | null = null;
   let homeSeoSettings: Record<string, any> = {};
@@ -98,6 +111,14 @@ export default async function SiteLayout({
     dbConf = siteData.config;
     const project = siteData.project;
     projectId = project?.id;
+    const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase();
+    const hostWithoutPort = (host.split(":")[0] || domain).toLowerCase();
+    preferredHost =
+      project?.custom_domain && isProPlan(project)
+        ? project.custom_domain.toLowerCase()
+        : project?.subdomain
+          ? `${project.subdomain}.${ROOT_DOMAIN}`.toLowerCase()
+          : hostWithoutPort;
 
     if (dbConf) {
       const dbPages = normalizePagesWithDefaults(dbConf?.pages);
@@ -131,6 +152,21 @@ export default async function SiteLayout({
     // use defaults
   }
 
+  const rawBrandName = dbConf?.brand?.name === "Your Business Name" ? "" : dbConf?.brand?.name;
+  const fallbackBrandName = rawBrandName || formatDomainAsBrand(domain);
+  const hostWithoutPort = (host.split(":")[0] || domain).toLowerCase();
+  const schemaHost = preferredHost || hostWithoutPort;
+  const origin = `https://${schemaHost}`;
+  const websiteSchemaId = `${origin}/#website`;
+  const organizationSchemaId = `${origin}/#organization`;
+  const footerSocial = dbConf?.footer?.social || {};
+  const sameAs = [
+    footerSocial.facebookEnabled !== false ? footerSocial.facebook : undefined,
+    footerSocial.instagramEnabled !== false ? footerSocial.instagram : undefined,
+    footerSocial.linkedinEnabled !== false ? footerSocial.linkedin : undefined,
+    footerSocial.twitterEnabled !== false ? footerSocial.twitter : undefined,
+  ].filter((url: unknown): url is string => typeof url === "string" && url.trim().length > 0);
+
   return (
     <html
       lang="en"
@@ -141,6 +177,7 @@ export default async function SiteLayout({
     >
       <head>
         <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         {dbConf && (
           <>
             {/* Site-wide WebSite schema - always present */}
@@ -148,9 +185,33 @@ export default async function SiteLayout({
               data={{
                 "@context": "https://schema.org",
                 "@type": "WebSite",
-                "name": dbConf.brand?.name || domain,
-                "url": `https://${host}`,
-                "description": homeSeoDefaults?.description || `Welcome to ${dbConf.brand?.name || domain}`,
+                "@id": websiteSchemaId,
+                "name": fallbackBrandName,
+                "url": origin,
+                "description": homeSeoDefaults?.description || `Welcome to ${fallbackBrandName}`,
+                "inLanguage": "en-PH",
+                "publisher": {
+                  "@id": organizationSchemaId,
+                },
+              }}
+            />
+            <StructuredData
+              data={{
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "@id": organizationSchemaId,
+                "name": fallbackBrandName,
+                "url": origin,
+                "logo": dbConf.brand?.logoUrl || undefined,
+                "email": dbConf.contact?.email || undefined,
+                "telephone": dbConf.contact?.phone || undefined,
+                "sameAs": sameAs.length > 0 ? sameAs : undefined,
+                "address": dbConf.contact?.address
+                  ? {
+                    "@type": "PostalAddress",
+                    "streetAddress": dbConf.contact.address,
+                  }
+                  : undefined,
               }}
             />
             {(() => {
@@ -168,8 +229,8 @@ export default async function SiteLayout({
                 const defaultSchema: Record<string, unknown> = {
                   "@context": "https://schema.org",
                   "@type": schemaType,
-                  "name": dbConf.brand?.name || domain,
-                  "url": `https://${host}`,
+                  "name": fallbackBrandName,
+                  "url": origin,
                 };
                 if (dbConf.brand?.logoUrl) defaultSchema["image"] = dbConf.brand.logoUrl;
                 if (dbConf.contact?.email) defaultSchema["email"] = dbConf.contact.email;
@@ -182,7 +243,7 @@ export default async function SiteLayout({
             {(() => {
               const homeSeo = homeSeoSettings;
               if (homeSeo.structuredData?.enabled) {
-                const schema = generateSchema(homeSeo.structuredData.type, dbConf);
+                const schema = generateSchema(homeSeo.structuredData.type, { ...dbConf, siteUrl: origin });
                 if (schema) return <StructuredData data={schema} />;
               }
               return null;

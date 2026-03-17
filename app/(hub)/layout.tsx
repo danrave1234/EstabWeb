@@ -10,15 +10,37 @@ import { createClient } from "@/lib/supabase/server";
 import HubLayoutClient from "@/components/shared/HubLayoutClient";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://estabweb.com";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.estabweb.com";
+const normalizedSiteUrl = siteUrl.replace(/\/+$/g, "");
+const websiteSchemaId = `${normalizedSiteUrl}/#website`;
+const organizationSchemaId = `${normalizedSiteUrl}/#organization`;
+const organizationSameAs = [
+  process.env.NEXT_PUBLIC_ESTABWEB_FACEBOOK_URL,
+  process.env.NEXT_PUBLIC_ESTABWEB_INSTAGRAM_URL,
+  process.env.NEXT_PUBLIC_ESTABWEB_LINKEDIN_URL,
+  process.env.NEXT_PUBLIC_ESTABWEB_YOUTUBE_URL,
+  process.env.NEXT_PUBLIC_ESTABWEB_X_URL,
+].filter((url): url is string => typeof url === "string" && url.trim().length > 0);
 
 export const metadata: Metadata = {
   title: {
-    default: "EstabWeb - Professional Websites in Minutes",
+    default: "EstabWeb - Affordable Business Websites in the Philippines",
     template: "%s | EstabWeb"
   },
-  description: "High-performance, industry-specific sites that are fully managed and optimized for growth. Stop fighting with complex builders.",
-  keywords: ["website builder", "local business", "managed hosting", "professional websites", "industry-specific"],
+  description: "Affordable website setup for local businesses in the Philippines. Start from a ready template, edit your content anytime, pay monthly, and request design updates when needed.",
+  keywords: [
+    "website design philippines",
+    "website design philippines price",
+    "small business website philippines",
+    "affordable web design philippines",
+    "website builder philippines",
+    "monthly website subscription philippines",
+    "website maintenance cost per month philippines",
+    "custom domain website philippines",
+    "gym website design philippines",
+    "gym website creation philippines",
+    "fitness website builder philippines"
+  ],
   authors: [{ name: "EstabWeb Team" }],
   creator: "EstabWeb",
   publisher: "EstabWeb",
@@ -29,26 +51,31 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "en_PH",
     url: siteUrl,
     siteName: "EstabWeb",
-    title: "EstabWeb - Professional Websites in Minutes",
-    description: "High-performance, industry-specific sites that are fully managed and optimized for growth.",
+    title: "EstabWeb - Affordable Business Websites in the Philippines",
+    description: "Start with a ready website template, edit anytime, and subscribe monthly. Built for local businesses in the Philippines.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "EstabWeb - Professional Websites",
+        alt: "EstabWeb - Affordable Business Websites in the Philippines",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "EstabWeb - Professional Websites in Minutes",
-    description: "High-performance, industry-specific sites that are fully managed and optimized for growth.",
+    title: "EstabWeb - Affordable Business Websites in the Philippines",
+    description: "Ready website templates, easy edits, monthly plans, and design requests for local businesses in the Philippines.",
     images: ["/og-image.png"],
     creator: "@estabweb",
+  },
+  verification: {
+    other: {
+      "msvalidate.01": "9F1BC3482AFCA6B6696F286ADCC062E0",
+    },
   },
   robots: {
     index: true,
@@ -62,9 +89,9 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/Logo.png",
-    shortcut: "/Logo.png",
-    apple: "/Logo.png",
+    icon: "/LogowithBG.png",
+    shortcut: "/LogowithBG.png",
+    apple: "/LogowithBG.png",
   },
   metadataBase: new URL(siteUrl),
   alternates: {
@@ -97,18 +124,39 @@ export default async function HubLayout({
     >
       <head>
         <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <StructuredData
           data={{
             "@context": "https://schema.org",
             "@type": "WebSite",
+            "@id": websiteSchemaId,
             "name": "EstabWeb",
-            "url": siteUrl,
-            "description": "High-performance, industry-specific sites that are fully managed and optimized for growth.",
-            "potentialAction": {
-              "@type": "SearchAction",
-              "target": `${siteUrl}/search?q={search_term_string}`,
-              "query-input": "required name=search_term_string"
-            }
+            "url": normalizedSiteUrl,
+            "description": "Affordable business websites in the Philippines with easy editing, monthly subscription, and design support.",
+            "inLanguage": "en-PH",
+            "publisher": {
+              "@id": organizationSchemaId,
+            },
+          }}
+        />
+        <StructuredData
+          data={{
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "@id": organizationSchemaId,
+            "name": "EstabWeb",
+            "url": normalizedSiteUrl,
+            "logo": `${normalizedSiteUrl}/Logo.png`,
+            "contactPoint": [
+              {
+                "@type": "ContactPoint",
+                "contactType": "customer support",
+                "url": `${normalizedSiteUrl}/contact`,
+                "areaServed": "PH",
+                "availableLanguage": ["en", "fil"],
+              },
+            ],
+            "sameAs": organizationSameAs.length > 0 ? organizationSameAs : undefined,
           }}
         />
       </head>

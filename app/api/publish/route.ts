@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { generateSubdomain } from '@/lib/codes'
 import { normalizeConfig } from '@/lib/utils'
-import { canPublishDirectly, canPublishNow, getPublishStats, DEFAULT_PUBLISH_LIMIT, DEFAULT_PUBLISH_LIMIT_DAILY } from '@/lib/subscription'
+import { canPublishDirectly, canPublishNow, getPublishStats, DEFAULT_PUBLISH_LIMIT, DEFAULT_PUBLISH_LIMIT_DAILY, isProPlan } from '@/lib/subscription'
 import { getMaxPagesForProject, getPlanLimits, isLegalPageSlug, normalizePagesWithDefaults } from '@/lib/utils/site-pages'
 import { logAudit } from '@/lib/audit'
 import { onProjectPublished } from '@/lib/cache/invalidation'
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
     const oldBrandName = (proj.current_config as any)?.brand?.name
     const newBrandName = (newConfig as any)?.brand?.name
     if (newBrandName && newBrandName !== oldBrandName) {
-      ;(updatePayload as any).subdomain = generateSubdomain(newBrandName)
+      ; (updatePayload as any).subdomain = generateSubdomain(newBrandName)
     }
 
     const now = new Date()
@@ -95,13 +95,13 @@ export async function POST(req: Request) {
     const countToday = publishDate === todayStr ? (proj.publish_count_today ?? 0) : 0
 
     if (daysSinceStart >= PERIOD_DAYS) {
-      ;(updatePayload as any).publish_count = 1
-      ;(updatePayload as any).publish_period_start = now.toISOString()
+      ; (updatePayload as any).publish_count = 1
+        ; (updatePayload as any).publish_period_start = now.toISOString()
     } else {
-      ;(updatePayload as any).publish_count = count + 1
+      ; (updatePayload as any).publish_count = count + 1
     }
-    ;(updatePayload as any).publish_count_today = countToday + 1
-    ;(updatePayload as any).publish_date = todayStr
+    ; (updatePayload as any).publish_count_today = countToday + 1
+      ; (updatePayload as any).publish_date = todayStr
 
     const { error: upErr } = await supabase
       .from('projects')
@@ -124,9 +124,9 @@ export async function POST(req: Request) {
     // The sites group is at app/(sites)/[domain]/... so we target those segments.
     revalidatePath('/(sites)/[domain]', 'page')
     revalidatePath('/(sites)/[domain]/[slug]', 'page')
-    ;['privacy', 'terms', 'cookies'].forEach((slug) => {
-      revalidatePath(`/(sites)/[domain]/${slug}`, 'page')
-    })
+      ;['privacy', 'terms', 'cookies'].forEach((slug) => {
+        revalidatePath(`/(sites)/[domain]/${slug}`, 'page')
+      })
 
     // Also revalidate using the actual subdomain/custom_domain values so Vercel's
     // edge cache is busted for the specific domain paths.
@@ -139,6 +139,7 @@ export async function POST(req: Request) {
     const newCount = (updatePayload as any).publish_count as number
     const newCountToday = (updatePayload as any).publish_count_today as number
     await logAudit(supabase, 'publish', user.id, projectId, { version: nextVersion })
+
     return NextResponse.json({
       success: true,
       version: nextVersion,

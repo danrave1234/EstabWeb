@@ -1,6 +1,22 @@
 import React from "react";
-import { ACTypesGrid, AttorneyProfile, AwardsStrip, BeforeAfterGalleryGrid, BeforeAfterSlider, BlogGrid, CommonPestsGrid, ContactColumns, ContactForm, ContactMinimal, ContactSplit, ContactVisual, ContactWithMap, CoverageRadiusBlock, DeveloperPartnersLogos, EmergencyCTAStrip, FAQAccordion, FAQTwoColumn, FacebookReviewEmbed, FeatureHighlightZigzag, FeaturedListingsGrid, FeaturesGrid, FeaturesModern, FinancingSection, FreeConsultationForm, Header, HeroAuthority, HeroBlock, HeroChiropractor, HeroCleaning, HeroClinic, HeroDentist, HeroEmergency, HeroPestControl, HeroPool, HeroSaas, HowItWorksSteps, LogoCloud, MaintenancePlans, MessengerStickyCTA, PatientFaq, PaymentOptionsStrip, PhotoGalleryGrid, PracticeAreasGrid, PricePreviewStrip, PricingTable, PromoCTASection, ReviewTrustBar, ReviewsGrid, SafetySection, ServiceAreaMap, StatsSection, TeamCarousel, TeamGrid, TreatmentProcessTimeline, TrustBadgesGrid, TrustBar, WarrantyGuaranteeBlock, WhyChooseMe } from "@/components/shared/BlockRegistry";
+import { ACTypesGrid, AnimatedTestimonialsBlock, AnimatedTestimonialsCommunityBlock, AttorneyProfile, AwardsStrip, BackgroundBeamsCTABlock, BeforeAfterGalleryGrid, BeforeAfterSlider, BlogGrid, CaseStudyDetailBlock, CommonPestsGrid, ContactColumns, ContactForm, ContactMinimal, ContactSplit, ContactVisual, ContactWithMap, CoverageRadiusBlock, CustomHtmlSection, DeveloperPartnersLogos, ElegantCarouselBlock, EmergencyCTAStrip, FAQAccordion, FAQTwoColumn, FacebookReviewEmbed, FeatureHighlightZigzag, FeaturedListingsGrid, FeaturesBento, FeaturesGrid, FeaturesModern, FeatureSpotlightBlock, FeatureStepsBlock, FinancingSection, FreeConsultationForm, GymClassSchedule, GymClassTypes, GymFacilityHighlights, GymFaq, GymMembershipTiers, GymPrograms, GymResultsStories, GymTrainers, Header, HeroAero3, HeroAuthority, HeroBlock, HeroChiropractor, HeroCleaning, HeroClinic, HeroDentist, HeroEmergency, HeroGym, HeroMinimalismBlock, HeroPestControl, HeroPool, HeroSaas, HeroShowcase, HeroV6Block, HeroWithGroupImagesBlock, HowItWorksSteps, LogoCloud, MaintenancePlans, MessengerStickyCTA, ModernHeroBlock, PatientFaq, PaymentOptionsStrip, Gallery4Block, GalleryGridBlock, PhotoGalleryGrid, PracticeAreasGrid, PricePreviewStrip, PricingComparisonTable, PricingSectionWithComparisonBlock, PricingTable, PromoCTASection, ReviewTrustBar, ReviewsGrid, SafetySection, ServiceAreaMap, StatsSection, TeamCarousel, TeamGrid, TeamShowcaseBlock, TestimonialsV2Block, TreatmentProcessTimeline, TrustBadgesGrid, TrustBar, WarrantyGuaranteeBlock, WhyChooseMe } from "@/components/shared/BlockRegistry";
 import { SECTION_NAV_MAP } from "@/lib/utils/blocks";
+import {
+  DEFAULT_GYM_CLASS_TYPES,
+  DEFAULT_GYM_FACILITY,
+  DEFAULT_GYM_FAQ,
+  DEFAULT_GYM_MEMBERSHIPS,
+  DEFAULT_GYM_PROGRAMS,
+  DEFAULT_GYM_RESULTS,
+  DEFAULT_GYM_SCHEDULE,
+  DEFAULT_GYM_TRAINERS,
+  DEFAULT_HERO_CHIROPRACTOR,
+  DEFAULT_HERO_DENTIST,
+  DEFAULT_HERO_CLINIC,
+  DEFAULT_HERO_CLEANING,
+  DEFAULT_HERO_POOL,
+  DEFAULT_HERO_PEST_CONTROL,
+} from "@/config/dashboard-config";
 
 export function normalizeToArray(value: unknown): any[] {
   if (Array.isArray(value)) return value;
@@ -17,19 +33,34 @@ export function normalizeToArray(value: unknown): any[] {
 export function renderSection(sectionId: string, data: any, brand: any, theme: string, contact: any, index: number, key: string) {
   const {
     hero = {},
+    heroShowcase = {},
     features = {},
+    featuresBento = {},
     testimonials = {},
+    animatedTestimonials = {},
+    testimonialsCommunity = {},
+    testimonialsV2 = {},
+    ctaBeams = {},
     practiceAreas = {},
     attorneyProfile = {},
     freeConsultation = {},
     heroEmergency = {},
+    heroAero3 = {},
+    heroMinimalism = {},
+    heroElegantCarousel = {},
+    heroModern = {},
+    heroGroupImages = {},
+    heroV6 = {},
     howItWorks = {},
     reviewTrustBar = {},
     featureHighlight = {},
     teamCarousel = {},
+    teamShowcase = {},
     patientFaq = {},
     footer = {},
     pricingTable = {},
+    pricingComparisonTable = {},
+    pricingSectionComparison = {},
     awardsStrip = {},
     blog = {},
     trustBadgesGrid = {},
@@ -42,6 +73,8 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
     emergencyCTA = {},
     maintenancePlans = {},
     beforeAfterGallery = {},
+    gallery4 = {},
+    galleryGrid = {},
     promoCTA = {},
     featuredListings = {},
     financing = {},
@@ -57,6 +90,18 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
     statsSection = {},
     faqAccordion = {},
     logoCloud = {},
+    customHtml = {},
+    gymPrograms = {},
+    gymSchedule = {},
+    gymMemberships = {},
+    gymTrainers = {},
+    gymResults = {},
+    gymFacility = {},
+    gymClassTypes = {},
+    gymFaq = {},
+    featureSteps = {},
+    featureSpotlight = {},
+    caseStudyDetail = {},
   } = data;
 
   const heroProps = {
@@ -79,16 +124,15 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
   };
 
   const heroChiropractorProps = {
-    ...heroProps,
-    title: hero.title ?? "Live Life Without the Pain.",
-    subtitle: hero.subtitle ?? "The most thorough adjustment you'll ever experience.",
-    primaryCTA: hero.primaryCTA ?? "Book Your First Visit",
-    secondaryCTA: hero.secondaryCTA ?? "See Our 5-Star Reviews",
+    title: hero.title ?? DEFAULT_HERO_CHIROPRACTOR.title,
+    subtitle: hero.subtitle ?? DEFAULT_HERO_CHIROPRACTOR.subtitle,
+    primaryCTA: hero.primaryCTA ?? DEFAULT_HERO_CHIROPRACTOR.primaryCTA,
+    secondaryCTA: hero.secondaryCTA ?? DEFAULT_HERO_CHIROPRACTOR.secondaryCTA,
     backgroundVideoUrl: hero.backgroundVideoUrl ?? "",
-    backgroundImage: hero.backgroundImage ?? "",
-    primaryCTAHref: hero.primaryCTAHref ?? brand.ctaHref ?? "/contact",
-    secondaryCTAHref: hero.secondaryCTAHref ?? "#reviews",
-    benefitText: hero.benefitText ?? hero.badgeText ?? "Natural Pain Relief",
+    backgroundImage: hero.backgroundImage ?? DEFAULT_HERO_CHIROPRACTOR.backgroundImage,
+    primaryCTAHref: hero.primaryCTAHref ?? brand.ctaHref ?? DEFAULT_HERO_CHIROPRACTOR.primaryCTAHref,
+    secondaryCTAHref: hero.secondaryCTAHref ?? DEFAULT_HERO_CHIROPRACTOR.secondaryCTAHref,
+    benefitText: hero.benefitText ?? hero.badgeText ?? DEFAULT_HERO_CHIROPRACTOR.benefitText,
     benefitIcon: hero.benefitIcon,
     benefitImageUrl: hero.benefitImageUrl,
     secondaryCTAIcon: hero.secondaryCTAIcon,
@@ -96,70 +140,71 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
   };
 
   const heroDentistProps = {
-    title: hero.title ?? "A Smile You'll Love to Share.",
-    subtitle: hero.subtitle ?? "Gentle, modern care for the whole family in [City Name].",
-    primaryCTA: hero.primaryCTA ?? "Book Appointment",
-    secondaryCTA: hero.secondaryCTA ?? "Patient Gallery",
-    imageUrl: hero.imageUrl ?? hero.backgroundImage ?? "",
-    primaryCTAHref: hero.primaryCTAHref ?? brand.ctaHref ?? "/contact",
-    secondaryCTAHref: hero.secondaryCTAHref ?? "#gallery",
+    title: hero.title ?? DEFAULT_HERO_DENTIST.title,
+    subtitle: hero.subtitle ?? DEFAULT_HERO_DENTIST.subtitle,
+    primaryCTA: hero.primaryCTA ?? DEFAULT_HERO_DENTIST.primaryCTA,
+    secondaryCTA: hero.secondaryCTA ?? DEFAULT_HERO_DENTIST.secondaryCTA,
+    imageUrl: hero.imageUrl ?? hero.backgroundImage ?? DEFAULT_HERO_DENTIST.imageUrl,
+    primaryCTAHref: hero.primaryCTAHref ?? brand.ctaHref ?? DEFAULT_HERO_DENTIST.primaryCTAHref,
+    secondaryCTAHref: hero.secondaryCTAHref ?? DEFAULT_HERO_DENTIST.secondaryCTAHref,
     cityName: hero.cityName,
-    benefitText: hero.benefitText ?? hero.badgeText ?? "Accepting New Patients",
+    benefitText: hero.benefitText ?? hero.badgeText ?? DEFAULT_HERO_DENTIST.benefitText,
     benefitIcon: hero.benefitIcon,
     benefitImageUrl: hero.benefitImageUrl,
   };
 
   const heroClinicProps = {
-    title: hero.title ?? "Advanced Care, Compassionate People.",
-    subtitle: hero.subtitle ?? "Leading multi-specialty medical center dedicated to your family's health.",
-    primaryCTA: hero.primaryCTA ?? "Find a Doctor",
-    secondaryCTA: hero.secondaryCTA ?? "Our Services",
-    backgroundImage: hero.backgroundImage ?? "",
-    primaryCTAHref: hero.primaryCTAHref ?? brand.ctaHref ?? "/contact",
-    secondaryCTAHref: hero.secondaryCTAHref ?? "#services",
-    benefitText: hero.benefitText ?? hero.badgeText ?? "Professional Healthcare",
+    title: hero.title ?? DEFAULT_HERO_CLINIC.title,
+    subtitle: hero.subtitle ?? DEFAULT_HERO_CLINIC.subtitle,
+    primaryCTA: hero.primaryCTA ?? DEFAULT_HERO_CLINIC.primaryCTA,
+    secondaryCTA: hero.secondaryCTA ?? DEFAULT_HERO_CLINIC.secondaryCTA,
+    backgroundImage: hero.backgroundImage ?? DEFAULT_HERO_CLINIC.backgroundImage,
+    primaryCTAHref: hero.primaryCTAHref ?? brand.ctaHref ?? DEFAULT_HERO_CLINIC.primaryCTAHref,
+    secondaryCTAHref: hero.secondaryCTAHref ?? DEFAULT_HERO_CLINIC.secondaryCTAHref,
+    benefitText: hero.benefitText ?? hero.badgeText ?? DEFAULT_HERO_CLINIC.benefitText,
     benefitIcon: hero.benefitIcon,
     benefitImageUrl: hero.benefitImageUrl,
   };
 
   const heroCleaningProps = {
-    title: hero.title ?? "A Cleaner Home, A Happier You.",
-    subtitle: hero.subtitle ?? "Professional, reliable cleaning services tailored to your needs.",
-    primaryCTA: hero.primaryCTA ?? "Get a Free Estimate",
-    backgroundImage: hero.backgroundImage ?? "",
-    primaryCTAHref: hero.primaryCTAHref ?? brand.ctaHref ?? "/contact",
-    secondaryCTA: hero.secondaryCTA ?? "View Pricing",
-    secondaryCTAHref: hero.secondaryCTAHref ?? "#pricing",
-    benefitText: hero.benefitText ?? hero.badgeText ?? "Professional Cleaning",
+    title: hero.title ?? DEFAULT_HERO_CLEANING.title,
+    subtitle: hero.subtitle ?? DEFAULT_HERO_CLEANING.subtitle,
+    primaryCTA: hero.primaryCTA ?? DEFAULT_HERO_CLEANING.primaryCTA,
+    singleImageUrl: hero.singleImageUrl ?? hero.backgroundImage ?? DEFAULT_HERO_CLEANING.singleImageUrl,
+    primaryCTAHref: hero.primaryCTAHref ?? brand.ctaHref ?? DEFAULT_HERO_CLEANING.primaryCTAHref,
+    secondaryCTA: hero.secondaryCTA ?? DEFAULT_HERO_CLEANING.secondaryCTA,
+    secondaryCTAHref: hero.secondaryCTAHref ?? DEFAULT_HERO_CLEANING.secondaryCTAHref,
+    benefitText: hero.benefitText ?? hero.badgeText ?? DEFAULT_HERO_CLEANING.benefitText,
     benefitIcon: hero.benefitIcon,
     benefitImageUrl: hero.benefitImageUrl,
   };
 
   const heroPoolProps = {
-    title: hero.title ?? "Perfectly Clear Water, All Season Long.",
-    subtitle: hero.subtitle ?? "Weekly maintenance, chemical balancing, and equipment repair.",
-    primaryCTA: hero.primaryCTA ?? "Schedule a Free Inspection",
-    backgroundImage: hero.backgroundImage ?? "",
-    primaryCTAHref: hero.primaryCTAHref ?? brand.ctaHref ?? "#inspection",
+    title: hero.title ?? DEFAULT_HERO_POOL.title,
+    subtitle: hero.subtitle ?? DEFAULT_HERO_POOL.subtitle,
+    primaryCTA: hero.primaryCTA ?? DEFAULT_HERO_POOL.primaryCTA,
+    backgroundImage: hero.backgroundImage ?? DEFAULT_HERO_POOL.backgroundImage,
+    primaryCTAHref: hero.primaryCTAHref ?? brand.ctaHref ?? DEFAULT_HERO_POOL.primaryCTAHref,
     secondaryCTA: hero.secondaryCTA ?? undefined,
     secondaryCTAHref: hero.secondaryCTAHref ?? "#services",
-    benefitText: hero.benefitText ?? hero.badgeText ?? "Pool & Spa Services",
+    benefitText: hero.benefitText ?? hero.badgeText ?? DEFAULT_HERO_POOL.benefitText,
     benefitIcon: hero.benefitIcon,
     benefitImageUrl: hero.benefitImageUrl,
   };
 
   const heroPestControlProps = {
-    title: hero.title ?? "Don't Let Pests Take Over Your Home.",
-    subtitle: hero.subtitle ?? "Eco-friendly, 24/7 emergency extermination services.",
-    primaryCTA: hero.primaryCTA ?? "Get a Free Estimate",
-    secondaryCTA: hero.secondaryCTA ?? "Bundle & Save",
-    backgroundImage: hero.backgroundImage ?? undefined,
-    primaryCTAHref: hero.primaryCTAHref ?? brand.ctaHref ?? "#estimate",
-    secondaryCTAHref: hero.secondaryCTAHref ?? "#pricing",
-    benefitText: hero.benefitText ?? hero.badgeText ?? "Rapid Response Team",
+    title: hero.title ?? DEFAULT_HERO_PEST_CONTROL.title,
+    subtitle: hero.subtitle ?? DEFAULT_HERO_PEST_CONTROL.subtitle,
+    primaryCTA: hero.primaryCTA ?? DEFAULT_HERO_PEST_CONTROL.primaryCTA,
+    secondaryCTA: hero.secondaryCTA ?? DEFAULT_HERO_PEST_CONTROL.secondaryCTA,
+    backgroundImage: hero.backgroundImage ?? DEFAULT_HERO_PEST_CONTROL.backgroundImage,
+    primaryCTAHref: hero.primaryCTAHref ?? brand.ctaHref ?? DEFAULT_HERO_PEST_CONTROL.primaryCTAHref,
+    secondaryCTAHref: hero.secondaryCTAHref ?? DEFAULT_HERO_PEST_CONTROL.secondaryCTAHref,
+    benefitText: hero.benefitText ?? hero.badgeText ?? DEFAULT_HERO_PEST_CONTROL.benefitText,
     benefitIcon: hero.benefitIcon,
     benefitImageUrl: hero.benefitImageUrl,
   };
+
 
   // SECTION_NAV_MAP imported from @/lib/utils/blocks
   const sectionNavMap = SECTION_NAV_MAP;
@@ -172,6 +217,7 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
     pool: <HeroPool key="hero" {...heroPoolProps} />,
     cleaning: <HeroCleaning key="hero" {...heroCleaningProps} />,
     "pest-control": <HeroPestControl key="hero" {...heroPestControlProps} />,
+    gym: <HeroGym key="hero" {...heroProps} />,
     startup: <HeroSaas key="hero" {...heroProps} />,
     generic: <HeroBlock key="hero" {...heroProps} />,
   };
@@ -193,6 +239,41 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
   let sectionContent: React.ReactNode = null;
 
   switch (sectionId) {
+    case "hero--aero-3":
+      sectionContent = (
+        <HeroAero3
+          key={key}
+          title={heroAero3.title}
+          subtitle={heroAero3.subtitle}
+          primaryCTA={heroAero3.primaryCTA}
+          primaryCTAHref={heroAero3.primaryCTAHref}
+          backgroundImage={heroAero3.backgroundImage}
+        />
+      );
+      break;
+    case "hero--elegant-carousel":
+      sectionContent = (
+        <ElegantCarouselBlock
+          key={key}
+          slides={Array.isArray(heroElegantCarousel.slides) ? heroElegantCarousel.slides : undefined}
+        />
+      );
+      break;
+    case "hero--minimalism":
+      sectionContent = (
+        <HeroMinimalismBlock
+          key={key}
+          brandName={heroMinimalism.brandName}
+          ctaText={heroMinimalism.ctaText}
+          kicker={heroMinimalism.kicker}
+          title={heroMinimalism.title}
+          subtitle={heroMinimalism.subtitle}
+          footerTag={heroMinimalism.footerTag}
+          footerHeading={heroMinimalism.footerHeading}
+          footerDesc={heroMinimalism.footerDesc}
+        />
+      );
+      break;
     case "hero": {
       // Dedicated hero component per theme (lookup map — no if/else chain)
       const dedicatedHero = HERO_BY_THEME[theme];
@@ -428,6 +509,38 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
           subtitle={teamCarousel.subtitle}
           members={normalizeToArray(teamCarousel.members)}
           linkText={teamCarousel.linkText}
+        />
+      );
+      break;
+    case "team--showcase":
+      sectionContent = (
+        <TeamShowcaseBlock
+          key={key}
+          members={Array.isArray(teamShowcase.members) ? teamShowcase.members : []}
+        />
+      );
+      break;
+    case "hero--modern":
+      sectionContent = (
+        <ModernHeroBlock
+          key={key}
+          {...heroModern}
+        />
+      );
+      break;
+    case "hero--group-images":
+      sectionContent = (
+        <HeroWithGroupImagesBlock
+          key={key}
+          {...heroGroupImages}
+        />
+      );
+      break;
+    case "hero--v6":
+      sectionContent = (
+        <HeroV6Block
+          key={key}
+          {...heroV6}
         />
       );
       break;
@@ -721,6 +834,143 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
         />
       );
       break;
+    case "services--bento":
+    case "services-bento":
+      sectionContent = (
+        <FeaturesBento
+          key={key}
+          title={featuresBento.title}
+          subtitle={featuresBento.subtitle}
+          items={normalizeToArray(featuresBento.items)}
+        />
+      );
+      break;
+    case "hero--showcase":
+    case "hero-showcase":
+      sectionContent = (
+        <HeroShowcase
+          key={key}
+          badge={heroShowcase.badge}
+          title={heroShowcase.title ?? hero.title ?? "Build trust from the first glance"}
+          subtitle={heroShowcase.subtitle ?? hero.subtitle ?? ""}
+          primaryCTA={heroShowcase.primaryCTA ?? hero.primaryCTA ?? "Get started"}
+          secondaryCTA={heroShowcase.secondaryCTA ?? hero.secondaryCTA ?? "See services"}
+          primaryCTAHref={heroShowcase.primaryCTAHref ?? hero.primaryCTAHref ?? "#contact"}
+          secondaryCTAHref={heroShowcase.secondaryCTAHref ?? hero.secondaryCTAHref ?? "#services"}
+          imageUrl={heroShowcase.imageUrl ?? hero.backgroundImage}
+          trustPoints={Array.isArray(heroShowcase.trustPoints) ? heroShowcase.trustPoints : []}
+          metrics={Array.isArray(heroShowcase.metrics) ? heroShowcase.metrics : []}
+        />
+      );
+      break;
+    case "pricing--comparison":
+    case "pricing-comparison-table":
+      sectionContent = (
+        <PricingComparisonTable
+          key={key}
+          features={Array.isArray(pricingComparisonTable.features) ? pricingComparisonTable.features : undefined}
+          plans={Array.isArray(pricingComparisonTable.plans) ? pricingComparisonTable.plans : undefined}
+          defaultPlan={pricingComparisonTable.defaultPlan}
+          defaultInterval={pricingComparisonTable.defaultInterval}
+          containerClassName={pricingComparisonTable.containerClassName}
+          buttonClassName={pricingComparisonTable.buttonClassName}
+        />
+      );
+      break;
+    case "pricing--feature-comparison":
+    case "pricing-section-with-comparison":
+      sectionContent = (
+        <PricingSectionWithComparisonBlock
+          key={key}
+          className={pricingSectionComparison.className}
+          badge={pricingSectionComparison.badge}
+          title={pricingSectionComparison.title}
+          subtitle={pricingSectionComparison.subtitle}
+          plans={Array.isArray(pricingSectionComparison.plans) ? pricingSectionComparison.plans : undefined}
+          features={Array.isArray(pricingSectionComparison.features) ? pricingSectionComparison.features : undefined}
+        />
+      );
+      break;
+    case "gym--programs":
+      sectionContent = (
+        <GymPrograms
+          key={key}
+          title={gymPrograms.title ?? DEFAULT_GYM_PROGRAMS.title}
+          subtitle={gymPrograms.subtitle ?? DEFAULT_GYM_PROGRAMS.subtitle}
+          items={Array.isArray(gymPrograms.items) && gymPrograms.items.length > 0 ? gymPrograms.items : DEFAULT_GYM_PROGRAMS.items}
+        />
+      );
+      break;
+    case "gym--schedule":
+      sectionContent = (
+        <GymClassSchedule
+          key={key}
+          title={gymSchedule.title ?? DEFAULT_GYM_SCHEDULE.title}
+          subtitle={gymSchedule.subtitle ?? DEFAULT_GYM_SCHEDULE.subtitle}
+          days={Array.isArray(gymSchedule.days) && gymSchedule.days.length > 0 ? gymSchedule.days : DEFAULT_GYM_SCHEDULE.days}
+        />
+      );
+      break;
+    case "gym--memberships":
+      sectionContent = (
+        <GymMembershipTiers
+          key={key}
+          title={gymMemberships.title ?? DEFAULT_GYM_MEMBERSHIPS.title}
+          subtitle={gymMemberships.subtitle ?? DEFAULT_GYM_MEMBERSHIPS.subtitle}
+          tiers={Array.isArray(gymMemberships.tiers) && gymMemberships.tiers.length > 0 ? gymMemberships.tiers : DEFAULT_GYM_MEMBERSHIPS.tiers}
+        />
+      );
+      break;
+    case "gym--trainers":
+      sectionContent = (
+        <GymTrainers
+          key={key}
+          title={gymTrainers.title ?? DEFAULT_GYM_TRAINERS.title}
+          subtitle={gymTrainers.subtitle ?? DEFAULT_GYM_TRAINERS.subtitle}
+          items={Array.isArray(gymTrainers.items) && gymTrainers.items.length > 0 ? gymTrainers.items : DEFAULT_GYM_TRAINERS.items}
+        />
+      );
+      break;
+    case "gym--results":
+      sectionContent = (
+        <GymResultsStories
+          key={key}
+          title={gymResults.title ?? DEFAULT_GYM_RESULTS.title}
+          subtitle={gymResults.subtitle ?? DEFAULT_GYM_RESULTS.subtitle}
+          stories={Array.isArray(gymResults.stories) && gymResults.stories.length > 0 ? gymResults.stories : DEFAULT_GYM_RESULTS.stories}
+        />
+      );
+      break;
+    case "gym--facility":
+      sectionContent = (
+        <GymFacilityHighlights
+          key={key}
+          title={gymFacility.title ?? DEFAULT_GYM_FACILITY.title}
+          subtitle={gymFacility.subtitle ?? DEFAULT_GYM_FACILITY.subtitle}
+          items={Array.isArray(gymFacility.items) && gymFacility.items.length > 0 ? gymFacility.items : DEFAULT_GYM_FACILITY.items}
+        />
+      );
+      break;
+    case "gym--class-types":
+      sectionContent = (
+        <GymClassTypes
+          key={key}
+          title={gymClassTypes.title ?? DEFAULT_GYM_CLASS_TYPES.title}
+          subtitle={gymClassTypes.subtitle ?? DEFAULT_GYM_CLASS_TYPES.subtitle}
+          items={Array.isArray(gymClassTypes.items) && gymClassTypes.items.length > 0 ? gymClassTypes.items : DEFAULT_GYM_CLASS_TYPES.items}
+        />
+      );
+      break;
+    case "gym--faq":
+      sectionContent = (
+        <GymFaq
+          key={key}
+          title={gymFaq.title ?? DEFAULT_GYM_FAQ.title}
+          subtitle={gymFaq.subtitle ?? DEFAULT_GYM_FAQ.subtitle}
+          items={Array.isArray(gymFaq.items) && gymFaq.items.length > 0 ? gymFaq.items : DEFAULT_GYM_FAQ.items}
+        />
+      );
+      break;
     case "gallery":
     case "gallery--grid":
       sectionContent = (
@@ -732,8 +982,28 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
         />
       );
       break;
+    case "gallery--carousel":
+      sectionContent = (
+        <Gallery4Block
+          key={key}
+          title={gallery4.title}
+          description={gallery4.description}
+          items={Array.isArray(gallery4.items) ? gallery4.items : []}
+        />
+      );
+      break;
+    case "gallery--grid":
+      sectionContent = (
+        <GalleryGridBlock
+          key={key}
+          badgeLabel={galleryGrid.badgeLabel}
+          title={galleryGrid.title}
+          subtitle={galleryGrid.subtitle}
+          images={Array.isArray(galleryGrid.images) ? galleryGrid.images : []}
+        />
+      );
+      break;
     case "case_study":
-    case "case_study--detail":
     case "before-after-gallery-grid":
       sectionContent = (
         <BeforeAfterGalleryGrid
@@ -746,6 +1016,24 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
         />
       );
       break;
+    case "case_study--detail": {
+      const csd = caseStudyDetail as any;
+      sectionContent = (
+        <CaseStudyDetailBlock
+          key={key}
+          title={csd.title}
+          subtitle={csd.subtitle}
+          clientName={csd.clientName}
+          industry={csd.industry}
+          imageUrl={csd.imageUrl}
+          problem={csd.problem}
+          solution={csd.solution}
+          results={csd.results}
+          metrics={csd.metrics}
+        />
+      );
+      break;
+    }
     case "cta":
     case "cta--banner":
     case "promo-cta-section":
@@ -893,9 +1181,88 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
         />
       );
       break;
+    case "testimonials--animated":
+      sectionContent = (
+        <AnimatedTestimonialsBlock
+          key={key}
+          testimonials={Array.isArray(animatedTestimonials.testimonials) ? animatedTestimonials.testimonials : undefined}
+          autoplay={Boolean(animatedTestimonials.autoplay)}
+          className={animatedTestimonials.className}
+        />
+      );
+      break;
+    case "testimonials--community":
+      sectionContent = (
+        <AnimatedTestimonialsCommunityBlock
+          key={key}
+          title={testimonialsCommunity.title}
+          subtitle={testimonialsCommunity.subtitle}
+          badgeText={testimonialsCommunity.badgeText}
+          testimonials={Array.isArray(testimonialsCommunity.testimonials) ? testimonialsCommunity.testimonials : undefined}
+          autoRotateInterval={testimonialsCommunity.autoRotateInterval}
+          trustedCompanies={Array.isArray(testimonialsCommunity.trustedCompanies) ? testimonialsCommunity.trustedCompanies : undefined}
+          trustedCompaniesTitle={testimonialsCommunity.trustedCompaniesTitle}
+          className={testimonialsCommunity.className}
+        />
+      );
+      break;
+    case "testimonials--v2":
+      sectionContent = (
+        <TestimonialsV2Block
+          key={key}
+          badge={testimonialsV2.badge}
+          title={testimonialsV2.title}
+          subtitle={testimonialsV2.subtitle}
+          items={normalizeToArray(testimonialsV2.items)}
+        />
+      );
+      break;
+    case "features--steps":
+      sectionContent = (
+        <FeatureStepsBlock
+          key={key}
+          title={featureSteps.title}
+          features={Array.isArray(featureSteps.features) ? featureSteps.features : undefined}
+          autoPlayInterval={featureSteps.autoPlayInterval}
+        />
+      );
+      break;
+    case "features--spotlight":
+      sectionContent = (
+        <FeatureSpotlightBlock
+          key={key}
+          {...featureSpotlight}
+        />
+      );
+      break;
+    case "cta--beams":
+      sectionContent = (
+        <BackgroundBeamsCTABlock
+          key={key}
+          title={ctaBeams.title}
+          subtitle={ctaBeams.subtitle}
+          ctaText={ctaBeams.ctaText}
+          ctaHref={ctaBeams.ctaHref}
+          inputPlaceholder={ctaBeams.inputPlaceholder}
+          showEmailInput={Boolean(ctaBeams.showEmailInput)}
+        />
+      );
+      break;
+    case "custom-html":
+      sectionContent = (
+        <CustomHtmlSection
+          key={key}
+          title={customHtml.title}
+          subtitle={customHtml.subtitle}
+          html={customHtml.html}
+          css={customHtml.css}
+        />
+      );
+      break;
     default:
       sectionContent = null;
   }
 
   return sectionContent;
 }
+

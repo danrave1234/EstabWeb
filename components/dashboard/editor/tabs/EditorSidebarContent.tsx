@@ -8,6 +8,7 @@ import {
 import { BLOCK_MAP } from "@/lib/utils/block-registry"
 import { slugify } from "@/lib/utils/blocks"
 import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo"
+import { getCustomHtmlSectionTitle } from "@/lib/utils/custom-html-editor"
 
 interface SidebarContentTabProps {
     setAiEditorOpen: (b: boolean) => void;
@@ -66,6 +67,13 @@ export function SidebarContentTab({
     project,
     mergedConfig
 }: SidebarContentTabProps) {
+    const getSectionDisplayLabel = (section: string): string => {
+        if (section === "custom-html") {
+            return getCustomHtmlSectionTitle((mergedConfig as Record<string, any>)?.customHtml as Record<string, unknown> | undefined)
+        }
+        return BLOCK_MAP[section]?.label ?? section.replace(/[-_]/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
+    }
+
     return (
         <div className="space-y-1">
             {/* AI Editor Banner */}
@@ -278,7 +286,7 @@ export function SidebarContentTab({
                 const heroIndex = activeSections.findIndex(s => s === 'hero' || s.startsWith('hero') || s === 'trust_badges');
                 if (sectionIndex === heroIndex) return null;
 
-                const sectionDisplayLabel = BLOCK_MAP[section]?.label ?? section.replace(/[-_]/g, ' ')
+                const sectionDisplayLabel = getSectionDisplayLabel(section)
                 if (sectionSearchQuery && !sectionDisplayLabel.toLowerCase().includes(sectionSearchQuery.toLowerCase())) return null
 
                 const isDragging = dragSectionIndex === sectionIndex
@@ -321,7 +329,7 @@ export function SidebarContentTab({
                             }}
                             className="flex-1 min-w-0 text-left"
                         >
-                            <p className="text-xs font-bold truncate">{BLOCK_MAP[section]?.label ?? section.replace(/[-_]/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</p>
+                            <p className="text-xs font-bold truncate">{sectionDisplayLabel}</p>
                             <p className="text-[9px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">{BLOCK_MAP[section]?.variant ?? 'Block'}</p>
                         </button>
                         <button

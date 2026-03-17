@@ -5,26 +5,66 @@ import { Zap } from "lucide-react"
 interface UpgradeButtonProps {
   projectId: string
   subscriptionStatus?: string | null
+  subscriptionPlanId?: string | null
   variant?: "sidebar" | "inline" | "badge"
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  free: { label: "Free", color: "text-amber-600 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20" },
-  trial: { label: "Trial", color: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20" },
-  active: { label: "Pro", color: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20" },
-  admin_granted: { label: "Admin Granted", color: "text-purple-600 bg-purple-500/10 border-purple-500/20" },
+const PLAN_LABELS: Record<string, string> = {
+  free: "Free",
+  basic: "Basic",
+  pro: "Pro",
+  ecommerce: "Ecommerce",
+  custom: "Custom",
 }
 
-const STATUS_BADGE: Record<string, { label: string; color: string }> = {
-  free: { label: "Free", color: "text-amber-600 bg-amber-500/10 border border-amber-500/20" },
-  trial: { label: "Trial", color: "text-emerald-600 bg-emerald-500/10 border border-emerald-500/20" },
-  active: { label: "Pro", color: "text-emerald-600 bg-emerald-500/10 border border-emerald-500/20" },
-  admin_granted: { label: "Pro", color: "text-purple-600 bg-purple-500/10 border border-purple-500/20" },
+const STATUS_STYLES: Record<string, { inline: string; badge: string }> = {
+  free: {
+    inline: "text-amber-600 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20",
+    badge: "text-amber-600 bg-amber-500/10 border border-amber-500/20",
+  },
+  trial: {
+    inline: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20",
+    badge: "text-emerald-600 bg-emerald-500/10 border border-emerald-500/20",
+  },
+  active: {
+    inline: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20",
+    badge: "text-emerald-600 bg-emerald-500/10 border border-emerald-500/20",
+  },
+  admin_granted: {
+    inline: "text-purple-600 bg-purple-500/10 border-purple-500/20",
+    badge: "text-purple-600 bg-purple-500/10 border border-purple-500/20",
+  },
 }
 
-export default function UpgradeButton({ projectId, subscriptionStatus = "free", variant = "inline" }: UpgradeButtonProps) {
-  const status = ((subscriptionStatus || "free").toLowerCase() as keyof typeof STATUS_LABELS)
-  const currentStatus = STATUS_LABELS[status] || STATUS_LABELS.free
+function normalizePlanId(planId?: string | null): keyof typeof PLAN_LABELS {
+  const id = (planId || "free").toLowerCase()
+  if (id in PLAN_LABELS) return id as keyof typeof PLAN_LABELS
+  return "free"
+}
+
+function displayLabelForStatus(status: string, planId: keyof typeof PLAN_LABELS): string {
+  if (status === "free") return "Free"
+  if (status === "trial") {
+    const planLabel = PLAN_LABELS[planId]
+    return planId === "free" ? "Trial" : `Trial ${planLabel}`
+  }
+  if (status === "admin_granted") {
+    const planLabel = PLAN_LABELS[planId]
+    return planId === "free" ? "Admin Granted" : `Admin ${planLabel}`
+  }
+  return PLAN_LABELS[planId]
+}
+
+export default function UpgradeButton({
+  projectId,
+  subscriptionStatus = "free",
+  subscriptionPlanId = null,
+  variant = "inline",
+}: UpgradeButtonProps) {
+  const status = ((subscriptionStatus || "free").toLowerCase() as keyof typeof STATUS_STYLES)
+  const statusStyle = STATUS_STYLES[status] || STATUS_STYLES.free
+  const planId = normalizePlanId(subscriptionPlanId)
+  const label = displayLabelForStatus(status, planId)
 
   const isUpgradable = status === "free" || status === "trial"
 
@@ -34,11 +74,10 @@ export default function UpgradeButton({ projectId, subscriptionStatus = "free", 
   }
 
   if (variant === "badge") {
-    const badge = STATUS_BADGE[status] || STATUS_BADGE.free
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${badge.color}`}>
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${statusStyle.badge}`}>
         <Zap className="w-2.5 h-2.5" />
-        {badge.label}
+        {label}
       </span>
     )
   }
@@ -48,10 +87,10 @@ export default function UpgradeButton({ projectId, subscriptionStatus = "free", 
       <button
         onClick={handleUpgrade}
         disabled={!isUpgradable}
-        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors disabled:opacity-50 border ${currentStatus.color}`}
+        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors disabled:opacity-50 border ${statusStyle.inline}`}
       >
         <Zap className="w-3.5 h-3.5" />
-        {currentStatus.label}
+        {label}
       </button>
     )
   }

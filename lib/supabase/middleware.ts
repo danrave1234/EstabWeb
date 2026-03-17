@@ -1,6 +1,26 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+function copyCookies(from: NextResponse, to: NextResponse) {
+  for (const c of from.cookies.getAll()) to.cookies.set(c)
+}
+
+function isSupabaseAuthCookieName(name: string) {
+  return name === 'supabase-auth-token' || (name.startsWith('sb-') && name.includes('-auth-token'))
+}
+
+function clearSupabaseAuthCookies(request: NextRequest, response: NextResponse) {
+  for (const cookie of request.cookies.getAll()) {
+    if (!isSupabaseAuthCookieName(cookie.name)) continue
+    response.cookies.set(cookie.name, '', {
+      path: '/',
+      maxAge: 0,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    })
+  }
+}
+
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request })
 
@@ -54,20 +74,35 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: We must call getUser() on protected/admin/auth routes to reliably trigger token refresh
   // before it hits Server Components, which cannot set cookies.
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  if (userError) {
+    console.warn('[auth middleware] getUser failed; clearing auth cookies:', userError.message)
+
+    // Keep the user on /login but force-reset stale cookies.
+    if (path === '/login') {
+      clearSupabaseAuthCookies(request, response)
+      return response
+    }
+
+    const redirect = NextResponse.redirect(new URL('/login?recovered=1', request.url))
+    copyCookies(response, redirect)
+    clearSupabaseAuthCookies(request, redirect)
+    return redirect
+  }
 
   // Handle /admin routes
   if (isAdminRoute) {
     if (!user) {
       const redirect = NextResponse.redirect(new URL('/login', request.url))
-      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      copyCookies(response, redirect)
+      clearSupabaseAuthCookies(request, redirect)
       return redirect
     }
 
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
     if (profile?.role !== 'admin' && profile?.role !== 'sub_admin') {
       const redirect = NextResponse.redirect(new URL('/dashboard', request.url))
-      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      copyCookies(response, redirect)
       return redirect
     }
 
@@ -78,13 +113,14 @@ export async function updateSession(request: NextRequest) {
   if (isProtectedRoute) {
     if (!user) {
       const redirect = NextResponse.redirect(new URL('/login', request.url))
-      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      copyCookies(response, redirect)
+      clearSupabaseAuthCookies(request, redirect)
       return redirect
     }
     // Block unverified email users from accessing protected features
     if (!user.email_confirmed_at) {
       const redirect = NextResponse.redirect(new URL('/auth/verify-email', request.url))
-      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      copyCookies(response, redirect)
       return redirect
     }
     return response
@@ -98,15 +134,15 @@ export async function updateSession(request: NextRequest) {
         // Use isAdminHost to redirect appropriately
         if (isAdminHost) {
           const redirect = NextResponse.redirect(new URL('/', request.url))
-          for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+          copyCookies(response, redirect)
           return redirect
         }
         const redirect = NextResponse.redirect(new URL('/admin', request.url))
-        for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+        copyCookies(response, redirect)
         return redirect
       }
       const redirect = NextResponse.redirect(new URL('/dashboard', request.url))
-      for (const c of response.cookies.getAll()) redirect.cookies.set(c)
+      copyCookies(response, redirect)
       return redirect
     }
   }

@@ -101,14 +101,20 @@ export default function HeroBrightClean({
                 {/* Floating effect for the image */}
                 <div className="absolute inset-0 bg-cyan-400/10 rounded-full blur-3xl animate-pulse" />
                 <div className="relative w-full h-full animate-float">
-                  <Image
-                    src={backgroundImage}
-                    alt={title}
-                    fill
-                    className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.15)]"
-                    sizes="(max-width: 1024px) 100vw, 40vw"
-                    priority
-                  />
+                  {backgroundImage ? (
+                    <Image
+                      src={backgroundImage}
+                      alt={title}
+                      fill
+                      className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.15)]"
+                      sizes="(max-width: 1024px) 100vw, 40vw"
+                      priority
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-cyan-100/50 flex items-center justify-center rounded-2xl">
+                      <DynamicIcon name="Image" className="w-12 h-12 text-cyan-200" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

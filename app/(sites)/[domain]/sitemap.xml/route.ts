@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { getSiteConfigWithProject } from "@/lib/utils/site-config";
 import { normalizePagesWithDefaults, canUseMultiPage, getMaxPagesForProject, getPlanLimits, isLegalPageSlug } from "@/lib/utils/site-pages";
+import { isProPlan } from "@/lib/subscription";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -12,20 +13,28 @@ export async function GET(
 ) {
   const { domain } = await params;
   const heads = await headers();
-  const host = heads.get("host") || domain;
-  const origin = `https://${host}`;
+  const host = (heads.get("host") || domain).toLowerCase();
+  const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase();
 
   const { config, project } = await getSiteConfigWithProject(domain, heads);
+  const preferredHost =
+    project?.custom_domain && isProPlan(project)
+      ? project.custom_domain.toLowerCase()
+      : project?.subdomain
+        ? `${project.subdomain}.${ROOT_DOMAIN}`.toLowerCase()
+        : host;
+  const origin = `https://${preferredHost}`;
 
   if (!config) {
     return new NextResponse("Not found", { status: 404 });
   }
 
+  const lastmod = new Date().toISOString().split("T")[0];
   const pages = normalizePagesWithDefaults(config?.pages);
 
   // Always include home
-  const urls: { loc: string; priority: string; changefreq: string }[] = [
-    { loc: origin, priority: "1.0", changefreq: "weekly" },
+  const urls: { loc: string; priority: string; lastmod: string }[] = [
+    { loc: origin, priority: "1.0", lastmod },
   ];
 
   // Add sub-pages if plan allows
@@ -40,14 +49,14 @@ export async function GET(
       urls.push({
         loc: `${origin}/${page.slug}`,
         priority: "0.8",
-        changefreq: "weekly",
+        lastmod,
       });
     }
   }
 
   // Always include legal pages
   for (const slug of ["privacy", "terms", "cookies"]) {
-    urls.push({ loc: `${origin}/${slug}`, priority: "0.3", changefreq: "yearly" });
+    urls.push({ loc: `${origin}/${slug}`, priority: "0.3", lastmod });
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -56,7 +65,7 @@ ${urls
   .map(
     (u) => `  <url>
     <loc>${u.loc}</loc>
-    <changefreq>${u.changefreq}</changefreq>
+    <lastmod>${u.lastmod}</lastmod>
     <priority>${u.priority}</priority>
   </url>`
   )

@@ -27,8 +27,19 @@ async function markEventProcessed(
   const { error } = await supabase
     .from('processed_webhook_events')
     .insert({ event_id: eventId, event_type: eventType })
-  // unique violation means we already handled it
-  return !!error
+  if (!error) return false
+
+  // Unique violation means we already handled this event.
+  if ((error as any).code === '23505') return true
+
+  // Any other insert error should not block payment activation.
+  console.error('[paymongo webhook] Failed to persist idempotency marker:', {
+    eventId,
+    eventType,
+    code: (error as any).code,
+    message: (error as any).message,
+  })
+  return false
 }
 
 // ---------------------------------------------------------------------------
@@ -315,7 +326,7 @@ async function handleCheckoutSessionPaid(
     const planId = meta?.plan_id || 'ph_monthly'
     const planConfig = getPlan(planId)
 
-    await supabase.from('projects').update({
+    const { error: updateError } = await supabase.from('projects').update({
       subscription_status: 'active',
       subscription_ends_at: periodEnd.toISOString(),
       has_paid_initial: true,
@@ -333,6 +344,10 @@ async function handleCheckoutSessionPaid(
       subscription_plan_id: planId,
       subscription_interval: meta?.interval || 'monthly',
     }).eq('id', projectId)
+    if (updateError) {
+      console.error('[webhook] checkout_session.payment.paid: failed to update project:', updateError)
+      return NextResponse.json({ error: updateError.message }, { status: 500 })
+    }
 
     if (isUpgrade) {
       console.log(`[webhook] Upgrade activated: ${meta?.previous_plan_id} → ${planId}, carry-over: ${remainingDays}d, new end: ${periodEnd.toISOString()}`)
@@ -389,7 +404,7 @@ async function handleSubscriptionInvoicePaid(
     const now = new Date()
     const periodEnd = computePeriodEnd(invoice?.attributes)
 
-    await supabase.from('projects').update({
+    const { error: updateError } = await supabase.from('projects').update({
       subscription_status: 'active',
       subscription_ends_at: periodEnd.toISOString(),
       has_paid_initial: true,
@@ -404,6 +419,10 @@ async function handleSubscriptionInvoicePaid(
       publish_date: null,
       publish_period_start: now.toISOString(),
     }).eq('id', proj.id)
+    if (updateError) {
+      console.error('[webhook] subscription.invoice.paid: failed to update project:', updateError)
+      return NextResponse.json({ error: updateError.message }, { status: 500 })
+    }
 
     await logPayment(supabase, {
       project_id: proj.id,
@@ -448,7 +467,7 @@ async function handleSubscriptionUnpaid(
       await removeDomainFromVercel(proj.custom_domain)
     }
 
-    await supabase.from('projects').update({
+    const { error: updateError } = await supabase.from('projects').update({
       subscription_status: 'free',
       subscription_plan_id: 'free',
       custom_domain: null,
@@ -456,6 +475,10 @@ async function handleSubscriptionUnpaid(
       publish_limit: 5,
       publish_limit_daily: 1,
     }).eq('id', proj.id)
+    if (updateError) {
+      console.error('[webhook] subscription.unpaid: failed to downgrade project:', updateError)
+      return NextResponse.json({ error: updateError.message }, { status: 500 })
+    }
 
     console.log('[webhook] subscription.unpaid: downgraded project to free', proj.id)
     return NextResponse.json({ received: true })

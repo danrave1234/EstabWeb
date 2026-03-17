@@ -105,7 +105,7 @@ export default function DomainManage({ project }: DomainManageProps) {
         </button>
       </div>
       <p className="text-[10px] text-muted-foreground">
-        Enter the bare domain (e.g. <span className="font-mono">acmecorp.com</span>). The client must point their DNS CNAME to <span className="font-mono">cname.vercel-dns.com</span>.
+        Enter the bare domain (e.g. <span className="font-mono">acmecorp.com</span>). The client must set <span className="font-mono">A @</span> to <span className="font-mono">76.76.21.21</span> and <span className="font-mono">CNAME www</span> to <span className="font-mono">cname.vercel-dns.com</span>.
       </p>
     </div>
   )

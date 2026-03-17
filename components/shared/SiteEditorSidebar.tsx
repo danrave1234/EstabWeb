@@ -38,6 +38,14 @@ const SECTIONS = [
   { id: "certifications", label: "Certifications" },
   { id: "delivery-coverage", label: "Delivery Coverage" },
   { id: "programs-grid", label: "Programs Grid" },
+  { id: "gym--programs", label: "Gym Programs" },
+  { id: "gym--schedule", label: "Gym Class Schedule" },
+  { id: "gym--memberships", label: "Gym Membership Tiers" },
+  { id: "gym--class-types", label: "Gym Class Types" },
+  { id: "gym--trainers", label: "Gym Trainers" },
+  { id: "gym--results", label: "Gym Results Stories" },
+  { id: "gym--facility", label: "Gym Facility Highlights" },
+  { id: "gym--faq", label: "Gym FAQ" },
   { id: "faculty-grid", label: "Faculty Grid" },
   { id: "enrollment-process", label: "Enrollment Process" },
   { id: "patient-faq", label: "Patient FAQ" },
@@ -84,6 +92,7 @@ const HERO_OPTIONS = [
   { value: "luxury-soft", label: "Salon" },
   { value: "academic-clean", label: "School" },
   { value: "hvac-urgent", label: "HVAC" },
+  { value: "gym", label: "Gym" },
   { value: "ecommerce", label: "E-commerce" },
 ];
 
@@ -131,6 +140,9 @@ const COLOR_THEMES = [
   { value: "tropical-teal", label: "Tropical Teal", primary: "#008080", swatch: "linear-gradient(90deg,#008080 0%,#f4a261 100%)" },
   { value: "luxury-black-gold", label: "Luxury Black + Gold", primary: "#111111", swatch: "linear-gradient(90deg,#111111 0%,#c6a75e 100%)" },
   { value: "facebook-blue", label: "Facebook Blue", primary: "#1877f2", swatch: "linear-gradient(90deg,#1877f2 0%,#42a5f5 100%)" },
+  { value: "gym-boutique", label: "Gym Boutique", primary: "#7c3aed", swatch: "linear-gradient(90deg,#7c3aed 0%,#f59e0b 100%)" },
+  { value: "gym-hardcore", label: "Gym Hardcore", primary: "#dc2626", swatch: "linear-gradient(90deg,#111827 0%,#dc2626 100%)" },
+  { value: "gym-functional", label: "Gym Functional", primary: "#0f766e", swatch: "linear-gradient(90deg,#0f766e 0%,#84cc16 100%)" },
   { value: "nebula", label: "Nebula", primary: "#6c5ce7" },
   { value: "flow", label: "Flow", primary: "#4834d4" },
   { value: "mono", label: "Mono", primary: "#000000" },
@@ -365,6 +377,7 @@ export default function SiteEditorSidebar() {
                             updateData({ ...data, brand: { ...data.brand, logoUrl: url } });
                           }}
                         />
+                        <p className="text-[10px] text-amber-500 leading-snug">⚠️ Use a <strong>PNG or SVG with a transparent background</strong> — logos with a solid background will show a black box in the header.</p>
                       </div>
                     </div>
                   </div>
@@ -562,6 +575,7 @@ export default function SiteEditorSidebar() {
                             updateData({ ...data, brand: { ...data.brand, logoUrl: url } });
                           }}
                         />
+                        <p className="text-[10px] text-amber-500 leading-snug">⚠️ Use a <strong>PNG or SVG with a transparent background</strong> — logos with a solid background will show a black box in the header.</p>
                       </div>
                     </div>
                   </div>
@@ -986,8 +1000,8 @@ export default function SiteEditorSidebar() {
                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                       <PanelTop className="w-4 h-4 text-primary" /> Header Style
                     </h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      {["solid", "floating"].map((style) => (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {["solid", "floating", "tubelight", "megamenu"].map((style) => (
                         <button
                           key={style}
                           onClick={() => updateData({ ...data, headerStyle: style })}
@@ -1034,9 +1048,9 @@ export default function SiteEditorSidebar() {
                   {[
                     { title: "Hero & Identity", filter: (s: any) => s.id.includes('hero') || s.id === 'brand' },
                     { title: "Trust & Social", filter: (s: any) => s.id.includes('trust') || s.id.includes('review') || s.id.includes('award') || s.id.includes('certifications') || s.id.includes('facebook') },
-                    { title: "Services & Features", filter: (s: any) => s.id.includes('feature') || s.id.includes('service') || s.id.includes('practice') || s.id.includes('program') || s.id.includes('project') || s.id.includes('package') || s.id === 'ac-types-grid' || s.id === 'financing-section' || s.id === 'developer-partners' },
-                    { title: "Process & Info", filter: (s: any) => s.id.includes('how-it-works') || s.id.includes('delivery') || s.id.includes('enrollment') || s.id.includes('faq') || s.id.includes('blog') || s.id === 'why-choose-us' || s.id === 'treatment-process' },
-                    { title: "Team & Profiles", filter: (s: any) => s.id.includes('team') || s.id.includes('attorney') || s.id.includes('faculty') || s.id === 'why-choose-me' },
+                    { title: "Services & Features", filter: (s: any) => s.id.includes('feature') || s.id.includes('service') || s.id.includes('practice') || s.id.includes('program') || s.id.includes('project') || s.id.includes('package') || s.id.includes('membership') || s.id.includes('class') || s.id === 'ac-types-grid' || s.id === 'financing-section' || s.id === 'developer-partners' },
+                    { title: "Process & Info", filter: (s: any) => s.id.includes('how-it-works') || s.id.includes('delivery') || s.id.includes('enrollment') || s.id.includes('faq') || s.id.includes('blog') || s.id.includes('schedule') || s.id === 'why-choose-us' || s.id === 'treatment-process' || s.id === 'gym--faq' },
+                    { title: "Team & Profiles", filter: (s: any) => s.id.includes('team') || s.id.includes('attorney') || s.id.includes('faculty') || s.id === 'why-choose-me' || s.id === 'gym--trainers' },
                     { title: "Conversion & Contact", filter: (s: any) => s.id.includes('contact') || s.id.includes('booking') || s.id.includes('consultation') || s.id.includes('messenger') || s.id.includes('pricing') || s.id.includes('promo') || s.id.includes('payment') || s.id.includes('area-map') || s.id.includes('coverage-radius') || s.id === 'emergency-cta-strip' || s.id === 'price-preview-strip' || s.id === 'maintenance-plans' || s.id === 'promo-cta-section' },
                   ].map((group) => (
                     <div key={group.title} className="space-y-3">
@@ -1060,7 +1074,9 @@ export default function SiteEditorSidebar() {
                         s.id === 'before-after-slider' ||
                         s.id === 'before-after-gallery-grid' ||
                         s.id === 'common-pests' ||
-                        s.id === 'safety-section'
+                        s.id === 'safety-section' ||
+                        s.id === 'gym--results' ||
+                        s.id === 'gym--facility'
                       ).map(({ id, label }) => (
                         <SectionToggle key={id} id={id} label={label} activeSections={activeSections} onToggle={toggleSection} />
                       ))}
@@ -1177,6 +1193,9 @@ export default function SiteEditorSidebar() {
                       <option value="structured-split">Structured Split (School)</option>
                       <option value="hvac-urgent">HVAC Urgent (Split)</option>
                       <option value="hvac-blue">HVAC Blue (Modern)</option>
+                      <option value="boutique">Gym Boutique</option>
+                      <option value="hardcore">Gym Hardcore</option>
+                      <option value="functional">Gym Functional</option>
                     </select>
                   </div>
                   <div className="space-y-1">

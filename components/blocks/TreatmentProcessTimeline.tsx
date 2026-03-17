@@ -66,7 +66,7 @@ export default function TreatmentProcessTimeline({ title, subtitle, steps }: Tre
                       )}
                     </div>
                     {/* Step Number Badge */}
-                    <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 w-8 h-8 sm:w-12 sm:h-12 bg-accent text-accent-foreground rounded-2xl flex items-center justify-center text-xs sm:text-lg font-black shadow-2xl z-20 transform -rotate-12 border-4 border-background">
+                    <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 w-8 h-8 sm:w-12 sm:h-12 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center text-xs sm:text-lg font-black shadow-2xl z-20 transform -rotate-12 border-4 border-background">
                       {index + 1}
                     </div>
                   </div>

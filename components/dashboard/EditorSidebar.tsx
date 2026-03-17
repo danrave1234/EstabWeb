@@ -16,7 +16,11 @@ import {
   Trash2,
   GripVertical,
   CreditCard,
-  Send
+  Send,
+  EyeOff,
+  Eye,
+  Archive,
+  AlertTriangle,
 } from "lucide-react"
 import { GENRE_LABELS } from "@/config/presets"
 import { formatSectionLabel } from "@/config/dashboard-config"
@@ -43,6 +47,19 @@ interface EditorSidebarProps {
   dropSectionIndex: number | null
   ensureStringArray: (val: unknown) => string[]
   autoSaveSection: (id: string, val: any) => void
+  addSection: (id: string) => void
+  moveToSectionIndex: (from: number, to: number) => void
+  removeSectionAtIndex: (idx: number) => void
+  updatePages: (pages: any[]) => void
+  pages: any[]
+  selectedPageIndex: number
+  setSelectedPageIndex: (i: number) => void
+  canUsePages: boolean
+  isHomePage: boolean
+  scrollToSection: (id: string, idx: number) => void
+  setActivePreviewSection: (id: string | null) => void
+  lockPreviewHighlight: (id: string | null) => void
+  activePreviewSection: string | null
 }
 
 import { Search, X, Layers, Component } from "lucide-react"
@@ -109,73 +126,55 @@ export default function EditorSidebar({
   dragSectionIndex,
   dropSectionIndex,
   ensureStringArray,
-  autoSaveSection
+  autoSaveSection,
+  addSection,
+  moveToSectionIndex,
+  removeSectionAtIndex,
+  updatePages,
+  pages,
+  selectedPageIndex,
+  setSelectedPageIndex,
+  canUsePages,
+  isHomePage,
+  scrollToSection,
+  setActivePreviewSection,
+  lockPreviewHighlight,
+  activePreviewSection
 }: EditorSidebarProps) {
   const [searchQuery, setSearchQuery] = React.useState("")
   const [addSectionOpen, setAddSectionOpen] = React.useState(false)
 
-  const addSection = (id: string) => {
-    const next = [...activeSections, id]
-    const sectionKey = sectionIdToKey(id)
+  // Danger Zone state
+  const [dangerConfirm, setDangerConfirm] = React.useState<"disable" | "archive" | null>(null)
+  const [dangerLoading, setDangerLoading] = React.useState(false)
+  const [siteStatus, setSiteStatus] = React.useState<string>(project?.site_status || "active")
 
-    // Default data mapping
-    const defaultDataMap: Record<string, any> = {
-      'awards': DEFAULT_AWARDS_STRIP,
-      'certifications': DEFAULT_AWARDS_STRIP,
-      'testimonials': DEFAULT_TESTIMONIALS,
-      'faq-accordion': DEFAULT_FAQ_ACCORDION,
-      'blog': DEFAULT_BLOG,
-      'before-after-gallery-grid': DEFAULT_BEFORE_AFTER_GALLERY,
-      'how-it-works': DEFAULT_HOW_IT_WORKS,
-      'practice-areas': DEFAULT_PRACTICE_AREAS,
-      'treatment-process': DEFAULT_TREATMENT_PROCESS,
-      'common-pests': DEFAULT_COMMON_PESTS,
-      'featured-properties-grid': DEFAULT_FEATURED_LISTINGS,
-      'developer-partners': DEFAULT_DEVELOPER_PARTNERS,
-      'review-trust-bar': DEFAULT_REVIEW_TRUST_BAR,
-      'financing-section': DEFAULT_FINANCING,
-      'ac-types-grid': DEFAULT_AC_TYPES,
-      'price-preview-strip': DEFAULT_PRICE_PREVIEW,
-      'pricing': DEFAULT_PRICING_TABLE,
-      'maintenance-plans': DEFAULT_MAINTENANCE_PLANS,
-      'facebook-review-embed': DEFAULT_FACEBOOK_REVIEW_EMBED,
-      'why-choose-me': DEFAULT_WHY_CHOOSE_ME,
-      'service-area-map': DEFAULT_SERVICE_AREA_MAP,
-      'logo-cloud': DEFAULT_LOGO_CLOUD,
-      'delivery-coverage': DEFAULT_DELIVERY_COVERAGE,
+  const handleSiteStatusChange = async (newStatus: "disabled" | "active" | "archived") => {
+    if (!project?.id) return
+    setDangerLoading(true)
+    setDangerConfirm(null)
+    try {
+      const res = await fetch(`/api/project/${project.id}/site-status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || "Failed to update site status")
+      } else {
+        setSiteStatus(newStatus)
+      }
+    } catch {
+      alert("Network error")
+    } finally {
+      setDangerLoading(false)
     }
-
-    const defaultData = defaultDataMap[id] || {}
-
-    setModified((m: any) => ({
-      ...m,
-      activeSections: next,
-      [sectionKey]: defaultData
-    }))
-    autoSaveSection('activeSections', next)
-    setAddSectionOpen(false)
-    setSelectedSection(id)
   }
 
   const filteredSections = activeSections
     .filter((s: string) => s !== 'hero')
     .filter((s: string) => s.replace(/-/g, ' ').toLowerCase().includes(searchQuery.toLowerCase()))
-
-  const moveTo = (fromIndex: number, toIndex: number) => {
-    if (fromIndex === toIndex) return
-    const next = [...activeSections]
-    const [removed] = next.splice(fromIndex, 1)
-    next.splice(toIndex, 0, removed)
-    setModified((m: any) => ({ ...m, activeSections: next }))
-    autoSaveSection('activeSections', next)
-  }
-
-  const removeSection = (idx: number) => {
-    const next = [...activeSections]
-    next.splice(idx, 1)
-    setModified((m: any) => ({ ...m, activeSections: next }))
-    autoSaveSection('activeSections', next)
-  }
 
   return (
     <aside className="w-[320px] border-r border-border bg-background flex flex-col shrink-0 shadow-xl z-20">
@@ -330,7 +329,7 @@ export default function EditorSidebar({
                   onDrop={(e) => {
                     e.preventDefault()
                     if (dragSectionIndex !== null && dragSectionIndex !== idx) {
-                      moveTo(dragSectionIndex, idx)
+                      moveToSectionIndex(dragSectionIndex, idx)
                     }
                     setDragSectionIndex(null)
                     setDropSectionIndex(null)
@@ -360,7 +359,7 @@ export default function EditorSidebar({
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
-                      removeSection(idx)
+                      removeSectionAtIndex(idx)
                     }}
                     className="p-2 opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-lg shadow-red-500/10 z-20"
                     title="Remove Section"
@@ -482,6 +481,104 @@ export default function EditorSidebar({
                 <p className="text-[10px] opacity-70 truncate uppercase tracking-wider font-medium">Discard unsaved</p>
               </div>
             </button>
+
+            {/* Danger Zone */}
+            <div className="pt-4 px-3 py-2 text-[10px] font-black text-red-500/70 uppercase tracking-[0.2em] flex items-center gap-1.5">
+              <AlertTriangle className="w-3 h-3" /> Danger Zone
+            </div>
+            <div className="mx-0 rounded-xl border border-red-200 bg-red-50/50 p-3 space-y-3">
+              <p className="text-[10px] text-red-700/70 leading-relaxed">
+                Site is currently{" "}
+                <span className="font-bold capitalize">{siteStatus}</span>.
+              </p>
+
+              {siteStatus === "active" && (
+                <>
+                  <button
+                    onClick={() => setDangerConfirm("disable")}
+                    disabled={dangerLoading}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 text-xs font-semibold hover:bg-amber-100 disabled:opacity-50 transition-colors"
+                  >
+                    <EyeOff className="w-3.5 h-3.5 shrink-0" />
+                    Take site offline temporarily
+                  </button>
+                  <button
+                    onClick={() => setDangerConfirm("archive")}
+                    disabled={dangerLoading}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-red-300 bg-red-50 text-red-800 text-xs font-semibold hover:bg-red-100 disabled:opacity-50 transition-colors"
+                  >
+                    <Archive className="w-3.5 h-3.5 shrink-0" />
+                    Archive site
+                  </button>
+                </>
+              )}
+
+              {siteStatus === "disabled" && (
+                <button
+                  onClick={() => handleSiteStatusChange("active")}
+                  disabled={dangerLoading}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 text-xs font-semibold hover:bg-emerald-100 disabled:opacity-50 transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5 shrink-0" />
+                  Bring site back online
+                </button>
+              )}
+
+              {siteStatus === "archived" && (
+                <p className="text-[10px] text-red-700/70 italic">
+                  This site is archived. Contact support to restore it.
+                </p>
+              )}
+
+              {/* Confirmation panels */}
+              {dangerConfirm === "disable" && (
+                <div className="p-2 rounded-lg border border-amber-400 bg-amber-50 space-y-2">
+                  <p className="text-[10px] font-semibold text-amber-900">
+                    Your website will show an offline page to visitors. You can re-enable it at any time.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleSiteStatusChange("disabled")}
+                      disabled={dangerLoading}
+                      className="px-2 py-1 rounded border border-amber-500 bg-amber-500 text-white text-[10px] font-bold hover:opacity-90 disabled:opacity-50"
+                    >
+                      {dangerLoading ? "Saving…" : "Confirm"}
+                    </button>
+                    <button
+                      onClick={() => setDangerConfirm(null)}
+                      disabled={dangerLoading}
+                      className="px-2 py-1 rounded border border-border text-[10px] hover:bg-muted disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {dangerConfirm === "archive" && (
+                <div className="p-2 rounded-lg border border-red-400 bg-red-50 space-y-2">
+                  <p className="text-[10px] font-semibold text-red-900">
+                    Archiving removes your custom domain and makes the site inaccessible. Only an admin can restore it.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleSiteStatusChange("archived")}
+                      disabled={dangerLoading}
+                      className="px-2 py-1 rounded border border-red-600 bg-red-600 text-white text-[10px] font-bold hover:opacity-90 disabled:opacity-50"
+                    >
+                      {dangerLoading ? "Saving…" : "Yes, archive"}
+                    </button>
+                    <button
+                      onClick={() => setDangerConfirm(null)}
+                      disabled={dangerLoading}
+                      className="px-2 py-1 rounded border border-border text-[10px] hover:bg-muted disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -25,14 +25,18 @@ export default function HeroFullScreen({
 }: HeroAuthorityProps) {
   return (
       <Reveal as="section" className="relative h-[100vh] min-h-[600px] w-full flex items-center justify-center overflow-hidden">
-        <Image
-          src={backgroundImage}
-          alt={title}
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
+        {backgroundImage ? (
+          <Image
+            src={backgroundImage}
+            alt={title}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
+          />
+        ) : (
+          <div className="absolute inset-0 bg-muted flex items-center justify-center" />
+        )}
         <div className="absolute inset-0 bg-black/40 z-10" />
         
         <div className="relative z-20 container mx-auto px-4 text-center text-white space-y-12">

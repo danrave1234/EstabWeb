@@ -11,9 +11,10 @@ interface Props {
         PLANS: any
         ENABLE_ANNUAL_PLANS: boolean
     }
+    notice?: string
 }
 
-export default function PlanPicker({ projectId, initialPlansConfig }: Props) {
+export default function PlanPicker({ projectId, initialPlansConfig, notice }: Props) {
     const { PLANS, ENABLE_ANNUAL_PLANS } = initialPlansConfig
     const [interval, setInterval] = useState<BillingInterval>("monthly")
     const planIds: PlanId[] = ["basic", "pro", "ecommerce"]
@@ -24,6 +25,12 @@ export default function PlanPicker({ projectId, initialPlansConfig }: Props) {
                 <h1 className="text-2xl font-black tracking-tight">Select your plan</h1>
                 <p className="text-sm text-muted-foreground">Choose the best plan for your website.</p>
             </div>
+
+            {notice && (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    {notice}
+                </div>
+            )}
 
             {/* Interval Toggle */}
             {ENABLE_ANNUAL_PLANS && (
@@ -50,16 +57,28 @@ export default function PlanPicker({ projectId, initialPlansConfig }: Props) {
                 {planIds.map((id) => {
                     const plan = PLANS[id]
                     const isPro = id === 'pro'
+                    const isComingSoon = id === "ecommerce" || Boolean((plan as any)?.comingSoon)
                     const recurring = interval === "yearly" ? (plan as any).yearlyAmount : plan.recurringAmount
 
                     return (
                         <div
                             key={id}
-                            className={`relative flex flex-col p-6 rounded-2xl border bg-card transition-all hover:border-primary/50 ${isPro ? 'border-primary ring-1 ring-primary shadow-xl scale-105 z-10' : 'border-border shadow-sm'}`}
+                            className={`relative flex flex-col p-6 rounded-2xl border bg-card transition-all ${
+                                isComingSoon
+                                    ? "border-amber-300 bg-amber-50/30"
+                                    : isPro
+                                        ? 'border-primary ring-1 ring-primary shadow-xl scale-105 z-10 hover:border-primary'
+                                        : 'border-border shadow-sm hover:border-primary/50'
+                            }`}
                         >
                             {isPro && (
                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest rounded-full">
                                     Most Popular
+                                </div>
+                            )}
+                            {isComingSoon && (
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full">
+                                    Soon Available
                                 </div>
                             )}
 
@@ -83,12 +102,27 @@ export default function PlanPicker({ projectId, initialPlansConfig }: Props) {
                                 ))}
                             </ul>
 
-                            <Link
-                                href={`/subscribe/${projectId}?planId=${id}&interval=${interval}`}
-                                className={`w-full py-2.5 rounded-xl text-center text-xs font-bold uppercase tracking-widest transition-all ${isPro ? 'bg-primary text-primary-foreground hover:opacity-90' : 'bg-muted hover:bg-muted-foreground/10 text-foreground'}`}
-                            >
-                                Select {plan.label}
-                            </Link>
+                            {isComingSoon ? (
+                                <div className="space-y-2">
+                                    <button
+                                        type="button"
+                                        disabled
+                                        className="w-full py-2.5 rounded-xl text-center text-xs font-bold uppercase tracking-widest bg-amber-100 text-amber-700 cursor-not-allowed border border-amber-300"
+                                    >
+                                        Soon Available
+                                    </button>
+                                    <p className="text-[10px] text-amber-700 text-center">
+                                        E-commerce upgrade is in development and not yet open for checkout.
+                                    </p>
+                                </div>
+                            ) : (
+                                <Link
+                                    href={`/subscribe/${projectId}?planId=${id}&interval=${interval}`}
+                                    className={`w-full py-2.5 rounded-xl text-center text-xs font-bold uppercase tracking-widest transition-all ${isPro ? 'bg-primary text-primary-foreground hover:opacity-90' : 'bg-muted hover:bg-muted-foreground/10 text-foreground'}`}
+                                >
+                                    Select {plan.label}
+                                </Link>
+                            )}
                         </div>
                     )
                 })}

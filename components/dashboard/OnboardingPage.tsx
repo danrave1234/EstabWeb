@@ -43,6 +43,7 @@ import {
   Loader2,
   Bot,
   Search,
+  Dumbbell,
 } from "lucide-react";
 import { GENRE_PRESETS, GENRE_LABELS } from "@/config/presets";
 import { toast } from "sonner";
@@ -68,6 +69,9 @@ const BUSINESS_ICONS: Record<string, React.ElementType> = {
   ecommerce: ShoppingCart,
   personal_portfolio: Briefcase,
   photobooth: Camera,
+  gym_boutique: Dumbbell,
+  gym_hardcore: Dumbbell,
+  gym_functional: Dumbbell,
 };
 
 // ─── All available sections for Step 3 customization ─────────────────────────
@@ -122,6 +126,14 @@ const ALL_SECTIONS = [
   { id: "developer-partners", label: "Partners", description: "Showcase developer or brand partners.", icon: Users, color: "text-indigo-400", bg: "bg-indigo-400/10", category: "Trust" },
   { id: "enrollment-process", label: "Enrollment Process", description: "Steps to enroll or get started.", icon: ChevronRight, color: "text-fuchsia-600", bg: "bg-fuchsia-600/10", category: "Process" },
   { id: "programs-grid", label: "Programs Grid", description: "Grid of programs or courses offered.", icon: GraduationCap, color: "text-indigo-600", bg: "bg-indigo-600/10", category: "Content" },
+  { id: "gym--programs", label: "Gym Programs", description: "Structured training tracks with coach details.", icon: Dumbbell, color: "text-violet-500", bg: "bg-violet-500/10", category: "Services" },
+  { id: "gym--schedule", label: "Gym Schedule", description: "Weekly class schedule by day and time.", icon: Dumbbell, color: "text-violet-400", bg: "bg-violet-400/10", category: "Process" },
+  { id: "gym--memberships", label: "Membership Tiers", description: "Pricing plans for gym members.", icon: Dumbbell, color: "text-violet-600", bg: "bg-violet-600/10", category: "Pricing" },
+  { id: "gym--class-types", label: "Class Types", description: "Class formats by level and duration.", icon: Dumbbell, color: "text-violet-300", bg: "bg-violet-300/10", category: "Services" },
+  { id: "gym--trainers", label: "Gym Trainers", description: "Coach profile cards and specialties.", icon: Users, color: "text-purple-500", bg: "bg-purple-500/10", category: "Team" },
+  { id: "gym--results", label: "Results Stories", description: "Transformation stories with before/after.", icon: Image, color: "text-pink-500", bg: "bg-pink-500/10", category: "Media" },
+  { id: "gym--facility", label: "Facility Highlights", description: "Equipment and gym environment highlights.", icon: Building2, color: "text-orange-500", bg: "bg-orange-500/10", category: "Content" },
+  { id: "gym--faq", label: "Gym FAQ", description: "Common questions for gym members.", icon: MessageSquare, color: "text-sky-500", bg: "bg-sky-500/10", category: "Info" },
   { id: "faculty-grid", label: "Faculty / Staff", description: "Grid of faculty or staff members.", icon: Users, color: "text-purple-300", bg: "bg-purple-300/10", category: "Team" },
   { id: "product-grid", label: "Product Grid", description: "Grid of products for sale.", icon: ShoppingCart, color: "text-pink-300", bg: "bg-pink-300/10", category: "Services" },
 ];

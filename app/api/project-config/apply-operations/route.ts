@@ -13,6 +13,19 @@ import { applyOperations } from "@/lib/utils/applyOperations"
 import { validateOperations } from "@/lib/utils/validateOperations"
 import { getPlanLimits, getMaxPagesForProject, normalizePagesWithDefaults, isLegalPageSlug } from "@/lib/utils/site-pages"
 import type { Operation } from "@/lib/utils/applyOperations"
+import { hasProOrHigher } from "@/lib/subscription"
+
+const CUSTOM_HTML_SECTION_ID = "custom-html"
+
+function touchesCustomHtmlSection(op: Operation): boolean {
+  if (op.type === "reorder_sections") {
+    return op.newOrder.includes(CUSTOM_HTML_SECTION_ID)
+  }
+  if (op.type === "update_global" || op.type === "add_page") {
+    return false
+  }
+  return op.sectionKey === CUSTOM_HTML_SECTION_ID
+}
 
 export async function POST(req: Request) {
   try {
@@ -39,7 +52,7 @@ export async function POST(req: Request) {
     const { data: proj, error: projErr } = await supabase
       .from("projects")
       .select(
-        "id, draft_config, current_config, subscription_status, trial_ends_at, subscription_ends_at"
+        "id, draft_config, current_config, subscription_status, trial_ends_at, subscription_ends_at, subscription_plan_id"
       )
       .eq("id", projectId)
       .single()
@@ -61,15 +74,29 @@ export async function POST(req: Request) {
 
     const planLimits = await getPlanLimits(supabase)
     const maxPages = getMaxPagesForProject(proj, planLimits)
-    const isPro = proj.subscription_status === "active" || proj.subscription_status === "trialing"
-    const maxSections = isPro ? 20 : 15
+    const isPaidStatus =
+      proj.subscription_status === "active" ||
+      proj.subscription_status === "trial" ||
+      proj.subscription_status === "admin_granted"
+    const maxSections = isPaidStatus ? 20 : 15
+    const canUseCustomHtmlSection = hasProOrHigher(proj as any)
+
+    if (!canUseCustomHtmlSection && operations.some((op) => touchesCustomHtmlSection(op))) {
+      return NextResponse.json(
+        { error: "Custom HTML sections are available on Pro, Ecommerce, and Custom plans only." },
+        { status: 403 }
+      )
+    }
     // Re-validate operations server-side (never trust client)
     const validation = validateOperations(
       operations,
       activeSections,
       maxSections,
       maxPages,
-      currentPageCount
+      currentPageCount,
+      {
+        disallowedSectionIds: canUseCustomHtmlSection ? undefined : new Set([CUSTOM_HTML_SECTION_ID]),
+      }
     )
 
     if (validation.sanitizedOperations.length === 0) {

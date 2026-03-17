@@ -54,16 +54,30 @@ export const SECTION_KEY_TO_CONFIG_PROP: Record<string, string> = {
   "hero": "hero",
   "hero-emergency": "heroEmergency",
   "hero--emergency": "heroEmergency",
+  "hero--showcase": "heroShowcase",
+  "hero-showcase": "heroShowcase",
+  "hero--aero-3": "heroAero3",
+  "hero--minimalism": "heroMinimalism",
+  "hero--elegant-carousel": "heroElegantCarousel",
+  "hero--modern": "heroModern",
+  "hero--group-images": "heroGroupImages",
   // pricing
   "pricing": "pricingTable",
   "pricing--cards": "pricingTable",
   "packages-pricing": "pricingTable",
+  "pricing--comparison": "pricingComparisonTable",
+  "pricing-comparison-table": "pricingComparisonTable",
+  "pricing--feature-comparison": "pricingSectionComparison",
+  "pricing-section-with-comparison": "pricingSectionComparison",
   "pricing--subscription": "maintenancePlans",
   "maintenance-plans": "maintenancePlans",
   // features / services
   "features-modern": "features",
   "features": "features",
+  "features--spotlight": "featureSpotlight",
   "services": "features",
+  "services--bento": "featuresBento",
+  "services-bento": "featuresBento",
   "services--modern": "features",
   "services--highlight": "features",
   "services-grid": "features",
@@ -85,6 +99,9 @@ export const SECTION_KEY_TO_CONFIG_PROP: Record<string, string> = {
   // testimonials
   "testimonials--bar": "testimonials",
   "testimonials": "testimonials",
+  "testimonials--animated": "animatedTestimonials",
+  "testimonials--community": "testimonialsCommunity",
+  "testimonials--v2": "testimonialsV2",
   "review-trust-bar": "reviewTrustBar",
   "testimonials--grid": "reviewTrustBar",
   "reviews-grid": "reviewTrustBar",
@@ -94,6 +111,7 @@ export const SECTION_KEY_TO_CONFIG_PROP: Record<string, string> = {
   "team-carousel": "teamCarousel",
   "team--grid": "teamCarousel",
   "team-grid": "teamCarousel",
+  "team--showcase": "teamShowcase",
   "team--profile": "attorneyProfile",
   "attorney-profile": "attorneyProfile",
   "practice-areas": "practiceAreas",
@@ -104,6 +122,7 @@ export const SECTION_KEY_TO_CONFIG_PROP: Record<string, string> = {
   "lead_capture--multi-step": "freeConsultation",
   "free-consultation": "freeConsultation",
   "booking-cta": "freeConsultation",
+  "custom-html": "customHtml",
   // contact variants — all read from config.contact
   "contact": "contact",
   "contact--standard": "contact",
@@ -143,11 +162,12 @@ export const SECTION_KEY_TO_CONFIG_PROP: Record<string, string> = {
   "emergency-cta-strip": "emergencyCTA",
   // gallery
   "gallery": "beforeAfterGallery",
-  "gallery--grid": "beforeAfterGallery",
+  "gallery--grid": "galleryGrid",
   "case_study": "beforeAfterGallery",
   "case_study--detail": "beforeAfterGallery",
   "before-after-gallery-grid": "beforeAfterGallery",
   "gallery--slider": "beforeAfterSlider",
+  "gallery--carousel": "gallery4",
   "before-after-slider": "beforeAfterSlider",
   // cta
   "cta": "promoCTA",
@@ -192,6 +212,15 @@ export const SECTION_KEY_TO_CONFIG_PROP: Record<string, string> = {
   "featured-properties-grid": "featuredListings",
   "financing-section": "financing",
   "developer-partners": "developerPartners",
+  // gym
+  "gym--programs": "gymPrograms",
+  "gym--schedule": "gymSchedule",
+  "gym--memberships": "gymMemberships",
+  "gym--trainers": "gymTrainers",
+  "gym--results": "gymResults",
+  "gym--facility": "gymFacility",
+  "gym--class-types": "gymClassTypes",
+  "gym--faq": "gymFaq",
 }
 
 /** Resolve the config property name for a given section key. Falls back to the key itself. */
@@ -224,7 +253,7 @@ export function applyOperations(
   config: Record<string, any>,
   operations: Operation[]
 ): Record<string, any> {
-  let newConfig = structuredClone(config)
+  const newConfig = structuredClone(config)
 
   for (const op of operations) {
     switch (op.type) {
@@ -353,3 +382,4 @@ export function applyOperations(
 
   return newConfig
 }
+

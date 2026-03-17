@@ -25,14 +25,18 @@ export default function HeroSoftLuxury({
 }: HeroAuthorityProps) {
   return (
       <Reveal as="section" className="relative min-h-[85vh] w-full flex items-center justify-center overflow-hidden">
-        <Image
-          src={backgroundImage}
-          alt={title}
-          fill
-          className="object-cover scale-105 transition-transform duration-10000 ease-linear hover:scale-100"
-          sizes="100vw"
-          priority
-        />
+        {backgroundImage ? (
+          <Image
+            src={backgroundImage}
+            alt={title}
+            fill
+            className="object-cover scale-105 transition-transform duration-10000 ease-linear hover:scale-100"
+            sizes="100vw"
+            priority
+          />
+        ) : (
+          <div className="absolute inset-0 bg-muted flex items-center justify-center" />
+        )}
         {/* Soft, multi-layered gradient for that luxury feel */}
         <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/40 to-transparent z-10" />
         <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-transparent to-white/10 z-10" />

@@ -80,14 +80,15 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
     : [
       { name: "Home", href: "/" },
       { name: "Pricing", href: "/pricing" },
+      { name: "FAQ", href: "/faq" },
       { name: "Contact", href: "/contact" },
     ], [isDashboard, variant, isSubAdmin])
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 h-16 transition-all duration-500 ease-in-out border-b ${headerAppearance
-          ? "bg-background/80 backdrop-blur-xl border-border shadow-sm"
-          : "bg-background/0 border-transparent shadow-none"
+        ? "bg-background/80 backdrop-blur-xl border-border shadow-sm"
+        : "bg-background/0 border-transparent shadow-none"
         }`}
     >
       <div className="container mx-auto px-4 h-full flex items-center">
@@ -131,8 +132,8 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
                 key={link.name}
                 href={link.href}
                 className={`flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-full transition-all duration-200 shrink-0 ${pathname === link.href
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                   }`}
               >
                 {Icon && <Icon className="w-4 h-4" />}

@@ -22,6 +22,8 @@ interface ProjectRow {
   trial_ends_at?: string | null
   publish_limit?: number | null
   publish_count?: number | null
+  site_status?: string | null
+  site_status_reason?: string | null
 }
 
 export default async function AdminClientsPage() {
@@ -48,7 +50,7 @@ export default async function AdminClientsPage() {
       .order('email', { ascending: true }),
     supabase
       .from('projects')
-      .select('id,client_id,subdomain,custom_domain,created_at,subscription_status,trial_ends_at,publish_limit,publish_limit_daily,publish_count,publish_count_today,publish_date')
+      .select('id,client_id,subdomain,custom_domain,created_at,subscription_status,trial_ends_at,publish_limit,publish_limit_daily,publish_count,publish_count_today,publish_date,site_status,site_status_reason')
       .order('created_at', { ascending: false })
   ])
 

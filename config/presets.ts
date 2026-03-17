@@ -24,7 +24,8 @@ export type ThemeKey =
   | "generic"
   | "personal-portfolio"
   | "ecommerce"
-  | "photobooth";
+  | "photobooth"
+  | "gym";
 
 export type ColorThemeKey =
   | "partner"
@@ -71,7 +72,10 @@ export type ColorThemeKey =
   | "facebook-blue"
   | "nebula"
   | "flow"
-  | "mono";
+  | "mono"
+  | "gym-boutique"
+  | "gym-hardcore"
+  | "gym-functional";
 
 export type PresetContent = {
   brand?: { name: string; logoUrl: string };
@@ -82,8 +86,107 @@ export type PresetContent = {
     benefitText?: string;
     localCoverage?: string;
   };
+  heroElegantCarousel?: {
+    slides?: { title: string; subtitle: string; description: string; accent: string; imageUrl: string }[];
+  };
+  heroShowcase?: {
+    badge?: string;
+    title?: string;
+    subtitle?: string;
+    primaryCTA?: string;
+    secondaryCTA?: string;
+    primaryCTAHref?: string;
+    secondaryCTAHref?: string;
+    imageUrl?: string;
+    trustPoints?: string[];
+    metrics?: { label: string; value: string }[];
+  };
+  heroModern?: {
+    heading?: string;
+    description?: string;
+    button?: { text: string; url: string };
+    reviews?: { count: number; avatars: { src: string; alt: string }[] };
+  };
+  heroGroupImages?: {
+    badge?: string;
+    title?: string;
+    description?: string;
+    primaryButtonText?: string;
+    primaryButtonHref?: string;
+    secondaryButtonText?: string;
+    secondaryButtonHref?: string;
+    image1?: string;
+    image2?: string;
+    image3?: string;
+  };
+  heroV6?: {
+    badgeText?: string;
+    badgeTag?: string;
+    badgeHref?: string;
+    title?: string;
+    description?: string;
+    emailPlaceholder?: string;
+    buttonText?: string;
+    features?: string[];
+    imageDark?: string;
+    imageLight?: string;
+    showHeader?: boolean;
+  };
+  heroMinimalism?: {
+    kicker?: string;
+    title?: string;
+    subtitle?: string;
+    footerTag?: string;
+    footerHeading?: string;
+    footerDesc?: string;
+  };
   features?: { title: string; subtitle: string; items: { title: string; description: string; icon: string }[] };
+  featuresBento?: { title?: string; subtitle?: string; items: { title: string; description: string; icon?: string; eyebrow?: string }[] };
   testimonials?: Record<string, unknown>;
+  animatedTestimonials?: {
+    testimonials?: { quote: string; name: string; designation: string; src: string }[];
+    autoplay?: boolean;
+    className?: string;
+  };
+  testimonialsCommunity?: {
+    title?: string;
+    subtitle?: string;
+    badgeText?: string;
+    testimonials?: { id: number; name: string; role: string; company: string; content: string; rating: number; avatar: string }[];
+    autoRotateInterval?: number;
+    trustedCompanies?: string[];
+    trustedCompaniesTitle?: string;
+    className?: string;
+  };
+  testimonialsV2?: {
+    badge?: string;
+    title?: string;
+    subtitle?: string;
+    items?: { text: string; image: string; name: string; role: string }[];
+  };
+  ctaBeams?: {
+    title?: string;
+    subtitle?: string;
+    ctaText?: string;
+    ctaHref?: string;
+    inputPlaceholder?: string;
+    showEmailInput?: boolean;
+  };
+  featureSteps?: {
+    title?: string;
+    features?: { step: string; title?: string; content: string; image: string }[];
+    autoPlayInterval?: number;
+  };
+  featureSpotlight?: {
+    label?: string;
+    title1?: string;
+    title2?: string;
+    description?: string;
+    ctaText?: string;
+    ctaHref?: string;
+    imageUrl?: string;
+    indexText?: string;
+  };
   contact?: Record<string, unknown>;
   practiceAreas?: Record<string, unknown>;
   attorneyProfile?: Record<string, unknown>;
@@ -92,9 +195,21 @@ export type PresetContent = {
   reviewTrustBar?: Record<string, unknown>;
   featureHighlight?: Record<string, unknown>;
   teamCarousel?: Record<string, unknown>;
+  teamShowcase?: { members: { id: string; name: string; role: string; image: string; social?: { twitter?: string; linkedin?: string; instagram?: string; behance?: string } }[] };
   patientFaq?: Record<string, unknown>;
   freeConsultation?: Record<string, unknown>;
   pricingTable?: Record<string, unknown>;
+  pricingComparisonTable?: {
+    features?: { name: string; included: "starter" | "pro" | "all" | string | null }[];
+    plans?: { name: string; level: "starter" | "pro" | "all" | string; price: { monthly: number; yearly: number }; popular?: boolean }[];
+    defaultPlan?: "starter" | "pro" | "all" | string;
+    defaultInterval?: "monthly" | "yearly";
+    containerClassName?: string;
+    buttonClassName?: string;
+  };
+  pricingSectionComparison?: {
+    className?: string;
+  };
   awardsStrip?: Record<string, unknown>;
   blog?: Record<string, unknown>;
   deliveryCoverage?: Record<string, unknown>;
@@ -115,7 +230,18 @@ export type PresetContent = {
   pricePreview?: { title?: string; items: { service: string; price: string; note?: string }[] };
   emergencyCTA?: { title?: string; subtitle?: string; buttonText?: string; phone?: string };
   maintenancePlans?: { title?: string; subtitle?: string; plans: { name: string; price: string; period: string; description: string; features: string[]; isPopular?: boolean }[] };
+  gymPrograms?: { title?: string; subtitle?: string; items: { name: string; tagline?: string; schedule?: string; coach?: string; intensity?: string; icon?: string }[] };
+  gymSchedule?: { title?: string; subtitle?: string; days: { day: string; classes: { time: string; name: string; coach?: string; studio?: string }[] }[] };
+  gymMemberships?: { title?: string; subtitle?: string; tiers: { name: string; price: string; period?: string; description?: string; perks: string[]; isPopular?: boolean; ctaLabel?: string; ctaHref?: string }[] };
+  gymTrainers?: { title?: string; subtitle?: string; items: { name: string; role: string; specialty?: string; yearsExperience?: string; imageUrl?: string }[] };
+  gymResults?: { title?: string; subtitle?: string; stories: { name: string; result: string; timeframe?: string; quote?: string; beforeImage?: string; afterImage?: string }[] };
+  gymFacility?: { title?: string; subtitle?: string; items: { name: string; description?: string; icon?: string; imageUrl?: string }[] };
+  gymClassTypes?: { title?: string; subtitle?: string; items: { name: string; duration?: string; level?: string; description?: string; icon?: string }[] };
+  gymFaq?: { title?: string; subtitle?: string; items: { question: string; answer: string }[] };
+  customHtml?: { title?: string; subtitle?: string; aiPrompt?: string; html?: string; css?: string };
   beforeAfterGallery?: { title?: string; subtitle?: string; items: { title: string; beforeImage: string; afterImage: string; description?: string }[] };
+  gallery4?: { title?: string; description?: string; items: { id: string; title: string; description: string; href: string; image: string }[] };
+  galleryGrid?: { badgeLabel?: string; title?: string; subtitle?: string; images: { id: number | string; url: string; title: string; category: string }[] };
   promoCTA?: { title?: string; subtitle?: string; promoBadge?: string; buttonText?: string; buttonHref?: string; phone?: string; countdownEndDate?: string; backgroundImage?: string };
   featuredListings?: { title?: string; subtitle?: string; viewDetailsLabel?: string; sqmLabel?: string; items: { title: string; location: string; price: string; imageUrl: string; beds: number; baths: number; sqm: number; tag?: string }[] };
   financing?: { title?: string; subtitle?: string; items: { title: string; description: string; icon: string; features: string[] }[] };
@@ -134,6 +260,70 @@ const GENERIC_CONTENT: PresetContent = {
     backgroundImage: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1080&q=80",
     trustSignals: ["Licensed & Insured", "5-Star Rated", "Local Business"],
   },
+  heroShowcase: {
+    badge: "Trusted by local businesses",
+    title: "Launch a conversion-ready website in days, not months.",
+    subtitle: "Purpose-built sections and practical editing tools for service businesses.",
+    primaryCTA: "Start your site",
+    secondaryCTA: "Explore sections",
+    primaryCTAHref: "#contact",
+    secondaryCTAHref: "#services",
+    imageUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1400&q=80",
+    trustPoints: ["No-code editing", "SEO-ready structure", "Fast mobile performance"],
+    metrics: [
+      { label: "Projects launched", value: "500+" },
+      { label: "Avg. setup time", value: "3 days" },
+      { label: "Client rating", value: "4.9/5" },
+      { label: "Lead forms captured", value: "25k+" },
+    ],
+  },
+  heroElegantCarousel: {
+    slides: [
+      { title: "Venetian Dusk", subtitle: "Autumn / Winter Collection", description: "Where ancient architecture meets the dying light — a palette drawn from terracotta, aged stone, and the shimmering canals of Venice at twilight.", accent: "#C4956A", imageUrl: "https://images.unsplash.com/photo-1534113414509-0eec2bfb493f?w=900&h=1200&fit=crop&q=80" },
+      { title: "Nordic Silence", subtitle: "Spring / Summer Collection", description: "Inspired by the vast stillness of Scandinavian fjords — clean lines, muted tones, and the quiet power of unadorned beauty.", accent: "#8BA7B8", imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&h=1200&fit=crop&q=80" },
+      { title: "Kyoto Garden", subtitle: "Resort Collection", description: "Moss-covered pathways and paper lanterns — an ode to the meditative elegance of Japanese garden design and its timeless restraint.", accent: "#7A9E7E", imageUrl: "https://images.unsplash.com/photo-1528164344705-47542687000d?w=900&h=1200&fit=crop&q=80" },
+    ],
+  },
+  heroModern: {
+    heading: "Professional Solutions for Your Local Business",
+    description: "Get a modern, high-performance website that captures leads and grows your presence online. Built for reliability and speed.",
+    button: { text: "Get Started Now", url: "/contact" },
+    reviews: {
+      count: 200,
+      avatars: [
+        { src: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=64&h=64&fit=crop&q=80", alt: "Customer 1" },
+        { src: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&fit=crop&q=80", alt: "Customer 2" },
+        { src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop&q=80", alt: "Customer 3" },
+        { src: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&q=80", alt: "Customer 4" },
+        { src: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=64&h=64&fit=crop&q=80", alt: "Customer 5" },
+      ],
+    },
+  },
+  heroGroupImages: {
+    badge: "We're live!",
+    title: "Streamline Your Business Operations Today",
+    description: "Managing a local business is tough. Ditch the outdated methods and embrace a faster, more efficient way to grow your trade.",
+    primaryButtonText: "Sign Up Now",
+    primaryButtonHref: "/contact",
+    secondaryButtonText: "Book a Demo",
+    secondaryButtonHref: "#services",
+    image1: "https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=2024&auto=format&fit=crop",
+    image2: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop",
+    image3: "https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2070&auto=format&fit=crop",
+  },
+  heroV6: {
+    badgeText: "New",
+    badgeTag: "Tailark Component Library",
+    badgeHref: "#",
+    title: "Production Ready Digital Marketing blocks",
+    description: "Empower your business with modern, high-performance web sections built for conversion and speed. Easy to customize and deploy.",
+    emailPlaceholder: "Your mail address",
+    buttonText: "Get Started",
+    features: ["Faster Performance", "Modern UI Design", "100% Customizable"],
+    imageDark: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop",
+    imageLight: "https://images.unsplash.com/photo-1557838923-2985c318be48?q=80&w=2070&auto=format&fit=crop",
+    showHeader: false,
+  },
   features: {
     title: "Our Services",
     subtitle: "Quality and clarity guaranteed. Customize this content for your business.",
@@ -141,6 +331,16 @@ const GENERIC_CONTENT: PresetContent = {
       { title: "Criminal Defense", description: "Aggressive representation for all criminal charges, ensuring your rights are protected.", icon: "Gavel" },
       { title: "DUI & DWI", description: "Expert defense for driving under the influence charges to help you keep your license.", icon: "Shield" },
       { title: "Drug Crimes", description: "Comprehensive legal support for drug-related offenses, from possession to trafficking.", icon: "Scale" },
+    ],
+  },
+  featuresBento: {
+    title: "Services Built for Growth",
+    subtitle: "Flexible blocks inspired by modern component systems, tuned for business websites.",
+    items: [
+      { title: "Lead Capture Funnels", description: "Turn visits into inquiries with clear calls-to-action and structured forms.", icon: "Target", eyebrow: "Conversion" },
+      { title: "Fast Editing Workflow", description: "Update key sections from the dashboard and preview changes instantly.", icon: "PenTool", eyebrow: "Productivity" },
+      { title: "SEO Foundations", description: "Built-in metadata controls and index-ready page structures.", icon: "Search", eyebrow: "Discovery" },
+      { title: "Plan-Based Gating", description: "Enable premium capabilities per subscription tier with centralized checks.", icon: "ShieldCheck", eyebrow: "Monetization" },
     ],
   },
   testimonials: {
@@ -154,6 +354,167 @@ const GENERIC_CONTENT: PresetContent = {
       rating: 5,
     },
   },
+  animatedTestimonials: {
+    testimonials: [
+      {
+        quote:
+          "The attention to detail and innovative features have completely transformed our workflow. This is exactly what we have been looking for.",
+        name: "Sarah Chen",
+        designation: "Product Manager at TechFlow",
+        src: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=3560&auto=format&fit=crop",
+      },
+      {
+        quote:
+          "Implementation was seamless and the results exceeded our expectations. The platform flexibility is remarkable.",
+        name: "Michael Rodriguez",
+        designation: "CTO at InnovateSphere",
+        src: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=3540&auto=format&fit=crop",
+      },
+      {
+        quote:
+          "This solution has significantly improved our team productivity. The intuitive interface makes complex tasks simple.",
+        name: "Emily Watson",
+        designation: "Operations Director at CloudScale",
+        src: "https://images.unsplash.com/photo-1623582854588-d60de57fa33f?q=80&w=3540&auto=format&fit=crop",
+      },
+    ],
+    autoplay: false,
+    className: "",
+  },
+  testimonialsCommunity: {
+    title: "Loved by Our Clients",
+    subtitle: "Don't just take our word for it. Hear from businesses who have grown with us.",
+    badgeText: "Trusted by businesses",
+    testimonials: [
+      {
+        id: 1,
+        name: "Alex Johnson",
+        role: "Business Owner",
+        company: "TechFlow",
+        content: "The attention to detail and professional quality completely transformed our online presence. Worth every peso.",
+        rating: 5,
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=96&h=96&fit=crop&crop=face",
+      },
+      {
+        id: 2,
+        name: "Sarah Miller",
+        role: "Marketing Manager",
+        company: "DesignHub",
+        content: "Our leads doubled within the first month. The site looks professional and loads fast.",
+        rating: 5,
+        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=96&h=96&fit=crop&crop=face",
+      },
+      {
+        id: 3,
+        name: "Michael Chen",
+        role: "Operations Director",
+        company: "InnovateLabs",
+        content: "We were up and running in days. The editing tools are intuitive and the SEO foundation is solid.",
+        rating: 5,
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=96&h=96&fit=crop&crop=face",
+      },
+    ],
+    autoRotateInterval: 6000,
+    trustedCompanies: [],
+    trustedCompaniesTitle: "Trusted by businesses worldwide",
+    className: "",
+  },
+  testimonialsV2: {
+    badge: "Testimonials",
+    title: "What our users say",
+    subtitle: "Discover how thousands of teams streamline their operations with our platform.",
+    items: [
+      { text: "This platform revolutionized our operations, streamlining finance and inventory. The cloud-based system keeps us productive anywhere.", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150", name: "Briana Patton", role: "Operations Manager" },
+      { text: "Implementing this solution was smooth and quick. The customizable, user-friendly interface made team training effortless.", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150&h=150", name: "Bilal Ahmed", role: "IT Manager" },
+      { text: "The support team is exceptional, guiding us through setup and providing ongoing assistance, ensuring our complete satisfaction.", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150&h=150", name: "Saman Malik", role: "Customer Support Lead" },
+      { text: "The seamless integration enhanced our business operations and efficiency. Highly recommend for its intuitive interface and power.", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150", name: "Omar Raza", role: "CEO" },
+      { text: "Its robust features and quick support have transformed our workflow, making us significantly more efficient and organized.", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150&h=150", name: "Zainab Hussain", role: "Project Manager" },
+      { text: "The smooth implementation exceeded expectations. It streamlined processes, improving overall business performance remarkably.", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=150&h=150", name: "Aliza Khan", role: "Business Analyst" },
+    ],
+  },
+  ctaBeams: {
+    title: "Ready to get started?",
+    subtitle: "Join hundreds of local businesses that launched their site with us. Fast setup, professional results.",
+    ctaText: "Get Started",
+    ctaHref: "#contact",
+    inputPlaceholder: "Enter your email",
+    showEmailInput: false,
+  },
+  featureSteps: {
+    title: "How It Works",
+    features: [
+      {
+        step: "Step 1",
+        title: "Get in Touch",
+        content: "Reach out to us and describe what you need. We'll get back to you within 24 hours with a clear plan.",
+        image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=2070&auto=format&fit=crop",
+      },
+      {
+        step: "Step 2",
+        title: "We Do the Work",
+        content: "Our team takes care of everything — from planning to execution — so you can focus on running your business.",
+        image: "https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2070&auto=format&fit=crop",
+      },
+      {
+        step: "Step 3",
+        title: "See the Results",
+        content: "You get a professional outcome you're proud of, on time and on budget. Guaranteed.",
+        image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop",
+      },
+    ],
+    autoPlayInterval: 4000,
+  },
+  featureSpotlight: {
+    label: "Featured",
+    title1: "Modern",
+    title2: "Living",
+    description: "Where architecture meets the natural world. Experience a new standard of contemporary design and comfort.",
+    ctaText: "Explore",
+    ctaHref: "#",
+    imageUrl: "https://images.unsplash.com/photo-1600585154340-be6191da9d0d?q=80&w=2070&auto=format&fit=crop",
+    indexText: "01",
+  },
+  gallery4: {
+    title: "Project Highlights",
+    description: "A quick look at recent builds, upgrades, and client results.",
+    items: [
+      {
+        id: "renovation-1",
+        title: "Modern Kitchen Renovation",
+        description: "A complete redesign focused on function, durability, and clean finishes.",
+        href: "#contact",
+        image: "https://images.unsplash.com/photo-1556912172-45b7abe8b7e1?w=1080&q=80",
+      },
+      {
+        id: "renovation-2",
+        title: "Small Business Fit-Out",
+        description: "Retail interior upgrade delivered on schedule with minimal downtime.",
+        href: "#contact",
+        image: "https://images.unsplash.com/photo-1493666438817-866a91353ca9?w=1080&q=80",
+      },
+      {
+        id: "renovation-3",
+        title: "Residential Exterior Refresh",
+        description: "Facade improvements that boosted curb appeal and long-term protection.",
+        href: "#contact",
+        image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1080&q=80",
+      },
+      {
+        id: "renovation-4",
+        title: "Office Interior Revamp",
+        description: "Workspace redesign with practical storage and cleaner circulation.",
+        href: "#contact",
+        image: "https://images.unsplash.com/photo-1497215842964-222b430dc094?w=1080&q=80",
+      },
+      {
+        id: "renovation-5",
+        title: "Outdoor Patio Upgrade",
+        description: "Durable outdoor improvements built for comfort and long-term use.",
+        href: "#contact",
+        image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=1080&q=80",
+      },
+    ],
+  },
   contact: {
     tagline: "Get in touch. We're here to help.",
     formHeading: "Contact Us",
@@ -162,6 +523,30 @@ const GENERIC_CONTENT: PresetContent = {
     email: "contact@yourbusiness.com",
     phone: "+63 912 345 6789",
     address: "123 Main St, Your City",
+  },
+  customHtml: {
+    title: "Custom Section",
+    subtitle: "Generated with AI custom section builder.",
+    aiPrompt: "",
+    html: `<div class="grid gap-4 md:grid-cols-3">
+  <article class="card">
+    <h3>Fast Turnaround</h3>
+    <p>Publish polished updates in minutes, not days.</p>
+  </article>
+  <article class="card">
+    <h3>Built for Leads</h3>
+    <p>Conversion-focused layout with clear next actions.</p>
+  </article>
+  <article class="card">
+    <h3>Editable Anytime</h3>
+    <p>Refine content quickly from your dashboard editor.</p>
+  </article>
+</div>`,
+    css: `.custom-html-section .grid{display:grid;gap:1rem}
+.custom-html-section .card{padding:1rem;border:1px solid var(--color-border);border-radius:12px;background:var(--color-muted)}
+.custom-html-section h3{margin:0 0 .5rem;font-weight:700}
+.custom-html-section p{margin:0;color:var(--color-muted-foreground)}
+@media (min-width:768px){.custom-html-section .md\\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}}`,
   },
   practiceAreas: {
     title: "Our Services",
@@ -225,6 +610,16 @@ const GENERIC_CONTENT: PresetContent = {
       { imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&q=80", name: "Team Member Three", specialty: "Role", bioUrl: "#" },
     ],
   },
+  teamShowcase: {
+    members: [
+      { id: "1", name: "Sarah Chen", role: "Director of Photography", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&q=80", social: { twitter: "#", linkedin: "#" } },
+      { id: "2", name: "Marcus Johnson", role: "Founder", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80", social: { twitter: "#", linkedin: "#" } },
+      { id: "3", name: "Elena Rodriguez", role: "Lead Front-End", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&q=80", social: { twitter: "#", linkedin: "#" } },
+      { id: "4", name: "David Kim", role: "Product Owner", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&q=80", social: { linkedin: "#" } },
+      { id: "5", name: "Ana Cruz", role: "CTO & Product Designer", image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&q=80", social: { twitter: "#", linkedin: "#" } },
+      { id: "6", name: "Jemima Lee", role: "Creative Director", image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&q=80", social: { instagram: "#" } },
+    ],
+  },
   patientFaq: {
     title: "Frequently Asked Questions",
     subtitle: "Common questions about our services.",
@@ -255,6 +650,29 @@ const GENERIC_CONTENT: PresetContent = {
       { name: "Pro", price: "$49", description: "Essential features for growing teams.", isPopular: true, features: [{ text: "All Basic Features", included: true }, { text: "Priority Support", included: true }, { text: "Advanced Tools", included: true }], buttonText: "Get Started" },
       { name: "Enterprise", price: "$99", description: "Custom solutions for large scale.", features: [{ text: "Unlimited Everything", included: true }, { text: "Dedicated Manager", included: true }, { text: "Custom Integration", included: true }], buttonText: "Contact Sales" },
     ],
+  },
+  pricingComparisonTable: {
+    features: [
+      { name: "Basic Analytics", included: "starter" },
+      { name: "Up to 5 team members", included: "starter" },
+      { name: "Basic support", included: "starter" },
+      { name: "Advanced Analytics", included: "pro" },
+      { name: "Up to 20 team members", included: "pro" },
+      { name: "Priority support", included: "pro" },
+      { name: "Custom integrations", included: "all" },
+      { name: "Unlimited team members", included: "all" },
+      { name: "24/7 phone support", included: "all" },
+    ],
+    plans: [
+      { name: "Starter", level: "starter", price: { monthly: 15, yearly: 144 } },
+      { name: "Pro", level: "pro", popular: true, price: { monthly: 49, yearly: 470 } },
+      { name: "Enterprise", level: "all", price: { monthly: 99, yearly: 990 } },
+    ],
+    defaultPlan: "pro",
+    defaultInterval: "monthly",
+  },
+  pricingSectionComparison: {
+    className: "",
   },
   awardsStrip: {
     title: "Trusted & Recognized By",
@@ -1040,7 +1458,143 @@ const ECOMMERCE_CONTENT: PresetContent = {
   },
 };
 
+const GYM_BOUTIQUE_CONTENT: PresetContent = {
+  ...GENERIC_CONTENT,
+  brand: { name: "Atelier Strength Studio", logoUrl: "https://placehold.co/80x80/4c1d95/ffffff?text=AS" },
+  hero: {
+    layout: "boutique",
+    title: "Personalized Coaching, Studio Energy.",
+    subtitle: "Small-group strength sessions designed for busy professionals who want measurable results.",
+    primaryCTA: "Book Intro Session",
+    secondaryCTA: "See Schedule",
+    benefitText: "Coach-Led Programs",
+    localCoverage: "Open Daily 6AM - 10PM",
+    promoText: "Free Movement Assessment",
+    backgroundImage: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=1200&q=80",
+  },
+  gymPrograms: {
+    title: "Signature Programs",
+    subtitle: "Progressive tracks for strength, body composition, and functional performance.",
+    items: [
+      { name: "Strength Foundations", tagline: "Build confidence with form-first lifting.", schedule: "Mon/Wed/Fri - 6:00 PM", coach: "Coach Bea", intensity: "Beginner", icon: "Dumbbell" },
+      { name: "Sculpt & Tone", tagline: "High-energy training for lean muscle and endurance.", schedule: "Tue/Thu/Sat - 7:00 AM", coach: "Coach Sam", intensity: "Intermediate", icon: "Flame" },
+      { name: "Power Lab", tagline: "Advanced progressive overload cycles.", schedule: "Tue/Thu - 7:30 PM", coach: "Coach Nico", intensity: "Advanced", icon: "Zap" },
+    ],
+  },
+  gymSchedule: {
+    title: "Studio Class Flow",
+    subtitle: "Reserve your slot and train with a consistent rhythm each week.",
+    days: [
+      { day: "Monday", classes: [{ time: "6:00 AM", name: "Functional Lift", coach: "Coach Bea", studio: "Main Floor" }, { time: "6:30 PM", name: "Sculpt Circuit", coach: "Coach Sam", studio: "Studio A" }] },
+      { day: "Wednesday", classes: [{ time: "5:30 AM", name: "Athletic Conditioning", coach: "Coach Nico", studio: "Performance Zone" }, { time: "7:00 PM", name: "Strength Foundations", coach: "Coach Bea", studio: "Main Floor" }] },
+      { day: "Saturday", classes: [{ time: "8:00 AM", name: "Weekend Burn", coach: "Coach Team", studio: "Studio A" }, { time: "10:00 AM", name: "Mobility Reset", coach: "Coach Aya", studio: "Recovery Room" }] },
+    ],
+  },
+  gymMemberships: {
+    title: "Membership Options",
+    subtitle: "Flexible plans for every training frequency and coaching need.",
+    tiers: [
+      { name: "Essential", price: "PHP 2,200", period: "/month", description: "Best for 2 to 3 sessions weekly.", perks: ["Open gym access", "1 onboarding session", "Locker access"], ctaLabel: "Choose Essential", ctaHref: "#contact" },
+      { name: "Signature", price: "PHP 3,800", period: "/month", description: "Unlimited classes and monthly progress checks.", perks: ["Unlimited group classes", "Monthly body composition scan", "Priority booking"], isPopular: true, ctaLabel: "Start Signature", ctaHref: "#contact" },
+      { name: "Private Elite", price: "PHP 7,500", period: "/month", description: "Premium coaching and tailored programming.", perks: ["Weekly 1:1 coaching", "Custom plan updates", "Nutrition support"], ctaLabel: "Apply for Elite", ctaHref: "#contact" },
+    ],
+  },
+  gymTrainers: {
+    title: "Meet Your Coaches",
+    subtitle: "Highly engaged coaches committed to form quality, progression, and accountability.",
+    items: [
+      { name: "Coach Mara", role: "Head Strength Coach", specialty: "Powerlifting & Fundamentals", yearsExperience: "8 years", imageUrl: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=800&q=80" },
+      { name: "Coach Nico", role: "Performance Coach", specialty: "Conditioning & Fat Loss", yearsExperience: "6 years", imageUrl: "https://images.unsplash.com/photo-1614283233556-f35b0c801ef1?w=800&q=80" },
+      { name: "Coach Aya", role: "Mobility Coach", specialty: "Recovery & Movement Quality", yearsExperience: "5 years", imageUrl: "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=800&q=80" },
+    ],
+  },
+  gymResults: {
+    title: "Member Results",
+    subtitle: "Progress stories from members who committed to structured training.",
+    stories: [
+      { name: "Anne P.", result: "-8kg and improved posture", timeframe: "12 weeks", quote: "I finally have a routine that I can sustain.", beforeImage: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=700&q=80", afterImage: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=700&q=80" },
+      { name: "Carlo M.", result: "+35kg deadlift PR", timeframe: "16 weeks", quote: "The coaching cues and structure made a huge difference.", beforeImage: "https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?w=700&q=80", afterImage: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=700&q=80" },
+    ],
+  },
+  gymFacility: {
+    title: "Facility Highlights",
+    subtitle: "Train in a clean, high-performance environment with complete equipment.",
+    items: [
+      { name: "Strength Zone", description: "Racks, platforms, and calibrated plates for serious lifting.", icon: "Dumbbell", imageUrl: "https://images.unsplash.com/photo-1570829460005-c840387bb1ca?w=1000&q=80" },
+      { name: "Conditioning Turf", description: "Sled lanes and functional equipment for high-intensity sessions.", icon: "Activity", imageUrl: "https://images.unsplash.com/photo-1558611848-73f7eb4001a1?w=1000&q=80" },
+      { name: "Recovery Corner", description: "Stretching and mobility space to reduce soreness and injury risk.", icon: "HeartPulse", imageUrl: "https://images.unsplash.com/photo-1599058917765-a780eda07a3e?w=1000&q=80" },
+    ],
+  },
+  gymClassTypes: {
+    title: "Class Types",
+    subtitle: "Choose your class format by intensity, duration, and fitness objective.",
+    items: [
+      { name: "Strength 45", duration: "45 mins", level: "Beginner to Intermediate", description: "Foundational barbell and dumbbell work with coaching support.", icon: "Dumbbell" },
+      { name: "MetCon 30", duration: "30 mins", level: "All Levels", description: "Short, efficient conditioning circuits for stamina and fat loss.", icon: "Flame" },
+      { name: "Mobility Reset", duration: "40 mins", level: "All Levels", description: "Recovery-focused movement sessions for flexibility and joint health.", icon: "HeartPulse" },
+    ],
+  },
+  gymFaq: {
+    title: "Gym FAQs",
+    subtitle: "Quick answers before your first session.",
+    items: [
+      { question: "Do I need prior gym experience?", answer: "No. We have beginner-friendly options and guided onboarding sessions." },
+      { question: "Can I freeze my membership?", answer: "Yes, freeze policies depend on your selected membership plan." },
+      { question: "Is there parking available?", answer: "Yes, we provide nearby parking options for members." },
+    ],
+  },
+};
+
+const GYM_HARDCORE_CONTENT: PresetContent = {
+  ...GYM_BOUTIQUE_CONTENT,
+  brand: { name: "Iron District Gym", logoUrl: "https://placehold.co/80x80/111827/ffffff?text=ID" },
+  hero: {
+    ...GYM_BOUTIQUE_CONTENT.hero,
+    layout: "hardcore",
+    title: "No Excuses. Just Work.",
+    subtitle: "Heavy lifts, hard conditioning, and coaches that push your limits safely.",
+    benefitText: "Powerlifting + Conditioning",
+    promoText: "7-Day Trial Pass",
+    backgroundImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80",
+  },
+};
+
+const GYM_FUNCTIONAL_CONTENT: PresetContent = {
+  ...GYM_BOUTIQUE_CONTENT,
+  brand: { name: "Pulse Functional Club", logoUrl: "https://placehold.co/80x80/0f766e/ffffff?text=PF" },
+  hero: {
+    ...GYM_BOUTIQUE_CONTENT.hero,
+    layout: "functional",
+    title: "Move Better. Feel Stronger.",
+    subtitle: "Functional training for mobility, stamina, and sustainable strength.",
+    benefitText: "Mobility + Conditioning",
+    promoText: "Free Intro Workout",
+    backgroundImage: "https://images.unsplash.com/photo-1599058918144-1ffabb6ab9a0?w=1200&q=80",
+  },
+};
+
 export const GENRE_PRESETS: Record<string, GenrePreset> = {
+  gym_boutique: {
+    theme: "gym",
+    colorTheme: "gym-boutique",
+    typographyStyle: "bold",
+    activeSections: ["hero", "gym--programs", "gym--class-types", "gym--schedule", "gym--trainers", "gym--results", "gym--facility", "gym--memberships", "gym--faq", "testimonials", "contact"],
+    content: GYM_BOUTIQUE_CONTENT,
+  },
+  gym_hardcore: {
+    theme: "gym",
+    colorTheme: "gym-hardcore",
+    typographyStyle: "bold",
+    activeSections: ["hero", "gym--programs", "gym--class-types", "gym--schedule", "gym--trainers", "gym--results", "gym--facility", "gym--memberships", "gym--faq", "testimonials", "contact"],
+    content: GYM_HARDCORE_CONTENT,
+  },
+  gym_functional: {
+    theme: "gym",
+    colorTheme: "gym-functional",
+    typographyStyle: "modern",
+    activeSections: ["hero", "gym--programs", "gym--class-types", "gym--schedule", "gym--trainers", "gym--results", "gym--facility", "gym--memberships", "gym--faq", "testimonials", "contact-with-map"],
+    content: GYM_FUNCTIONAL_CONTENT,
+  },
   cleaning: {
     theme: "cleaning",
     colorTheme: "eco-clean",
@@ -1169,6 +1723,9 @@ export const GENRE_PRESETS: Record<string, GenrePreset> = {
 };
 
 export const GENRE_LABELS: Record<string, string> = {
+  gym_boutique: "Gym Boutique",
+  gym_hardcore: "Gym Hardcore",
+  gym_functional: "Gym Functional",
   lawyer: "Lawyer",
   pest_control: "Pest Control",
   hvac: "HVAC / Plumber",
@@ -1188,3 +1745,5 @@ export const GENRE_LABELS: Record<string, string> = {
   photobooth: "Photobooth",
   ecommerce: "E-commerce Shop",
 };
+
+

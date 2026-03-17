@@ -105,6 +105,44 @@ export function SidebarDesignTab({
                 </div>
             </div>
 
+            {/* ── Header Layout ── */}
+            <div className="px-4 py-3 rounded-xl hover:bg-muted/40 transition-colors">
+                <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground block mb-2">
+                    Header Layout
+                </label>
+                <p className="text-[10px] text-muted-foreground mb-3">
+                    Choose how the main navigation appears at the top of your site.
+                </p>
+                <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                        { value: "sticky", label: "Sticky", desc: "Stays at top while scrolling" },
+                        { value: "static", label: "Static", desc: "Scrolls away with page" },
+                        { value: "tubelight", label: "Tubelight", desc: "Glow active link" },
+                        { value: "megamenu", label: "Megamenu", desc: "Wide dropdown" },
+                    ].map(({ value, label, desc }) => {
+                        const raw = globalConfig.headerStyle || "sticky";
+                        // normalize legacy values
+                        const normalized = raw === "solid" || raw === "floating" ? "sticky" : raw;
+                        const isActive = normalized === value
+                        return (
+                            <button
+                                key={value}
+                                type="button"
+                                onClick={() => applyDesignSetting({ headerStyle: value })}
+                                className={`flex flex-col items-start px-3 py-2.5 rounded-lg border text-left transition-all ${
+                                    isActive
+                                        ? "border-primary bg-primary/5 text-primary shadow-sm"
+                                        : "border-border bg-background hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary"
+                                }`}
+                            >
+                                <span className="text-[11px] font-bold leading-tight">{label}</span>
+                                <span className={`text-[9px] leading-tight mt-0.5 ${isActive ? "text-primary/70" : "text-muted-foreground/70"}`}>{desc}</span>
+                            </button>
+                        )
+                    })}
+                </div>
+            </div>
+
             {/* ── Color Palette — inline expandable ── */}
             <div className="px-4 py-3 rounded-xl hover:bg-muted/40 transition-colors">
                 <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground block mb-2">

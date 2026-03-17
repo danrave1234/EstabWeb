@@ -53,6 +53,14 @@ export async function POST(req: Request) {
     const isInitial = !proj.has_paid_initial
     const currentPlanId = proj.subscription_plan_id || 'free'
     const targetPlanId = planId
+    const targetPlan = PLANS[targetPlanId as keyof typeof PLANS] || null
+
+    if (targetPlanId === 'ecommerce' || targetPlan?.comingSoon) {
+      return NextResponse.json(
+        { error: `${targetPlan.name || "Selected"} plan is coming soon and not available for checkout yet.` },
+        { status: 409 }
+      )
+    }
 
     // ── UPGRADE / DOWNGRADE (only when user has already paid at least once) ──
     if (!isInitial) {

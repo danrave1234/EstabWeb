@@ -81,6 +81,7 @@ export default function HeroBeforeAfter({
 
 function BeforeAfterHeroSlider({ beforeImage, afterImage }: { beforeImage: string; afterImage: string }) {
   const [position, setPosition] = useState(50);
+  const safeAfterImage = afterImage || "https://images.unsplash.com/photo-1517646288020-9bc74751e941?w=1200&q=80";
 
   return (
     <div className="relative w-full h-full cursor-ew-resize select-none overflow-hidden" 
@@ -95,7 +96,7 @@ function BeforeAfterHeroSlider({ beforeImage, afterImage }: { beforeImage: strin
            setPosition(Math.max(0, Math.min(x, 100)));
          }}
     >
-      <Image src={afterImage} alt="After" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
+      <Image src={safeAfterImage} alt="After" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
       <div 
         className="absolute inset-0 w-full h-full overflow-hidden"
         style={{ width: `${position}%` }}

@@ -65,6 +65,17 @@ function humanizeSlug(slug: string): string {
     .join(" ")
 }
 
+export function formatDomainAsBrand(domain: string): string {
+  if (!domain) return "Business"
+  // e.g. 'lawthings.online' -> 'lawthings'
+  const withoutTld = domain.split(".")[0] || domain
+  // e.g. 'law-things' -> 'Law Things', 'lawthings' -> 'Lawthings'
+  return withoutTld
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ")
+}
+
 function sanitizeKeyword(value: unknown): string {
   const text = asText(value)
   if (!text) return ""
@@ -118,7 +129,7 @@ function getLocation(config: Record<string, any>): string {
   const byParts = [city, region, country].filter(Boolean).join(", ")
   if (byParts) return byParts
   const address = asText(config?.contact?.address ?? config?.location)
-  if (!address) return ""
+  if (!address || address.includes("CityName")) return ""
   return truncateAtWord(address.split(",").slice(0, 2).join(", "), 60)
 }
 
@@ -133,10 +144,22 @@ function inferStructuredType(page: Record<string, any>): StructuredDataType {
   return "localbusiness"
 }
 
-function normalizeTitle(seed: string, brandName: string, location: string): string {
-  let title = asText(seed)
+function normalizeTitle(seed: string, brandName: string, location: string, theme: string, serviceHint: string): string {
+  let title = asText(seed).replace(/(?:\s*[-|]\s*)?Your Business Name/ig, "")
+  if (location) {
+    title = title.replace(/\[City\s*Name\]/ig, location)
+  } else {
+    title = title.replace(/\s*in\s*\[City\s*Name\]/ig, "")
+    title = title.replace(/\[City\s*Name\]/ig, "")
+  }
+  const mainService = serviceHint || theme || "Professional Services"
+
   if (!title) {
-    title = brandName ? `${brandName} Services` : "Professional Services"
+    if (location) {
+      title = `Expert ${mainService} in ${location}`
+    } else {
+      title = `Top-Rated ${mainService}`
+    }
   }
 
   if (brandName && !title.toLowerCase().includes(brandName.toLowerCase())) {
@@ -150,8 +173,8 @@ function normalizeTitle(seed: string, brandName: string, location: string): stri
     }
   }
 
-  if (title.length < TITLE_MIN && brandName) {
-    const expanded = `${title} - Trusted ${brandName} Team`
+  if (title.length < TITLE_MIN && brandName && mainService) {
+    const expanded = `${title} - Trusted ${mainService} Providers`
     if (expanded.length <= TITLE_MAX) {
       title = expanded
     }
@@ -159,26 +182,32 @@ function normalizeTitle(seed: string, brandName: string, location: string): stri
 
   title = truncateAtWord(title, TITLE_MAX)
   if (title.length < 20) {
-    title = truncateAtWord(`${brandName || "Business"} | Professional Services`, TITLE_MAX)
+    title = truncateAtWord(`${brandName || "Business"} | Expert ${mainService}`, TITLE_MAX)
   }
 
   return title
 }
 
-function normalizeDescription(seed: string, brandName: string, serviceHint: string, location: string): string {
-  let description = asText(seed)
+function normalizeDescription(seed: string, brandName: string, serviceHint: string, location: string, theme: string): string {
+  let description = asText(seed).replace(/(?:\s*[-|]\s*)?Your Business Name/ig, "")
+  if (location) {
+    description = description.replace(/\[City\s*Name\]/ig, location)
+  } else {
+    description = description.replace(/\s*in\s*\[City\s*Name\]/ig, "")
+    description = description.replace(/\[City\s*Name\]/ig, "")
+  }
+  const mainService = serviceHint || theme || "professional services"
+  const where = location ? ` serving the ${location} area` : ""
 
   if (!description) {
-    const where = location ? ` in ${location}` : ""
-    const service = serviceHint || "professional services"
-    description = `${brandName || "Our team"} provides ${service.toLowerCase()}${where}. Contact us for fast, reliable support and clear pricing.`
+    description = `Looking for top ${mainService.toLowerCase()}${where}? ${brandName || "Our team"} provides expert solutions tailored to your needs. Get a free consultation today.`
   }
 
   if (description.length < DESC_MIN) {
     const tail = brandName
-      ? ` Work with ${brandName} for responsive service and trusted results.`
-      : " Reach out today for responsive service and trusted results."
-    if (!description.toLowerCase().includes("trusted")) {
+      ? ` Let ${brandName} help you achieve the best results with our trusted experts.`
+      : ` Reach out today for responsive, highly-rated service and trusted results.`
+    if (!description.toLowerCase().includes("trusted") && !description.toLowerCase().includes("best results")) {
       description = `${description}${tail}`
     }
   }
@@ -186,7 +215,7 @@ function normalizeDescription(seed: string, brandName: string, serviceHint: stri
   description = truncateAtWord(description, DESC_MAX)
   if (description.length < 40) {
     description = truncateAtWord(
-      `${brandName || "Our business"} helps clients with ${serviceHint || "quality services"}. Contact us today.`,
+      `Get top-rated ${mainService.toLowerCase()}${where}. ${brandName || "Our business"} is dedicated to delivering quality. Book your appointment now.`,
       DESC_MAX
     )
   }
@@ -207,13 +236,18 @@ export function buildAutoSeoDefaults({
     page?.seo && typeof page.seo === "object"
       ? page.seo
       : config?.seo && typeof config.seo === "object"
-      ? config.seo
-      : {}
+        ? config.seo
+        : {}
   ) as Record<string, any>
 
   const slug = asText(pageSlug ?? page?.slug).replace(/^\/+|\/+$/g, "").toLowerCase()
   const label = pickFirstText(pageLabel, page?.label, humanizeSlug(slug))
-  const brandName = pickFirstText(config?.brand?.name, domain, "Business")
+  const formattedDomain = domain ? formatDomainAsBrand(domain) : "Business"
+  let rawBrandName = asText(config?.brand?.name)
+  if (rawBrandName.toLowerCase() === "your business name") {
+    rawBrandName = ""
+  }
+  const brandName = pickFirstText(rawBrandName, formattedDomain)
   const location = getLocation(config)
   const theme = asText(config?.theme).replace(/-/g, " ")
 
@@ -231,8 +265,8 @@ export function buildAutoSeoDefaults({
     6
   )
 
-  const titleSeed = pickFirstText(rawSeo?.title, label === "Home" ? "" : label, serviceHints[0], config?.hero?.title)
-  const title = normalizeTitle(titleSeed || `${label} Services`, brandName, location)
+  const titleSeed = pickFirstText(rawSeo?.title, label === "Home" ? "" : label, config?.hero?.title, serviceHints[0])
+  const title = normalizeTitle(titleSeed, brandName, location, theme, serviceHints[0] || label)
 
   const descriptionSeed = pickFirstText(
     rawSeo?.description,
@@ -244,22 +278,22 @@ export function buildAutoSeoDefaults({
     config?.contact?.subtitle,
     config?.footer?.tagline
   )
-  const description = normalizeDescription(descriptionSeed, brandName, serviceHints[0] || label, location)
+  const description = normalizeDescription(descriptionSeed, brandName, serviceHints[0] || label, location, theme)
 
   const configuredKeywords = Array.isArray(rawSeo?.keywords) ? rawSeo.keywords : []
   const keywords = uniqueKeywords(
     configuredKeywords.length > 0
       ? configuredKeywords
       : [
-          label,
-          `${label} services`,
-          brandName,
-          theme ? `${theme} services` : "",
-          serviceHints[0],
-          serviceHints[1],
-          location,
-          `${brandName} ${serviceHints[0] || "services"}`,
-        ],
+        label,
+        `${label} services`,
+        brandName,
+        theme ? `${theme} services` : "",
+        serviceHints[0],
+        serviceHints[1],
+        location,
+        `${brandName} ${serviceHints[0] || "services"}`,
+      ],
     8
   )
 
@@ -288,12 +322,13 @@ export function buildAutoSeoDefaults({
     nofollow: false,
   }
 
-  const ogTitle = normalizeTitle(pickFirstText(rawSeo?.og?.title, title), brandName, location)
+  const ogTitle = normalizeTitle(pickFirstText(rawSeo?.og?.title, title), brandName, location, theme, serviceHints[0] || label)
   const ogDescription = normalizeDescription(
     pickFirstText(rawSeo?.og?.description, description),
     brandName,
     serviceHints[0] || label,
-    location
+    location,
+    theme
   )
   const ogImage = pickFirstText(rawSeo?.og?.image, config?.brand?.logoUrl)
 

@@ -14,11 +14,15 @@ import { getPlanLimits, getMaxPagesForProject } from "@/lib/utils/site-pages"
 import type { Operation } from "@/lib/utils/applyOperations"
 import { COLOR_THEME_SWATCHES, TYPOGRAPHY_OPTIONS } from "@/config/dashboard-config"
 import { buildConfigSummary } from "@/lib/ai/buildConfigSummary"
+import { SECTION_FIELD_SCHEMA } from "@/lib/ai/section-field-schema"
 import { getPlansConfig } from "@/lib/plans-config-server"
+import { hasProOrHigher } from "@/lib/subscription"
+import { normalizeConfig } from "@/lib/utils"
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent"
+const CUSTOM_HTML_SECTION_ID = "custom-html"
 
 /** Canonical (non-legacy) section IDs exposed to the AI */
 const VALID_SECTION_IDS = BLOCK_REGISTRY.filter((b) => !b.legacy).map((b) => b.id)
@@ -180,94 +184,6 @@ function getHeroFieldsForTheme(colorTheme: string): string[] {
   return HERO_FIELDS_BY_THEME["authority"]
 }
 
-const SECTION_FIELD_SCHEMA: Record<string, string[]> = {
-  // hero fields are injected dynamically per theme — see getHeroFieldsForTheme()
-  // HeroEmergency uses a separate section key
-  "hero--emergency": [
-    "title", "subtitle",
-    "primaryCTA", "primaryCTAHref",
-    "secondaryCTA", "secondaryCTAHref",
-    "imageUrl", "icon",
-  ],
-  // Contact variants
-  contact: ["tagline", "formHeading", "formSubmitText", "formThankYouText", "email", "phone", "address"],
-  "contact--minimal": ["tagline", "formHeading", "formSubmitText", "email", "phone", "address"],
-  "contact--visual": ["tagline", "formHeading", "formSubmitText", "email", "phone", "address"],
-  "contact--with-map": ["tagline", "formHeading", "email", "phone", "address", "mapEmbedUrl"],
-  "contact--columns": ["tagline", "formHeading", "email", "phone", "address"],
-  "contact--split": ["tagline", "formHeading", "email", "phone", "address"],
-  // FAQ
-  faq: ["title", "subtitle", "items[].question", "items[].answer"],
-  "faq--two-column": ["title", "subtitle", "items[].question", "items[].answer"],
-  // Features / Services
-  features: ["title", "subtitle", "features[].title", "features[].description", "features[].icon"],
-  services: ["title", "subtitle", "items[].title", "items[].description", "items[].icon"],
-  "services--modern": ["title", "subtitle", "items[].title", "items[].description"],
-  "services--highlight": ["title", "subtitle", "items[].title", "items[].description"],
-  // Testimonials
-  testimonials: ["title", "subtitle", "testimonials[].quoteTitle", "testimonials[].body", "testimonials[].customerName"],
-  "testimonials--grid": ["title", "subtitle", "testimonials[].quoteTitle", "testimonials[].body", "testimonials[].customerName"],
-  // Pricing
-  pricing: ["title", "subtitle", "plans[].name", "plans[].price", "plans[].description", "plans[].buttonText"],
-  "pricing--subscription": ["title", "subtitle", "plans[].name", "plans[].price", "plans[].description", "plans[].buttonText"],
-  // Process
-  process: ["title", "subtitle", "steps[].title", "steps[].description", "steps[].number"],
-  "process--timeline": ["title", "subtitle", "steps[].title", "steps[].description"],
-  // Stats
-  stats: ["title", "subtitle", "items[].label", "items[].value"],
-  // CTA variants
-  cta: ["title", "subtitle", "ctaText", "ctaHref"],
-  "cta--emergency": ["title", "subtitle", "ctaText", "ctaHref", "phone"],
-  "cta--promo-strip": ["text", "buttonText", "buttonHref"],
-  "cta--sticky": ["text", "buttonText", "buttonHref"],
-  // Announcement bar
-  announcement_bar: ["text", "buttonText", "buttonHref", "countdownDate"],
-  "announcement_bar--promo": ["text", "buttonText", "buttonHref", "countdownDate"],
-  "announcement_bar--emergency": ["text", "buttonText", "buttonHref"],
-  "announcement_bar--offer": ["text", "buttonText", "buttonHref"],
-  // Booking / Lead capture
-  booking: ["title", "subtitle", "ctaText", "ctaHref"],
-  lead_capture: ["title", "subtitle", "ctaText", "ctaHref"],
-  free_consultation: ["title", "subtitle", "ctaText", "phone"],
-  // Trust / Guarantee
-  trust_badges: ["title", "subtitle", "items[].title", "items[].description"],
-  guarantee: ["title", "subtitle", "items[].title", "items[].description"],
-  "guarantee--badge": ["title", "subtitle", "items[].title", "items[].description"],
-  "guarantee--safety": ["title", "subtitle", "items[].title", "items[].description"],
-  // Comparison
-  comparison: ["title", "subtitle", "items[].title", "items[].description"],
-  "comparison--table": ["title", "subtitle", "items[].title", "items[].description"],
-  "comparison--vs": ["title", "subtitle", "items[].title", "items[].description"],
-  // Specialty Listings
-  specialty_listings: ["title", "subtitle", "items[].title", "items[].description", "items[].price"],
-  // Service Detail
-  service_detail: ["title", "subtitle", "items[].title", "items[].description", "imageUrl"],
-  "service_detail--split": ["title", "subtitle", "items[].title", "items[].description", "imageUrl"],
-  // Case Study
-  case_study: ["title", "subtitle", "items[].title", "items[].description", "items[].imageUrl"],
-  "case_study--detail": ["title", "subtitle", "items[].title", "items[].description", "items[].imageUrl"],
-  // Price Preview
-  price_preview: ["title", "subtitle", "price", "ctaText", "ctaHref"],
-  // Payment Options
-  payment_options: ["title", "items[].name"],
-  // Team Spotlight
-  "team--spotlight": ["title", "subtitle", "name", "role", "bio"],
-  // Coverage / Service area
-  service_area: ["title", "subtitle", "cities", "mapEmbedUrl"],
-  "service_area--radius": ["title", "subtitle", "cities", "mapEmbedUrl"],
-  // Blog preview
-  blog_preview: ["title", "subtitle"],
-  // Gallery
-  gallery: ["title", "subtitle"],
-  "gallery--slider": ["title", "subtitle"],
-  // Team
-  team: ["title", "subtitle", "items[].name", "items[].role", "items[].bio"],
-  "team--carousel": ["title", "subtitle", "items[].name", "items[].role"],
-  // Certifications / Logos
-  certifications: ["title", "items[].name"],
-  logo_cloud: ["title", "items[].name"],
-}
-
 function buildSystemPrompt(
   activeSections: string[],
   config: Record<string, any>,
@@ -332,7 +248,7 @@ BRAND & NAVBAR:
 - To update brand or navbar use update_global with a "brand" object and/or "navigation" array.
 - Current brand: name="${config.brand?.name ?? ""}", ctaHref="${config.brand?.ctaHref ?? ""}"
 - Current navigation: ${Array.isArray(config.navigation) && config.navigation.length > 0 ? config.navigation.map((n: any) => `{ name: "${n.name}", href: "${n.href}" }`).join(", ") : "(auto-generated from sections)"}
-- headerStyle controls header appearance: "solid" or "floating". Set via update_global.
+- headerStyle controls header appearance: "solid", "floating", "tubelight", or "megamenu". Set via update_global.
 
 VALID COLOR THEMES (for update_global colorTheme):
 ${VALID_COLOR_THEMES.join(", ")}
@@ -353,7 +269,7 @@ OPERATION TYPES (use ONLY these — no others):
 - { "type": "remove_section", "sectionKey": string, "pageSlug"?: string }
 - { "type": "update_section", "sectionKey": string, "changes": object, "pageSlug"?: string }
 - { "type": "reorder_sections", "newOrder": string[], "pageSlug"?: string }
-- { "type": "update_global", "changes": { "colorTheme"?: string, "typographyStyle"?: string, "darkMode"?: boolean, "headerStyle"?: "solid"|"floating", "footerStyle"?: string, "brand"?: { "name"?: string, "logoUrl"?: string, "ctaHref"?: string }, "navigation"?: { "name": string, "href": string }[], "footer"?: { "tagline"?: string, "formHeading"?: string, "formSubmitText"?: string, "formThankYouText"?: string, "contactUsLabel"?: string, "callUsNowLabel"?: string, "contactLabel"?: string, "followLabel"?: string, "privacyLabel"?: string, "termsLabel"?: string, "cookieLabel"?: string, "privacyUrl"?: string, "termsUrl"?: string, "cookieUrl"?: string, "showSocial"?: boolean, "showContact"?: boolean, "contact"?: { "email"?: string, "phone"?: string, "address"?: string }, "social"?: { "facebook"?: string, "twitter"?: string, "linkedin"?: string, "instagram"?: string, "facebookEnabled"?: boolean, "twitterEnabled"?: boolean, "linkedinEnabled"?: boolean, "instagramEnabled"?: boolean } } } }
+- { "type": "update_global", "changes": { "colorTheme"?: string, "typographyStyle"?: string, "darkMode"?: boolean, "headerStyle"?: "solid"|"floating"|"tubelight"|"megamenu", "footerStyle"?: string, "brand"?: { "name"?: string, "logoUrl"?: string, "ctaHref"?: string }, "navigation"?: { "name": string, "href": string }[], "footer"?: { "tagline"?: string, "formHeading"?: string, "formSubmitText"?: string, "formThankYouText"?: string, "contactUsLabel"?: string, "callUsNowLabel"?: string, "contactLabel"?: string, "followLabel"?: string, "privacyLabel"?: string, "termsLabel"?: string, "cookieLabel"?: string, "privacyUrl"?: string, "termsUrl"?: string, "cookieUrl"?: string, "showSocial"?: boolean, "showContact"?: boolean, "contact"?: { "email"?: string, "phone"?: string, "address"?: string }, "social"?: { "facebook"?: string, "twitter"?: string, "linkedin"?: string, "instagram"?: string, "facebookEnabled"?: boolean, "twitterEnabled"?: boolean, "linkedinEnabled"?: boolean, "instagramEnabled"?: boolean } } } }
 - { "type": "add_page", "slug": string, "label": string, "sections"?: string[] }  // Only if plan allows more pages (current: ${currentPageCount}/${maxPages})
 
 STRICT RULES:
@@ -362,7 +278,7 @@ STRICT RULES:
 - Never hallucinate unknown section keys — only use keys from VALID SECTION KEYS above.
 - Never remove the "hero" section from the homepage. You may remove it from other pages (using pageSlug) if appropriate.
 - Never modify domain, subscription_status, script, pages, activeSections directly, or any field not listed above.
-- Never include raw HTML in any string value.
+- Never include raw HTML in any string value, EXCEPT inside update_section for sectionKey "custom-html" using fields "html" and "css".
 - For update_global, only set colorTheme, typographyStyle, darkMode, footerStyle, or footer sub-fields — nothing else.
 - For update_section, never set activeSections, pages, colorTheme, typographyStyle, darkMode, domain, or subscription fields inside changes.
 - colorTheme must be one of the VALID COLOR THEMES listed above.
@@ -377,6 +293,16 @@ EXAMPLE OUTPUT:
 {"summary":"Updated hero messaging for urgency and switched to a bold red theme.","operations":[{"type":"update_section","sectionKey":"hero","changes":{"title":"24/7 Emergency Service – We Respond in 30 Minutes","ctaText":"Call Now"}},{"type":"update_global","changes":{"colorTheme":"red-crimson","typographyStyle":"bold"}}]}`
 }
 
+function touchesCustomHtmlSection(op: Operation): boolean {
+  if (op.type === "reorder_sections") {
+    return op.newOrder.includes(CUSTOM_HTML_SECTION_ID)
+  }
+  if (op.type === "update_global" || op.type === "add_page") {
+    return false
+  }
+  return op.sectionKey === CUSTOM_HTML_SECTION_ID
+}
+
 export async function POST(req: NextRequest) {
   if (!GEMINI_API_KEY) {
     return NextResponse.json({ error: "Gemini API key not configured" }, { status: 500 })
@@ -384,7 +310,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { projectId, prompt } = body
+    const { projectId, prompt, currentConfig } = body
 
     if (!projectId || typeof projectId !== "string") {
       return NextResponse.json({ error: "Missing projectId" }, { status: 400 })
@@ -444,23 +370,43 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const config: Record<string, any> =
+    const persistedConfig: Record<string, any> =
       (proj.draft_config as Record<string, any>) ??
       (proj.current_config as Record<string, any>) ??
       {}
 
-    const activeSections: string[] = Array.isArray(config.activeSections)
-      ? config.activeSections
-      : []
+    const hasSnapshotConfig =
+      currentConfig &&
+      typeof currentConfig === "object" &&
+      !Array.isArray(currentConfig)
+    const config: Record<string, any> = hasSnapshotConfig
+      ? normalizeConfig(currentConfig as Record<string, any>)
+      : persistedConfig
 
     const pages: any[] = Array.isArray(config.pages) ? config.pages : []
+    const homePage = pages.find((page) => {
+      const slug = typeof page?.slug === "string" ? page.slug.trim() : ""
+      return slug.length === 0
+    })
+    const activeSections: string[] = Array.isArray(homePage?.activeSections)
+      ? homePage.activeSections.filter((id: unknown): id is string => typeof id === "string")
+      : Array.isArray(config.activeSections)
+        ? config.activeSections.filter((id: unknown): id is string => typeof id === "string")
+        : []
     const currentPageCount = pages.length || 1
 
     // Use plan-based limits — not a hardcoded default
     const planLimits = await getPlanLimits(supabase)
     const maxPages = getMaxPagesForProject(proj, planLimits)
-    const isPro = proj.subscription_status === "active" || proj.subscription_status === "trial" || proj.subscription_status === "admin_granted"
-    const maxSections = isPro ? 20 : 15
+    const isPaidStatus =
+      proj.subscription_status === "active" ||
+      proj.subscription_status === "trial" ||
+      proj.subscription_status === "admin_granted"
+    const maxSections = isPaidStatus ? 20 : 15
+    const canUseCustomHtmlSection = hasProOrHigher(proj as any)
+    const validSections = canUseCustomHtmlSection
+      ? VALID_SECTION_IDS
+      : VALID_SECTION_IDS.filter((id) => id !== CUSTOM_HTML_SECTION_ID)
 
     const currentColorTheme = typeof config.colorTheme === "string" ? config.colorTheme : "partner"
     const currentTypographyStyle = typeof config.typographyStyle === "string" ? config.typographyStyle : "elegant"
@@ -468,7 +414,7 @@ export async function POST(req: NextRequest) {
     const systemPrompt = buildSystemPrompt(
       activeSections,
       config,
-      VALID_SECTION_IDS,
+      validSections,
       currentColorTheme,
       currentTypographyStyle,
       maxSections,
@@ -519,13 +465,23 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    if (!canUseCustomHtmlSection && parsed.operations.some((op) => touchesCustomHtmlSection(op))) {
+      return NextResponse.json(
+        { error: "AI custom HTML sections are available on Pro, Ecommerce, and Custom plans only." },
+        { status: 403 }
+      )
+    }
+
     // Validate operations using plan-based section limit
     const validation = validateOperations(
       parsed.operations,
       activeSections,
       maxSections,
       maxPages,
-      currentPageCount
+      currentPageCount,
+      {
+        disallowedSectionIds: canUseCustomHtmlSection ? undefined : new Set([CUSTOM_HTML_SECTION_ID]),
+      }
     )
 
     // If there are hard errors AND no valid operations survived, reject

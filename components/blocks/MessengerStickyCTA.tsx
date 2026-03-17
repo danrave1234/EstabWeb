@@ -25,13 +25,13 @@ export default function MessengerStickyCTA({
 
   return (
     <div
-      className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[100] flex flex-row sm:flex-col items-center sm:items-start gap-3 pointer-events-none animate-in fade-in slide-in-from-bottom-4 duration-500"
+      className="fixed left-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] sm:bottom-6 sm:left-6 z-[100] flex flex-row sm:flex-col items-center sm:items-start gap-2 sm:gap-3 pointer-events-none animate-in fade-in slide-in-from-bottom-4 duration-500"
     >
       {viberNumber && (
         <a
           href={`viber://chat?number=${viberNumber.replace(/[^0-9]/g, "")}`}
           onClick={() => { track('sticky_viber'); trackLead('viber'); }}
-          className="pointer-events-auto flex items-center gap-2 sm:gap-3 bg-[#7360f2] text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group"
+          className="pointer-events-auto flex items-center gap-2 sm:gap-3 bg-[#7360f2] text-white px-3 sm:px-5 py-2 sm:py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group"
         >
           <span className="text-xs sm:text-sm font-bold hidden sm:inline">{viberLabel}</span>
           <ChatCircleDotsIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" />
@@ -44,7 +44,7 @@ export default function MessengerStickyCTA({
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => { track('sticky_messenger'); trackLead('messenger'); }}
-          className="pointer-events-auto flex items-center gap-2 sm:gap-3 bg-[#0084FF] text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group"
+          className="pointer-events-auto flex items-center gap-2 sm:gap-3 bg-[#0084FF] text-white px-3 sm:px-5 py-2 sm:py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group"
         >
           <span className="text-xs sm:text-sm font-bold hidden sm:inline">{messengerLabel}</span>
           <ChatCircleIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" />
@@ -55,7 +55,7 @@ export default function MessengerStickyCTA({
         <a
           href={`tel:${phone}`}
           onClick={() => { track('sticky_call'); trackLead('call'); }}
-          className="pointer-events-auto flex items-center gap-2 sm:gap-3 bg-primary text-primary-foreground px-4 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group border-2 border-white/20"
+          className="pointer-events-auto flex items-center gap-2 sm:gap-3 bg-primary text-primary-foreground px-3 sm:px-5 py-2 sm:py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all group border-2 border-white/20"
         >
           <span className="text-xs sm:text-sm font-bold hidden sm:inline">{callLabel}</span>
           <PhoneIcon weight="duotone" className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" />
