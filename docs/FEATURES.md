@@ -1051,7 +1051,7 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 | `SimpleFooter` | Standard footer with links and copyright |
 | `MinimalFooter` | Single-line minimal footer |
 | `PromoBannerStrip` | Top-of-page promotional banner |
-| `Header` | Site navigation header (shared, not in activeSections). Supports `headerStyle` variants: `"solid"`, `"floating"`, `"tubelight"` (Tubelight navbar layout), and `"megamenu"` (dropdown megamenu with icons). |
+| `Header` | Site navigation header (shared, not in activeSections). Supports `headerStyle` variants: `"sticky"`, `"static"`, `"floating"` (rounded floating bar), `"tubelight"` (Tubelight navbar layout), and `"megamenu"` (dropdown megamenu with icons). Legacy alias: `"solid"` maps to sticky behavior. |
 
 ---
 
@@ -1109,5 +1109,4 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 ---
 
 *Last updated: 2026-03-12*
-
 

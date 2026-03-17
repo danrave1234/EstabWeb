@@ -1,5 +1,5 @@
 import React from "react";
-import { ACTypesGrid, AnimatedTestimonialsBlock, AnimatedTestimonialsCommunityBlock, AttorneyProfile, AwardsStrip, BackgroundBeamsCTABlock, BeforeAfterGalleryGrid, BeforeAfterSlider, BlogGrid, CaseStudyDetailBlock, CommonPestsGrid, ContactColumns, ContactForm, ContactMinimal, ContactSplit, ContactVisual, ContactWithMap, CoverageRadiusBlock, CustomHtmlSection, DeveloperPartnersLogos, ElegantCarouselBlock, EmergencyCTAStrip, FAQAccordion, FAQTwoColumn, FacebookReviewEmbed, FeatureHighlightZigzag, FeaturedListingsGrid, FeaturesBento, FeaturesGrid, FeaturesModern, FeatureSpotlightBlock, FeatureStepsBlock, FinancingSection, FreeConsultationForm, GymClassSchedule, GymClassTypes, GymFacilityHighlights, GymFaq, GymMembershipTiers, GymPrograms, GymResultsStories, GymTrainers, Header, HeroAero3, HeroAuthority, HeroBlock, HeroChiropractor, HeroCleaning, HeroClinic, HeroDentist, HeroEmergency, HeroGym, HeroMinimalismBlock, HeroPestControl, HeroPool, HeroSaas, HeroShowcase, HeroV6Block, HeroWithGroupImagesBlock, HowItWorksSteps, LogoCloud, MaintenancePlans, MessengerStickyCTA, ModernHeroBlock, PatientFaq, PaymentOptionsStrip, Gallery4Block, GalleryGridBlock, PhotoGalleryGrid, PracticeAreasGrid, PricePreviewStrip, PricingComparisonTable, PricingSectionWithComparisonBlock, PricingTable, PromoCTASection, ReviewTrustBar, ReviewsGrid, SafetySection, ServiceAreaMap, StatsSection, TeamCarousel, TeamGrid, TeamShowcaseBlock, TestimonialsV2Block, TreatmentProcessTimeline, TrustBadgesGrid, TrustBar, WarrantyGuaranteeBlock, WhyChooseMe } from "@/components/shared/BlockRegistry";
+import { ACTypesGrid, AgencyBlogBlock, AgencyContactBlock, AgencyProductsBlock, AnimatedTestimonialsBlock, AnimatedTestimonialsCommunityBlock, AttorneyProfile, AwardsStrip, BackgroundBeamsCTABlock, BeforeAfterGalleryGrid, BeforeAfterSlider, BlogGrid, CaseStudyDetailBlock, CommonPestsGrid, ContactColumns, ContactForm, ContactMinimal, ContactSplit, ContactVisual, ContactWithMap, CoverageRadiusBlock, CustomHtmlSection, DeveloperPartnersLogos, ElegantCarouselBlock, EmergencyCTAStrip, FAQAccordion, FAQTwoColumn, FacebookReviewEmbed, FeatureHighlightZigzag, FeaturedListingsGrid, FeaturesBento, VerticalTabsBlock, FeaturesV2Block, FeaturesGrid, FeaturesModern, FeatureSpotlightBlock, FeatureStepsBlock, FinancingSection, FreeConsultationForm, GymClassSchedule, GymClassTypes, GymFacilityHighlights, GymFaq, GymMembershipTiers, GymPrograms, GymResultsStories, GymTrainers, Header, HeroAero3, HeroAuthority, HeroBlock, HeroChiropractor, HeroCleaning, HeroClinic, HeroDentist, HeroEmergency, HeroGym, HeroMinimalismBlock, HeroPestControl, HeroPool, HeroSaas, HeroShowcase, HeroV6Block, HeroV7Block, HeroWithGroupImagesBlock, HowItWorksSteps, LogoCloud, MaintenancePlans, MessengerStickyCTA, ModernHeroBlock, PatientFaq, PaymentOptionsStrip, Gallery4Block, GalleryGridBlock, PhotoGalleryGrid, PracticeAreasGrid, PricePreviewStrip, PricingComparisonTable, PricingSectionWithComparisonBlock, PricingTable, PromoCTASection, ReviewTrustBar, ReviewsGrid, SafetySection, ServiceAreaMap, StatsSection, TeamCarousel, TeamGrid, TeamShowcaseBlock, TestimonialsV2Block, TreatmentProcessTimeline, TrustBadgesGrid, TrustBar, WarrantyGuaranteeBlock, WhyChooseMe } from "@/components/shared/BlockRegistry";
 import { SECTION_NAV_MAP } from "@/lib/utils/blocks";
 import {
   DEFAULT_GYM_CLASS_TYPES,
@@ -40,6 +40,8 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
     animatedTestimonials = {},
     testimonialsCommunity = {},
     testimonialsV2 = {},
+    verticalTabs = {},
+    featuresV2 = {},
     ctaBeams = {},
     practiceAreas = {},
     attorneyProfile = {},
@@ -51,6 +53,7 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
     heroModern = {},
     heroGroupImages = {},
     heroV6 = {},
+    heroV7 = {},
     howItWorks = {},
     reviewTrustBar = {},
     featureHighlight = {},
@@ -63,6 +66,9 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
     pricingSectionComparison = {},
     awardsStrip = {},
     blog = {},
+    blogAgency = {},
+    contactAgency = {},
+    productsAgency = {},
     trustBadgesGrid = {},
     commonPests = {},
     treatmentProcess = {},
@@ -329,6 +335,28 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
         />
       );
       break;
+    case "services--vertical-tabs":
+      sectionContent = (
+        <VerticalTabsBlock
+          key={key}
+          title={verticalTabs.title}
+          subtitle={verticalTabs.subtitle}
+          services={normalizeToArray(verticalTabs.services)}
+        />
+      );
+      break;
+    case "services--features-v2":
+      sectionContent = (
+        <FeaturesV2Block
+          key={key}
+          title={featuresV2.title}
+          subtitle={featuresV2.subtitle}
+          description={featuresV2.description}
+          features={normalizeToArray(featuresV2.features)}
+          ctaText={featuresV2.ctaText}
+        />
+      );
+      break;
     case "certifications":
     case "awards": {
       let awardsItems = awardsStrip.items
@@ -544,6 +572,19 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
         />
       );
       break;
+    case "hero--v7":
+      sectionContent = (
+        <HeroV7Block
+          key={key}
+          title={heroV7.title}
+          description={heroV7.description}
+          buttonText={heroV7.buttonText}
+          backgroundImage={heroV7.backgroundImage}
+          stats={normalizeToArray(heroV7.stats)}
+          teamAvatars={normalizeToArray(heroV7.teamAvatars)}
+        />
+      );
+      break;
     case "practice-areas":
       sectionContent = (
         <PracticeAreasGrid
@@ -685,6 +726,24 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
         />
       );
       break;
+    case "contact--agency":
+      sectionContent = (
+        <AgencyContactBlock
+          key={key}
+          title={contactAgency.title}
+          subtitle={contactAgency.subtitle}
+          description={contactAgency.description}
+          formHeading={contactAgency.formHeading}
+          formButtonText={contactAgency.formButtonText}
+          formThankYouText={contactAgency.formThankYouText}
+          infoHeading={contactAgency.infoHeading}
+          infoItems={normalizeToArray(contactAgency.infoItems)}
+          socials={normalizeToArray(contactAgency.socials)}
+          mapEmbedUrl={contactAgency.mapEmbedUrl || contact.mapEmbedUrl}
+          officeHours={contactAgency.officeHours || contact.businessHours}
+        />
+      );
+      break;
     case "contact--columns":
     case "contact-columns":
       sectionContent = (
@@ -733,6 +792,32 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
           subtitle={blog.subtitle}
           posts={normalizeToArray(blog.posts)}
           linkText={blog.linkText}
+        />
+      );
+      break;
+    case "blog--agency":
+      sectionContent = (
+        <AgencyBlogBlock
+          key={key}
+          title={blogAgency.title}
+          subtitle={blogAgency.subtitle}
+          description={blogAgency.description}
+          posts={normalizeToArray(blogAgency.posts)}
+          ctaText={blogAgency.ctaText}
+          featuredPostId={blogAgency.featuredPostId}
+        />
+      );
+      break;
+    case "products--agency":
+      sectionContent = (
+        <AgencyProductsBlock
+          key={key}
+          title={productsAgency.title}
+          subtitle={productsAgency.subtitle}
+          description={productsAgency.description}
+          items={normalizeToArray(productsAgency.items)}
+          categories={normalizeToArray(productsAgency.categories)}
+          ctaText={productsAgency.ctaText}
         />
       );
       break;

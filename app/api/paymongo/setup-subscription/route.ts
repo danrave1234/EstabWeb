@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const secret = process.env.PAYMONGO_SECRET_KEY
     if (!secret) return NextResponse.json({ error: 'PayMongo not configured' }, { status: 503 })
 
-    const { projectId, planId = 'ph_monthly', interval = 'monthly' } = await req.json()
+    const { projectId, planId = 'basic', interval = 'monthly' } = await req.json()
     if (!projectId) return NextResponse.json({ error: 'Missing projectId' }, { status: 400 })
 
     // Auth check – must be the project owner

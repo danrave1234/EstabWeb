@@ -6,7 +6,8 @@ import { allFontVariables, getFontVariables } from "@/lib/fonts";
 import ScrollReveal from "@/components/shared/ScrollReveal";
 import { Toaster } from "sonner";
 import { headers } from "next/headers";
-import { getSiteConfigWithProject } from "@/lib/utils/site-config";
+import { getCachedSiteConfig } from "@/lib/utils/site-config";
+import { COLOR_THEME_SWATCHES } from "@/config/dashboard-config";
 import StructuredData from "@/components/shared/StructuredData";
 import { GoogleAnalytics, FacebookPixel, AnalyticsProvider } from "@/components/shared/Analytics";
 import { generateSchema } from "@/lib/utils/schema";
@@ -28,7 +29,7 @@ export async function generateMetadata({
   const { domain } = await params;
   const heads = await headers();
   const host = (heads.get("host") || domain).toLowerCase();
-  const { config, project } = await getSiteConfigWithProject(domain, heads);
+  const { config, project } = await getCachedSiteConfig(domain, heads);
   const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase();
   const preferredHost =
     project?.custom_domain && isProPlan(project)
@@ -68,22 +69,6 @@ export async function generateMetadata({
   };
 }
 
-const VALID_COLOR_THEMES = [
-  "partner", "justice", "modern", "frost-fire", "reliable", "eco-clean",
-  "surgeon", "wellness", "holistic", "clinical-gold", "red-crimson", "cyan-ocean", "orange-amber",
-  // New requested themes
-  "dark-pink-white", "blue-mint", "red-black", "dark-green-ivory-yellow", "bright-green-hot-pink",
-  "dark-grey-yellowgreen", "blue-shades-white", "white-lime", "beige-dark-grey", "pastel-purple-neutral",
-  "navy-electric-blue", "gradient-white-dark-blue", "white-blue-grey", "bright-red-white",
-  "classic-blue-turquoise-gold", "dark-royal-blue-gold", "white-purple", "blue-shades-white-red-violet",
-  "light-reddish-orange", "white-purple-orange", "deep-purple-orange-red-pink", "brown-beige", "navy-electric",
-  "dark-green-ivory", "fiesta-red-yellow", "barangay-blue", "tropical-teal", "luxury-black-gold", "facebook-blue",
-  // Existing tech themes
-  "nebula", "flow", "mono",
-  // Gym themes
-  "gym-boutique", "gym-hardcore", "gym-functional",
-] as const;
-
 export default async function SiteLayout({
   children,
   params,
@@ -107,7 +92,7 @@ export default async function SiteLayout({
     domain = resolvedParams.domain;
     const heads = await headers();
     host = heads.get("host") || domain;
-    const siteData = await getSiteConfigWithProject(domain, heads);
+    const siteData = await getCachedSiteConfig(domain, heads);
     dbConf = siteData.config;
     const project = siteData.project;
     projectId = project?.id;
@@ -138,8 +123,9 @@ export default async function SiteLayout({
     }
 
     if (dbConf) {
-      if (dbConf.colorTheme && VALID_COLOR_THEMES.includes(dbConf.colorTheme)) {
-        colorTheme = dbConf.colorTheme;
+      const requestedTheme = typeof dbConf.colorTheme === "string" ? dbConf.colorTheme : "";
+      if (requestedTheme && Object.prototype.hasOwnProperty.call(COLOR_THEME_SWATCHES, requestedTheme)) {
+        colorTheme = requestedTheme;
       }
       if (dbConf.darkMode) {
         mode = "dark";

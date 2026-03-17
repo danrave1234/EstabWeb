@@ -23,13 +23,18 @@ import {
   DEFAULT_TREATMENT_PROCESS,
   DEFAULT_AWARDS_STRIP,
   DEFAULT_BEFORE_AFTER_GALLERY,
+  DEFAULT_AGENCY_BLOG,
+  DEFAULT_AGENCY_CONTACT,
+  DEFAULT_AGENCY_PRODUCTS,
   DEFAULT_COMMON_PESTS,
   DEFAULT_FEATURED_LISTINGS,
   DEFAULT_DEVELOPER_PARTNERS,
   DEFAULT_REVIEW_TRUST_BAR,
   DEFAULT_ANIMATED_TESTIMONIALS,
   DEFAULT_FINANCING,
+  DEFAULT_VERTICAL_TABS,
   DEFAULT_FEATURES_BENTO,
+  DEFAULT_FEATURES_V2,
   DEFAULT_AC_TYPES,
   DEFAULT_PRICE_PREVIEW,
   DEFAULT_PRICING_COMPARISON_TABLE,
@@ -57,6 +62,7 @@ import {
   DEFAULT_HERO_MODERN,
   DEFAULT_HERO_GROUP_IMAGES,
   DEFAULT_HERO_V6,
+  DEFAULT_HERO_V7,
   DEFAULT_TEAM_SHOWCASE,
   DEFAULT_FEATURE_STEPS,
   DEFAULT_FEATURE_SPOTLIGHT,
@@ -79,6 +85,8 @@ import {
 const LivePreviewFeaturesGrid = dynamic(() => import("@/components/blocks/FeaturesGrid"), { ssr: false })
 const LivePreviewFeaturesBento = dynamic(() => import("@/components/blocks/FeaturesBento"), { ssr: false })
 const LivePreviewFeaturesModern = dynamic(() => import("@/components/blocks/FeaturesModern"), { ssr: false })
+const LivePreviewFeaturesV2 = dynamic(() => import("@/components/blocks/FeaturesV2Block"), { ssr: false })
+const LivePreviewVerticalTabs = dynamic(() => import("@/components/blocks/VerticalTabsBlock"), { ssr: false })
 const LivePreviewPracticeAreas = dynamic(() => import("@/components/blocks/PracticeAreasGrid"), { ssr: false })
 const LivePreviewHowItWorks = dynamic(() => import("@/components/blocks/HowItWorksSteps"), { ssr: false })
 const LivePreviewTreatmentProcess = dynamic(() => import("@/components/blocks/TreatmentProcessTimeline"), { ssr: false })
@@ -113,11 +121,14 @@ const LivePreviewTeamCarousel = dynamic(() => import("@/components/blocks/TeamCa
 const LivePreviewTeamShowcase = dynamic(() => import("@/components/blocks/TeamShowcaseBlock"), { ssr: false })
 const LivePreviewAttorneyProfile = dynamic(() => import("@/components/blocks/AttorneyProfile"), { ssr: false })
 const LivePreviewBlogGrid = dynamic(() => import("@/components/blocks/BlogGrid"), { ssr: false })
+const LivePreviewAgencyBlog = dynamic(() => import("@/components/blocks/AgencyBlogBlock"), { ssr: false })
 const LivePreviewContactMinimal = dynamic(() => import("@/components/blocks/ContactMinimal"), { ssr: false })
 const LivePreviewContactWithMap = dynamic(() => import("@/components/blocks/ContactWithMap"), { ssr: false })
 const LivePreviewContactColumns = dynamic(() => import("@/components/blocks/ContactColumns"), { ssr: false })
 const LivePreviewContactSplit = dynamic(() => import("@/components/blocks/ContactSplit"), { ssr: false })
 const LivePreviewContactVisual = dynamic(() => import("@/components/blocks/ContactVisual"), { ssr: false })
+const LivePreviewAgencyContact = dynamic(() => import("@/components/blocks/AgencyContactBlock"), { ssr: false })
+const LivePreviewAgencyProducts = dynamic(() => import("@/components/blocks/AgencyProductsBlock"), { ssr: false })
 const LivePreviewCoverageRadius = dynamic(() => import("@/components/blocks/CoverageRadiusBlock"), { ssr: false })
 const LivePreviewFAQTwoColumn = dynamic(() => import("@/components/blocks/FAQTwoColumn"), { ssr: false })
 const LivePreviewMaintenancePlans = dynamic(() => import("@/components/blocks/MaintenancePlans"), { ssr: false })
@@ -158,6 +169,7 @@ const LivePreviewElegantCarousel = dynamic(() => import("@/components/blocks/Ele
 const LivePreviewModernHero = dynamic(() => import("@/components/blocks/ModernHeroBlock"), { ssr: false })
 const LivePreviewHeroGroupImages = dynamic(() => import("@/components/blocks/HeroWithGroupImagesBlock"), { ssr: false })
 const LivePreviewHeroV6 = dynamic(() => import("@/components/blocks/HeroV6Block"), { ssr: false })
+const LivePreviewHeroV7 = dynamic(() => import("@/components/blocks/HeroV7Block"), { ssr: false })
 
 // ── Prefetch on hover ────────────────────────────────────────────────────────
 export function prefetchSectionPreview(id: string) {
@@ -173,6 +185,10 @@ export function prefetchSectionPreview(id: string) {
       void import("@/components/blocks/FeaturesBento"); return
     case "features-modern":
       void import("@/components/blocks/FeaturesModern"); return
+    case "services--vertical-tabs":
+      void import("@/components/blocks/VerticalTabsBlock"); return
+    case "services--features-v2":
+      void import("@/components/blocks/FeaturesV2Block"); return
     case "practice-areas":
       void import("@/components/blocks/PracticeAreasGrid"); return
     case "how-it-works":
@@ -247,6 +263,8 @@ export function prefetchSectionPreview(id: string) {
       void import("@/components/blocks/HeroWithGroupImagesBlock"); return
     case "hero--v6":
       void import("@/components/blocks/HeroV6Block"); return
+    case "hero--v7":
+      void import("@/components/blocks/HeroV7Block"); return
     case "gym--programs":
       void import("@/components/blocks/GymPrograms"); return
     case "gym--schedule":
@@ -279,6 +297,12 @@ export function prefetchSectionPreview(id: string) {
       void import("@/components/blocks/FeatureStepsBlock"); return
     case "features--spotlight":
       void import("@/components/blocks/FeatureSpotlightBlock"); return
+    case "blog--agency":
+      void import("@/components/blocks/AgencyBlogBlock"); return
+    case "contact--agency":
+      void import("@/components/blocks/AgencyContactBlock"); return
+    case "products--agency":
+      void import("@/components/blocks/AgencyProductsBlock"); return
     default:
       return
   }
@@ -666,6 +690,24 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
             title={DEFAULT_FEATURES_BENTO.title}
             subtitle={DEFAULT_FEATURES_BENTO.subtitle}
             items={DEFAULT_FEATURES_BENTO.items as any}
+          />
+        )
+      case "services--vertical-tabs":
+        return (
+          <LivePreviewVerticalTabs
+            title={DEFAULT_VERTICAL_TABS.title}
+            subtitle={DEFAULT_VERTICAL_TABS.subtitle}
+            services={DEFAULT_VERTICAL_TABS.services as any}
+          />
+        )
+      case "services--features-v2":
+        return (
+          <LivePreviewFeaturesV2
+            title={DEFAULT_FEATURES_V2.title}
+            subtitle={DEFAULT_FEATURES_V2.subtitle}
+            description={DEFAULT_FEATURES_V2.description}
+            features={DEFAULT_FEATURES_V2.features as any}
+            ctaText={DEFAULT_FEATURES_V2.ctaText}
           />
         )
       case "services--highlight":
@@ -1503,6 +1545,16 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
             ]}
           />
         )
+      case "blog--agency":
+        return (
+          <LivePreviewAgencyBlog
+            title={DEFAULT_AGENCY_BLOG.title}
+            subtitle={DEFAULT_AGENCY_BLOG.subtitle}
+            description={DEFAULT_AGENCY_BLOG.description}
+            posts={DEFAULT_AGENCY_BLOG.posts as any}
+            ctaText={DEFAULT_AGENCY_BLOG.ctaText}
+          />
+        )
       // ── Contact variants ─────────────────────────────────────────────────
       case "contact":
         return (
@@ -1566,6 +1618,31 @@ function buildSectionPreviewContent(id: string): React.ReactNode {
             email="hello@example.com"
             phone="(555) 000-0000"
             address="123 Main St, City"
+          />
+        )
+      case "contact--agency":
+        return (
+          <LivePreviewAgencyContact
+            title={DEFAULT_AGENCY_CONTACT.title}
+            subtitle={DEFAULT_AGENCY_CONTACT.subtitle}
+            description={DEFAULT_AGENCY_CONTACT.description}
+            formHeading={DEFAULT_AGENCY_CONTACT.formHeading}
+            formButtonText={DEFAULT_AGENCY_CONTACT.formButtonText}
+            infoHeading={DEFAULT_AGENCY_CONTACT.infoHeading}
+            infoItems={DEFAULT_AGENCY_CONTACT.infoItems as any}
+            socials={DEFAULT_AGENCY_CONTACT.socials as any}
+            officeHours={DEFAULT_AGENCY_CONTACT.officeHours}
+          />
+        )
+      case "products--agency":
+        return (
+          <LivePreviewAgencyProducts
+            title={DEFAULT_AGENCY_PRODUCTS.title}
+            subtitle={DEFAULT_AGENCY_PRODUCTS.subtitle}
+            description={DEFAULT_AGENCY_PRODUCTS.description}
+            items={DEFAULT_AGENCY_PRODUCTS.items as any}
+            categories={DEFAULT_AGENCY_PRODUCTS.categories as any}
+            ctaText={DEFAULT_AGENCY_PRODUCTS.ctaText}
           />
         )
       // ── FAQ two-column ────────────────────────────────────────────────────
@@ -1685,6 +1762,7 @@ function HeroPreview({ theme }: { theme: string }) {
     case "modern": return <LivePreviewModernHero {...(DEFAULT_HERO_MODERN || {})} />
     case "group-images": return <LivePreviewHeroGroupImages {...(DEFAULT_HERO_GROUP_IMAGES || {})} />
     case "v6": return <LivePreviewHeroV6 {...(DEFAULT_HERO_V6 || {})} />
+    case "v7": return <LivePreviewHeroV7 {...(DEFAULT_HERO_V7 || {})} />
     case "chiropractor": return <LivePreviewHeroChiropractor {...(DEFAULT_HERO_CHIROPRACTOR as any)} />
     case "dentist": return <LivePreviewHeroDentist {...(DEFAULT_HERO_DENTIST as any)} />
     case "clinic": return <LivePreviewHeroClinic {...(DEFAULT_HERO_CLINIC as any)} />

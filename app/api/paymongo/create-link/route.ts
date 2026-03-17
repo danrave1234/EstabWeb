@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const secret = process.env.PAYMONGO_SECRET_KEY
     if (!secret) return NextResponse.json({ error: 'PayMongo not configured' }, { status: 503 })
 
-    const { projectId, planId = 'ph_monthly', interval = 'monthly', successUrl } = await req.json()
+    const { projectId, planId = 'basic', interval = 'monthly', successUrl } = await req.json()
     if (!projectId) return NextResponse.json({ error: 'Missing projectId' }, { status: 400 })
 
     const supabase = await createClient()
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
             success_url: successUrl || undefined,
             metadata: {
               project_id: projectId,
-              plan_id: planId,
+              plan_id: activePlanId,
               user_id: user.id,
               is_initial: !proj.has_paid_initial,
               interval: interval,
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
     const linkId = json?.data?.id
     if (!checkoutUrl || !linkId) return NextResponse.json({ error: 'No checkout URL returned' }, { status: 500 })
 
-    await supabase.from('paymongo_links').insert({ link_id: linkId, project_id: projectId, plan_id: planId })
+    await supabase.from('paymongo_links').insert({ link_id: linkId, project_id: projectId, plan_id: activePlanId })
 
     return NextResponse.json({ checkoutUrl, linkId })
 

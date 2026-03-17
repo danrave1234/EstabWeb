@@ -27,6 +27,7 @@ export const ElegantCarouselBlock = dynamicWithSkeleton(() => import("@/componen
 export const ModernHeroBlock = dynamicWithSkeleton(() => import("@/components/blocks/ModernHeroBlock"), { className: "h-[600px]" });
 export const HeroWithGroupImagesBlock = dynamicWithSkeleton(() => import("@/components/blocks/HeroWithGroupImagesBlock"), { className: "h-[600px]" });
 export const HeroV6Block = dynamicWithSkeleton(() => import("@/components/blocks/HeroV6Block"), { className: "h-[600px]" });
+export const HeroV7Block = dynamicWithSkeleton(() => import("@/components/blocks/HeroV7Block"), { className: "h-[600px]" });
 
 
 // Content blocks
@@ -42,6 +43,7 @@ export const ContactVisual = dynamicWithSkeleton(() => import("@/components/bloc
 export const ContactWithMap = dynamicWithSkeleton(() => import("@/components/blocks/ContactWithMap"), { className: "h-[600px]" });
 export const ContactColumns = dynamicWithSkeleton(() => import("@/components/blocks/ContactColumns"), { className: "h-[800px]" });
 export const ContactSplit = dynamicWithSkeleton(() => import("@/components/blocks/ContactSplit"), { className: "h-[700px]" });
+export const AgencyContactBlock = dynamicWithSkeleton(() => import("@/components/blocks/AgencyContactBlock"), { className: "h-[800px]" });
 export const PracticeAreasGrid = dynamicWithSkeleton(() => import("@/components/blocks/PracticeAreasGrid"), { className: "h-[500px]" });
 export const AttorneyProfile = dynamicWithSkeleton(() => import("@/components/blocks/AttorneyProfile"), { className: "h-[500px]" });
 export const FreeConsultationForm = dynamicWithSkeleton(() => import("@/components/blocks/FreeConsultationForm"), { className: "h-[500px]" });
@@ -56,10 +58,14 @@ export const TeamShowcaseBlock = dynamicWithSkeleton(() => import("@/components/
 export const TestimonialsV2Block = dynamicWithSkeleton(() => import("@/components/blocks/TestimonialsV2Block"), { className: "h-[600px]" });
 export const PatientFaq = dynamicWithSkeleton(() => import("@/components/blocks/PatientFaq"), { className: "h-[500px]" });
 export const BlogGrid = dynamicWithSkeleton(() => import("@/components/blocks/BlogGrid"), { className: "h-[600px]" });
+export const AgencyBlogBlock = dynamicWithSkeleton(() => import("@/components/blocks/AgencyBlogBlock"), { className: "h-[800px]" });
 export const FeaturesModern = dynamicWithSkeleton(() => import("@/components/blocks/FeaturesModern"), { className: "h-[600px]" });
 export const FeaturesBento = dynamicWithSkeleton(() => import("@/components/blocks/FeaturesBento"), { className: "h-[560px]" });
+export const VerticalTabsBlock = dynamicWithSkeleton(() => import("@/components/blocks/VerticalTabsBlock"), { className: "h-[600px]" });
+export const FeaturesV2Block = dynamicWithSkeleton(() => import("@/components/blocks/FeaturesV2Block"), { className: "h-[600px]" });
 export const ReviewsGrid = dynamicWithSkeleton(() => import("@/components/blocks/ReviewsGrid"), { className: "h-[600px]" });
 export const FAQTwoColumn = dynamicWithSkeleton(() => import("@/components/blocks/FAQTwoColumn"), { className: "h-[500px]" });
+export const AgencyProductsBlock = dynamicWithSkeleton(() => import("@/components/blocks/AgencyProductsBlock"), { className: "h-[800px]" });
 export const CustomHtmlSection = dynamicWithSkeleton(() => import("@/components/blocks/CustomHtmlSection"), { className: "h-[420px]" });
 export const BackgroundBeamsCTABlock = dynamicWithSkeleton(() => import("@/components/blocks/BackgroundBeamsCTABlock"), { className: "h-[576px]" });
 export const FeatureStepsBlock = dynamicWithSkeleton(() => import("@/components/blocks/FeatureStepsBlock"), { className: "h-[520px]" });

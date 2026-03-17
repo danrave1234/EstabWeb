@@ -38,6 +38,9 @@ EstabWeb is a multi-tenant SaaS platform for generating and managing industry-op
 
 ## Preset Config Notes
 
+- Header style options available in dashboard design are:
+  - `sticky`, `static`, `floating`, `tubelight`, `megamenu`
+  - Legacy alias: `solid` is treated as sticky behavior
 - Gym templates (`gym_boutique`, `gym_hardcore`, `gym_functional`) use dedicated section keys in project config:
   - `gymPrograms`, `gymSchedule`, `gymMemberships`, `gymClassTypes`, `gymTrainers`, `gymResults`, `gymFacility`, `gymFaq`
 - These map to section IDs:

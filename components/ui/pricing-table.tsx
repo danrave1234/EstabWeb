@@ -1,11 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { CheckIcon, ArrowRightIcon } from "@radix-ui/react-icons"
-import NumberFlow from "@number-flow/react"
-
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { CheckIcon, ArrowRightIcon, Cross2Icon } from "@radix-ui/react-icons"
+import NumberFlow from "@number-flow/react"
 
 export type PlanLevel = "starter" | "pro" | "all" | string
 
@@ -21,6 +20,7 @@ export interface PricingPlan {
     monthly: number
     yearly: number
   }
+  setupPrice: number
   popular?: boolean
 }
 
@@ -29,6 +29,7 @@ export interface PricingTableProps
   features: PricingFeature[]
   plans: PricingPlan[]
   onPlanSelect?: (plan: PlanLevel) => void
+  onButtonClick?: (plan: PlanLevel) => void
   defaultPlan?: PlanLevel
   defaultInterval?: "monthly" | "yearly"
   containerClassName?: string
@@ -39,7 +40,8 @@ export function PricingTable({
   features,
   plans,
   onPlanSelect,
-  defaultPlan = "pro",
+  onButtonClick,
+  defaultPlan = "basic",
   defaultInterval = "monthly",
   className,
   containerClassName,
@@ -48,33 +50,37 @@ export function PricingTable({
 }: PricingTableProps) {
   const [isYearly, setIsYearly] = React.useState(defaultInterval === "yearly")
   const [selectedPlan, setSelectedPlan] = React.useState<PlanLevel>(defaultPlan)
+  const [hintDismissed, setHintDismissed] = React.useState(false)
 
   const handlePlanSelect = (plan: PlanLevel) => {
     setSelectedPlan(plan)
+    setHintDismissed(true)
     onPlanSelect?.(plan)
   }
+
+  const selectedPlanData = plans.find((p) => p.level === selectedPlan)
 
   return (
     <section
       className={cn(
         "bg-background text-foreground",
-        "py-12 sm:py-24 md:py-32 px-4",
+        "py-4 sm:py-8 md:py-12 px-2 sm:px-4",
         "fade-bottom overflow-hidden pb-0",
-        className,
       )}
     >
       <div
-        className={cn("w-full max-w-3xl mx-auto px-4", containerClassName)}
+        className={cn("w-full max-w-4xl mx-auto", containerClassName)}
         {...props}
       >
-        <div className="flex justify-end mb-4 sm:mb-8">
-          <div className="inline-flex items-center gap-2 text-xs sm:text-sm">
+        {/* Billing interval toggle */}
+        <div className="flex justify-center sm:justify-end mb-4 sm:mb-6">
+          <div className="inline-flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg text-xs">
             <button
               type="button"
               onClick={() => setIsYearly(false)}
               className={cn(
-                "px-3 py-1 rounded-md transition-colors",
-                !isYearly ? "bg-muted text-foreground" : "text-muted-foreground",
+                "px-2.5 py-1.5 rounded-md transition-all font-bold",
+                !isYearly ? "bg-background text-primary shadow-sm" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300",
               )}
             >
               Monthly
@@ -83,8 +89,8 @@ export function PricingTable({
               type="button"
               onClick={() => setIsYearly(true)}
               className={cn(
-                "px-3 py-1 rounded-md transition-colors",
-                isYearly ? "bg-muted text-foreground" : "text-muted-foreground",
+                "px-2.5 py-1.5 rounded-md transition-all font-bold",
+                isYearly ? "bg-background text-primary shadow-sm" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300",
               )}
             >
               Yearly
@@ -92,57 +98,110 @@ export function PricingTable({
           </div>
         </div>
 
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row">
+        {/* Plan selector cards — 2x2 grid on mobile, flex row on sm+ */}
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-row sm:gap-4 mb-2 sm:mb-6 px-1">
           {plans.map((plan) => (
             <button
               key={plan.name}
               type="button"
               onClick={() => handlePlanSelect(plan.level)}
               className={cn(
-                "flex-1 p-4 rounded-xl text-left transition-all",
-                "border border-border",
-                selectedPlan === plan.level &&
-                  "ring-2 ring-primary",
+                "p-2.5 sm:p-4 rounded-xl text-left transition-all",
+                "border border-zinc-200 dark:border-zinc-800",
+                "sm:flex-1",
+                selectedPlan === plan.level
+                  ? "ring-2 ring-primary shadow-md shadow-primary/10 border-primary bg-primary/5"
+                  : "hover:border-zinc-300 dark:hover:border-zinc-700 bg-background",
               )}
             >
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="break-words text-sm font-medium">{plan.name}</span>
+              <div className="flex items-center justify-between mb-0.5 sm:mb-2 gap-1">
+                <span className="text-[10px] sm:text-sm font-bold truncate">{plan.name}</span>
                 {plan.popular && (
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                    Popular
+                  <span className="text-[7px] sm:text-xs bg-primary text-primary-foreground px-1 sm:px-2 py-0.5 rounded-full shrink-0 font-black">
+                    POP
                   </span>
                 )}
               </div>
-              <div className="flex items-baseline gap-1">
+              <div className="flex items-baseline gap-0.5 sm:gap-1 overflow-hidden">
+                <span className="text-xs sm:text-xl font-black">₱</span>
                 <NumberFlow
-                  format={{
-                    style: "currency",
-                    currency: "USD",
-                    trailingZeroDisplay: "stripIfInteger",
-                  }}
                   value={isYearly ? plan.price.yearly : plan.price.monthly}
-                  className="text-2xl font-bold"
+                  className="text-sm sm:text-2xl font-black tracking-tight"
                 />
-                  <span className="shrink-0 text-sm font-normal text-muted-foreground">
-                    /{isYearly ? "year" : "month"}
-                  </span>
-                </div>
+                <span className="text-[8px] sm:text-sm font-normal text-zinc-500 shrink-0">
+                  /{isYearly ? "yr" : "mo"}
+                </span>
+              </div>
+              <div className="mt-1 text-[7px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                Setup: <span className="font-bold text-foreground">₱{(plan.setupPrice).toLocaleString()}</span>
+              </div>
             </button>
           ))}
         </div>
 
-        <div className="border border-border rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <div className="min-w-[640px] divide-y divide-border">
-              <div className="flex items-center p-4 bg-muted">
-                <div className="flex-1 text-sm font-medium">Features</div>
-                <div className="flex items-center gap-8 text-sm">
+        {/* Hint row — mobile only, always takes up its space so nothing shifts, just fades */}
+        <div
+          aria-hidden="true"
+          className={cn(
+            "sm:hidden flex items-center justify-end gap-1.5 px-1 mb-3 h-6 transition-opacity duration-500",
+            hintDismissed ? "opacity-0" : "opacity-100",
+          )}
+        >
+          <span className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+          <span className="text-[10px] text-muted-foreground font-medium">
+            Tap a plan to see what&apos;s included
+          </span>
+        </div>
+
+        {/* ── MOBILE: feature checklist for selected plan ── */}
+        {selectedPlanData && (
+          <div className="sm:hidden border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-background mx-1 shadow-sm mb-6">
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+              <p className="text-xs font-bold text-foreground">
+                What&apos;s included in <span className="text-primary">{selectedPlanData.name}</span>
+              </p>
+            </div>
+            <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              {features.map((feature) => {
+                const checked = shouldShowCheck(feature.included, selectedPlan)
+                return (
+                  <div
+                    key={feature.name}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 transition-colors",
+                      checked ? "bg-background" : "bg-background opacity-50",
+                    )}
+                  >
+                    {checked ? (
+                      <span className="shrink-0 w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center">
+                        <CheckIcon className="w-2.5 h-2.5 text-primary" />
+                      </span>
+                    ) : (
+                      <span className="shrink-0 w-4 h-4 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                        <Cross2Icon className="w-2 h-2 text-zinc-400" />
+                      </span>
+                    )}
+                    <span className="text-[11px] font-medium leading-tight">{feature.name}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── DESKTOP: full comparison table ── */}
+        <div className="hidden sm:block border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-background mx-1 shadow-sm">
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="min-w-[550px] sm:min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+              <div className="flex items-center p-2.5 sm:p-4 bg-zinc-50 dark:bg-zinc-900 sticky top-0 z-20">
+                <div className="flex-1 text-[10px] sm:text-sm font-bold sticky left-0 bg-inherit z-10 pr-2 border-r border-zinc-200 dark:border-zinc-800 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">Features</div>
+                <div className="flex items-center gap-2 sm:gap-8 text-[10px] sm:text-sm">
                   {plans.map((plan) => (
                     <div
                       key={plan.level}
-                      className="w-16 text-center font-medium"
+                      className="w-16 sm:w-20 text-center font-bold px-1"
                     >
-                      {plan.name}
+                      {plan.name === 'E-commerce' ? 'Ecom' : plan.name}
                     </div>
                   ))}
                 </div>
@@ -151,25 +210,25 @@ export function PricingTable({
                 <div
                   key={feature.name}
                   className={cn(
-                    "flex items-center p-4 transition-colors",
+                    "flex items-center p-2.5 sm:p-4 transition-colors bg-background",
                     feature.included === selectedPlan &&
-                      "bg-primary/5",
+                      "bg-primary/[0.03]",
                   )}
                 >
-                  <div className="flex-1 text-sm">{feature.name}</div>
-                  <div className="flex items-center gap-8 text-sm">
+                  <div className="flex-1 text-[10px] sm:text-sm sticky left-0 bg-inherit z-10 pr-2 border-r border-zinc-200 dark:border-zinc-800 shadow-[2px_0_5px_rgba(0,0,0,0.05)] font-medium leading-tight">{feature.name}</div>
+                  <div className="flex items-center gap-2 sm:gap-8 text-[10px] sm:text-sm">
                     {plans.map((plan) => (
                       <div
                         key={plan.level}
                         className={cn(
-                          "w-16 flex justify-center",
-                          plan.level === selectedPlan && "font-medium",
+                          "w-16 sm:w-20 flex justify-center",
+                          plan.level === selectedPlan && "font-black text-primary",
                         )}
                       >
                         {shouldShowCheck(feature.included, plan.level) ? (
-                          <CheckIcon className="w-5 h-5 text-primary" />
+                          <CheckIcon className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-primary" />
                         ) : (
-                          <span className="text-muted-foreground/40">
+                          <span className="text-zinc-300 dark:text-zinc-700">
                             -
                           </span>
                         )}
@@ -182,15 +241,17 @@ export function PricingTable({
           </div>
         </div>
 
-        <div className="mt-8 text-center">
+        {/* CTA button */}
+        <div className="mt-6 text-center px-1">
           <Button
+            onClick={() => onButtonClick?.(selectedPlan)}
             className={cn(
-              "h-auto w-full rounded-xl px-6 py-2 text-center whitespace-normal sm:w-auto sm:px-8",
+              "w-full sm:w-auto bg-primary text-primary-foreground hover:opacity-90 px-6 py-2.5 rounded-full font-black text-xs sm:text-sm shadow-lg shadow-primary/20",
               buttonClassName,
             )}
           >
             Get started with {plans.find((p) => p.level === selectedPlan)?.name}
-            <ArrowRightIcon className="w-4 h-4 ml-2" />
+            <ArrowRightIcon className="w-4 h-4 ml-1.5 sm:ml-2" />
           </Button>
         </div>
       </div>
@@ -202,12 +263,15 @@ function shouldShowCheck(
   included: PricingFeature["included"],
   level: string,
 ): boolean {
-  if (included === "all") return true
-  if (included === "pro" && (level === "pro" || level === "all")) return true
-  if (
-    included === "starter" &&
-    (level === "starter" || level === "pro" || level === "all")
-  )
-    return true
-  return false
+  if (!included) return false;
+  const levels = ["free", "basic", "pro", "ecommerce"];
+  const includedIndex = levels.indexOf(included as string);
+  const levelIndex = levels.indexOf(level);
+  
+  if (includedIndex === -1) {
+    if (included === "all") return true;
+    return false;
+  }
+  
+  return levelIndex >= includedIndex;
 }

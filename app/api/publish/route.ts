@@ -116,8 +116,23 @@ export async function POST(req: Request) {
       snapshot: newConfig,
     })
 
-    if (proj.subdomain) revalidateTag(`site:${proj.subdomain}`, 'max')
-    if (proj.custom_domain) revalidateTag(`site:${proj.custom_domain}`, 'max')
+    const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com').toLowerCase()
+    const tagKeys = new Set<string>()
+    const sub = typeof proj.subdomain === 'string' ? proj.subdomain.toLowerCase() : ''
+    const custom = typeof proj.custom_domain === 'string' ? proj.custom_domain.toLowerCase() : ''
+    if (sub) {
+      tagKeys.add(sub)
+      tagKeys.add(`${sub}.${rootDomain}`)
+      tagKeys.add(`www.${sub}.${rootDomain}`)
+    }
+    if (custom) {
+      tagKeys.add(custom)
+      tagKeys.add(custom.replace(/^www\./, ''))
+      if (!custom.startsWith('www.')) tagKeys.add(`www.${custom}`)
+    }
+    for (const key of tagKeys) {
+      revalidateTag(`site:${key}`, 'max')
+    }
     await onProjectPublished({ projectId, subdomain: proj.subdomain, customDomain: proj.custom_domain })
 
     // revalidatePath uses Next.js route segment patterns, not domain URLs.

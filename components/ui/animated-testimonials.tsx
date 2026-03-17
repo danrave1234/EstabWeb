@@ -27,9 +27,18 @@ export const AnimatedTestimonials = ({
 
   const hasTestimonials = testimonials.length > 0
 
+  const deterministicRotation = useCallback((value: string, index: number) => {
+    let hash = 0
+    for (let i = 0; i < value.length; i += 1) {
+      hash = (hash * 31 + value.charCodeAt(i)) | 0
+    }
+    const seeded = Math.abs(hash + index * 17)
+    return (seeded % 21) - 10
+  }, [])
+
   const rotations = useMemo(
-    () => testimonials.map(() => Math.floor(Math.random() * 21) - 10),
-    [testimonials],
+    () => testimonials.map((testimonial, index) => deterministicRotation(testimonial.src, index)),
+    [deterministicRotation, testimonials],
   )
 
   const handleNext = useCallback(() => {

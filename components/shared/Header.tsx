@@ -111,20 +111,22 @@ export default function Header({
           </span>
         </div>
       )}
-      <span className="font-serif font-bold text-lg tracking-tight text-foreground hidden sm:inline">
+      <span className={`font-serif font-bold tracking-tight text-foreground hidden sm:inline ${isDenseFloating ? "text-base xl:text-lg" : "text-lg"}`}>
         {brandName}
       </span>
     </Link>
   );
 
   const DesktopNav = () => (
-    <nav aria-label="Primary" className="hidden md:flex items-center gap-1">
+    <nav aria-label="Primary" className={`hidden md:flex items-center flex-1 min-w-0 ${isFloating ? "gap-0.5 justify-center overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none]" : "gap-1"}`}>
       {navigation.map((item) => (
         isInternalRoute(item.href) ? (
           <Link
             key={item.name}
             href={buildHref(item.href)}
-            className="font-serif px-4 py-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2"
+            className={`font-serif text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2 ${
+              isDenseFloating ? "px-2 py-2 text-xs" : isFloating ? "px-3 py-2" : "px-4 py-2"
+            }`}
           >
             {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
             {item.name}
@@ -133,7 +135,9 @@ export default function Header({
           <a
             key={item.name}
             href={buildHref(item.href)}
-            className="font-serif px-4 py-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2"
+            className={`font-serif text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2 ${
+              isDenseFloating ? "px-2 py-2 text-xs" : isFloating ? "px-3 py-2" : "px-4 py-2"
+            }`}
           >
             {item.icon && <DynamicIcon name={item.icon} className="w-4 h-4" />}
             {item.name}
@@ -145,7 +149,11 @@ export default function Header({
 
   const CtaButton = ({ className }: { className?: string }) => {
     if (!ctaText) return null;
-    const base = `font-serif px-5 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors ${className ?? ""}`;
+    const base = `font-serif inline-flex items-center justify-center bg-primary text-primary-foreground text-sm font-semibold rounded-full whitespace-nowrap leading-none hover:bg-primary/90 transition-colors ${
+      isFloating
+        ? isDenseFloating ? "h-9 px-3 text-xs shrink-0" : "h-10 px-4 shrink-0"
+        : "px-5 py-2.5"
+    } ${className ?? ""}`;
     return isInternalRoute(ctaHref) ? (
       <Link href={buildHref(ctaHref)} className={base}>
         {ctaText}
@@ -230,18 +238,27 @@ export default function Header({
   );
 
   /* ── Resolve sticky vs static (support legacy "solid"/"floating" values) */
-  const isSticky = headerStyle === "sticky" || headerStyle === "solid" || headerStyle === "floating";
+  const isFloating = headerStyle === "floating";
+  const isSticky = headerStyle === "sticky" || headerStyle === "solid";
+  const isFixedFloating = isFloating;
+  const isDenseFloating = isFloating && navigation.length >= 9;
+  const desktopHeaderClass = isFloating
+    ? "rounded-full border border-border/70 bg-background/90 shadow-md backdrop-blur-md"
+    : "";
+  const mobileHeaderClass = isFloating
+    ? "mt-2 rounded-2xl border border-border/70 bg-background/95 shadow-md"
+    : "border-t border-border bg-background";
 
   /* ── Unified header bar ───────────────────────────────────────────── */
   return (
     <header
       data-section-id="brand"
-      className={`z-50 w-full bg-background/95 backdrop-blur-md border-b border-border transition-all duration-300 ${
-        isSticky ? "sticky top-0" : "relative"
-      }`}
+      className={`z-50 w-full transition-all duration-300 ${
+        isFixedFloating ? "fixed top-3 sm:top-4 left-0 right-0" : isSticky ? "sticky top-0" : "relative"
+      } ${isFloating ? "" : "border-b border-border bg-background/95 backdrop-blur-md"}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-[72px]">
+        <div className={`flex items-center justify-between h-16 lg:h-[72px] px-4 sm:px-6 ${desktopHeaderClass}`}>
           <LogoContent />
           <DesktopNav />
           <div className="hidden md:flex items-center gap-3">
@@ -250,7 +267,7 @@ export default function Header({
           <MobileMenuButton />
         </div>
       </div>
-      <MobileNav />
+        <MobileNav extraClass={`mx-4 sm:mx-6 lg:mx-8 ${mobileHeaderClass}`} />
     </header>
   );
 }

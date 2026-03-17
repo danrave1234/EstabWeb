@@ -17,17 +17,20 @@ const plans = [
     name: "Starter",
     price: { monthly: 15, yearly: 144 },
     level: "starter",
+    setupPrice: 0,
   },
   {
     name: "Pro",
     price: { monthly: 49, yearly: 470 },
     level: "pro",
     popular: true,
+    setupPrice: 0,
   },
   {
     name: "Enterprise",
     price: { monthly: 99, yearly: 990 },
     level: "all",
+    setupPrice: 0,
   },
 ]
 

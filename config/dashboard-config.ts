@@ -204,6 +204,62 @@ export const DEFAULT_HERO_V6 = {
   showHeader: false,
 };
 
+export const DEFAULT_HERO_V7 = {
+  title: "We think, you grow — that's the deal",
+  description: "We take your big ideas and turn them into clear, winning strategies. From setting up your company to scaling it worldwide, we're here every step of the way.",
+  buttonText: "Get Template",
+  backgroundImage: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a",
+  stats: [
+    { emoji: "🚀", label: "IN CLIENT REVENUE GENERATED", value: "$5M+" },
+    { emoji: "📈", label: "BUSINESSES LAUNCHED", value: "200+" },
+    { emoji: "💰", label: "SAVED IN OPERATIONAL COSTS", value: "$500K+" },
+  ],
+  teamAvatars: [
+    { initials: "JD", src: "https://res.cloudinary.com/doonkheo8/image/upload/v1770279333/a1.jpg" },
+    { initials: "HJ", src: "https://res.cloudinary.com/doonkheo8/image/upload/v1770279333/a2.jpg" },
+    { initials: "PI", src: "https://res.cloudinary.com/doonkheo8/image/upload/v1770279333/a3.jpg" },
+    { initials: "KD", src: "https://res.cloudinary.com/doonkheo8/image/upload/v1770279333/a4.jpg" },
+    { initials: "LD", src: "https://res.cloudinary.com/doonkheo8/image/upload/v1770279333/a5.jpg" },
+  ],
+};
+
+export const DEFAULT_FEATURES_V2 = {
+  title: "Why business owners trust us",
+  subtitle: "WHY CHOOSE US",
+  description: "We don't just build websites; we build growth engines. Our unique approach combines data-driven strategy with world-class design.",
+  ctaText: "Start Your Project",
+  features: [
+    {
+      id: "1",
+      title: "Fast Delivery",
+      description: "We ship your project in record time without compromising quality.",
+      icon: "zap",
+      accentColor: "bg-blue-500/10 text-blue-500",
+    },
+    {
+      id: "2",
+      title: "Premium Quality",
+      description: "Every pixel is handcrafted by our expert designers.",
+      icon: "star",
+      accentColor: "bg-amber-500/10 text-amber-500",
+    },
+    {
+      id: "3",
+      title: "Secure & Reliable",
+      description: "Built on enterprise-grade infrastructure for 99.9% uptime.",
+      icon: "shield",
+      accentColor: "bg-emerald-500/10 text-emerald-500",
+    },
+    {
+      id: "4",
+      title: "Growth Focused",
+      description: "Strategies designed to scale your business worldwide.",
+      icon: "trending",
+      accentColor: "bg-purple-500/10 text-purple-500",
+    },
+  ],
+};
+
 export const DEFAULT_HERO_CHIROPRACTOR = {
   title: "Live Life Without the Pain.",
   subtitle: "The most thorough adjustment you'll ever experience.",
@@ -340,6 +396,31 @@ export const DEFAULT_ATTORNEY_PROFILE = {
   ],
 };
 
+export const DEFAULT_VERTICAL_TABS = {
+  title: "How I can help you",
+  subtitle: "SERVICES",
+  services: [
+    {
+      id: "01",
+      title: "Web Design",
+      description: "Creating beautiful, functional, and user-centric digital experiences.",
+      image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1200",
+    },
+    {
+      id: "02",
+      title: "Framer Development",
+      description: "Building high-performance, animated websites with Framer.",
+      image: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?q=80&w=1200",
+    },
+    {
+      id: "03",
+      title: "Branding",
+      description: "Defining your brand's visual identity and voice for a lasting impression.",
+      image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200",
+    },
+  ],
+};
+
 export const DEFAULT_PROMO_STRIP = {
   text: "Arrested? Don't wait. Call us immediately for a free, confidential case evaluation.",
   buttonText: "Call Now",
@@ -367,6 +448,27 @@ export const DEFAULT_CONTACT = {
   phone: "555-0100",
   address: "123 Main St, Suite 100, CityName, State 12345",
   buttonText: "Send Message",
+};
+
+export const DEFAULT_AGENCY_CONTACT = {
+  subtitle: "GET IN TOUCH",
+  title: "Let's build something remarkable together",
+  description: "We're always looking for new challenges and exciting projects. Drop us a line and let's start a conversation.",
+  formHeading: "Send us a message",
+  formButtonText: "Send Message",
+  formThankYouText: "Message Sent! We'll be in touch soon.",
+  infoHeading: "Contact Details",
+  officeHours: "Mon - Fri, 9:00 AM - 6:00 PM",
+  infoItems: [
+    { id: "1", label: "Email", value: "hello@agency.com", icon: "mail", href: "mailto:hello@agency.com" },
+    { id: "2", label: "Phone", value: "+63 912 345 6789", icon: "phone", href: "tel:+639123456789" },
+    { id: "3", label: "Office", value: "BGC, Taguig, Metro Manila", icon: "map" },
+  ],
+  socials: [
+    { id: "1", platform: "instagram", href: "#" },
+    { id: "2", platform: "twitter", href: "#" },
+    { id: "3", platform: "linkedin", href: "#" },
+  ],
 };
 
 export const DEFAULT_CUSTOM_HTML_SECTION = {
@@ -451,6 +553,102 @@ export const DEFAULT_BLOG = {
   linkText: "Read Article",
   posts: [
     { title: "Article Title", excerpt: "Short description.", date: "Jan 1, 2025", category: "News", imageUrl: "", href: "#" },
+  ],
+};
+
+export const DEFAULT_AGENCY_BLOG = {
+  subtitle: "JOURNAL",
+  title: "Our Latest Insights & Stories",
+  description: "Stay updated with our latest thoughts on design, technology, and the future of business.",
+  ctaText: "View All Posts",
+  posts: [
+    {
+      id: "1",
+      title: "The Future of Digital Experiences in 2026",
+      excerpt: "How AI and immersive technologies are reshaping the way we interact with brands and digital products.",
+      category: "Insights",
+      imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop",
+      date: "Mar 15, 2026",
+      author: "Alex Rivera",
+      readingTime: "5 min read",
+    },
+    {
+      id: "2",
+      title: "Mastering Minimalist Design Systems",
+      excerpt: "A deep dive into creating scalable, clean, and functional design systems for modern agencies.",
+      category: "Design",
+      imageUrl: "https://images.unsplash.com/photo-1634942537034-2531766767d1?q=80&w=1000&auto=format&fit=crop",
+      date: "Mar 12, 2026",
+      author: "Sarah Chen",
+      readingTime: "8 min read",
+    },
+    {
+      id: "3",
+      title: "Why Speed is the Ultimate Feature",
+      excerpt: "Exploring the technical and psychological impact of performance in modern web applications.",
+      category: "Development",
+      imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1000&auto=format&fit=crop",
+      date: "Mar 10, 2026",
+      author: "Marc Santos",
+      readingTime: "6 min read",
+    },
+  ],
+};
+
+export const DEFAULT_AGENCY_PRODUCTS = {
+  subtitle: "SHOP THE BEST",
+  title: "Premium Collection",
+  description: "Curated products designed for those who value quality and craftsmanship.",
+  ctaText: "Add to Cart",
+  categories: ["All", "Essentials", "Premium", "Limited"],
+  items: [
+    {
+      id: "1",
+      name: "Minimalist Leather Watch",
+      price: "₱4,500",
+      originalPrice: "₱5,200",
+      description: "A timeless timepiece with a genuine Italian leather strap and brushed steel case.",
+      image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop",
+      category: "Premium",
+      tag: "Best Seller",
+      rating: 4.9,
+      isNew: false,
+      inStock: true,
+    },
+    {
+      id: "2",
+      name: "Studio Headphones Pro",
+      price: "₱12,900",
+      description: "Professional-grade wireless headphones with active noise cancellation and 40h battery life.",
+      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop",
+      category: "Limited",
+      tag: "Limited Edition",
+      rating: 4.8,
+      isNew: true,
+      inStock: true,
+    },
+    {
+      id: "3",
+      name: "Ceramic Coffee Set",
+      price: "₱2,200",
+      description: "Handcrafted ceramic set including two mugs and a matching pour-over dripper.",
+      image: "https://images.unsplash.com/photo-1517254456976-ee8682099819?q=80&w=1000&auto=format&fit=crop",
+      category: "Essentials",
+      rating: 4.7,
+      isNew: false,
+      inStock: true,
+    },
+    {
+      id: "4",
+      name: "Technical Backpack 20L",
+      price: "₱6,800",
+      description: "Waterproof, lightweight backpack designed for the modern urban explorer.",
+      image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=1000&auto=format&fit=crop",
+      category: "Essentials",
+      rating: 4.9,
+      isNew: true,
+      inStock: true,
+    },
   ],
 };
 
@@ -1149,6 +1347,7 @@ export function sectionIdToKey(id: string) {
     'hero--modern': 'heroModern',
     'hero--group-images': 'heroGroupImages',
     'hero--v6': 'heroV6',
+    'hero--v7': 'heroV7',
     'hero--generic': 'hero',
     'hero--lawyer': 'hero',
     'hero--dentist': 'hero',
@@ -1222,6 +1421,7 @@ export function sectionIdToKey(id: string) {
     'gallery--carousel': 'gallery4',
     'gallery--grid': 'galleryGrid',
     'blog_preview': 'blog',
+    'blog--agency': 'blogAgency',
     'process': 'howItWorks',
     'process--timeline': 'treatmentProcess',
     'specialty_listings': 'featuredListings',
@@ -1272,6 +1472,8 @@ export function sectionIdToKey(id: string) {
     'services-bento': 'featuresBento',
     'services': 'features',
     'services--modern': 'features',
+    'services--vertical-tabs': 'verticalTabs',
+    'services--features-v2': 'featuresV2',
     'services--highlight': 'featureHighlight',
     'service_detail': 'featureHighlight',
     'service_detail--split': 'featureHighlight',
@@ -1308,6 +1510,8 @@ export function sectionIdToKey(id: string) {
     'contact--with-map': 'contactWithMap',
     'contact--columns': 'contact',
     'contact--split': 'contact',
+    'contact--agency': 'contactAgency',
+    'products--agency': 'productsAgency',
     // canonical IDs — hero variant
     'hero--emergency': 'heroEmergency',
     // canonical IDs — stats
@@ -1348,6 +1552,7 @@ export function formatSectionLabel(id: string): string {
     'hero--modern': 'Modern Hero',
     'hero--group-images': 'Group Images Hero',
     'hero--v6': 'Tailark Hero',
+    'hero--v7': 'Stats & Team Hero',
     'hero--lawyer': 'Lawyer Hero',
     'hero--dentist': 'Dentist Hero',
     'hero--clinic': 'Clinic Hero',
@@ -1390,6 +1595,8 @@ export function formatSectionLabel(id: string): string {
     'contact-with-map': 'Contact w/ Map',
     'contact_with_map': 'Contact w/ Map',
     'contact-columns': 'Contact Columns',
+    'contact--agency': 'Agency Contact',
+    'products--agency': 'Agency Products',
     'common-pests': 'Common Pests',
     'treatment-process': 'Treatment Process',
     'safety-section': 'Safety Section',
@@ -1417,6 +1624,7 @@ export function formatSectionLabel(id: string): string {
     'gallery--carousel': 'Gallery Carousel',
     'gallery--grid': 'Gallery Grid',
     'blog_preview': 'Blog Preview',
+    'blog--agency': 'Agency Blog',
     'process': 'How It Works',
     'process--timeline': 'Treatment Process',
     'specialty_listings': 'Featured Listings',
@@ -1458,6 +1666,8 @@ export function formatSectionLabel(id: string): string {
     'why-choose-me': 'Why Choose Us',
     'features': 'Features Section',
     'features--spotlight': 'Feature Spotlight',
+    'services--vertical-tabs': 'Vertical Tabs',
+    'services--features-v2': 'Agency Features',
     'services--bento': 'Services Bento',
     'features-modern': 'Modern Features',
     'services-grid': 'Services Grid',

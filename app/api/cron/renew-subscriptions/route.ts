@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { removeDomainFromVercel } from '@/lib/utils/vercel-domains'
+import { getPlan } from '@/config/plans'
 
 const PAYMONGO_API = 'https://api.paymongo.com/v1'
-const RECURRING_AMOUNT = 50000 // ₱500 in centavos
 const DAYS_BEFORE_EXPIRY = 3   // send renewal link 3 days before expiry
 
 export const dynamic = 'force-dynamic'
@@ -33,7 +33,7 @@ export async function GET(req: Request) {
 
   const { data: projects, error } = await supabase
     .from('projects')
-    .select('id, subdomain, subscription_ends_at, renewal_link_created_at, profiles:client_id(email)')
+    .select('id, subdomain, subscription_plan_id, subscription_interval, subscription_ends_at, renewal_link_created_at, profiles:client_id(email)')
     .eq('auto_renew', true)
     .eq('subscription_status', 'active')
     .lte('subscription_ends_at', cutoff.toISOString())
@@ -53,6 +53,12 @@ export async function GET(req: Request) {
 
   for (const proj of projects) {
     try {
+      const activePlanId = proj.subscription_plan_id || 'basic'
+      const plan = getPlan(activePlanId)
+      const interval = proj.subscription_interval === 'yearly' ? 'yearly' : 'monthly'
+      const recurringAmount = interval === 'yearly'
+        ? ((plan as any).yearlyAmount ?? plan.recurringAmount)
+        : plan.recurringAmount
       const description = `EstabWeb: Monthly Renewal - ${proj.subdomain}`
 
       const res = await fetch(`${PAYMONGO_API}/links`, {
@@ -64,13 +70,14 @@ export async function GET(req: Request) {
         body: JSON.stringify({
           data: {
             attributes: {
-              amount: RECURRING_AMOUNT,
+              amount: recurringAmount,
               currency: 'PHP',
               description,
               metadata: {
                 project_id: proj.id,
-                plan_id: 'ph_monthly',
+                plan_id: activePlanId,
                 is_initial: false,
+                interval,
                 source: 'auto_renew_cron',
               },
             },
@@ -115,7 +122,7 @@ export async function GET(req: Request) {
       await supabase.from('paymongo_links').insert({
         link_id: linkId,
         project_id: proj.id,
-        plan_id: 'ph_monthly',
+        plan_id: activePlanId,
       })
 
       results.push({ projectId: proj.id, status: 'ok', checkoutUrl })

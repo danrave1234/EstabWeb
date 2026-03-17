@@ -19,6 +19,7 @@
 export type PreviewKind =
   | "cards-3"
   | "cards-4"
+  | "split-content"
   | "timeline"
   | "strip"
   | "logos"
@@ -82,6 +83,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
   { id: "hero--modern", dataKey: "heroModern", navEntry: null, previewKind: "hero", sectionType: "hero", variant: "modern", label: "Modern Hero", purpose: "Clean center-aligned hero with customer reviews and star ratings" },
   { id: "hero--group-images", dataKey: "heroGroupImages", navEntry: null, previewKind: "hero", sectionType: "hero", variant: "group-images", label: "Group Images Hero", purpose: "Split hero with a grid of three images and two call-to-action buttons" },
   { id: "hero--v6", dataKey: "heroV6", navEntry: null, previewKind: "hero", sectionType: "hero", variant: "v6", label: "Tailark Hero", purpose: "Modern hero with email signup, integrated app illustration, and feature list" },
+  { id: "hero--v7", dataKey: "heroV7", navEntry: null, previewKind: "hero", sectionType: "hero", variant: "v7", label: "Stats & Team Hero", purpose: "High-impact hero with scrolling stats and team avatars — best for agencies" },
   { id: "hero--lawyer", dataKey: "hero", navEntry: null, previewKind: "hero", sectionType: "hero", variant: "lawyer", label: "Lawyer Hero", purpose: "Professional and authoritative layout for legal services" },
   { id: "hero--dentist", dataKey: "hero", navEntry: null, previewKind: "hero", sectionType: "hero", variant: "dentist", label: "Dentist Hero", purpose: "Clean and trust-focused layout for dental clinics" },
   { id: "hero--clinic", dataKey: "hero", navEntry: null, previewKind: "hero", sectionType: "hero", variant: "clinic", label: "Clinic Hero", purpose: "Medical-grade layout for clinics and healthcare providers" },
@@ -130,6 +132,8 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
   { id: "services", dataKey: "features", navEntry: { name: "Services", href: "#services" }, previewKind: "cards-3", sectionType: "services", variant: "grid", label: "Services Grid", purpose: "Best for listing multiple services" },
   { id: "services--bento", dataKey: "featuresBento", navEntry: { name: "Services", href: "#services" }, previewKind: "cards-3", sectionType: "services", variant: "bento", label: "Services Bento", purpose: "Card-heavy layout inspired by modern component libraries" },
   { id: "services--modern", dataKey: "features", navEntry: { name: "Services", href: "#services" }, previewKind: "cards-3", sectionType: "services", variant: "modern", label: "Services Modern", purpose: "Best for premium brands" },
+  { id: "services--vertical-tabs", dataKey: "verticalTabs", navEntry: { name: "Services", href: "#services" }, previewKind: "cards-3", sectionType: "services", variant: "vertical-tabs", label: "Vertical Tabs", purpose: "Animated interactive tabs with high-impact imagery — best for high-end service businesses" },
+  { id: "services--features-v2", dataKey: "featuresV2", navEntry: { name: "Features", href: "#features" }, previewKind: "cards-3", sectionType: "services", variant: "features-v2", label: "Agency Features", purpose: "High-end features grid with animated entry — best for professional agencies" },
   { id: "services--highlight", dataKey: "featureHighlight", navEntry: { name: "Highlights", href: "#highlights" }, previewKind: "cards-3", sectionType: "services", variant: "highlight", label: "Feature Highlight", purpose: "Best for a single key service or offer" },
   // type: service_detail  |  variants: standard (default), split
   { id: "service_detail", dataKey: "featureHighlight", navEntry: undefined, previewKind: "cards-3", sectionType: "service_detail", variant: "standard", label: "Service Detail", purpose: "Deep dive into one service with image + CTA" },
@@ -292,6 +296,36 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
   { id: "contact-with-map", dataKey: "contact", navEntry: { name: "Contact", href: "#contact" }, previewKind: "map", legacy: true },
   { id: "contact-columns", dataKey: "contact", navEntry: { name: "Contact", href: "#contact" }, previewKind: "generic", legacy: true },
   { id: "contact-split", dataKey: "contact", navEntry: { name: "Contact", href: "#contact" }, previewKind: "generic", legacy: true },
+  {
+    id: "contact--agency",
+    dataKey: "contactAgency",
+    navEntry: { name: "Contact", href: "#contact" },
+    previewKind: "split-content",
+    sectionType: "contact",
+    variant: "agency",
+    label: "Agency Contact",
+    purpose: "Premium split contact form with info items and optional map",
+  },
+  {
+    id: "blog--agency",
+    dataKey: "blogAgency",
+    navEntry: { name: "Journal", href: "#journal" },
+    previewKind: "cards-3",
+    sectionType: "blog_preview",
+    variant: "agency",
+    label: "Agency Blog",
+    purpose: "High-end magazine style blog grid with featured post",
+  },
+  {
+    id: "products--agency",
+    dataKey: "productsAgency",
+    navEntry: { name: "Shop", href: "#shop" },
+    previewKind: "cards-4",
+    sectionType: "products",
+    variant: "agency",
+    label: "Agency Products",
+    purpose: "Premium e-commerce grid with categories, badges, and quick-add — best for physical products",
+  },
 ];
 
 /** Fast lookup map: section ID → BlockDefinition */
@@ -337,6 +371,7 @@ export const SECTION_CATEGORIES: { label: string; ids: string[] }[] = [
       "hero--aero-3",
       "hero--minimalism",
       "hero--elegant-carousel",
+      "hero--v7",
     ],
   },
   {
@@ -358,6 +393,8 @@ export const SECTION_CATEGORIES: { label: string; ids: string[] }[] = [
       "services",
       "services--bento",
       "services--modern",
+      "services--vertical-tabs",
+      "services--features-v2",
       "services--highlight",
       "service_detail",
       "service_detail--split",
@@ -389,6 +426,7 @@ export const SECTION_CATEGORIES: { label: string; ids: string[] }[] = [
       "faq",
       "faq--two-column",
       "blog_preview",
+      "blog--agency",
       "stats",
       "case_study",
       "case_study--detail",
@@ -462,6 +500,13 @@ export const SECTION_CATEGORIES: { label: string; ids: string[] }[] = [
       "contact--with-map",
       "contact--columns",
       "contact--split",
+      "contact--agency",
+    ],
+  },
+  {
+    label: "Products & E-commerce",
+    ids: [
+      "products--agency",
     ],
   },
   {
@@ -499,7 +544,7 @@ export const SECTION_TYPE_GROUPS: SectionTypeGroup[] = [
     type: "services",
     icon: "Wrench",
     label: "Services & Features",
-    variantIds: ["services", "services--bento", "services--modern", "services--highlight", "features--spotlight", "service_detail", "service_detail--split", "comparison", "comparison--table", "comparison--vs", "specialty_listings"],
+    variantIds: ["services", "services--bento", "services--modern", "services--vertical-tabs", "services--features-v2", "services--highlight", "features--spotlight", "service_detail", "service_detail--split", "comparison", "comparison--table", "comparison--vs", "specialty_listings"],
   },
   {
     type: "gym",
@@ -511,7 +556,7 @@ export const SECTION_TYPE_GROUPS: SectionTypeGroup[] = [
     type: "process",
     icon: "ListChecks",
     label: "Process & Info",
-    variantIds: ["process", "process--timeline", "features--steps", "faq", "faq--two-column", "blog_preview", "stats", "case_study", "case_study--detail"],
+    variantIds: ["process", "process--timeline", "features--steps", "faq", "faq--two-column", "blog_preview", "blog--agency", "stats", "case_study", "case_study--detail"],
   },
   {
     type: "team",
@@ -559,7 +604,13 @@ export const SECTION_TYPE_GROUPS: SectionTypeGroup[] = [
     type: "contact",
     icon: "Mail",
     label: "Contact",
-    variantIds: ["contact", "contact--minimal", "contact--visual", "contact--with-map", "contact--columns", "contact--split"],
+    variantIds: ["contact", "contact--minimal", "contact--visual", "contact--with-map", "contact--columns", "contact--split", "contact--agency"],
+  },
+  {
+    type: "products",
+    icon: "ShoppingBag",
+    label: "Products & Shop",
+    variantIds: ["products--agency"],
   },
   {
     type: "custom_html",

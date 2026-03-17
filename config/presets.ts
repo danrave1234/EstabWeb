@@ -132,6 +132,14 @@ export type PresetContent = {
     imageLight?: string;
     showHeader?: boolean;
   };
+  heroV7?: {
+    title?: string;
+    description?: string;
+    buttonText?: string;
+    backgroundImage?: string;
+    stats?: { emoji: string; label: string; value: string }[];
+    teamAvatars?: { initials: string; src: string }[];
+  };
   heroMinimalism?: {
     kicker?: string;
     title?: string;
@@ -142,6 +150,36 @@ export type PresetContent = {
   };
   features?: { title: string; subtitle: string; items: { title: string; description: string; icon: string }[] };
   featuresBento?: { title?: string; subtitle?: string; items: { title: string; description: string; icon?: string; eyebrow?: string }[] };
+  featuresV2?: { title?: string; subtitle?: string; description?: string; features: { id: string; title: string; description: string; icon?: string; accentColor?: string }[]; ctaText?: string };
+  contactAgency?: {
+    title?: string;
+    subtitle?: string;
+    description?: string;
+    formHeading?: string;
+    formButtonText?: string;
+    formThankYouText?: string;
+    infoHeading?: string;
+    infoItems: { id: string; label: string; value: string; icon?: string; href?: string }[];
+    socials: { id: string; platform: string; href: string }[];
+    mapEmbedUrl?: string;
+    officeHours?: string;
+  };
+  blogAgency?: {
+    title?: string;
+    subtitle?: string;
+    description?: string;
+    ctaText?: string;
+    posts: { id: string; title: string; excerpt: string; category: string; imageUrl: string; date: string; author: string; readingTime?: string }[];
+    featuredPostId?: string;
+  };
+  productsAgency?: {
+    title?: string;
+    subtitle?: string;
+    description?: string;
+    ctaText?: string;
+    categories: string[];
+    items: { id: string; name: string; price: string; originalPrice?: string; description: string; image: string; category: string; tag?: string; rating?: number; isNew?: boolean; inStock?: boolean }[];
+  };
   testimonials?: Record<string, unknown>;
   animatedTestimonials?: {
     testimonials?: { quote: string; name: string; designation: string; src: string }[];
@@ -186,6 +224,11 @@ export type PresetContent = {
     ctaHref?: string;
     imageUrl?: string;
     indexText?: string;
+  };
+  verticalTabs?: {
+    title?: string;
+    subtitle?: string;
+    services: { id: string; title: string; description: string; image: string }[];
   };
   contact?: Record<string, unknown>;
   practiceAreas?: Record<string, unknown>;
@@ -324,6 +367,138 @@ const GENERIC_CONTENT: PresetContent = {
     imageLight: "https://images.unsplash.com/photo-1557838923-2985c318be48?q=80&w=2070&auto=format&fit=crop",
     showHeader: false,
   },
+  heroV7: {
+    title: "We think, you grow — that's the deal",
+    description: "We take your big ideas and turn them into clear, winning strategies. From setting up your company to scaling it worldwide, we're here every step of the way.",
+    buttonText: "Get Template",
+    backgroundImage: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a",
+    stats: [
+      { emoji: "🚀", label: "IN CLIENT REVENUE GENERATED", value: "$5M+" },
+      { emoji: "📈", label: "BUSINESSES LAUNCHED", value: "200+" },
+      { emoji: "💰", label: "SAVED IN OPERATIONAL COSTS", value: "$500K+" },
+    ],
+    teamAvatars: [
+      { initials: "JD", src: "https://res.cloudinary.com/doonkheo8/image/upload/v1770279333/a1.jpg" },
+      { initials: "HJ", src: "https://res.cloudinary.com/doonkheo8/image/upload/v1770279333/a2.jpg" },
+      { initials: "PI", src: "https://res.cloudinary.com/doonkheo8/image/upload/v1770279333/a3.jpg" },
+      { initials: "KD", src: "https://res.cloudinary.com/doonkheo8/image/upload/v1770279333/a4.jpg" },
+      { initials: "LD", src: "https://res.cloudinary.com/doonkheo8/image/upload/v1770279333/a5.jpg" },
+    ],
+  },
+  contactAgency: {
+    subtitle: "GET IN TOUCH",
+    title: "Let's build something remarkable together",
+    description: "We're always looking for new challenges and exciting projects. Drop us a line and let's start a conversation.",
+    formHeading: "Send us a message",
+    formButtonText: "Send Message",
+    formThankYouText: "Message Sent! We'll be in touch soon.",
+    infoHeading: "Contact Details",
+    officeHours: "Mon - Fri, 9:00 AM - 6:00 PM",
+    infoItems: [
+      { id: "1", label: "Email", value: "hello@agency.com", icon: "mail", href: "mailto:hello@agency.com" },
+      { id: "2", label: "Phone", value: "+63 912 345 6789", icon: "phone", href: "tel:+639123456789" },
+      { id: "3", label: "Office", value: "BGC, Taguig, Metro Manila", icon: "map" },
+    ],
+    socials: [
+      { id: "1", platform: "instagram", href: "#" },
+      { id: "2", platform: "twitter", href: "#" },
+      { id: "3", platform: "linkedin", href: "#" },
+    ],
+  },
+  blogAgency: {
+    subtitle: "JOURNAL",
+    title: "Our Latest Insights & Stories",
+    description: "Stay updated with our latest thoughts on design, technology, and the future of business.",
+    ctaText: "View All Posts",
+    posts: [
+      {
+        id: "1",
+        title: "The Future of Digital Experiences in 2026",
+        excerpt: "How AI and immersive technologies are reshaping the way we interact with brands and digital products.",
+        category: "Insights",
+        imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop",
+        date: "Mar 15, 2026",
+        author: "Alex Rivera",
+        readingTime: "5 min read",
+      },
+      {
+        id: "2",
+        title: "Mastering Minimalist Design Systems",
+        excerpt: "A deep dive into creating scalable, clean, and functional design systems for modern agencies.",
+        category: "Design",
+        imageUrl: "https://images.unsplash.com/photo-1634942537034-2531766767d1?q=80&w=2000&auto=format&fit=crop",
+        date: "Mar 12, 2026",
+        author: "Sarah Chen",
+        readingTime: "8 min read",
+      },
+      {
+        id: "3",
+        title: "Why Speed is the Ultimate Feature",
+        excerpt: "Exploring the technical and psychological impact of performance in modern web applications.",
+        category: "Development",
+        imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2000&auto=format&fit=crop",
+        date: "Mar 10, 2026",
+        author: "Marc Santos",
+        readingTime: "6 min read",
+      },
+    ],
+  },
+  productsAgency: {
+    subtitle: "SHOP THE BEST",
+    title: "Premium Collection",
+    description: "Curated products designed for those who value quality and craftsmanship.",
+    ctaText: "Add to Cart",
+    categories: ["All", "Essentials", "Premium", "Limited"],
+    items: [
+      {
+        id: "1",
+        name: "Minimalist Leather Watch",
+        price: "₱4,500",
+        originalPrice: "₱5,200",
+        description: "A timeless timepiece with a genuine Italian leather strap and brushed steel case.",
+        image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop",
+        category: "Premium",
+        tag: "Best Seller",
+        rating: 4.9,
+        isNew: false,
+        inStock: true,
+      },
+      {
+        id: "2",
+        name: "Studio Headphones Pro",
+        price: "₱12,900",
+        description: "Professional-grade wireless headphones with active noise cancellation and 40h battery life.",
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop",
+        category: "Limited",
+        tag: "Limited Edition",
+        rating: 4.8,
+        isNew: true,
+        inStock: true,
+      },
+      {
+        id: "3",
+        name: "Ceramic Coffee Set",
+        price: "₱2,200",
+        description: "Handcrafted ceramic set including two mugs and a matching pour-over dripper.",
+        image: "https://images.unsplash.com/photo-1517254456976-ee8682099819?q=80&w=1000&auto=format&fit=crop",
+        category: "Essentials",
+        rating: 4.7,
+        isNew: false,
+        inStock: true,
+      },
+      {
+        id: "4",
+        name: "Technical Backpack 20L",
+        price: "₱6,800",
+        description: "Waterproof, lightweight backpack designed for the modern urban explorer.",
+        image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=1000&auto=format&fit=crop",
+        category: "Essentials",
+        rating: 4.9,
+        isNew: true,
+        inStock: true,
+      },
+    ],
+  },
   features: {
     title: "Our Services",
     subtitle: "Quality and clarity guaranteed. Customize this content for your business.",
@@ -341,6 +516,27 @@ const GENERIC_CONTENT: PresetContent = {
       { title: "Fast Editing Workflow", description: "Update key sections from the dashboard and preview changes instantly.", icon: "PenTool", eyebrow: "Productivity" },
       { title: "SEO Foundations", description: "Built-in metadata controls and index-ready page structures.", icon: "Search", eyebrow: "Discovery" },
       { title: "Plan-Based Gating", description: "Enable premium capabilities per subscription tier with centralized checks.", icon: "ShieldCheck", eyebrow: "Monetization" },
+    ],
+  },
+  verticalTabs: {
+    title: "How I can help you",
+    subtitle: "SERVICES",
+    services: [
+      { id: "01", title: "Web Design", description: "Creating beautiful, functional, and user-centric digital experiences.", image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1200" },
+      { id: "02", title: "Framer Development", description: "Building high-performance, animated websites with Framer.", image: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?q=80&w=1200" },
+      { id: "03", title: "Branding", description: "Defining your brand's visual identity and voice for a lasting impression.", image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200" },
+    ],
+  },
+  featuresV2: {
+    title: "Why business owners trust us",
+    subtitle: "WHY CHOOSE US",
+    description: "We don't just build websites; we build growth engines. Our unique approach combines data-driven strategy with world-class design.",
+    ctaText: "Start Your Project",
+    features: [
+      { id: "1", title: "Fast Delivery", description: "We ship your project in record time without compromising quality.", icon: "zap", accentColor: "bg-blue-500/10 text-blue-500" },
+      { id: "2", title: "Premium Quality", description: "Every pixel is handcrafted by our expert designers.", icon: "star", accentColor: "bg-amber-500/10 text-amber-500" },
+      { id: "3", title: "Secure & Reliable", description: "Built on enterprise-grade infrastructure for 99.9% uptime.", icon: "shield", accentColor: "bg-emerald-500/10 text-emerald-500" },
+      { id: "4", title: "Growth Focused", description: "Strategies designed to scale your business worldwide.", icon: "trending", accentColor: "bg-purple-500/10 text-purple-500" },
     ],
   },
   testimonials: {

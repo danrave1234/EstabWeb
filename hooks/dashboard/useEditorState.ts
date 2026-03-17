@@ -1,10 +1,11 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { COLOR_THEME_SWATCHES, DEFAULT_FOOTER, DEFAULT_BLUEPRINT_CONFIG, DEFAULT_EMERGENCY_CTA, DEFAULT_ANIMATED_TESTIMONIALS, DEFAULT_AWARDS_STRIP, DEFAULT_FAQ_ACCORDION, DEFAULT_BEFORE_AFTER_GALLERY, DEFAULT_BLOG, DEFAULT_HOW_IT_WORKS, DEFAULT_PRACTICE_AREAS, DEFAULT_TREATMENT_PROCESS, DEFAULT_COMMON_PESTS, DEFAULT_FEATURED_LISTINGS, DEFAULT_DEVELOPER_PARTNERS, DEFAULT_TESTIMONIALS, DEFAULT_REVIEW_TRUST_BAR, DEFAULT_FINANCING, DEFAULT_AC_TYPES, DEFAULT_PRICE_PREVIEW, DEFAULT_PRICING_COMPARISON_TABLE, DEFAULT_PRICING_SECTION_COMPARISON, DEFAULT_PRICING_TABLE, DEFAULT_MAINTENANCE_PLANS, DEFAULT_FACEBOOK_REVIEW_EMBED, DEFAULT_WHY_CHOOSE_ME, DEFAULT_SERVICE_AREA_MAP, DEFAULT_LOGO_CLOUD, DEFAULT_DELIVERY_COVERAGE, DEFAULT_CONTACT_WITH_MAP, DEFAULT_HERO, DEFAULT_HERO_EMERGENCY, DEFAULT_HERO_SHOWCASE, DEFAULT_HERO_AERO_3, DEFAULT_HERO_ELEGANT_CAROUSEL, DEFAULT_HERO_MINIMALISM, DEFAULT_HERO_MODERN, DEFAULT_HERO_GROUP_IMAGES, DEFAULT_HERO_V6, DEFAULT_HERO_CHIROPRACTOR, DEFAULT_HERO_DENTIST, DEFAULT_HERO_CLINIC, DEFAULT_HERO_CLEANING, DEFAULT_HERO_POOL, DEFAULT_HERO_PEST_CONTROL, DEFAULT_HERO_LAWYER, DEFAULT_HERO_GYM, DEFAULT_HERO_STARTUP, DEFAULT_TRUST_BADGES, DEFAULT_TEAM_CAROUSEL, DEFAULT_TEAM_SHOWCASE, DEFAULT_ATTORNEY_PROFILE, DEFAULT_CTA, DEFAULT_PROMO_STRIP, DEFAULT_FREE_CONSULTATION, DEFAULT_GUARANTEE, DEFAULT_CONTACT, DEFAULT_FEATURES, DEFAULT_FEATURES_BENTO, DEFAULT_FEATURE_SPOTLIGHT, DEFAULT_GYM_PROGRAMS, DEFAULT_GYM_SCHEDULE, DEFAULT_GYM_MEMBERSHIPS, DEFAULT_GYM_TRAINERS, DEFAULT_GYM_RESULTS, DEFAULT_GYM_FACILITY, DEFAULT_GYM_CLASS_TYPES, DEFAULT_GYM_FAQ, DEFAULT_TESTIMONIALS_V2, DEFAULT_CUSTOM_HTML_SECTION, DEFAULT_GALLERY4, DEFAULT_GALLERY_GRID, DEFAULT_TESTIMONIALS_COMMUNITY, DEFAULT_CTA_BEAMS, DEFAULT_FEATURE_STEPS, DEFAULT_STATS_SECTION, DEFAULT_PAYMENT_OPTIONS_STRIP, DEFAULT_PROMO_CTA_SECTION, DEFAULT_BEFORE_AFTER_SLIDER, DEFAULT_FEATURE_HIGHLIGHT_ZIGZAG, DEFAULT_PATIENT_FAQ, DEFAULT_CASE_STUDY_DETAIL, sectionIdToKey, navigationToArray, ensureStringArray, deepMerge } from "@/config/dashboard-config"
+import { COLOR_THEME_SWATCHES, DEFAULT_FOOTER, DEFAULT_BLUEPRINT_CONFIG, DEFAULT_EMERGENCY_CTA, DEFAULT_ANIMATED_TESTIMONIALS, DEFAULT_AWARDS_STRIP, DEFAULT_FAQ_ACCORDION, DEFAULT_BEFORE_AFTER_GALLERY, DEFAULT_BLOG, DEFAULT_AGENCY_BLOG, DEFAULT_HOW_IT_WORKS, DEFAULT_PRACTICE_AREAS, DEFAULT_TREATMENT_PROCESS, DEFAULT_COMMON_PESTS, DEFAULT_FEATURED_LISTINGS, DEFAULT_DEVELOPER_PARTNERS, DEFAULT_TESTIMONIALS, DEFAULT_REVIEW_TRUST_BAR, DEFAULT_FINANCING, DEFAULT_AC_TYPES, DEFAULT_PRICE_PREVIEW, DEFAULT_PRICING_COMPARISON_TABLE, DEFAULT_PRICING_SECTION_COMPARISON, DEFAULT_PRICING_TABLE, DEFAULT_MAINTENANCE_PLANS, DEFAULT_FACEBOOK_REVIEW_EMBED, DEFAULT_WHY_CHOOSE_ME, DEFAULT_SERVICE_AREA_MAP, DEFAULT_LOGO_CLOUD, DEFAULT_DELIVERY_COVERAGE, DEFAULT_CONTACT_WITH_MAP, DEFAULT_HERO, DEFAULT_HERO_EMERGENCY, DEFAULT_HERO_SHOWCASE, DEFAULT_HERO_AERO_3, DEFAULT_HERO_ELEGANT_CAROUSEL, DEFAULT_HERO_MINIMALISM, DEFAULT_HERO_MODERN, DEFAULT_HERO_GROUP_IMAGES, DEFAULT_HERO_V6, DEFAULT_HERO_V7, DEFAULT_HERO_CHIROPRACTOR, DEFAULT_HERO_DENTIST, DEFAULT_HERO_CLINIC, DEFAULT_HERO_CLEANING, DEFAULT_HERO_POOL, DEFAULT_HERO_PEST_CONTROL, DEFAULT_HERO_LAWYER, DEFAULT_HERO_GYM, DEFAULT_HERO_STARTUP, DEFAULT_TRUST_BADGES, DEFAULT_TEAM_CAROUSEL, DEFAULT_TEAM_SHOWCASE, DEFAULT_ATTORNEY_PROFILE, DEFAULT_CTA, DEFAULT_PROMO_STRIP, DEFAULT_FREE_CONSULTATION, DEFAULT_GUARANTEE, DEFAULT_CONTACT, DEFAULT_AGENCY_CONTACT, DEFAULT_AGENCY_PRODUCTS, DEFAULT_FEATURES, DEFAULT_FEATURES_BENTO, DEFAULT_FEATURES_V2, DEFAULT_VERTICAL_TABS, DEFAULT_FEATURE_SPOTLIGHT, DEFAULT_GYM_PROGRAMS, DEFAULT_GYM_SCHEDULE, DEFAULT_GYM_MEMBERSHIPS, DEFAULT_GYM_TRAINERS, DEFAULT_GYM_RESULTS, DEFAULT_GYM_FACILITY, DEFAULT_GYM_CLASS_TYPES, DEFAULT_GYM_FAQ, DEFAULT_TESTIMONIALS_V2, DEFAULT_CUSTOM_HTML_SECTION, DEFAULT_GALLERY4, DEFAULT_GALLERY_GRID, DEFAULT_TESTIMONIALS_COMMUNITY, DEFAULT_CTA_BEAMS, DEFAULT_FEATURE_STEPS, DEFAULT_STATS_SECTION, DEFAULT_PAYMENT_OPTIONS_STRIP, DEFAULT_PROMO_CTA_SECTION, DEFAULT_BEFORE_AFTER_SLIDER, DEFAULT_FEATURE_HIGHLIGHT_ZIGZAG, DEFAULT_PATIENT_FAQ, DEFAULT_CASE_STUDY_DETAIL, sectionIdToKey, navigationToArray, ensureStringArray, deepMerge } from "@/config/dashboard-config"
 import { BLOCK_MAP } from "@/lib/utils/block-registry"
 import { categoryLabelForSection, slugify } from "@/lib/utils/blocks"
 import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo"
+import { canPublishDirectly } from "@/lib/subscription"
 
 const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
     'hero': DEFAULT_HERO,
@@ -16,6 +17,7 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
     'hero--modern': DEFAULT_HERO_MODERN,
     'hero--group-images': DEFAULT_HERO_GROUP_IMAGES,
     'hero--v6': DEFAULT_HERO_V6,
+    'hero--v7': DEFAULT_HERO_V7,
     'hero--generic': DEFAULT_HERO,
     'hero--lawyer': DEFAULT_HERO_LAWYER,
     'hero--dentist': DEFAULT_HERO_DENTIST,
@@ -46,6 +48,8 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
     'services': DEFAULT_FEATURES,
     'services--bento': DEFAULT_FEATURES_BENTO,
     'services--modern': DEFAULT_FEATURES,
+    'services--vertical-tabs': DEFAULT_VERTICAL_TABS,
+    'services--features-v2': DEFAULT_FEATURES_V2,
     'services--highlight': DEFAULT_FEATURE_HIGHLIGHT_ZIGZAG,
     'features--highlight': DEFAULT_FEATURE_HIGHLIGHT_ZIGZAG,
     'feature-highlight': DEFAULT_FEATURE_HIGHLIGHT_ZIGZAG,
@@ -63,6 +67,7 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
     'faq--clinic': DEFAULT_PATIENT_FAQ,
     'patient_faq': DEFAULT_PATIENT_FAQ,
     'blog_preview': DEFAULT_BLOG,
+    'blog--agency': DEFAULT_AGENCY_BLOG,
     'stats': DEFAULT_STATS_SECTION,
     'stats--bar': DEFAULT_STATS_SECTION,
     'team': DEFAULT_TEAM_CAROUSEL,
@@ -111,6 +116,8 @@ const DEFAULT_SECTION_DATA_MAP: Record<string, any> = {
     'contact--with-map': DEFAULT_CONTACT_WITH_MAP,
     'contact--columns': DEFAULT_CONTACT,
     'contact--split': DEFAULT_CONTACT,
+    'contact--agency': DEFAULT_AGENCY_CONTACT,
+    'products--agency': DEFAULT_AGENCY_PRODUCTS,
     'gym--programs': DEFAULT_GYM_PROGRAMS,
     'gym--schedule': DEFAULT_GYM_SCHEDULE,
     'gym--memberships': DEFAULT_GYM_MEMBERSHIPS,
@@ -164,6 +171,28 @@ const normalizeArrayItems = <T,>(value: unknown, fallback: T[]): T[] => {
             .map((k) => (value as Record<string, T>)[k])
     }
     return fallback
+}
+
+const normalizePagesForEditor = (pages: any[]): any[] => {
+    return (Array.isArray(pages) ? pages : []).map((page: any, index: number) => {
+        const raw = (page || {}) as Record<string, any>
+        const rawSlug = typeof raw.slug === "string" ? raw.slug : ""
+        const slug = rawSlug.replace(/^\/+|\/+$/g, "").toLowerCase()
+        const rawLabel = typeof raw.label === "string" ? raw.label : ""
+        const rawSections = Array.isArray(raw.activeSections) ? raw.activeSections : []
+        const firstSection = typeof rawSections[0] === "string" ? rawSections[0] : ""
+        const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : ""
+        const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim())
+        const fallbackLabel = categoryLabel || (slug ? slug.replace(/-/g, " ") : `Page ${index + 1}`)
+        const label = categoryLabel || (isGenericLabel ? fallbackLabel : rawLabel)
+        const nextSlug = label.toLowerCase() === "home" ? "" : (slug || slugify(label))
+        return {
+            ...raw,
+            slug: nextSlug,
+            label,
+            activeSections: rawSections,
+        }
+    })
 }
 
 export function useEditorState(project: any) {
@@ -224,7 +253,10 @@ export function useEditorState(project: any) {
         }
     }, [mergedConfig])
 
-    const pages = React.useMemo(() => normalizeArrayItems<any>((mergedConfig as any).pages, []), [mergedConfig])
+    const pages = React.useMemo(
+        () => normalizePagesForEditor(normalizeArrayItems<any>((mergedConfig as any).pages, [])),
+        [mergedConfig]
+    )
     const activePage = (pages[selectedPageIndex] ?? pages[0]) as any
     const isHomePage = !activePage?.slug
     const activeSections = React.useMemo(() => {
@@ -234,7 +266,7 @@ export function useEditorState(project: any) {
         return ensureStringArray(activePage?.activeSections)
     }, [isHomePage, (globalConfig as any).activeSections, (mergedConfig as any).activeSections, activePage?.activeSections])
 
-    const canUsePages = !!(project?.subscription_status === 'pro' || project?.subscription_status === 'trial')
+    const canUsePages = canPublishDirectly(project)
 
     // Initial load from localStorage — run once on mount only
     const hasLoadedLocalRef = React.useRef(false)
@@ -390,9 +422,36 @@ export function useEditorState(project: any) {
             setFormWithCollapsed({ ...DEFAULT_HERO_GROUP_IMAGES, ...(base as Record<string, any>) })
         } else if (sectionKey === 'heroV6') {
             setFormWithCollapsed({ ...DEFAULT_HERO_V6, ...(base as Record<string, any>) })
+        } else if (sectionKey === 'heroV7') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({
+                ...DEFAULT_HERO_V7,
+                ...b,
+                stats: normalizeArrayItems(b.stats, DEFAULT_HERO_V7.stats),
+                teamAvatars: normalizeArrayItems(b.teamAvatars, DEFAULT_HERO_V7.teamAvatars),
+            })
         } else if (sectionKey === 'blog') {
             const b = (base || {}) as Record<string, any>
             setFormWithCollapsed({ ...DEFAULT_BLOG, ...b, posts: normalizeArrayItems(b.posts, DEFAULT_BLOG.posts) })
+        } else if (sectionKey === 'blogAgency') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_AGENCY_BLOG, ...b, posts: normalizeArrayItems(b.posts, DEFAULT_AGENCY_BLOG.posts) })
+        } else if (sectionKey === 'contactAgency') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({
+                ...DEFAULT_AGENCY_CONTACT,
+                ...b,
+                infoItems: normalizeArrayItems(b.infoItems, DEFAULT_AGENCY_CONTACT.infoItems),
+                socials: normalizeArrayItems(b.socials, DEFAULT_AGENCY_CONTACT.socials),
+            })
+        } else if (sectionKey === 'productsAgency') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({
+                ...DEFAULT_AGENCY_PRODUCTS,
+                ...b,
+                items: normalizeArrayItems(b.items, DEFAULT_AGENCY_PRODUCTS.items),
+                categories: normalizeArrayItems(b.categories, DEFAULT_AGENCY_PRODUCTS.categories),
+            })
         } else if (sectionKey === 'howItWorks') {
             const b = (base || {}) as Record<string, any>
             setFormWithCollapsed({ ...DEFAULT_HOW_IT_WORKS, ...b, steps: normalizeArrayItems(b.steps ?? b.items, DEFAULT_HOW_IT_WORKS.steps) })
@@ -534,6 +593,12 @@ export function useEditorState(project: any) {
         } else if (sectionKey === 'featuresBento') {
             const b = (base || {}) as Record<string, any>
             setFormWithCollapsed({ ...DEFAULT_FEATURES_BENTO, ...b, items: normalizeArrayItems(b.items, DEFAULT_FEATURES_BENTO.items) })
+        } else if (sectionKey === 'featuresV2') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_FEATURES_V2, ...b, features: normalizeArrayItems(b.features, DEFAULT_FEATURES_V2.features) })
+        } else if (sectionKey === 'verticalTabs') {
+            const b = (base || {}) as Record<string, any>
+            setFormWithCollapsed({ ...DEFAULT_VERTICAL_TABS, ...b, services: normalizeArrayItems(b.services, DEFAULT_VERTICAL_TABS.services) })
         } else {
             // Generic fallback — merge with any matching DEFAULT if available
             const defaultData = DEFAULT_SECTION_DATA_MAP[selectedSection]
@@ -662,9 +727,25 @@ export function useEditorState(project: any) {
 
         if (sectionId === 'seo') {
             setModified((prev) => {
-                const currentPages = Array.isArray((prev as any).pages) ? (prev as any).pages : pages
-                const nextPages = currentPages.map((p: any, idx: number) => idx === selectedPageIndex ? { ...p, seo: values } : p)
-                const next = { ...prev, pages: nextPages }
+                const currentPagesRaw = Array.isArray((prev as any).pages) ? (prev as any).pages : pages
+                const normalizedPages = normalizePagesForEditor(currentPagesRaw)
+                const hasTargetPage = normalizedPages.length > 0 && selectedPageIndex >= 0 && selectedPageIndex < normalizedPages.length
+                const baseHomeSections = ensureStringArray((prev as any).activeSections ?? (mergedConfig as any).activeSections)
+                const nextPages = hasTargetPage
+                    ? normalizedPages.map((p: any, idx: number) => idx === selectedPageIndex ? { ...p, seo: values } : p)
+                    : [{
+                        slug: '',
+                        label: 'Home',
+                        activeSections: baseHomeSections.length > 0 ? baseHomeSections : ['hero'],
+                        seo: values,
+                    }]
+                const targetPage = nextPages[selectedPageIndex] ?? nextPages[0]
+                const isHomeTarget = !targetPage?.slug
+                const next = {
+                    ...prev,
+                    pages: nextPages,
+                    ...(isHomeTarget ? { seo: values } : {}),
+                }
                 if (typeof window !== 'undefined') localStorage.setItem(LOCAL_KEY, JSON.stringify(next))
                 return next
             })
@@ -679,11 +760,13 @@ export function useEditorState(project: any) {
             return next
         })
         saveTimer.current = setTimeout(() => setIsSaving(false), 300)
-    }, [LOCAL_KEY, pages, selectedPageIndex])
+    }, [LOCAL_KEY, pages, selectedPageIndex, mergedConfig])
 
     const updatePages = React.useCallback((nextPages: any[]) => {
+        // Normalize first so "Home" always maps to root slug "" and slugs stay canonical.
+        const normalizedPages = normalizePagesForEditor(Array.isArray(nextPages) ? nextPages : [])
         // Sanitize: strip hero sections from non-home pages
-        const sanitizedPages = nextPages.map((page: any) => {
+        const sanitizedPages = normalizedPages.map((page: any) => {
             const slug = typeof page?.slug === 'string' ? page.slug : ''
             if (!slug) return page // home page keeps heroes
             const sections = Array.isArray(page?.activeSections) ? page.activeSections : []
@@ -828,6 +911,3 @@ export function useEditorState(project: any) {
         updateActivePageSections
     }
 }
-
-
-

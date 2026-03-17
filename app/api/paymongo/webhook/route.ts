@@ -323,7 +323,7 @@ async function handleCheckoutSessionPaid(
     const periodEnd = remainingDays > 0
       ? new Date(basePeriodEnd.getTime() + remainingDays * 24 * 60 * 60 * 1000)
       : basePeriodEnd
-    const planId = meta?.plan_id || 'ph_monthly'
+    const planId = meta?.plan_id || 'basic'
     const planConfig = getPlan(planId)
 
     const { error: updateError } = await supabase.from('projects').update({
@@ -392,7 +392,7 @@ async function handleSubscriptionInvoicePaid(
 
     const { data: proj } = await supabase
       .from('projects')
-      .select('id, client_id')
+      .select('id, client_id, subscription_plan_id')
       .eq('paymongo_subscription_id', subscriptionId)
       .single()
 
@@ -403,6 +403,8 @@ async function handleSubscriptionInvoicePaid(
 
     const now = new Date()
     const periodEnd = computePeriodEnd(invoice?.attributes)
+    const planId = (proj.subscription_plan_id || 'basic') as string
+    const planConfig = getPlan(planId)
 
     const { error: updateError } = await supabase.from('projects').update({
       subscription_status: 'active',
@@ -412,8 +414,8 @@ async function handleSubscriptionInvoicePaid(
       renewal_link: null,
       renewal_link_id: null,
       renewal_link_created_at: null,
-      publish_limit: DEFAULT_PUBLISH_LIMIT,
-      publish_limit_daily: DEFAULT_PUBLISH_LIMIT_DAILY,
+      publish_limit: planConfig.publishLimit ?? DEFAULT_PUBLISH_LIMIT,
+      publish_limit_daily: planConfig.publishLimitDaily ?? DEFAULT_PUBLISH_LIMIT_DAILY,
       publish_count: 0,
       publish_count_today: 0,
       publish_date: null,

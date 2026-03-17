@@ -117,12 +117,13 @@ export function SidebarDesignTab({
                     {[
                         { value: "sticky", label: "Sticky", desc: "Stays at top while scrolling" },
                         { value: "static", label: "Static", desc: "Scrolls away with page" },
+                        { value: "floating", label: "Floating", desc: "Rounded floating bar" },
                         { value: "tubelight", label: "Tubelight", desc: "Glow active link" },
                         { value: "megamenu", label: "Megamenu", desc: "Wide dropdown" },
                     ].map(({ value, label, desc }) => {
                         const raw = globalConfig.headerStyle || "sticky";
                         // normalize legacy values
-                        const normalized = raw === "solid" || raw === "floating" ? "sticky" : raw;
+                        const normalized = raw === "solid" ? "sticky" : raw;
                         const isActive = normalized === value
                         return (
                             <button
