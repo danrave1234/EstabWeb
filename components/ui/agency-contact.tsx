@@ -42,7 +42,7 @@ export interface AgencyContactProps {
   socials?: SocialLink[];
   mapEmbedUrl?: string;
   officeHours?: string;
-  onFormSubmit?: (data: { name: string; email: string; message: string }) => void;
+  onFormSubmit?: (data: { name: string; email: string; message: string }) => void | Promise<void>;
 }
 
 const ICON_MAP: Record<string, any> = {
@@ -86,12 +86,27 @@ export function AgencyContact({
 }: AgencyContactProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
-    onFormSubmit?.(formData);
-    setTimeout(() => setIsSubmitted(false), 5000);
+    setSubmitError(null);
+    if (!onFormSubmit) {
+      setIsSubmitted(true);
+      setTimeout(() => setIsSubmitted(false), 5000);
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await onFormSubmit(formData);
+      setIsSubmitted(true);
+      setTimeout(() => setIsSubmitted(false), 5000);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -234,13 +249,19 @@ export function AgencyContact({
                     className="w-full bg-muted/30 border-2 border-transparent rounded-2xl p-4 outline-none focus:border-primary/30 focus:bg-background transition-all font-medium placeholder:text-muted-foreground/30 resize-none"
                   />
                 </div>
-                
+                {submitError && (
+                  <p className="text-sm font-medium text-destructive" role="alert">
+                    {submitError}
+                  </p>
+                )}
                 <Button
                   type="submit"
-                  disabled={isSubmitted}
+                  disabled={isSubmitted || isSubmitting}
                   className="w-full h-14 rounded-2xl text-base font-medium group transition-all duration-300"
                 >
-                  {isSubmitted ? formThankYouText : (
+                  {isSubmitted ? formThankYouText : isSubmitting ? (
+                    "Sending…"
+                  ) : (
                     <span className="flex items-center gap-2">
                       {formButtonText}
                       <Send size={18} className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />

@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import { resolveTenantRoute } from '@/lib/routing/resolve-tenant-route'
+import { applySecurityHeaders } from '@/lib/security/security-headers'
+import { shouldBlockCrossSiteMutation } from '@/lib/security/request-origin'
 
 // Helper to copy cookies from one NextResponse to another (for Supabase session refresh)
 function copyCookies(from: NextResponse, to: NextResponse) {
@@ -17,7 +19,15 @@ export async function middleware(request: NextRequest) {
 
   // If updateSession returned a redirect (e.g., unauthorized access), return it immediately
   if (sessionRes.status >= 300 && sessionRes.status < 400) {
-    return sessionRes
+    return applySecurityHeaders(sessionRes, request)
+  }
+
+  const path = request.nextUrl.pathname
+  if (path.startsWith('/api') && shouldBlockCrossSiteMutation(request)) {
+    return applySecurityHeaders(
+      NextResponse.json({ error: 'Invalid origin' }, { status: 403 }),
+      request,
+    )
   }
 
   const requestHeaders = new Headers(request.headers)
@@ -36,7 +46,7 @@ export async function middleware(request: NextRequest) {
   if (decision.kind === 'redirect') {
     const redirect = NextResponse.redirect(decision.destination, 301)
     copyCookies(sessionRes, redirect)
-    return redirect
+    return applySecurityHeaders(redirect, request)
   }
 
   if (decision.kind === 'rewrite-admin' || decision.kind === 'rewrite-site') {
@@ -44,7 +54,7 @@ export async function middleware(request: NextRequest) {
       request: { headers: requestHeaders },
     })
     copyCookies(sessionRes, res)
-    return res
+    return applySecurityHeaders(res, request)
   }
 
   const res = NextResponse.next({
@@ -53,7 +63,7 @@ export async function middleware(request: NextRequest) {
     },
   })
   copyCookies(sessionRes, res)
-  return res
+  return applySecurityHeaders(res, request)
 }
 
 export const config = {

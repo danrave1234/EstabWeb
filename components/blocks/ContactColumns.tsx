@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { trackLead, trackEvent } from "@/components/shared/Analytics";
+import { submitFormLead, trackEvent, trackLead } from "@/components/shared/Analytics";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon, ChatCircleDotsIcon, GlobeIcon, ClockIcon } from "@phosphor-icons/react";
 
 export type ContactColumnsProps = {
@@ -33,14 +33,27 @@ export default function ContactColumns({
   const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
+    setSubmitError(null);
+    setIsSubmitting(true);
+    const result = await submitFormLead(
+      undefined,
+      { name: formData.name, email: formData.email, message: formData.message },
+      "contact--columns",
+    );
+    setIsSubmitting(false);
+    if (!result.ok) {
+      setSubmitError(result.error || "Something went wrong. Please try again.");
+      return;
+    }
     setIsSubmitted(true);
     setTimeout(() => {
       router.push("/success");
-    }, 1000);
+    }, 800);
   };
 
   return (
@@ -149,13 +162,18 @@ export default function ContactColumns({
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               />
             </div>
+            {submitError && (
+              <p className="text-center text-sm font-medium text-destructive" role="alert">
+                {submitError}
+              </p>
+            )}
             <div className="text-center pt-4">
               <button
                 type="submit"
-                disabled={isSubmitted}
+                disabled={isSubmitted || isSubmitting}
                 className="w-full sm:w-auto px-16 py-5 bg-primary text-primary-foreground font-black rounded-2xl hover:shadow-[0_20px_40px_-12px_rgba(var(--primary-rgb),0.5)] active:scale-95 transition-all disabled:opacity-50 uppercase tracking-[0.2em] text-sm"
               >
-                {isSubmitted ? formThankYouText : formSubmitText}
+                {isSubmitted ? formThankYouText : isSubmitting ? "Sending…" : formSubmitText}
               </button>
             </div>
           </form>

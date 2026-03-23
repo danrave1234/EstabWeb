@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sanitizeFilenameSegment } from '@/lib/security/sanitize'
 
 const BUCKET = 'site-assets'
 const MAX_SIZE = 5 * 1024 * 1024 // 5MB
@@ -23,7 +24,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'File size must be less than 5MB' }, { status: 400 })
     }
 
-    const ext = file.name.split('.').pop() || 'jpg'
+    const rawExt = file.name.split('.').pop() || 'jpg'
+    const ext = sanitizeFilenameSegment(rawExt, 12).replace(/^-+/, '') || 'jpg'
     const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${ext}`
 
     const { error: uploadError } = await supabase.storage

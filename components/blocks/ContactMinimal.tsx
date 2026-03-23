@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon } from "@phosphor-icons/react";
-import { trackLead, trackEvent } from "@/components/shared/Analytics";
+import { submitFormLead, trackEvent, trackLead } from "@/components/shared/Analytics";
 
 export type ContactMinimalProps = {
   title?: string;
@@ -35,14 +35,27 @@ export default function ContactMinimal({
   const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
+    setIsSubmitting(true);
+    const result = await submitFormLead(
+      undefined,
+      { name: formData.name, email: formData.email, message: formData.message },
+      "contact--minimal",
+    );
+    setIsSubmitting(false);
+    if (!result.ok) {
+      setSubmitError(result.error || "Something went wrong. Please try again.");
+      return;
+    }
     setIsSubmitted(true);
-    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
     setTimeout(() => {
       router.push("/success");
-    }, 1000);
+    }, 800);
   };
 
   return (
@@ -139,14 +152,19 @@ export default function ContactMinimal({
                   onChange={(e) => setFormData({...formData, message: e.target.value})}
                 />
               </div>
+              {submitError && (
+                <div className="sm:col-span-2 text-sm font-medium text-destructive" role="alert">
+                  {submitError}
+                </div>
+              )}
               <div className="sm:col-span-2 pt-2">
                 <button
                   type="submit"
-                  disabled={isSubmitted}
+                  disabled={isSubmitted || isSubmitting}
                   onClick={() => trackEvent({ type: 'cta_click', section_key: 'contact', cta_id: 'contact_minimal_submit' })}
                   className="w-full sm:w-auto px-10 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:shadow-lg hover:shadow-primary/20 active:scale-95 transition-all disabled:opacity-50"
                 >
-                  {isSubmitted ? formThankYouText : formSubmitText}
+                  {isSubmitted ? formThankYouText : isSubmitting ? "Sending…" : formSubmitText}
                 </button>
               </div>
             </form>

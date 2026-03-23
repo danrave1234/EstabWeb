@@ -445,12 +445,14 @@ export const DEFAULT_CONTACT = {
   title: "Contact Us Today",
   subtitle: "We're here to help. Reach out for a free consultation.",
   email: "info@examplelaw.com",
+  leadNotificationEmail: "",
   phone: "555-0100",
   address: "123 Main St, Suite 100, CityName, State 12345",
   buttonText: "Send Message",
 };
 
 export const DEFAULT_AGENCY_CONTACT = {
+  leadNotificationEmail: "",
   subtitle: "GET IN TOUCH",
   title: "Let's build something remarkable together",
   description: "We're always looking for new challenges and exciting projects. Drop us a line and let's start a conversation.",
@@ -1008,6 +1010,7 @@ export const DEFAULT_BLUEPRINT_CONFIG = {
 };
 
 export const FIELD_LABELS: Record<string, string> = {
+  leadNotificationEmail: "Form notification email (optional — uses public email if empty)",
   imageUrl: "Image",
   logoUrl: "Logo",
   backgroundImage: "Background image",
@@ -1285,6 +1288,7 @@ export const DEFAULT_CONTACT_WITH_MAP = {
   title: "Visit Our Office",
   subtitle: "We're conveniently located and ready to welcome you.",
   email: "",
+  leadNotificationEmail: "",
   phone: "",
   address: "",
   mapEmbedUrl: "",

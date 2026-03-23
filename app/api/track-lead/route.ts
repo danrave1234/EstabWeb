@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { headers } from "next/headers";
+import { sendLeadFormNotification } from "@/lib/email/lead-notification";
 
 const VALID_TYPES = ["messenger", "call", "form", "viber"] as const;
 type LeadType = (typeof VALID_TYPES)[number];
@@ -166,6 +167,21 @@ export async function POST(request: Request) {
     if (eventError) {
       // Non-fatal: lead was already saved, just log
       console.error("[track-lead] project_events insert error:", eventError.message);
+    }
+
+    if (type === "form") {
+      const { data: projectRow } = await supabase
+        .from("projects")
+        .select("current_config")
+        .eq("id", project_id)
+        .maybeSingle();
+
+      void sendLeadFormNotification({
+        currentConfig: projectRow?.current_config,
+        projectId: project_id,
+        metadata: { ...(metadata ?? {}), ...geoMeta },
+        pageSlug: page_slug ?? null,
+      }).catch((err) => console.error("[track-lead] lead notification email:", err));
     }
 
     return NextResponse.json({ success: true });

@@ -315,25 +315,13 @@ export function FacebookPixel({ id }: { id: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// trackLead — uses sendBeacon for fire-and-forget reliability
-// Falls back to fetch if sendBeacon is unavailable
+// Lead tracking — shared payload + pixels
 // ---------------------------------------------------------------------------
 
-export function trackLead(
-  type: "messenger" | "call" | "form" | "viber",
-  projectId?: string,
-  extraMetadata?: Record<string, string>,
-  sectionKey?: string,
-  pageSlug?: string
-) {
-  if (typeof window === "undefined") return;
-  // Never track analytics inside the dashboard preview iframe
-  if (isPreviewContext()) return;
+type LeadType = "messenger" | "call" | "form" | "viber";
 
-  const resolvedProjectId = projectId ?? window.PROJECT_ID;
+function fireLeadPixels(type: LeadType) {
   const eventLabel = type.charAt(0).toUpperCase() + type.slice(1);
-
-  // GA4
   if (typeof window.gtag === "function") {
     window.gtag("event", "generate_lead", {
       event_category: "Engagement",
@@ -341,18 +329,21 @@ export function trackLead(
       method: type,
     });
   }
-
-  // Facebook Pixel
   if (typeof window.fbq === "function") {
     window.fbq("track", "Lead", {
       content_name: eventLabel,
       content_category: "Lead",
     });
   }
+}
 
-  if (!resolvedProjectId) return;
-
-  // Auto-capture UTM params from URL
+function buildLeadTrackPayload(
+  type: LeadType,
+  resolvedProjectId: string,
+  extraMetadata?: Record<string, string>,
+  sectionKey?: string,
+  pageSlug?: string
+) {
   const urlParams = new URLSearchParams(window.location.search);
   const utmFields: Record<string, string> = {};
   ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"].forEach((key) => {
@@ -362,17 +353,17 @@ export function trackLead(
 
   const firstTouch = getOrCreateFirstTouch();
 
-  const basePayload = {
+  return {
     type,
     project_id: resolvedProjectId,
-    page_slug: pageSlug ?? window.location.pathname.replace(/^\//, '') ?? undefined,
+    page_slug: pageSlug ?? window.location.pathname.replace(/^\//, "") ?? undefined,
     section_key: sectionKey ?? undefined,
     source: resolveTrafficSource(),
     visitor_id: getOrCreateVisitorId(),
     session_id: getOrCreateSessionId(),
     first_touch_source: firstTouch.source,
     first_touch_utm: firstTouch.utm,
-    honeypot: "", // always empty for real users; bots may fill this
+    honeypot: "",
     metadata: {
       url: window.location.href,
       path: window.location.pathname,
@@ -382,10 +373,79 @@ export function trackLead(
       ...extraMetadata,
     },
   };
+}
 
+/**
+ * Awaitable form submission — persists lead, triggers optional email to site owner, returns success/error.
+ * Use for contact sections so visitors see errors instead of a silent failure.
+ */
+export async function submitFormLead(
+  projectId?: string,
+  extraMetadata?: Record<string, string>,
+  sectionKey?: string,
+  pageSlug?: string
+): Promise<{ ok: boolean; error?: string }> {
+  if (typeof window === "undefined") return { ok: false, error: "unavailable" };
+  if (isPreviewContext()) return { ok: true };
+
+  const resolvedProjectId = projectId ?? window.PROJECT_ID;
+  fireLeadPixels("form");
+  if (!resolvedProjectId) return { ok: false, error: "Missing project" };
+
+  const basePayload = buildLeadTrackPayload("form", resolvedProjectId, extraMetadata, sectionKey, pageSlug);
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
-  // For form leads: get reCAPTCHA v3 token first, then POST via fetch
+  try {
+    if (siteKey && typeof window.grecaptcha !== "undefined") {
+      const token = await new Promise<string>((resolve, reject) => {
+        window.grecaptcha.ready(() => {
+          window.grecaptcha.execute(siteKey, { action: "lead_form" }).then(resolve).catch(reject);
+        });
+      });
+      const r = await fetch("/api/track-lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...basePayload, recaptchaToken: token }),
+      });
+      const j = (await r.json().catch(() => ({}))) as { error?: string };
+      return r.ok ? { ok: true } : { ok: false, error: j.error || "Request failed" };
+    }
+
+    const r = await fetch("/api/track-lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(basePayload),
+    });
+    const j = (await r.json().catch(() => ({}))) as { error?: string };
+    return r.ok ? { ok: true } : { ok: false, error: j.error || "Request failed" };
+  } catch {
+    return { ok: false, error: "network" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// trackLead — uses sendBeacon for fire-and-forget reliability
+// Falls back to fetch if sendBeacon is unavailable
+// ---------------------------------------------------------------------------
+
+export function trackLead(
+  type: LeadType,
+  projectId?: string,
+  extraMetadata?: Record<string, string>,
+  sectionKey?: string,
+  pageSlug?: string
+) {
+  if (typeof window === "undefined") return;
+  if (isPreviewContext()) return;
+
+  const resolvedProjectId = projectId ?? window.PROJECT_ID;
+  fireLeadPixels(type);
+
+  if (!resolvedProjectId) return;
+
+  const basePayload = buildLeadTrackPayload(type, resolvedProjectId, extraMetadata, sectionKey, pageSlug);
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
   if (type === "form" && siteKey && typeof window.grecaptcha !== "undefined") {
     window.grecaptcha.ready(() => {
       window.grecaptcha.execute(siteKey, { action: "lead_form" }).then((token) => {
@@ -400,7 +460,6 @@ export function trackLead(
     return;
   }
 
-  // For non-form leads (call, messenger, viber): fire-and-forget via sendBeacon
   const payload = JSON.stringify(basePayload);
   const sent =
     typeof navigator.sendBeacon === "function" &&

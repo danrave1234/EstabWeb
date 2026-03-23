@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { trackLead, trackEvent } from "@/components/shared/Analytics";
+import { submitFormLead, trackEvent } from "@/components/shared/Analytics";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon, PaperPlaneRightIcon } from "@phosphor-icons/react";
 import Image from "next/image";
 
@@ -32,14 +32,27 @@ export default function ContactVisual({
   const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
+    setSubmitError(null);
+    setIsSubmitting(true);
+    const result = await submitFormLead(
+      undefined,
+      { name: formData.name, email: formData.email, message: formData.message },
+      "contact--visual",
+    );
+    setIsSubmitting(false);
+    if (!result.ok) {
+      setSubmitError(result.error || "Something went wrong. Please try again.");
+      return;
+    }
     setIsSubmitted(true);
     setTimeout(() => {
       router.push("/success");
-    }, 1000);
+    }, 800);
   };
 
   return (
@@ -143,13 +156,18 @@ export default function ContactVisual({
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
                   />
                 </div>
+                {submitError && (
+                  <p className="text-sm font-medium text-red-600" role="alert">
+                    {submitError}
+                  </p>
+                )}
                 <button
                   type="submit"
-                  disabled={isSubmitted}
+                  disabled={isSubmitted || isSubmitting}
                   className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-xl py-4 font-bold text-lg hover:shadow-xl hover:shadow-primary/20 active:scale-95 transition-all disabled:opacity-50"
                 >
-                  <PaperPlaneRightIcon weight="duotone" className={`w-5 h-5 ${isSubmitted ? 'hidden' : ''}`} />
-                  {isSubmitted ? formThankYouText : formSubmitText}
+                  <PaperPlaneRightIcon weight="duotone" className={`w-5 h-5 ${isSubmitted || isSubmitting ? 'hidden' : ''}`} />
+                  {isSubmitted ? formThankYouText : isSubmitting ? "Sending…" : formSubmitText}
                 </button>
               </form>
             </div>

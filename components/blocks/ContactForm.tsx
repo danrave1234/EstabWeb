@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PhoneIcon, EnvelopeIcon, MapPinIcon } from "@phosphor-icons/react";
-import { trackLead, trackEvent } from "@/components/shared/Analytics";
+import { submitFormLead, trackEvent, trackLead } from "@/components/shared/Analytics";
 
 export type ContactFormProps = {
   tagline: string;
@@ -15,6 +15,7 @@ export type ContactFormProps = {
   address: string;
   nameLabel?: string;
   emailLabel?: string;
+  messageLabel?: string;
   infoLabel?: string;
   callLabel?: string;
   locationLabel?: string;
@@ -31,25 +32,37 @@ export default function ContactForm({
   address,
   nameLabel = "Your Name",
   emailLabel = "Email Address",
+  messageLabel = "Message",
   infoLabel = "Contact Information",
   callLabel = "Call us",
   locationLabel = "Location",
   emailUsLabel = "Email Us",
 }: ContactFormProps) {
   const router = useRouter();
-  const [formData, setFormData] = useState({ name: "", email: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const phoneHref = phone.replace(/\s/g, "");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
+    setIsSubmitting(true);
+    const result = await submitFormLead(
+      undefined,
+      { name: formData.name, email: formData.email, message: formData.message },
+      "contact",
+    );
+    setIsSubmitting(false);
+    if (!result.ok) {
+      setSubmitError(result.error || "Something went wrong. Please try again.");
+      return;
+    }
     setIsSubmitted(true);
-    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
-
-    // Simulate API call
     setTimeout(() => {
       router.push("/success");
-    }, 800);
+    }, 600);
   };
 
   return (
@@ -97,13 +110,30 @@ export default function ContactForm({
                   />
                 </div>
               </div>
+              <div className="space-y-3">
+                <label className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-foreground/60 ml-1">{messageLabel}</label>
+                <textarea
+                  placeholder="How can we help?"
+                  value={formData.message}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, message: e.target.value }))
+                  }
+                  rows={4}
+                  className="w-full bg-muted/30 border-2 border-transparent rounded-2xl p-5 outline-none focus:border-primary focus:bg-background transition-all font-medium placeholder:text-muted-foreground/40 shadow-inner resize-none"
+                />
+              </div>
+              {submitError && (
+                <p className="text-sm font-medium text-destructive" role="alert">
+                  {submitError}
+                </p>
+              )}
               <button
                 type="submit"
-                disabled={isSubmitted}
+                disabled={isSubmitted || isSubmitting}
                 onClick={() => trackEvent({ type: 'cta_click', section_key: 'contact', cta_id: 'contact_form_submit' })}
                 className="w-full py-5 bg-primary text-primary-foreground font-black rounded-2xl hover:shadow-[0_20px_40px_-12px_rgba(var(--primary-rgb),0.5)] active:scale-95 transition-all disabled:opacity-50 uppercase tracking-[0.2em] text-sm"
               >
-                {isSubmitted ? formThankYouText : formSubmitText}
+                {isSubmitted ? formThankYouText : isSubmitting ? "Sending…" : formSubmitText}
               </button>
             </form>
           </div>

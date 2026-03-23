@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ShieldCheckIcon, ClockIcon, LockIcon } from "@phosphor-icons/react";
-import { trackLead, trackEvent } from "@/components/shared/Analytics";
+import { submitFormLead, trackEvent } from "@/components/shared/Analytics";
 
 export type FreeConsultationFormProps = {
   headline: string;
@@ -34,16 +34,29 @@ export default function FreeConsultationForm({
   buttonThankYou = "Request received.",
 }: FreeConsultationFormProps) {
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     issue: dropdownOptions[0] ?? "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
+    setIsSubmitting(true);
+    const result = await submitFormLead(
+      undefined,
+      { name: formData.name, email: formData.email, issue: formData.issue },
+      "free-consultation",
+    );
+    setIsSubmitting(false);
+    if (!result.ok) {
+      setSubmitError(result.error || "Something went wrong. Please try again.");
+      return;
+    }
     setSubmitted(true);
-    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
     setTimeout(() => {
       setSubmitted(false);
       setFormData({ name: "", email: "", issue: dropdownOptions[0] ?? "" });
@@ -138,13 +151,18 @@ export default function FreeConsultationForm({
                   ))}
                 </select>
               </div>
+              {submitError && (
+                <p className="text-xs sm:text-sm font-medium text-destructive" role="alert">
+                  {submitError}
+                </p>
+              )}
               <button
                 type="submit"
-                disabled={submitted}
+                disabled={submitted || isSubmitting}
                 onClick={() => trackEvent({ type: 'cta_click', section_key: 'consultation', cta_id: 'consultation_submit' })}
                 className="w-full min-h-[40px] sm:min-h-[44px] py-2 sm:py-4 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 disabled:opacity-70 transition-opacity text-xs sm:text-lg touch-manipulation"
               >
-                {submitted ? buttonThankYou : buttonText}
+                {submitted ? buttonThankYou : isSubmitting ? "Sending…" : buttonText}
               </button>
             </form>
           </div>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { trackLead } from "@/components/shared/Analytics";
+import { submitFormLead } from "@/components/shared/Analytics";
 import { PhoneIcon, EnvelopeIcon, MapPinIcon, ClockIcon } from "@phosphor-icons/react";
 
 export type ContactSplitProps = {
@@ -39,14 +39,27 @@ export default function ContactSplit({
   const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    trackLead('form', undefined, { name: formData.name, email: formData.email }, 'contact');
+    setSubmitError(null);
+    setIsSubmitting(true);
+    const result = await submitFormLead(
+      undefined,
+      { name: formData.name, email: formData.email, message: formData.message },
+      "contact--split",
+    );
+    setIsSubmitting(false);
+    if (!result.ok) {
+      setSubmitError(result.error || "Something went wrong. Please try again.");
+      return;
+    }
     setIsSubmitted(true);
     setTimeout(() => {
       router.push("/success");
-    }, 800);
+    }, 600);
   };
 
   return (
@@ -133,12 +146,17 @@ export default function ContactSplit({
                   onChange={(e) => setFormData({...formData, message: e.target.value})}
                 />
               </div>
+              {submitError && (
+                <p className="text-sm font-medium text-destructive" role="alert">
+                  {submitError}
+                </p>
+              )}
               <button
                 type="submit"
-                disabled={isSubmitted}
+                disabled={isSubmitted || isSubmitting}
                 className="w-full bg-primary text-primary-foreground rounded-2xl py-4 font-bold text-lg hover:shadow-xl transition-all active:scale-95 disabled:opacity-50"
               >
-                {isSubmitted ? formThankYouText : formSubmitText}
+                {isSubmitted ? formThankYouText : isSubmitting ? "Sending…" : formSubmitText}
               </button>
             </form>
           </div>

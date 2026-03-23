@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowRight, Mail, Menu, SendHorizonal, X } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { submitFormLead } from '@/components/shared/Analytics'
 
 export interface HeroV6Props {
     badgeText?: string
@@ -45,6 +46,30 @@ export function HeroV6({
     className,
 }: HeroV6Props) {
     const [menuState, setMenuState] = useState(false)
+    const [email, setEmail] = useState("")
+    const [leadError, setLeadError] = useState<string | null>(null)
+    const [leadSubmitting, setLeadSubmitting] = useState(false)
+    const [leadDone, setLeadDone] = useState(false)
+
+    const handleEmailSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        const trimmed = email.trim()
+        if (!trimmed) return
+        setLeadError(null)
+        setLeadSubmitting(true)
+        const result = await submitFormLead(
+            undefined,
+            { email: trimmed, name: "Hero email signup" },
+            "hero--v6",
+        )
+        setLeadSubmitting(false)
+        if (result.ok) {
+            setLeadDone(true)
+            setEmail("")
+        } else {
+            setLeadError(result.error || "Could not send. Try again.")
+        }
+    }
 
     return (
         <div className={cn("bg-background overflow-x-hidden", className)}>
@@ -138,9 +163,9 @@ export function HeroV6({
 
                                 <div>
                                     <form
-                                        action=""
                                         className="mx-auto my-10 max-w-sm lg:my-12 lg:ml-0 lg:mr-auto"
-                                        onSubmit={(e) => e.preventDefault()}>
+                                        onSubmit={handleEmailSubmit}
+                                    >
                                         <div className="bg-background has-[input:focus]:ring-primary/20 relative grid grid-cols-[1fr_auto] items-center rounded-[1rem] border pr-1 shadow shadow-zinc-950/5 has-[input:focus]:ring-2">
                                             <Mail className="text-muted-foreground pointer-events-none absolute inset-y-0 left-5 my-auto size-5" />
 
@@ -148,14 +173,25 @@ export function HeroV6({
                                                 placeholder={emailPlaceholder}
                                                 className="h-14 w-full bg-transparent pl-12 focus:outline-none text-foreground"
                                                 type="email"
+                                                name="email"
+                                                autoComplete="email"
+                                                value={email}
+                                                onChange={(e) => {
+                                                    setEmail(e.target.value)
+                                                    setLeadDone(false)
+                                                }}
+                                                required
+                                                disabled={leadSubmitting}
                                             />
 
                                             <div className="md:pr-1.5 lg:pr-0">
                                                 <Button
+                                                    type="submit"
                                                     aria-label="submit"
                                                     className="rounded-xl"
+                                                    disabled={leadSubmitting}
                                                 >
-                                                    <span className="hidden md:block">{buttonText}</span>
+                                                    <span className="hidden md:block">{leadDone ? "Thanks!" : leadSubmitting ? "…" : buttonText}</span>
                                                     <SendHorizonal
                                                         className="relative mx-auto size-5 md:hidden"
                                                         strokeWidth={2}
@@ -163,6 +199,11 @@ export function HeroV6({
                                                 </Button>
                                             </div>
                                         </div>
+                                        {leadError && (
+                                            <p className="mt-2 text-left text-sm text-destructive" role="alert">
+                                                {leadError}
+                                            </p>
+                                        )}
                                     </form>
 
                                     {features.length > 0 && (

@@ -4,11 +4,28 @@
 const mockLeadsInsert = jest.fn()
 const mockEventsInsert = jest.fn()
 
+jest.mock("@/lib/email/lead-notification", () => ({
+  sendLeadFormNotification: jest.fn(() => Promise.resolve()),
+}))
+
+const mockProjectsMaybeSingle = jest.fn(() =>
+  Promise.resolve({
+    data: { current_config: { contact: { email: "owner@example.com" } } },
+    error: null,
+  }),
+)
+
 jest.mock("@/lib/supabase/service", () => ({
   createServiceClient: jest.fn(() => ({
     from: jest.fn((table: string) => {
       if (table === "project_leads") return { insert: mockLeadsInsert }
       if (table === "project_events") return { insert: mockEventsInsert }
+      if (table === "projects")
+        return {
+          select: jest.fn(() => ({
+            eq: jest.fn(() => ({ maybeSingle: mockProjectsMaybeSingle })),
+          })),
+        }
       return {}
     }),
   })),

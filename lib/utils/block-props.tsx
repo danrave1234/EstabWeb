@@ -644,6 +644,7 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
           formThankYouText={contact.formThankYouText ?? "Message sent!"}
           nameLabel={contact.nameLabel}
           emailLabel={contact.emailLabel}
+          messageLabel={contact.messageLabel}
           infoLabel={contact.infoLabel}
           callLabel={contact.callLabel}
           locationLabel={contact.locationLabel}
