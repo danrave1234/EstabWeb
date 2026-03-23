@@ -14,7 +14,7 @@ import { getAllowedTopLevelFields } from "@/lib/ai/section-field-schema"
 export const ALL_SECTION_IDS = new Set(BLOCK_REGISTRY.map((b) => b.id))
 
 /** Sections that can never be removed */
-const PROTECTED_SECTIONS = new Set(["hero"])
+const PROTECTED_SECTIONS = new Set<string>([])
 
 /**
  * Keys that are never allowed inside update_section.changes regardless of section.
@@ -146,7 +146,7 @@ export function validateOperations(
           continue
         }
         const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
-        if (isRoot && PROTECTED_SECTIONS.has(op.sectionKey)) {
+        if (isRoot && PROTECTED_SECTIONS.size > 0 && PROTECTED_SECTIONS.has(op.sectionKey)) {
           errors.push(`Cannot remove protected section: "${op.sectionKey}" from homepage.`)
           continue
         }
@@ -210,10 +210,13 @@ export function validateOperations(
           continue
         }
 
+        /* Homepage no longer requires hero section */
+        /*
         if (!op.newOrder.includes("hero")) {
           errors.push(`Homepage reorder must include "hero" section.`)
           continue
         }
+        */
 
         const currentSet = new Set(simulated)
         const newSet = new Set(deduped)

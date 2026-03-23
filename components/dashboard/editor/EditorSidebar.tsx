@@ -8,6 +8,7 @@ import {
 import { SidebarContentTab } from "./tabs/EditorSidebarContent"
 import { SidebarDesignTab } from "./tabs/EditorSidebarDesign"
 import { SidebarAdvancedTab } from "./tabs/EditorSidebarAdvanced"
+import type { HeroEditorApi } from "@/lib/dashboard/hero-editor"
 
 interface EditorSidebarProps {
   mobileSidebarOpen: boolean;
@@ -45,6 +46,7 @@ interface EditorSidebarProps {
   aiHasPending: boolean;
   sectionSearchQuery: string;
   setSectionSearchQuery: (s: string) => void;
+  heroEditor: HeroEditorApi;
   dragSectionIndex: number | null;
   setDragSectionIndex: (i: number | null) => void;
   dropSectionIndex: number | null;
@@ -96,6 +98,7 @@ export function EditorSidebar({
   aiHasPending,
   sectionSearchQuery,
   setSectionSearchQuery,
+  heroEditor,
   dragSectionIndex,
   setDragSectionIndex,
   dropSectionIndex,
@@ -170,6 +173,7 @@ export function EditorSidebar({
             activeSections={activeSections}
             sectionSearchQuery={sectionSearchQuery}
             setSectionSearchQuery={setSectionSearchQuery}
+            heroEditor={heroEditor}
             dragSectionIndex={dragSectionIndex}
             setDragSectionIndex={setDragSectionIndex}
             dropSectionIndex={dropSectionIndex}

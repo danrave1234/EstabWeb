@@ -59,6 +59,7 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
     sectionSearchQuery, setSectionSearchQuery,
     activeTab, setActiveTab,
     selectedPageIndex, setSelectedPageIndex,
+    heroEditor,
     collapsedGroups, setCollapsedGroups,
     aiSeoOpen, setAiSeoOpen,
     mobileSidebarOpen, setMobileSidebarOpen,
@@ -143,6 +144,7 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
           aiHasPending={aiHasPending}
           sectionSearchQuery={sectionSearchQuery}
           setSectionSearchQuery={setSectionSearchQuery}
+          heroEditor={heroEditor}
           dragSectionIndex={dragSectionIndex}
           setDragSectionIndex={setDragSectionIndex}
           dropSectionIndex={dropSectionIndex}
@@ -214,6 +216,7 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
               pages={pages}
               updatePages={updatePages}
               updateActivePageSections={updateActivePageSections}
+              toggleHeroVisibility={heroEditor.toggleVisibility}
               canUsePages={canUsePages}
               selectedPageIndex={selectedPageIndex}
               setSelectedPageIndex={setSelectedPageIndex}

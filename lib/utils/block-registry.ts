@@ -364,17 +364,6 @@ export type DefaultSectionDataMap = Record<string, unknown>
  */
 export const SECTION_CATEGORIES: { label: string; ids: string[] }[] = [
   {
-    label: "Hero",
-    ids: [
-      "hero--showcase",
-      "hero--emergency",
-      "hero--aero-3",
-      "hero--minimalism",
-      "hero--elegant-carousel",
-      "hero--v7",
-    ],
-  },
-  {
     label: "Trust & Social Proof",
     ids: [
       "certifications",

@@ -276,7 +276,7 @@ STRICT RULES:
 - Return raw JSON only. No markdown. No code fences. No explanation outside JSON.
 - Never return the full config.
 - Never hallucinate unknown section keys — only use keys from VALID SECTION KEYS above.
-- Never remove the "hero" section from the homepage. You may remove it from other pages (using pageSlug) if appropriate.
+- You may remove the "hero" section from any page if the user asks.
 - Never modify domain, subscription_status, script, pages, activeSections directly, or any field not listed above.
 - Never include raw HTML in any string value, EXCEPT inside update_section for sectionKey "custom-html" using fields "html" and "css".
 - For update_global, only set colorTheme, typographyStyle, darkMode, footerStyle, or footer sub-fields — nothing else.

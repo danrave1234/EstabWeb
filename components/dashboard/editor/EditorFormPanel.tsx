@@ -61,6 +61,8 @@ interface EditorFormPanelProps {
   pages: any[];
   updatePages: (pages: any[]) => void;
   updateActivePageSections: (sections: string[]) => void;
+  /** Home hero hide/show — uses `useEditorState` hero pipeline (stored variant, scroll). */
+  toggleHeroVisibility: () => void;
   canUsePages: boolean;
   selectedPageIndex: number;
   setSelectedPageIndex: (i: number) => void;
@@ -76,7 +78,7 @@ interface EditorFormPanelProps {
 }
 
 export function EditorFormPanel({
-  selectedSection, setSelectedSection, formValues, setFormValues, setModified, autoSaveSection, collapsedGroups, setCollapsedGroups, isSaving, project, initialPlansConfig, pages, updatePages, updateActivePageSections, canUsePages, selectedPageIndex, setSelectedPageIndex, setAiSeoOpen, mergedConfig, globalConfig, activePage, activeSections, setColorPaletteOpen, setTypographyOpen, setUpgradeLoading, backdropPointerDownRef,
+  selectedSection, setSelectedSection, formValues, setFormValues, setModified, autoSaveSection, collapsedGroups, setCollapsedGroups, isSaving, project, initialPlansConfig, pages, updatePages, updateActivePageSections, toggleHeroVisibility, canUsePages, selectedPageIndex, setSelectedPageIndex, setAiSeoOpen, mergedConfig, globalConfig, activePage, activeSections, setColorPaletteOpen, setTypographyOpen, setUpgradeLoading, backdropPointerDownRef,
 }: EditorFormPanelProps) {
   const [heroModalOpen, setHeroModalOpen] = React.useState(false)
 
@@ -195,7 +197,8 @@ export function EditorFormPanel({
           ) : (
             <div className="space-y-6">
               {selectedSection.startsWith('hero') && (
-                <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden shadow-sm">
+                <div className="space-y-6">
+                  <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-muted/25 to-muted/5 overflow-hidden shadow-sm">
                   <div className="px-4 py-3 border-b border-border/60 bg-muted/10 flex items-center justify-between">
                     <div>
                       <label className="text-xs font-bold uppercase tracking-widest text-primary">Hero Design</label>
@@ -256,7 +259,8 @@ export function EditorFormPanel({
                     />
                   </div>
                 </div>
-              )}
+              </div>
+            )}
 
               {selectedSection === 'navigation' && (
                 <div className="space-y-6">
@@ -665,12 +669,34 @@ export function EditorFormPanel({
               {isSaving ? 'Syncing...' : 'Saved'}
             </span>
           </div>
-          <button
-            onClick={() => setSelectedSection(null)}
-            className="shrink-0 px-5 sm:px-6 py-2 sm:py-2.5 bg-primary text-primary-foreground rounded-xl text-xs sm:text-sm font-bold shadow-lg shadow-primary/25 hover:opacity-90 transition-all duration-200 active:scale-[0.98]"
-          >
-            Done
-          </button>
+
+          <div className="flex items-center gap-3">
+            {selectedSection.startsWith('hero') && (
+              <div className="hidden sm:block text-right mr-1">
+                <p className="text-[10px] font-bold text-foreground leading-none">Remove Hero Section</p>
+                <p className="text-[9px] text-muted-foreground mt-1">This will hide the main banner from your page.</p>
+              </div>
+            )}
+            {selectedSection.startsWith('hero') && (
+              <button
+                type="button"
+                onClick={() => toggleHeroVisibility()}
+                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${
+                  activeSections.includes(selectedSection)
+                    ? "bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600"
+                    : "bg-emerald-500 text-white shadow-emerald-500/20 hover:bg-emerald-600"
+                }`}
+              >
+                {activeSections.includes(selectedSection) ? "Hide" : "Unhide"}
+              </button>
+            )}
+            <button
+              onClick={() => setSelectedSection(null)}
+              className="shrink-0 px-5 sm:px-6 py-2 sm:py-2.5 bg-primary text-primary-foreground rounded-xl text-xs sm:text-sm font-bold shadow-lg shadow-primary/25 hover:opacity-90 transition-all duration-200 active:scale-[0.98]"
+            >
+              Done
+            </button>
+          </div>
         </div>
       </div>
     </div>,

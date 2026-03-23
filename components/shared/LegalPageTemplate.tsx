@@ -96,8 +96,23 @@ export default function LegalPageTemplate({ title, lastUpdated, content, serverD
           const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : "";
           const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim());
           const isGenericSlug = !slug || /^page-\d+$/i.test(slug);
+          const isHomePageEntry = index === 0 && (!slug || slug === "");
+          const firstIsHero =
+            firstSection === "hero" ||
+            firstSection.startsWith("hero--") ||
+            firstSection === "hero-emergency";
+          const homeLabelFromCategoryOnly =
+            isHomePageEntry &&
+            !firstIsHero &&
+            categoryLabel !== "" &&
+            !isGenericLabel &&
+            rawLabel.trim() === categoryLabel;
           const fallbackLabel = categoryLabel || (slug && !isGenericSlug ? slug.replace(/-/g, " ") : `Page ${index + 1}`);
-          const label = (isGenericLabel || categoryLabel) ? fallbackLabel : rawLabel;
+          const label = isGenericLabel
+            ? (isHomePageEntry ? "Home" : fallbackLabel)
+            : homeLabelFromCategoryOnly
+              ? "Home"
+              : rawLabel;
           const shouldUseDefaultSlug = isGenericSlug;
           if (label.toLowerCase() === "home") {
             slug = "";

@@ -3,6 +3,11 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { COLOR_THEME_SWATCHES, DEFAULT_FOOTER, DEFAULT_BLUEPRINT_CONFIG, DEFAULT_EMERGENCY_CTA, DEFAULT_ANIMATED_TESTIMONIALS, DEFAULT_AWARDS_STRIP, DEFAULT_FAQ_ACCORDION, DEFAULT_BEFORE_AFTER_GALLERY, DEFAULT_BLOG, DEFAULT_AGENCY_BLOG, DEFAULT_HOW_IT_WORKS, DEFAULT_PRACTICE_AREAS, DEFAULT_TREATMENT_PROCESS, DEFAULT_COMMON_PESTS, DEFAULT_FEATURED_LISTINGS, DEFAULT_DEVELOPER_PARTNERS, DEFAULT_TESTIMONIALS, DEFAULT_REVIEW_TRUST_BAR, DEFAULT_FINANCING, DEFAULT_AC_TYPES, DEFAULT_PRICE_PREVIEW, DEFAULT_PRICING_COMPARISON_TABLE, DEFAULT_PRICING_SECTION_COMPARISON, DEFAULT_PRICING_TABLE, DEFAULT_MAINTENANCE_PLANS, DEFAULT_FACEBOOK_REVIEW_EMBED, DEFAULT_WHY_CHOOSE_ME, DEFAULT_SERVICE_AREA_MAP, DEFAULT_LOGO_CLOUD, DEFAULT_DELIVERY_COVERAGE, DEFAULT_CONTACT_WITH_MAP, DEFAULT_HERO, DEFAULT_HERO_EMERGENCY, DEFAULT_HERO_SHOWCASE, DEFAULT_HERO_AERO_3, DEFAULT_HERO_ELEGANT_CAROUSEL, DEFAULT_HERO_MINIMALISM, DEFAULT_HERO_MODERN, DEFAULT_HERO_GROUP_IMAGES, DEFAULT_HERO_V6, DEFAULT_HERO_V7, DEFAULT_HERO_CHIROPRACTOR, DEFAULT_HERO_DENTIST, DEFAULT_HERO_CLINIC, DEFAULT_HERO_CLEANING, DEFAULT_HERO_POOL, DEFAULT_HERO_PEST_CONTROL, DEFAULT_HERO_LAWYER, DEFAULT_HERO_GYM, DEFAULT_HERO_STARTUP, DEFAULT_TRUST_BADGES, DEFAULT_TEAM_CAROUSEL, DEFAULT_TEAM_SHOWCASE, DEFAULT_ATTORNEY_PROFILE, DEFAULT_CTA, DEFAULT_PROMO_STRIP, DEFAULT_FREE_CONSULTATION, DEFAULT_GUARANTEE, DEFAULT_CONTACT, DEFAULT_AGENCY_CONTACT, DEFAULT_AGENCY_PRODUCTS, DEFAULT_FEATURES, DEFAULT_FEATURES_BENTO, DEFAULT_FEATURES_V2, DEFAULT_VERTICAL_TABS, DEFAULT_FEATURE_SPOTLIGHT, DEFAULT_GYM_PROGRAMS, DEFAULT_GYM_SCHEDULE, DEFAULT_GYM_MEMBERSHIPS, DEFAULT_GYM_TRAINERS, DEFAULT_GYM_RESULTS, DEFAULT_GYM_FACILITY, DEFAULT_GYM_CLASS_TYPES, DEFAULT_GYM_FAQ, DEFAULT_TESTIMONIALS_V2, DEFAULT_CUSTOM_HTML_SECTION, DEFAULT_GALLERY4, DEFAULT_GALLERY_GRID, DEFAULT_TESTIMONIALS_COMMUNITY, DEFAULT_CTA_BEAMS, DEFAULT_FEATURE_STEPS, DEFAULT_STATS_SECTION, DEFAULT_PAYMENT_OPTIONS_STRIP, DEFAULT_PROMO_CTA_SECTION, DEFAULT_BEFORE_AFTER_SLIDER, DEFAULT_FEATURE_HIGHLIGHT_ZIGZAG, DEFAULT_PATIENT_FAQ, DEFAULT_CASE_STUDY_DETAIL, sectionIdToKey, navigationToArray, ensureStringArray, deepMerge } from "@/config/dashboard-config"
 import { BLOCK_MAP } from "@/lib/utils/block-registry"
+import {
+    findHeroInActiveSections,
+    isHeroSectionId,
+    resolveHeroEditorId,
+} from "@/lib/dashboard/hero-editor"
 import { categoryLabelForSection, slugify } from "@/lib/utils/blocks"
 import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo"
 import { canPublishDirectly } from "@/lib/subscription"
@@ -183,9 +188,24 @@ const normalizePagesForEditor = (pages: any[]): any[] => {
         const firstSection = typeof rawSections[0] === "string" ? rawSections[0] : ""
         const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : ""
         const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim())
+        const isHomePageEntry = index === 0 && (!slug || slug === "")
+        const firstIsHero =
+            firstSection === "hero" ||
+            firstSection.startsWith("hero--") ||
+            firstSection === "hero-emergency"
+        const homeLabelFromCategoryOnly =
+            isHomePageEntry &&
+            !firstIsHero &&
+            categoryLabel !== "" &&
+            !isGenericLabel &&
+            rawLabel.trim() === categoryLabel
         const fallbackLabel = categoryLabel || (slug ? slug.replace(/-/g, " ") : `Page ${index + 1}`)
-        const label = categoryLabel || (isGenericLabel ? fallbackLabel : rawLabel)
-        const nextSlug = label.toLowerCase() === "home" ? "" : (slug || slugify(label))
+        const label = isGenericLabel
+            ? (isHomePageEntry ? "Home" : fallbackLabel)
+            : homeLabelFromCategoryOnly
+                ? "Home"
+                : rawLabel
+        const nextSlug = index === 0 ? "" : (label.toLowerCase() === "home" ? "" : (slug || slugify(label)))
         return {
             ...raw,
             slug: nextSlug,
@@ -227,6 +247,8 @@ export function useEditorState(project: any) {
     const [sectionSearchQuery, setSectionSearchQuery] = React.useState("")
     const [activeTab, setActiveTab] = React.useState<"content" | "design" | "advanced">("content")
     const [selectedPageIndex, setSelectedPageIndex] = React.useState(0)
+    /** Last home hero variant id when hero is not in activeSections (for unhide / editor labels). */
+    const [storedHeroSectionId, setStoredHeroSectionId] = React.useState<string>("hero")
     const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>({ 'seo-og': true })
     const [aiSeoOpen, setAiSeoOpen] = React.useState(false)
     const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false)
@@ -265,6 +287,12 @@ export function useEditorState(project: any) {
         }
         return ensureStringArray(activePage?.activeSections)
     }, [isHomePage, (globalConfig as any).activeSections, (mergedConfig as any).activeSections, activePage?.activeSections])
+
+    // When a hero is visible, keep stored variant in sync (so hide/unhide stays consistent).
+    React.useEffect(() => {
+        const found = findHeroInActiveSections(activeSections)
+        if (found) setStoredHeroSectionId(found.id)
+    }, [activeSections])
 
     const canUsePages = canPublishDirectly(project)
 
@@ -378,9 +406,12 @@ export function useEditorState(project: any) {
                 const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : ''
                 const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim())
                 const isGenericSlug = !slug || /^page-\d+$/i.test(slug)
+                const isHomeByPosition = index === 0
                 const fallbackLabel = categoryLabel || (slug && !isGenericSlug ? slug.replace(/-/g, ' ') : `Page ${index + 1}`)
-                const label = (isGenericLabel || categoryLabel) ? fallbackLabel : rawLabel
-                const nextSlug = label.toLowerCase() === 'home' ? '' : (isGenericSlug ? slugify(label) : (slug || slugify(label)))
+                const label = isHomeByPosition
+                    ? (isGenericLabel ? 'Home' : (rawLabel || 'Home'))
+                    : ((isGenericLabel || categoryLabel) ? fallbackLabel : rawLabel)
+                const nextSlug = isHomeByPosition ? '' : (label.toLowerCase() === 'home' ? '' : (isGenericSlug ? slugify(label) : (slug || slugify(label))))
                 return {
                     slug: nextSlug, label,
                     activeSections: rawSections,
@@ -815,6 +846,75 @@ export function useEditorState(project: any) {
         })
     }, [isHomePage, pages, selectedPageIndex, LOCAL_KEY])
 
+    const removeSectionAtIndex = React.useCallback((idx: number) => {
+        const next = [...activeSections]
+        const removed = next[idx]
+        next.splice(idx, 1)
+        updateActivePageSections(next)
+        if (removed && selectedSection === removed) {
+            if (isHeroSectionId(removed)) {
+                setStoredHeroSectionId(removed)
+                return
+            }
+            const heroNext = findHeroInActiveSections(next)
+            if (isHomePage && heroNext) {
+                setSelectedSection(heroNext.id)
+                setActivePreviewSection(heroNext.id)
+                lockPreviewHighlight(heroNext.id)
+                scrollToSection(heroNext.id, heroNext.index)
+            } else if (isHomePage && next.length > 0) {
+                const firstSection = next[0]
+                setSelectedSection(firstSection)
+                setActivePreviewSection(firstSection)
+                lockPreviewHighlight(firstSection)
+                scrollToSection(firstSection, 0)
+            } else {
+                setSelectedSection(null)
+                setActivePreviewSection(null)
+            }
+        }
+    }, [activeSections, selectedSection, isHomePage, updateActivePageSections, scrollToSection, lockPreviewHighlight])
+
+    const heroEditor = React.useMemo(() => {
+        const found = findHeroInActiveSections(activeSections)
+        const resolvedHeroId = resolveHeroEditorId(activeSections, selectedSection, storedHeroSectionId)
+        return {
+            resolvedHeroId,
+            heroIndex: found?.index ?? -1,
+            isVisible: Boolean(found),
+        }
+    }, [activeSections, selectedSection, storedHeroSectionId])
+
+    const selectHeroInEditor = React.useCallback(() => {
+        const id = resolveHeroEditorId(activeSections, selectedSection, storedHeroSectionId)
+        setSelectedSection(id)
+        setActivePreviewSection(id)
+        lockPreviewHighlight(id)
+        const found = findHeroInActiveSections(activeSections)
+        if (found) scrollToSection(id, found.index)
+    }, [activeSections, selectedSection, storedHeroSectionId, scrollToSection, lockPreviewHighlight])
+
+    const showHeroOnPage = React.useCallback(() => {
+        const id = resolveHeroEditorId(activeSections, selectedSection, storedHeroSectionId)
+        if (findHeroInActiveSections(activeSections)) return
+        updateActivePageSections([id, ...activeSections])
+    }, [activeSections, selectedSection, storedHeroSectionId, updateActivePageSections])
+
+    const hideHeroFromPage = React.useCallback(() => {
+        const found = findHeroInActiveSections(activeSections)
+        if (!found) return
+        removeSectionAtIndex(found.index)
+    }, [activeSections, removeSectionAtIndex])
+
+    const toggleHeroVisibility = React.useCallback(() => {
+        if (!selectedSection || !isHeroSectionId(selectedSection)) return
+        if (findHeroInActiveSections(activeSections)) {
+            hideHeroFromPage()
+        } else {
+            showHeroOnPage()
+        }
+    }, [selectedSection, activeSections, hideHeroFromPage, showHeroOnPage])
+
     return {
         iframeRef,
         selectedSection, setSelectedSection,
@@ -842,6 +942,13 @@ export function useEditorState(project: any) {
         sectionSearchQuery, setSectionSearchQuery,
         activeTab, setActiveTab,
         selectedPageIndex, setSelectedPageIndex,
+        heroEditor: {
+            ...heroEditor,
+            selectInEditor: selectHeroInEditor,
+            showOnPage: showHeroOnPage,
+            hideFromPage: hideHeroFromPage,
+            toggleVisibility: toggleHeroVisibility,
+        },
         collapsedGroups, setCollapsedGroups,
         aiSeoOpen, setAiSeoOpen,
         mobileSidebarOpen, setMobileSidebarOpen,
@@ -876,24 +983,7 @@ export function useEditorState(project: any) {
             next.splice(toIndex, 0, removed)
             updateActivePageSections(next)
         },
-        removeSectionAtIndex: (idx: number) => {
-            const next = [...activeSections]
-            const removed = next[idx]
-            next.splice(idx, 1)
-            updateActivePageSections(next)
-            if (removed && selectedSection === removed) {
-                if (isHomePage) {
-                    setSelectedSection('hero')
-                    setActivePreviewSection('hero')
-                    lockPreviewHighlight('hero')
-                    const heroIndex = next.indexOf('hero')
-                    if (heroIndex >= 0) scrollToSection('hero', heroIndex)
-                } else {
-                    setSelectedSection(null)
-                    setActivePreviewSection(null)
-                }
-            }
-        },
+        removeSectionAtIndex,
         addSection: (id: string) => {
             if (activeSections.includes(id)) return
             const next = [...activeSections, id]

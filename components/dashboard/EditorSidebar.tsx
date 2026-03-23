@@ -173,7 +173,6 @@ export default function EditorSidebar({
   }
 
   const filteredSections = activeSections
-    .filter((s: string) => s !== 'hero')
     .filter((s: string) => s.replace(/-/g, ' ').toLowerCase().includes(searchQuery.toLowerCase()))
 
   return (
@@ -259,6 +258,69 @@ export default function EditorSidebar({
               <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
 
+            {isHomePage && (
+              <>
+                <div className="pt-4 px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50 flex items-center justify-between">
+                  Core Sections
+                </div>
+                {(() => {
+                  const heroIndex = activeSections.findIndex(s => s === 'hero' || s.startsWith('hero'));
+                  const heroId = heroIndex !== -1 ? activeSections[heroIndex] : (selectedSection?.startsWith('hero') ? selectedSection : 'hero');
+                  const isHeroSelected = selectedSection === heroId || (selectedSection?.startsWith('hero') && !heroId);
+
+                  return (
+                    <div className="relative group">
+                      <button
+                        onClick={() => {
+                          setSelectedSection(heroId)
+                          setActivePreviewSection(heroId)
+                          lockPreviewHighlight(heroId)
+                          if (heroIndex !== -1) scrollToSection(heroId, heroIndex)
+                        }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group border border-transparent ${isHeroSelected ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'} ${heroIndex === -1 ? 'opacity-50' : ''}`}
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                          <Layout className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold truncate">Hero Section</p>
+                          <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">
+                            {heroIndex !== -1 ? 'Main Banner' : 'Disabled'}
+                          </p>
+                        </div>
+                        {heroIndex !== -1 ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              removeSectionAtIndex(heroIndex)
+                            }}
+                            className="p-1 opacity-0 group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-all mr-1"
+                            title="Disable Hero"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              addSection(heroId)
+                            }}
+                            className="p-1 opacity-40 hover:opacity-100 hover:bg-primary/10 text-primary rounded-lg transition-all mr-1"
+                            title="Enable Hero"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </button>
+                    </div>
+                  )
+                })()}
+              </>
+            )}
+
             <div className="pt-4 px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50 flex items-center justify-between">
               Page Sections
               <button
@@ -293,23 +355,7 @@ export default function EditorSidebar({
             </div>
 
             {activeSections.map((section: string, idx: number) => {
-              if (section === 'hero') return (
-                <button
-                  key="hero"
-                  onClick={() => setSelectedSection('hero')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${selectedSection === 'hero' ? 'bg-primary/5 border border-primary/20 shadow-sm' : 'hover:bg-muted'} ${searchQuery && !'hero section'.includes(searchQuery.toLowerCase()) ? 'hidden' : ''}`}
-                >
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
-                    <Zap className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold truncate">Hero Section</p>
-                    <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">Main Banner</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
-              )
-
+              if (section === 'hero' || section.startsWith('hero')) return null
               if (searchQuery && !section.replace(/-/g, ' ').toLowerCase().includes(searchQuery.toLowerCase())) return null
 
               const isDragging = dragSectionIndex === idx
@@ -353,7 +399,7 @@ export default function EditorSidebar({
                     onClick={() => setSelectedSection(section)}
                     className="flex-1 min-w-0 text-left py-1 relative z-10"
                   >
-                    <p className="text-sm font-black truncate capitalize tracking-tight group-hover:text-primary transition-colors">{section.replace(/-/g, ' ')}</p>
+                    <p className="text-sm font-black truncate capitalize tracking-tight group-hover:text-primary transition-colors">{formatSectionLabel(section)}</p>
                     <p className="text-[10px] text-muted-foreground truncate uppercase tracking-[0.15em] font-black opacity-40 mt-0.5">Edit Layout</p>
                   </button>
                   <button
@@ -361,7 +407,7 @@ export default function EditorSidebar({
                       e.stopPropagation()
                       removeSectionAtIndex(idx)
                     }}
-                    className="p-2 opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-lg shadow-red-500/10 z-20"
+                    className={`p-2 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-lg shadow-red-500/10 z-20 ${section.startsWith('hero') ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
                     title="Remove Section"
                   >
                     <X className="w-3.5 h-3.5" strokeWidth={3} />
@@ -618,7 +664,6 @@ export default function EditorSidebar({
                 </h3>
                 <div className="grid grid-cols-2 gap-2.5">
                   {cat.ids.map((id) => {
-                    if (id === 'hero') return null;
                     const isAdded = activeSections.includes(id);
                     return (
                       <button

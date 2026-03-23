@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { canPublishDirectly, ProjectSubscription } from "@/lib/subscription";
+import { categoryLabelForSection, slugify } from "@/lib/utils/blocks";
 
 export interface SitePageConfig {
   slug: string;
@@ -12,49 +13,6 @@ export interface PlanLimits {
   free?: { maxPages?: number };
   pro?: { maxPages?: number };
 }
-
-const PAGE_CATEGORY_LABELS: Record<string, string> = {
-  "hero": "Home",
-  "hero--emergency": "Home",
-  "hero--video": "Home",
-  "hero--split": "Home",
-  "review-trust-bar": "Reviews",
-  "reviews-grid": "Reviews",
-  "facebook-review-embed": "Reviews",
-  "testimonials": "Reviews",
-  "trust-badges-grid": "Trust",
-  "awards": "Credentials",
-  "pricing": "Pricing",
-  "pricing-table": "Pricing",
-  "packages-pricing": "Pricing",
-  "practice-areas": "Services",
-  "features": "Services",
-  "features-modern": "Services",
-  "services-grid": "Services",
-  "feature-highlight": "Highlights",
-  "how-it-works": "How It Works",
-  "treatment-process": "Process",
-  "patient-faq": "FAQ",
-  "faq-accordion": "FAQ",
-  "faq-two-column": "FAQ",
-  "team-carousel": "Team",
-  "team-grid": "Team",
-  "attorney-profile": "About",
-  "contact": "Contact",
-  "contact-minimal": "Contact",
-  "contact-visual": "Contact",
-  "contact-with-map": "Contact",
-  "contact-columns": "Contact",
-};
-
-const slugify = (value: string) => value
-  .toLowerCase()
-  .replace(/[^a-z0-9\s-]/g, "")
-  .trim()
-  .replace(/\s+/g, "-")
-  .replace(/-+/g, "-");
-
-const categoryLabelForSection = (sectionId: string) => PAGE_CATEGORY_LABELS[sectionId] || "";
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -92,9 +50,28 @@ export function applyPageDefaults(pages: SitePageConfig[]): SitePageConfig[] {
     const firstSection = typeof rawSections[0] === "string" ? rawSections[0] : "";
     const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : "";
     const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim());
+    const isHomePageEntry = index === 0 && (!slug || slug === "");
+    const firstIsHero =
+      firstSection === "hero" ||
+      firstSection.startsWith("hero--") ||
+      firstSection === "hero-emergency";
+    const homeLabelFromCategoryOnly =
+      isHomePageEntry &&
+      !firstIsHero &&
+      categoryLabel !== "" &&
+      !isGenericLabel &&
+      rawLabel.trim() === categoryLabel;
     const fallbackLabel = categoryLabel || (slug ? slug.replace(/-/g, " ") : `Page ${index + 1}`);
-    const label = categoryLabel || (isGenericLabel ? fallbackLabel : rawLabel);
-    const nextSlug = label.toLowerCase() === "home" ? "" : (slug || slugify(label));
+    const label = isGenericLabel
+      ? (isHomePageEntry ? "Home" : fallbackLabel)
+      : homeLabelFromCategoryOnly
+        ? "Home"
+        : rawLabel;
+    const nextSlug = isHomePageEntry
+      ? ""
+      : label.toLowerCase() === "home"
+        ? ""
+        : slug || slugify(label);
     return {
       ...page,
       slug: nextSlug,

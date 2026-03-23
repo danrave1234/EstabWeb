@@ -112,8 +112,25 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
         const categoryLabel = firstSection ? categoryLabelForSection(firstSection) : "";
         const isGenericLabel = !rawLabel || /^page\s+\d+$/i.test(rawLabel.trim());
         const isGenericSlug = !slug || /^page-\d+$/i.test(slug);
+        /** First page with empty slug is always the home route — never name it after the first content block (e.g. when hero is hidden). */
+        const isHomePageEntry = index === 0 && (!slug || slug === "");
+        const firstIsHero =
+          firstSection === "hero" ||
+          firstSection.startsWith("hero--") ||
+          firstSection === "hero-emergency";
+        /** Old logic could save the home page label as the first section's category (e.g. "Gym Programs") — treat as Home. */
+        const homeLabelFromCategoryOnly =
+          isHomePageEntry &&
+          !firstIsHero &&
+          categoryLabel !== "" &&
+          !isGenericLabel &&
+          rawLabel.trim() === categoryLabel;
         const fallbackLabel = categoryLabel || (slug && !isGenericSlug ? slug.replace(/-/g, " ") : `Page ${index + 1}`);
-        const label = categoryLabel || (isGenericLabel ? fallbackLabel : rawLabel);
+        const label = isGenericLabel
+          ? (isHomePageEntry ? "Home" : fallbackLabel)
+          : homeLabelFromCategoryOnly
+            ? "Home"
+            : rawLabel;
         const shouldUseDefaultSlug = isGenericSlug;
         if (label.toLowerCase() === "home") {
           slug = "";

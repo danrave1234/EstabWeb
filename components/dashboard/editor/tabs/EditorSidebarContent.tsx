@@ -9,6 +9,7 @@ import { BLOCK_MAP } from "@/lib/utils/block-registry"
 import { slugify } from "@/lib/utils/blocks"
 import { buildAutoSeoDefaults } from "@/lib/seo/autoSeo"
 import { getCustomHtmlSectionTitle } from "@/lib/utils/custom-html-editor"
+import { isHeroRowSelected, type HeroEditorApi } from "@/lib/dashboard/hero-editor"
 
 interface SidebarContentTabProps {
     setAiEditorOpen: (b: boolean) => void;
@@ -28,6 +29,7 @@ interface SidebarContentTabProps {
     activeSections: string[];
     sectionSearchQuery: string;
     setSectionSearchQuery: (s: string) => void;
+    heroEditor: HeroEditorApi;
     dragSectionIndex: number | null;
     setDragSectionIndex: (i: number | null) => void;
     dropSectionIndex: number | null;
@@ -57,6 +59,7 @@ export function SidebarContentTab({
     activeSections,
     sectionSearchQuery,
     setSectionSearchQuery,
+    heroEditor,
     dragSectionIndex,
     setDragSectionIndex,
     dropSectionIndex,
@@ -131,6 +134,53 @@ export function SidebarContentTab({
                 <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
 
+            {isHomePage && (
+                <>
+                    <div className="pt-2 px-2 pb-0.5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50 flex items-center justify-between">
+                        Core Sections
+                    </div>
+                    <div
+                        className={`relative group flex w-full items-center gap-1 rounded-lg border border-transparent px-3 py-1.5 transition-all ${isHeroRowSelected(heroEditor.resolvedHeroId, heroEditor.heroIndex, selectedSection) ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted'} ${!heroEditor.isVisible ? 'opacity-50' : ''}`}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => heroEditor.selectInEditor()}
+                            className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                        >
+                            <div className="w-7 h-7 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                <Layout className="w-3.5 h-3.5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs font-bold truncate">Hero Section</p>
+                                <p className="text-[9px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">
+                                    {heroEditor.isVisible ? (BLOCK_MAP[heroEditor.resolvedHeroId]?.label ?? 'Main Banner') : 'Disabled'}
+                                </p>
+                            </div>
+                            <ChevronRight className="w-3.5 h-3.5 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </button>
+                        {heroEditor.isVisible ? (
+                            <button
+                                type="button"
+                                onClick={() => heroEditor.hideFromPage()}
+                                className="shrink-0 p-1 opacity-0 group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-all"
+                                title="Disable Hero"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => heroEditor.showOnPage()}
+                                className="shrink-0 p-1 opacity-40 hover:opacity-100 hover:bg-primary/10 text-primary rounded-lg transition-all"
+                                title="Enable Hero"
+                            >
+                                <Plus className="w-3 h-3" />
+                            </button>
+                        )}
+                    </div>
+                </>
+            )}
+
             <div className="pt-2 px-2 pb-0.5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50 flex items-center justify-between">
                 Pages
                 <div className="flex items-center gap-2">
@@ -182,7 +232,7 @@ export function SidebarContentTab({
                                 setSelectedSection(null)
                                 setActivePreviewSection(null)
                             }}
-                            className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-left group border \${selectedPageIndex === idx ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted border-transparent'}`}
+                            className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-left group border ${selectedPageIndex === idx ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted border-transparent'}`}
                         >
                             <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground shrink-0 group-hover:scale-110 transition-transform">
                                 <Layout className="w-3.5 h-3.5" />
@@ -229,36 +279,6 @@ export function SidebarContentTab({
                     <Plus className="w-3.5 h-3.5" />
                 </button>
             </div>
-            {(() => {
-                const heroIndex = activeSections.findIndex(s => s === 'hero' || s.startsWith('hero') || s === 'trust_badges');
-                const heroId = heroIndex !== -1 ? activeSections[heroIndex] : null;
-                if (!heroId) return null;
-
-                const isSpecialActive = selectedSection === heroId || activePreviewSection === heroId;
-
-                return (
-                    <button
-                        onClick={() => {
-                            setSelectedSection(heroId)
-                            setActivePreviewSection(heroId)
-                            lockPreviewHighlight(heroId)
-                            scrollToSection(heroId, heroIndex)
-                        }}
-                        className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-left group border border-transparent ${isSpecialActive ? 'bg-primary/5 border-primary/20 shadow-sm' : 'hover:bg-muted'}`}
-                    >
-                        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
-                            <Zap className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold truncate">{BLOCK_MAP[heroId]?.label || 'Hero Section'}</p>
-                            <p className="text-[9px] text-muted-foreground truncate uppercase tracking-wider font-medium opacity-70">
-                                {BLOCK_MAP[heroId]?.variant || 'Main Banner'}
-                            </p>
-                        </div>
-                        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </button>
-                );
-            })()}
 
             <div className="px-0.5">
                 <div className="relative">
@@ -283,8 +303,7 @@ export function SidebarContentTab({
             </div>
 
             {activeSections.map((section: string, sectionIndex: number) => {
-                const heroIndex = activeSections.findIndex(s => s === 'hero' || s.startsWith('hero') || s === 'trust_badges');
-                if (sectionIndex === heroIndex) return null;
+                if (section === 'hero' || section.startsWith('hero')) return null
 
                 const sectionDisplayLabel = getSectionDisplayLabel(section)
                 if (sectionSearchQuery && !sectionDisplayLabel.toLowerCase().includes(sectionSearchQuery.toLowerCase())) return null
@@ -338,7 +357,7 @@ export function SidebarContentTab({
                                 e.stopPropagation()
                                 removeSectionAtIndex(sectionIndex)
                             }}
-                            className="p-1 opacity-40 group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-all"
+                            className={`p-1 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-all ${section.startsWith('hero') ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}
                             title="Remove Section"
                         >
                             <X className="w-3 h-3" />
