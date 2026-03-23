@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon } from "@phosphor-icons/react";
 import { submitFormLead, trackEvent, trackLead } from "@/components/shared/Analytics";
 
@@ -32,7 +32,6 @@ export default function ContactMinimal({
   emailLabel = "Email",
   messageLabel = "Message",
 }: ContactMinimalProps) {
-  const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -53,9 +52,8 @@ export default function ContactMinimal({
       return;
     }
     setIsSubmitted(true);
-    setTimeout(() => {
-      router.push("/success");
-    }, 800);
+    setFormData({ name: "", email: "", message: "" });
+    toast.success(formThankYouText || "Message sent successfully!");
   };
 
   return (

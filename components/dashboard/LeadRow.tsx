@@ -55,8 +55,8 @@ export default function LeadRow({ lead }: { lead: Lead }) {
   }
 
   return (
-    <div className="px-4 sm:px-8 py-5 hover:bg-muted/40 transition-all group/row border-b border-border last:border-0 relative overflow-hidden">
-      <div className="absolute inset-y-0 left-0 w-1 bg-primary transform -translate-x-full group-hover/row:translate-x-0 transition-transform" />
+    <div className="px-4 sm:px-8 py-5 hover:bg-muted/40 transition-all group/row border-b border-border last:border-0 relative">
+      <div className="absolute inset-y-0 left-0 w-1 bg-primary opacity-0 group-hover/row:opacity-100 transition-opacity" />
 
       <div className="flex items-start gap-4 sm:gap-6 relative z-10">
         {/* Type icon */}

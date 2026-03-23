@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { submitFormLead } from "@/components/shared/Analytics";
 import { PhoneIcon, EnvelopeIcon, MapPinIcon, ClockIcon } from "@phosphor-icons/react";
 
@@ -36,7 +36,6 @@ export default function ContactSplit({
   emailLabel = "Email Address",
   messageLabel = "Message",
 }: ContactSplitProps) {
-  const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -57,9 +56,8 @@ export default function ContactSplit({
       return;
     }
     setIsSubmitted(true);
-    setTimeout(() => {
-      router.push("/success");
-    }, 600);
+    setFormData({ name: "", email: "", message: "" });
+    toast.success(formThankYouText || "Message sent successfully!");
   };
 
   return (

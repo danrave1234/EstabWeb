@@ -6,7 +6,6 @@ import {
   TrendingUp, MousePointerClick, Globe, Layers, Lock, Sparkles,
   MapPin, Clock, Users,
 } from 'lucide-react'
-import MainHeader from '@/components/shared/MainHeader'
 import SeoAuditPanel from '@/components/dashboard/SeoAuditPanel'
 import LeadRow from '@/components/dashboard/LeadRow'
 import { isAnalyticsAllowed, hasAdvancedAnalytics, getPlanType } from '@/lib/subscription'
@@ -266,8 +265,7 @@ export default async function AnalyticsPage({
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <MainHeader />
-      <main className="flex-1 pt-20 pb-12 px-4 sm:px-6 max-w-5xl mx-auto w-full space-y-8">
+      <main className="flex-1 pt-8 pb-12 px-4 sm:px-6 max-w-5xl mx-auto w-full space-y-8">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between">
@@ -340,7 +338,7 @@ export default async function AnalyticsPage({
           </div>
 
           {/* Lead CRM list */}
-          <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+          <div className="bg-card border border-border rounded-2xl shadow-sm">
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <h3 className="text-sm font-black uppercase tracking-widest text-foreground">
                 {STATUS_LABELS[filterStatus]} Leads

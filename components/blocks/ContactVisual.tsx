@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { submitFormLead, trackEvent } from "@/components/shared/Analytics";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon, PaperPlaneRightIcon } from "@phosphor-icons/react";
 import Image from "next/image";
@@ -29,7 +29,6 @@ export default function ContactVisual({
   formSubmitText = "Send Message",
   formThankYouText = "Message Received!",
 }: ContactVisualProps) {
-  const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -50,9 +49,8 @@ export default function ContactVisual({
       return;
     }
     setIsSubmitted(true);
-    setTimeout(() => {
-      router.push("/success");
-    }, 800);
+    setFormData({ name: "", email: "", message: "" });
+    toast.success(formThankYouText || "Message sent successfully!");
   };
 
   return (

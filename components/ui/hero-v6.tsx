@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Mail, Menu, SendHorizonal, X } from 'lucide-react'
 import Link from 'next/link'
@@ -66,6 +67,7 @@ export function HeroV6({
         if (result.ok) {
             setLeadDone(true)
             setEmail("")
+            toast.success("Thank you for signing up!")
         } else {
             setLeadError(result.error || "Could not send. Try again.")
         }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { submitFormLead, trackEvent } from "@/components/shared/Analytics";
 
 export type LeadCaptureFormProps = {
@@ -30,9 +31,10 @@ export default function LeadCaptureForm({
             return;
         }
         setIsSubmitted(true);
+        setFormData({ name: "", email: "" });
+        toast.success(formThankYouText || "Message sent successfully!");
         setTimeout(() => {
             setIsSubmitted(false);
-            setFormData({ name: "", email: "" });
         }, 3000);
     };
 

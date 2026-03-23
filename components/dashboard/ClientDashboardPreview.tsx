@@ -96,7 +96,7 @@ export default function ClientDashboardPreview({ project, user, initialPlansConf
   const router = useRouter();
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] mt-16 bg-background overflow-hidden selection:bg-primary/20">
+    <div className="flex flex-col h-[calc(100vh-64px)] bg-background overflow-hidden selection:bg-primary/20">
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
         {/* Mobile backdrop — closes sidebar on tap */}
         {mobileSidebarOpen && (

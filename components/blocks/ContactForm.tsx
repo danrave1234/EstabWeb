@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { PhoneIcon, EnvelopeIcon, MapPinIcon } from "@phosphor-icons/react";
 import { submitFormLead, trackEvent, trackLead } from "@/components/shared/Analytics";
 
@@ -38,7 +38,6 @@ export default function ContactForm({
   locationLabel = "Location",
   emailUsLabel = "Email Us",
 }: ContactFormProps) {
-  const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -60,9 +59,8 @@ export default function ContactForm({
       return;
     }
     setIsSubmitted(true);
-    setTimeout(() => {
-      router.push("/success");
-    }, 600);
+    setFormData({ name: "", email: "", message: "" });
+    toast.success(formThankYouText || "Message sent successfully!");
   };
 
   return (

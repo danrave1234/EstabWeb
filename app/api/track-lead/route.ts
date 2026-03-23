@@ -172,13 +172,19 @@ export async function POST(request: Request) {
     if (type === "form") {
       const { data: projectRow } = await supabase
         .from("projects")
-        .select("current_config")
+        .select("current_config, subdomain, custom_domain")
         .eq("id", project_id)
         .maybeSingle();
+
+      const config = projectRow?.current_config as any;
+      const brandName = config?.brand?.name || config?.siteName || null;
+      const domain = projectRow?.custom_domain || (projectRow?.subdomain ? `${projectRow.subdomain}.estabweb.com` : null);
 
       void sendLeadFormNotification({
         currentConfig: projectRow?.current_config,
         projectId: project_id,
+        brandName,
+        domain,
         metadata: { ...(metadata ?? {}), ...geoMeta },
         pageSlug: page_slug ?? null,
       }).catch((err) => console.error("[track-lead] lead notification email:", err));

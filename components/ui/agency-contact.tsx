@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { 
   Phone, 
@@ -94,6 +95,7 @@ export function AgencyContact({
     setSubmitError(null);
     if (!onFormSubmit) {
       setIsSubmitted(true);
+      toast.success(formThankYouText || "Message Sent!");
       setTimeout(() => setIsSubmitted(false), 5000);
       return;
     }
@@ -101,6 +103,8 @@ export function AgencyContact({
     try {
       await onFormSubmit(formData);
       setIsSubmitted(true);
+      setFormData({ name: "", email: "", message: "" });
+      toast.success(formThankYouText || "Message Sent!");
       setTimeout(() => setIsSubmitted(false), 5000);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");

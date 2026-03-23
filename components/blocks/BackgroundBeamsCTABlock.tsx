@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { toast } from "sonner"
 import { BackgroundBeams } from "@/components/ui/background-beams"
 import { submitFormLead } from "@/components/shared/Analytics"
 
@@ -42,6 +43,7 @@ export default function BackgroundBeamsCTABlock({
     if (result.ok) {
       setDone(true)
       setEmail("")
+      toast.success("Successfully joined!")
     } else {
       setErr(result.error || "Could not send. Try again.")
     }

@@ -52,6 +52,8 @@ type LeadNotificationInput = {
   projectId: string;
   metadata: Record<string, unknown>;
   pageSlug?: string | null;
+  brandName?: string | null;
+  domain?: string | null;
 };
 
 function buildLeadEmailContent(input: LeadNotificationInput): { subject: string; html: string } {
@@ -62,10 +64,17 @@ function buildLeadEmailContent(input: LeadNotificationInput): { subject: string;
   const phone = typeof meta.phone === "string" ? meta.phone : "";
   const issue = typeof meta.issue === "string" ? meta.issue : "";
 
+  const siteDisplayName = input.brandName || input.domain || "your site";
+
   const parts: string[] = [
     "<p><strong>New form submission</strong></p>",
-    `<p><strong>Project ID:</strong> ${escapeHtml(input.projectId)}</p>`,
+    `<p><strong>Site:</strong> ${escapeHtml(siteDisplayName)}</p>`,
   ];
+  if (input.domain && input.brandName) {
+    parts.push(`<p><strong>Domain:</strong> ${escapeHtml(input.domain)}</p>`);
+  }
+  parts.push(`<p><strong>Project ID:</strong> ${escapeHtml(input.projectId)}</p>`);
+
   if (input.pageSlug) parts.push(`<p><strong>Page:</strong> ${escapeHtml(input.pageSlug)}</p>`);
   if (name) parts.push(`<p><strong>Name:</strong> ${escapeHtml(name)}</p>`);
   if (email) parts.push(`<p><strong>Email:</strong> ${escapeHtml(email)}</p>`);
@@ -74,8 +83,8 @@ function buildLeadEmailContent(input: LeadNotificationInput): { subject: string;
   if (message) parts.push(`<p><strong>Message:</strong><br/>${escapeHtml(message).replace(/\n/g, "<br/>")}</p>`);
 
   const subject = email
-    ? `New lead: ${name || "Visitor"} (${email})`
-    : `New lead from your site`;
+    ? `New lead: ${name || "Visitor"} (${email}) — ${siteDisplayName}`
+    : `New lead from ${siteDisplayName}`;
 
   return { subject, html: parts.join("") };
 }

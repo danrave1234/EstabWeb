@@ -40,7 +40,7 @@ export default function HubLayoutClient({ children, initialUser }: HubLayoutClie
           />
         )}
         <div className="flex-1 flex flex-col">
-          <div className={`flex-1${!isAuthPage && !isDashboard ? " pt-16" : ""}`}>
+          <div className={`flex-1${!isAuthPage ? " pt-16" : ""}`}>
             <ScrollReveal />
             {children}
           </div>

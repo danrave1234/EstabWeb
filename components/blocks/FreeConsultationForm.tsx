@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { ShieldCheckIcon, ClockIcon, LockIcon } from "@phosphor-icons/react";
 import { submitFormLead, trackEvent } from "@/components/shared/Analytics";
 
@@ -57,9 +58,10 @@ export default function FreeConsultationForm({
       return;
     }
     setSubmitted(true);
+    setFormData({ name: "", email: "", issue: dropdownOptions[0] ?? "" });
+    toast.success(buttonThankYou || "Request received!");
     setTimeout(() => {
       setSubmitted(false);
-      setFormData({ name: "", email: "", issue: dropdownOptions[0] ?? "" });
     }, 4000);
   };
 
