@@ -65,6 +65,31 @@ const PLAN_COLORS: Record<string, string> = {
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
+const EXPIRY_OPTIONS = [
+  { label: "No expiry", value: "" },
+  { label: "7 days", days: 7 },
+  { label: "14 days", days: 14 },
+  { label: "30 days", days: 30 },
+  { label: "3 months", days: 90 },
+  { label: "6 months", days: 180 },
+  { label: "1 year", days: 365 },
+];
+
+function expiryToDate(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split("T")[0];
+}
+
+function dateToExpiryOption(dateStr: string | null): string {
+  if (!dateStr) return "";
+  const target = new Date(dateStr);
+  const now = new Date();
+  const diffDays = Math.round((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  const match = EXPIRY_OPTIONS.find((o) => "days" in o && Math.abs((o as any).days - diffDays) <= 1);
+  return match && "days" in match ? String((match as any).days) : "";
+}
+
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
 function StatusBadge({ status, expires_at, usage_count, max_uses }: { status: string; expires_at: string | null; usage_count: number; max_uses: number }) {
@@ -397,7 +422,11 @@ function PromoCodesTab() {
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1.5 block">Expires On <span className="text-muted-foreground font-normal">(optional)</span></label>
-                  <input type="date" className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
+                  <select className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={form.expires_at ? (() => { const d = new Date(form.expires_at); const now = new Date(); const diff = Math.round((d.getTime() - now.getTime()) / (1000*60*60*24)); const m = EXPIRY_OPTIONS.find(o => "days" in o && Math.abs((o as any).days - diff) <= 1); return m && "days" in m ? String((m as any).days) : ""; })() : ""} onChange={(e) => setForm({ ...form, expires_at: e.target.value ? expiryToDate(Number(e.target.value)) : "" })}>
+                    {EXPIRY_OPTIONS.map((o) => (
+                      <option key={"days" in o ? (o as any).days : "none"} value={"days" in o ? String((o as any).days) : ""}>{o.label}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
@@ -446,7 +475,11 @@ function PromoCodesTab() {
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1.5 block">Expires On</label>
-                  <input type="date" className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={editingPromo.expires_at ? editingPromo.expires_at.split("T")[0] : ""} onChange={(e) => setEditingPromo({ ...editingPromo, expires_at: e.target.value })} />
+                  <select className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={editingPromo.expires_at ? (() => { const d = new Date(editingPromo.expires_at!); const now = new Date(); const diff = Math.round((d.getTime() - now.getTime()) / (1000*60*60*24)); const m = EXPIRY_OPTIONS.find(o => "days" in o && Math.abs((o as any).days - diff) <= 1); return m && "days" in m ? String((m as any).days) : ""; })() : ""} onChange={(e) => setEditingPromo({ ...editingPromo, expires_at: e.target.value ? expiryToDate(Number(e.target.value)) : null })}>
+                    {EXPIRY_OPTIONS.map((o) => (
+                      <option key={"days" in o ? (o as any).days : "none"} value={"days" in o ? String((o as any).days) : ""}>{o.label}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
