@@ -288,6 +288,10 @@ STRICT RULES:
 - If the user only asks to change one section, only emit operations for that section. Do NOT touch other sections.
 - When updating a section, only include the fields that need to change in "changes". Do NOT re-send fields that are already correct — they will be preserved automatically.
 - Match the tone, brand name, city, and business context already present in the CURRENT SITE SUMMARY above. Do not invent a new business name or location unless the user explicitly asks.
+- MATCH REALITY: Strongly prioritize using official/professional photos (via imageUrl fields) rather than generic icons whenever a section supports it.
+- LEGITIMATE PRICING: When populating pricing sections, use realistic, legitimate pricing tiers, names, and features based on the real business type.
+- BLOG/NEWS SOURCING: If populating a blog, insight, or news section, DO NOT invent fake titles. Use actual recent posts, updates, or announcements from the business.
+- MISSING DATA: If contact info, team photos, or addresses are missing, AUTONOMOUSLY USE THE SEARCH TOOL to find the legitimate data on the web.
 
 EXAMPLE OUTPUT:
 {"summary":"Updated hero messaging for urgency and switched to a bold red theme.","operations":[{"type":"update_section","sectionKey":"hero","changes":{"title":"24/7 Emergency Service – We Respond in 30 Minutes","ctaText":"Call Now"}},{"type":"update_global","changes":{"colorTheme":"red-crimson","typographyStyle":"bold"}}]}`
@@ -425,13 +429,15 @@ export async function POST(req: NextRequest) {
     const fullPrompt = `${systemPrompt}\n\nUSER REQUEST:\n"${prompt.trim()}"`
 
     // Call Gemini
+    const requestBody: any = {
+      contents: [{ parts: [{ text: fullPrompt }] }],
+      generationConfig: { temperature: 0.3, maxOutputTokens: 2048 },
+    }
+
     const geminiRes = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: fullPrompt }] }],
-        generationConfig: { temperature: 0.3, maxOutputTokens: 1024 },
-      }),
+      body: JSON.stringify(requestBody),
     })
 
     if (!geminiRes.ok) {

@@ -31,7 +31,7 @@ export default async function ContactPage() {
               <EnvelopeIcon weight="duotone" className="w-6 h-6 opacity-60" />
               <div>
                 <h3 className="text-xs font-bold">Email Us</h3>
-                <p className="text-[11px] opacity-90 font-medium truncate">danravekeh123@gmail.com</p>
+                <p className="text-[11px] opacity-90 font-medium truncate">contact@estabweb.com</p>
               </div>
             </div>
 

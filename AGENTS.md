@@ -156,7 +156,33 @@ Projects have a `site_status` column (`active` | `disabled` | `archived`, defaul
 - Clients cannot restore from `archived` — only admin PATCH to `active` allowed.
 - All status changes must write an audit log entry.
 
-### 14. AI Custom HTML Section (Pro+ Gate)
+### 14. Admin Template Draft Workflow (Marketing Flow)
+- The admin template builder (`/admin/template`) has two persistence layers:
+  - `site_config` key `template_master` for the currently loaded live builder state (`GET/POST /api/config`)
+  - `template_drafts` table for temporary business-specific snapshots (`GET/POST/PATCH/DELETE /api/admin/template-drafts`)
+- **Rule**: Use `template_drafts` for in-progress prospect work (brand names, logos, photos, localized copy) and only generate `template_codes` when the prospect is ready to redeem.
+- **Expiry rule**: `template_drafts` are temporary and expire after 30 days (`expires_at`). Expired drafts must be removed along with referenced `site-assets` bucket images.
+- Cleanup is run by cron route `GET /api/cron/cleanup-template-drafts` (CRON_SECRET-protected) and can also run during admin draft reads.
+- AI template auto-population endpoint (`/api/ai/populate-template`) supports optional Gemini Google Search grounding (`useSearch`) and configurable model env vars:
+  - `GEMINI_TEMPLATE_MODEL` (default `gemini-1.5-flash`)
+  - `GEMINI_TEMPLATE_USE_SEARCH` (default `true`)
+- Endpoint output now supports full template recommendations (copy + `theme` + `colorTheme` + `typographyStyle` + `headerStyle` + `footerStyle` + `darkMode` + `activeSections`) and must be normalized against allowed option lists before applying.
+- Template AI requests should include structured option context (hero/theme labels, color swatches, typography metadata, section labels, and preset blueprints) so model selection is guided by real design-system constraints instead of random combinations.
+- Endpoint also supports optional `businessPageUrl`; server extracts public page signals (og:title/description/image, contact hints) to prefill logo/hero/contact fields when available.
+- Endpoint also supports optional `businessImageDataUrl` (uploaded screenshot/logo) for vision-based extraction fallback when social pages block direct scraping.
+- **Rule**: Keep template AI output strict JSON and normalize fields server-side before applying to editor state.
+- **Grounding rule**: Template AI must prioritize real-world data from `businessPageUrl` (via search/scraping) over generic defaults. It must NOT invent fake contact details (phone, email) or brand names. If scraping social profiles (Facebook, etc.) is blocked, the server provides a hint for the AI to trigger a web search for the official identity, brand colors, and logo.
+- **Branding rule**: AI must analyze brand signals (logo colors, search descriptions) to select the most accurate `colorTheme`. Known brands must match their iconic colors (e.g., Anytime Fitness must use Purple-based themes).
+- **Sequence rule**: Generated `activeSections` must follow a professional conversion sequence: Hero -> Value Prop -> Features/Services -> Social Proof -> Trust/FAQ -> Pricing -> Contact.
+
+### 15. Admin Dashboard Design System
+The admin panel uses a modern, sidebar-based layout with shadcn-inspired components (Cards, Tables, Badges).
+- **Layout**: Centralized in `AdminLayoutClient.tsx` using `AdminSidebar.tsx`. The sidebar is collapsible on desktop and uses a mobile trigger on small screens.
+- **Components**: Prefer using established UI primitives from `components/ui/` (Card, Badge, Button, Input, Table, Tabs) for all admin-facing pages to maintain design consistency.
+- **Design Tokens**: Use `bg-muted/30` for main page backgrounds and `bg-card` for content containers. Secondary badges and highlights should use `10%` opacity variants of their primary color (e.g., `bg-emerald-500/10 text-emerald-500`).
+- **Rule**: When adding new admin pages or components, follow the existing pattern of using Cards for information grouping and well-spaced Tables for data lists. Keep the typography clean using font-weights (bold/medium) and muted-foreground colors for secondary information.
+
+### 16. AI Custom HTML Section (Pro+ Gate)
 - Section ID: `custom-html`
 - Config key: `customHtml` (stored in project `draft_config` / `current_config`)
 - Rendering pipeline updates must stay in sync across:
@@ -168,4 +194,3 @@ Projects have a `site_status` column (`active` | `disabled` | `archived`, defaul
 - **Security rule**: only `custom-html` may carry raw HTML/CSS fields (`html`, `css`), and those must pass sanitization via `lib/security/custom-section-sanitizer.ts` and `validateOperations()`.
 - **AI rule**: `app/api/ai/editor-command/route.ts` must keep strict prompt constraints so HTML is allowed only for `custom-html.html/css`; all other fields remain plain text.
 - **Dashboard editor rule**: when editing `custom-html` in the section modal, hide raw code fields (`html`, `css`, `js`) and expose only content controls (title/subtitle, parsed text, links, images). Section display labels should resolve from section content/title instead of a fixed generic label.
-

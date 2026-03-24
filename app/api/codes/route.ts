@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'admin') {
+    if (!profile || !['admin', 'sub_admin'].includes(profile.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -64,18 +64,45 @@ export async function GET() {
     .eq('id', user.id)
     .single();
 
-  if (profile?.role !== 'admin') {
+  if (!profile || !['admin', 'sub_admin'].includes(profile.role)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const { data, error } = await supabase
     .from('template_codes')
-    .select('*')
+    .select('*, code_redemptions(redeemed_at, redeemed_by, projects(subdomain))')
     .order('created_at', { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) {
+    console.error('[API Codes GET] Error:', error);
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
 
-  return NextResponse.json(data);
+  // Fetch profiles for all redeemers to get emails
+  const redeemerIds = Array.from(new Set(
+    data.flatMap(code => code.code_redemptions?.map((r: any) => r.redeemed_by) || [])
+  )).filter(Boolean);
+
+  let profilesMap: Record<string, string> = {};
+  if (redeemerIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .in('id', redeemerIds);
+    
+    profilesMap = (profiles || []).reduce((acc: any, p: any) => ({ ...acc, [p.id]: p.email }), {});
+  }
+
+  // Map emails back to redemptions
+  const enrichedData = data.map(code => ({
+    ...code,
+    code_redemptions: code.code_redemptions?.map((r: any) => ({
+      ...r,
+      user_email: profilesMap[r.redeemed_by] || r.redeemed_by
+    }))
+  }));
+
+  return NextResponse.json(enrichedData);
 }
 
 export async function PATCH(req: Request) {
@@ -94,7 +121,7 @@ export async function PATCH(req: Request) {
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'admin') {
+    if (!profile || !['admin', 'sub_admin'].includes(profile.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -141,7 +168,7 @@ export async function DELETE(req: Request) {
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'admin') {
+    if (!profile || !['admin', 'sub_admin'].includes(profile.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

@@ -1,6 +1,9 @@
 "use client"
 import { useState } from "react"
 import { toast } from "sonner"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { AlertTriangle } from "lucide-react"
 
 export default function ClearCacheButton() {
   const [loading, setLoading] = useState(false)
@@ -24,20 +27,33 @@ export default function ClearCacheButton() {
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-background shadow-sm p-6 space-y-4">
-      <div>
-        <h2 className="text-lg font-bold">Cache Management</h2>
-        <p className="text-xs text-muted-foreground mt-1">
-          Manually flush the entire Redis cache. All sites will re-fetch fresh data from the database on their next request.
+    <Card className="border-destructive/20 shadow-sm overflow-hidden bg-destructive/5">
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-destructive/10 text-destructive">
+            <AlertTriangle className="h-5 w-5" />
+          </div>
+          <div>
+            <CardTitle className="text-xl text-destructive">Danger Zone</CardTitle>
+            <CardDescription className="text-destructive/70">
+              System-level cache management. Use with caution.
+            </CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-destructive/80 font-medium">
+          Manually flush the entire Redis cache. All sites will re-fetch fresh data from the database on their next request. This may cause a temporary spike in database load.
         </p>
-      </div>
-      <button
-        onClick={handleClearCache}
-        disabled={loading}
-        className="inline-flex items-center gap-2 rounded-lg bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground shadow hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        {loading ? "Clearing…" : "Clear Redis Cache"}
-      </button>
-    </div>
+        <Button
+          onClick={handleClearCache}
+          disabled={loading}
+          variant="destructive"
+          className="rounded-lg px-6 font-bold text-xs uppercase tracking-wider"
+        >
+          {loading ? "Clearing Cache..." : "Clear Redis Cache"}
+        </Button>
+      </CardContent>
+    </Card>
   )
 }

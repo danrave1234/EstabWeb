@@ -74,7 +74,7 @@ export function buildHubLlmsPayload(host: string): {
       },
     ],
     contact: {
-      email: asText(process.env.NEXT_PUBLIC_SUPPORT_EMAIL) || "support@estabweb.com",
+      email: asText(process.env.NEXT_PUBLIC_SUPPORT_EMAIL) || "contact@estabweb.com",
     },
     services: [
       "Template-based website setup",

@@ -7,9 +7,7 @@ import { Suspense } from 'react'
 
 export default async function AdminRequestsPage() {
   const supabase = await createClient()
-
-  const { data } = await supabase.auth.getUser()
-  const user = data?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) return redirect('/login')
 
   // Admin check

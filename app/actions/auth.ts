@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { sendNewUserAdminNotification } from '@/lib/email/admin-notification'
 
 const authSchema = z.object({
   email: z.string().email('Invalid email address'),

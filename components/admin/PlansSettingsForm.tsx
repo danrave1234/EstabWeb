@@ -3,6 +3,10 @@
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import { setPlansConfig } from "@/app/actions/admin"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface PlansSettingsFormProps {
     initialConfig: {
@@ -42,47 +46,47 @@ export default function PlansSettingsForm({ initialConfig }: PlansSettingsFormPr
         const plan = plans[planId]
         if (!plan) return null
         return (
-            <div className="space-y-4 border border-border rounded-xl p-4 bg-muted/20">
-                <h3 className="font-bold text-sm">{label}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-4 border border-border/50 rounded-xl p-5 bg-muted/20 hover:bg-muted/30 transition-colors">
+                <h3 className="font-bold text-sm text-foreground uppercase tracking-wider">{label}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="space-y-2">
                         <label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Initial Setup (₱)</label>
-                        <input
+                        <Input
                             type="number"
                             min={0}
                             value={plan.initialAmount / 100}
                             onChange={(e) => handleNumberChange(planId, 'initialAmount', e.target.value, 100)}
-                            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg"
+                            className="h-10 text-sm bg-background"
                         />
                     </div>
                     <div className="space-y-2">
                         <label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Monthly (₱)</label>
-                        <input
+                        <Input
                             type="number"
                             min={0}
                             value={plan.recurringAmount / 100}
                             onChange={(e) => handleNumberChange(planId, 'recurringAmount', e.target.value, 100)}
-                            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg"
+                            className="h-10 text-sm bg-background"
                         />
                     </div>
                     <div className="space-y-2">
                         <label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Yearly (₱)</label>
-                        <input
+                        <Input
                             type="number"
                             min={0}
                             value={plan.yearlyAmount / 100}
                             onChange={(e) => handleNumberChange(planId, 'yearlyAmount', e.target.value, 100)}
-                            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg"
+                            className="h-10 text-sm bg-background"
                         />
                     </div>
                     <div className="space-y-2">
                         <label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">AI Limit (Gens)</label>
-                        <input
+                        <Input
                             type="number"
                             min={0}
                             value={plan.aiGenerationsLimit || 0}
                             onChange={(e) => handleNumberChange(planId, 'aiGenerationsLimit', e.target.value, 1)}
-                            className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg border-primary/30"
+                            className="h-10 text-sm bg-background border-primary/20 focus:border-primary/50"
                         />
                     </div>
                 </div>
@@ -91,44 +95,40 @@ export default function PlansSettingsForm({ initialConfig }: PlansSettingsFormPr
     }
 
     return (
-        <div className="rounded-2xl border border-border bg-background shadow-sm p-6 space-y-6">
-            <div>
-                <h2 className="text-lg font-bold">Subscription Plans Options</h2>
-                <p className="text-xs text-muted-foreground mt-1">
-                    Adjust the pricing and session limits for all plans.
-                </p>
-            </div>
+        <Card className="border-border/50 shadow-sm overflow-hidden">
+            <CardHeader className="border-b border-border/50 bg-muted/20">
+                <CardTitle className="text-xl">Subscription Plans Options</CardTitle>
+                <CardDescription>Adjust the pricing and session limits for all plans.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+                <div className="flex items-center gap-3 bg-primary/5 p-4 border border-primary/10 rounded-xl">
+                    <Checkbox
+                        id="enableAnnualToggle"
+                        checked={enableAnnual}
+                        onCheckedChange={(checked) => setEnableAnnual(!!checked)}
+                    />
+                    <label htmlFor="enableAnnualToggle" className="text-sm font-bold cursor-pointer select-none text-primary/80">
+                        Enable Annual Billing Discount
+                    </label>
+                </div>
 
-            <div className="flex items-center gap-3 bg-muted/30 p-4 border border-border rounded-xl">
-                <input
-                    type="checkbox"
-                    id="enableAnnualToggle"
-                    checked={enableAnnual}
-                    onChange={(e) => setEnableAnnual(e.target.checked)}
-                    className="w-4 h-4 rounded border-border text-primary cursor-pointer"
-                />
-                <label htmlFor="enableAnnualToggle" className="text-sm font-bold cursor-pointer select-none">
-                    Enable Annual Billing Discount
-                </label>
-            </div>
+                <div className="space-y-6">
+                    {renderPlanInputs('free', 'Free Plan')}
+                    {renderPlanInputs('basic', 'Basic Plan')}
+                    {renderPlanInputs('pro', 'Pro Plan')}
+                    {renderPlanInputs('ecommerce', 'E-Commerce Plan')}
+                </div>
 
-            <div className="space-y-4">
-                {renderPlanInputs('free', 'Free Plan')}
-                {renderPlanInputs('basic', 'Basic Plan')}
-                {renderPlanInputs('pro', 'Pro Plan')}
-                {renderPlanInputs('ecommerce', 'E-Commerce Plan')}
-            </div>
-
-            <div className="flex items-center gap-3 pt-4">
-                <button
-                    type="button"
-                    disabled={pending}
-                    onClick={handleSave}
-                    className="px-5 py-2.5 bg-primary text-primary-foreground text-xs font-bold rounded-full hover:opacity-90 disabled:opacity-50"
-                >
-                    {pending ? "Saving..." : "Save Pricing"}
-                </button>
-            </div>
-        </div>
+                <div className="flex items-center gap-3 pt-4 border-t border-border/50">
+                    <Button
+                        disabled={pending}
+                        onClick={handleSave}
+                        className="rounded-lg px-8 font-bold text-xs uppercase tracking-wider"
+                    >
+                        {pending ? "Saving..." : "Save Pricing Configuration"}
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
     )
 }

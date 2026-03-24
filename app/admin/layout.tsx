@@ -24,8 +24,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  const user = data?.user || null;
+  const { data: { user } } = await supabase.auth.getUser();
 
   const { data: profile } = user
     ? await supabase.from('profiles').select('role').eq('id', user.id).single()

@@ -24,11 +24,39 @@ export async function GET() {
   const service = createServiceClient()
   const { data, error } = await service
     .from('promo_codes')
-    .select('*, promo_redemptions(count)')
+    .select('*, promo_redemptions(redeemed_at, redeemed_by, projects(subdomain))')
     .order('created_at', { ascending: false })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json(data)
+  if (error) {
+    console.error('[API Promo Codes GET] Error:', error);
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  // Fetch profiles for all redeemers to get emails
+  const redeemerIds = Array.from(new Set(
+    data.flatMap(promo => promo.promo_redemptions?.map((r: any) => r.redeemed_by) || [])
+  )).filter(Boolean);
+
+  let profilesMap: Record<string, string> = {};
+  if (redeemerIds.length > 0) {
+    const { data: profiles } = await service
+      .from('profiles')
+      .select('id, email')
+      .in('id', redeemerIds);
+    
+    profilesMap = (profiles || []).reduce((acc: any, p: any) => ({ ...acc, [p.id]: p.email }), {});
+  }
+
+  // Map emails back to redemptions
+  const enrichedData = data.map(promo => ({
+    ...promo,
+    promo_redemptions: promo.promo_redemptions?.map((r: any) => ({
+      ...r,
+      user_email: profilesMap[r.redeemed_by] || r.redeemed_by
+    }))
+  }));
+
+  return NextResponse.json(enrichedData)
 }
 
 export async function POST(req: Request) {

@@ -1,4 +1,12 @@
-/* Dark Mode Base */
+/* Base Modes */
+[data-mode="light"] {
+  --background: #f8f9fa;
+  --foreground: #1a1a1a;
+  --muted: #f1f2f6;
+  --muted-foreground: #636e72;
+  --border: rgba(0, 0, 0, 0.1);
+}
+
 [data-mode="dark"] {
   --background: #0f172a;
   --foreground: #f1f5f9;

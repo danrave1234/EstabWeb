@@ -68,13 +68,13 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
   const navLinks = React.useMemo(() => isDashboard
     ? (variant === "admin"
       ? [
-        { name: "Requests", href: "/admin/dashboard", icon: LayoutDashboard },
-        { name: "Clients", href: "/admin/clients", icon: Globe },
-        { name: "Transactions", href: "/admin/transactions", icon: CreditCard },
-        { name: "Template", href: "/admin/template", icon: Layout },
-        { name: "Codes", href: "/admin/codes", icon: KeyRound },
-        { name: "Settings", href: "/admin/settings", icon: Settings },
-        { name: "Audit Logs", href: "/admin/audit-logs", icon: ClipboardList },
+        { name: "Requests", href: "/admin/dashboard", icon: LayoutDashboard, prefetch: true },
+        { name: "Clients", href: "/admin/clients", icon: Globe, prefetch: true },
+        { name: "Transactions", href: "/admin/transactions", icon: CreditCard, prefetch: true },
+        { name: "Template", href: "/admin/template", icon: Layout, prefetch: true },
+        { name: "Codes", href: "/admin/codes", icon: KeyRound, prefetch: true },
+        { name: "Settings", href: "/admin/settings", icon: Settings, prefetch: true },
+        { name: "Audit Logs", href: "/admin/audit-logs", icon: ClipboardList, prefetch: true },
       ].filter(link => !isSubAdmin || !adminRestrictedLinks.includes(link.name))
       : [])
     : [
@@ -131,6 +131,7 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
               <Link
                 key={link.name}
                 href={link.href}
+                prefetch={(link as any).prefetch}
                 className={`flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-full transition-all duration-200 shrink-0 ${pathname === link.href
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-background/50"

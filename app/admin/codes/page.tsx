@@ -9,6 +9,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/Dialog";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus,
   Trash2,
@@ -23,9 +28,13 @@ import {
   Tag,
   Copy,
   Check,
+  Layout,
+  User,
+  ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,6 +49,12 @@ interface TemplateCode {
   max_uses: number;
   usage_count: number;
   status: "active" | "revoked" | "expired";
+  code_redemptions?: {
+    redeemed_at: string;
+    redeemed_by: string;
+    user_email?: string;
+    projects: { subdomain: string };
+  }[];
 }
 
 interface PromoCode {
@@ -53,7 +68,12 @@ interface PromoCode {
   status: "active" | "revoked";
   expires_at: string | null;
   created_at: string;
-  promo_redemptions?: { count: number }[];
+  promo_redemptions?: {
+    redeemed_at: string;
+    redeemed_by: string;
+    user_email?: string;
+    projects: { subdomain: string };
+  }[];
 }
 
 const PLAN_LABELS: Record<string, string> = {
@@ -95,13 +115,13 @@ function DatePicker({ value, onChange, label, optional }: { value: string | null
   const years = Array.from({ length: 10 }, (_, i) => currentYear + i);
   const daysInMonth = month && year ? new Date(Number(year), Number(month), 0).getDate() : 31;
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const sel = "w-full px-3 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer";
+  const sel = "w-full px-3 py-2 bg-muted/20 border-border/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none cursor-pointer transition-all";
   const handleMonth = (m: string) => { setMonth(m); onChange(buildIso(day, m, year)); };
   const handleDay = (d: string) => { setDay(d); onChange(buildIso(d, month, year)); };
   const handleYear = (y: string) => { setYear(y); onChange(buildIso(day, month, y)); };
   return (
     <div>
-      <label className="text-sm font-medium mb-1.5 block">{label}{optional && <span className="text-muted-foreground font-normal ml-1">(optional)</span>}</label>
+      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">{label}{optional && <span className="text-muted-foreground/50 font-normal ml-1">(OPTIONAL)</span>}</label>
       <div className="grid grid-cols-3 gap-2">
         <select className={sel} value={month} onChange={(e) => handleMonth(e.target.value)}>
           <option value="">Month</option>
@@ -126,12 +146,46 @@ function StatusBadge({ status, expires_at, usage_count, max_uses }: { status: st
   const isExpired = expires_at && new Date(expires_at) < new Date();
   const isMaxed = usage_count >= max_uses;
   if (status === "revoked")
-    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"><XCircle className="w-3 h-3" /> Revoked</span>;
+    return <Badge variant="secondary" className="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 border-none font-bold text-[10px] uppercase tracking-wider"><XCircle className="w-3 h-3 mr-1" /> REVOKED</Badge>;
   if (isExpired || status === "expired")
-    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"><Clock className="w-3 h-3" /> Expired</span>;
+    return <Badge variant="secondary" className="bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 border-none font-bold text-[10px] uppercase tracking-wider"><Clock className="w-3 h-3 mr-1" /> EXPIRED</Badge>;
   if (isMaxed)
-    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"><AlertTriangle className="w-3 h-3" /> Maxed Out</span>;
-  return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"><CheckCircle className="w-3 h-3" /> Active</span>;
+    return <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-none font-bold text-[10px] uppercase tracking-wider"><AlertTriangle className="w-3 h-3 mr-1" /> MAXED OUT</Badge>;
+  return <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-none font-bold text-[10px] uppercase tracking-wider"><CheckCircle className="w-3 h-3 mr-1" /> ACTIVE</Badge>;
+}
+
+function RedemptionList({ redemptions = [] }: { redemptions?: any[] }) {
+  if (!redemptions || redemptions.length === 0) return <p className="text-xs text-muted-foreground p-4 text-center">No redemptions yet.</p>;
+
+  return (
+    <div className="max-h-[300px] overflow-y-auto space-y-2 p-1">
+      {redemptions.map((r, i) => (
+        <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 text-xs">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1.5 font-semibold text-foreground">
+              <User className="w-3 h-3 text-muted-foreground" />
+              {r.user_email || r.redeemed_by}
+            </div>
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Clock className="w-3 h-3" />
+              {format(new Date(r.redeemed_at), "MMM d, yyyy HH:mm")}
+            </div>
+          </div>
+          <div className="text-right">
+            <a 
+              href={`https://${r.projects?.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`} 
+              target="_blank" 
+              rel="noreferrer"
+              className="flex items-center gap-1 text-primary hover:underline font-medium"
+            >
+              {r.projects?.subdomain}
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -150,10 +204,13 @@ function CopyButton({ text }: { text: string }) {
 
 // ─── Template Codes Tab ───────────────────────────────────────────────────────
 
-function TemplateCodesTab() {
-  const { data: codes = [], isLoading: loading, mutate } = useSWR<TemplateCode[]>("/api/codes", fetcher);
+function TemplateCodesWorkspace() {
+  const { data, error, isLoading: loading, mutate } = useSWR<TemplateCode[]>("/api/codes", fetcher);
+  const codes = Array.isArray(data) ? data : [];
+  const apiError = error || (data && !Array.isArray(data) ? (data as any).error : null);
   const [search, setSearch] = useState("");
   const [editingCode, setEditingCode] = useState<TemplateCode | null>(null);
+  const [viewingRedemptions, setViewingRedemptions] = useState<TemplateCode | null>(null);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this code? This cannot be undone.")) return;
@@ -176,61 +233,103 @@ function TemplateCodesTab() {
     else { const d = await res.json(); toast.error(d.error || "Failed to update"); }
   };
 
-  const filtered = codes.filter((c) =>
+  const filtered = Array.isArray(codes) ? codes.filter((c) =>
     c.code.toLowerCase().includes(search.toLowerCase()) ||
     (c.label?.toLowerCase() || "").includes(search.toLowerCase())
-  );
+  ) : [];
 
   return (
-    <>
-      <div className="bg-background border rounded-xl overflow-hidden">
-        <div className="p-4 border-b flex items-center gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input type="text" placeholder="Search codes or labels…" className="w-full pl-10 pr-4 py-2 bg-muted/50 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={search} onChange={(e) => setSearch(e.target.value)} />
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-muted/30">
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Code Info</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Usage</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Expires</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {loading ? (
-                <tr><td colSpan={5} className="px-6 py-12 text-center"><div className="flex flex-col items-center gap-2"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-sm text-muted-foreground">Loading…</span></div></td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">No template codes found.</td></tr>
-              ) : filtered.map((code) => (
-                <tr key={code.id} className="hover:bg-muted/10 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-mono font-bold text-base text-primary">{code.code}</span>
-                      <CopyButton text={code.code} />
-                    </div>
-                    <span className="text-sm text-muted-foreground">{code.label || "No label"}</span>
-                  </td>
-                  <td className="px-6 py-4"><StatusBadge status={code.status} expires_at={code.expires_at} usage_count={code.usage_count} max_uses={code.max_uses} /></td>
-                  <td className="px-6 py-4"><div className="flex items-center gap-2"><Hash className="w-4 h-4 text-muted-foreground" /><span className="text-sm font-medium">{code.usage_count} / {code.max_uses}</span></div></td>
-                  <td className="px-6 py-4"><span className="text-sm text-muted-foreground">{code.expires_at ? format(new Date(code.expires_at), "MMM d, yyyy") : "Never"}</span></td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => setEditingCode(code)} className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all" title="Edit limits"><Edit2 className="w-4 h-4" /></button>
-                      <button onClick={() => handleUpdateStatus(code.id, code.status === "revoked" ? "active" : "revoked")} className={`p-2 rounded-lg transition-all ${code.status === "revoked" ? "text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20" : "text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/20"}`} title={code.status === "revoked" ? "Activate" : "Revoke"}>{code.status === "revoked" ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}</button>
-                      <button onClick={() => handleDelete(code.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all" title="Delete"><Trash2 className="w-4 h-4" /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="relative w-64">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search codes or labels..."
+            className="pl-9 h-9 text-xs"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
       </div>
+
+      <Card className="border-border/50 shadow-sm overflow-hidden">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-border/50 bg-muted/20">
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Code Info</th>
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-center">Status</th>
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Usage</th>
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Expires</th>
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {loading ? (
+                  <tr><td colSpan={5} className="p-20 text-center"><RefreshCw className="w-6 h-6 animate-spin mx-auto opacity-20" /></td></tr>
+                ) : apiError ? (
+                  <tr><td colSpan={6} className="p-20 text-center text-rose-500">
+                    <div className="flex flex-col items-center gap-3">
+                      <AlertTriangle className="w-10 h-10" />
+                      <p className="text-sm font-bold">Error loading codes: {apiError}</p>
+                    </div>
+                  </td></tr>
+                ) : filtered.length === 0 ? (
+                  <tr><td colSpan={5} className="p-20 text-center text-muted-foreground">
+                    <div className="flex flex-col items-center gap-3">
+                      <Layout className="w-10 h-10 text-muted-foreground/40" />
+                      <p className="text-sm">No template codes found.</p>
+                    </div>
+                  </td></tr>
+                ) : (
+                  filtered.map((code) => (
+                    <tr key={code.id} className="group hover:bg-muted/30 transition-colors">
+                      <td className="p-4">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <code className="bg-primary/5 text-primary font-mono font-bold px-2 py-1 rounded border border-primary/10">{code.code}</code>
+                            <CopyButton text={code.code} />
+                          </div>
+                          <span className="text-xs font-medium text-foreground">{code.label || "Untitled Snapshot"}</span>
+                        </div>
+                      </td>
+                      <td className="p-4 text-center">
+                        <StatusBadge status={code.status} expires_at={code.expires_at} usage_count={code.usage_count} max_uses={code.max_uses} />
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-1.5 text-xs font-medium">
+                          <Hash className="w-3 h-3 text-muted-foreground" />
+                          <span>{code.usage_count} / {code.max_uses}</span>
+                        </div>
+                      </td>
+                      <td className="p-4 text-xs font-medium text-muted-foreground">
+                        {code.expires_at ? format(new Date(code.expires_at), "MMM d, yyyy") : "Never"}
+                      </td>
+                      <td className="p-4 text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => setViewingRedemptions(code)} className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10" title="View Usage">
+                            <User className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => setEditingCode(code)} className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(code.id, code.status === "revoked" ? "active" : "revoked")} className={cn("h-8 w-8", code.status === "revoked" ? "text-emerald-500 hover:bg-emerald-500/10" : "text-amber-500 hover:bg-amber-500/10")}>
+                            {code.status === "revoked" ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(code.id)} className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
       <Dialog open={!!editingCode} onOpenChange={(o) => { if (!o) setEditingCode(null); }}>
         <DialogContent className="max-w-md">
@@ -246,14 +345,31 @@ function TemplateCodesTab() {
               </div>
               <DatePicker label="Expiration Date" optional value={editingCode.expires_at} onChange={(v) => setEditingCode({ ...editingCode, expires_at: v })} />
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setEditingCode(null)} className="flex-1 px-4 py-2.5 text-sm font-medium border rounded-xl hover:bg-muted transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2.5 text-sm font-bold bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-all">Save Changes</button>
+                <Button type="button" variant="outline" onClick={() => setEditingCode(null)} className="flex-1 rounded-xl">Cancel</Button>
+                <Button type="submit" className="flex-1 rounded-xl font-bold uppercase tracking-wider text-xs">Save Changes</Button>
               </div>
             </form>
           )}
         </DialogContent>
       </Dialog>
-    </>
+
+      <Dialog open={!!viewingRedemptions} onOpenChange={(open) => !open && setViewingRedemptions(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="w-5 h-5 text-primary" />
+              Usage History
+            </DialogTitle>
+            <DialogDescription>
+              Who used the code <code className="font-bold text-foreground">{viewingRedemptions?.code}</code>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <RedemptionList redemptions={viewingRedemptions?.code_redemptions} />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
 
@@ -261,18 +377,21 @@ function TemplateCodesTab() {
 
 const DEFAULT_PROMO_FORM = { description: "", plan_id: "basic", months: 1, max_uses: 1, expires_at: "", prefix: "" };
 
-function PromoCodesTab() {
-  const { data: promos = [], isLoading: loading, mutate } = useSWR<PromoCode[]>("/api/admin/promo-codes", fetcher);
+function PromoCodesWorkspace() {
+  const { data, error, isLoading: loading, mutate } = useSWR<PromoCode[]>("/api/admin/promo-codes", fetcher);
+  const promos = Array.isArray(data) ? data : [];
+  const apiError = error || (data && !Array.isArray(data) ? (data as any).error : null);
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [editingPromo, setEditingPromo] = useState<PromoCode | null>(null);
+  const [viewingRedemptions, setViewingRedemptions] = useState<PromoCode | null>(null);
   const [form, setForm] = useState(DEFAULT_PROMO_FORM);
   const [saving, setSaving] = useState(false);
 
-  const filtered = promos.filter((p) =>
+  const filtered = Array.isArray(promos) ? promos.filter((p) =>
     p.code.toLowerCase().includes(search.toLowerCase()) ||
     (p.description?.toLowerCase() || "").includes(search.toLowerCase())
-  );
+  ) : [];
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -336,78 +455,139 @@ function PromoCodesTab() {
   };
 
   return (
-    <>
-      <div className="bg-background border rounded-xl overflow-hidden">
-        <div className="p-4 border-b flex items-center gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input type="text" placeholder="Search promo codes or descriptions…" className="w-full pl-10 pr-4 py-2 bg-muted/50 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={search} onChange={(e) => setSearch(e.target.value)} />
-          </div>
-          <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all shrink-0">
-            <Plus className="w-4 h-4" /> New Promo
-          </button>
+    <div className="min-h-screen bg-background p-6 lg:p-10">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Redemption Codes</h1>
+          <p className="text-muted-foreground mt-2">Manage template snapshots and promotional subscription codes.</p>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-muted/30">
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Code</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Plan</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Duration</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Usage</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Expires</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {loading ? (
-                <tr><td colSpan={7} className="px-6 py-12 text-center"><div className="flex flex-col items-center gap-2"><RefreshCw className="w-8 h-8 text-primary animate-spin" /><span className="text-sm text-muted-foreground">Loading…</span></div></td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={7} className="px-6 py-12 text-center">
-                  <div className="flex flex-col items-center gap-3">
-                    <Tag className="w-10 h-10 text-muted-foreground/40" />
-                    <p className="text-muted-foreground text-sm">No promo codes yet. Create one to get started.</p>
-                  </div>
-                </td></tr>
-              ) : filtered.map((promo) => (
-                <tr key={promo.id} className="hover:bg-muted/10 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-mono font-bold text-base text-primary">{promo.code}</span>
-                      <CopyButton text={promo.code} />
-                    </div>
-                    {promo.description && <p className="text-xs text-muted-foreground mt-0.5">{promo.description}</p>}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${PLAN_COLORS[promo.plan_id]}`}>
-                      {PLAN_LABELS[promo.plan_id]}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm font-medium">{promo.months} {promo.months === 1 ? "month" : "months"}</span>
-                  </td>
-                  <td className="px-6 py-4"><StatusBadge status={promo.status} expires_at={promo.expires_at} usage_count={promo.usage_count} max_uses={promo.max_uses} /></td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <Hash className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">{promo.usage_count} / {promo.max_uses}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4"><span className="text-sm text-muted-foreground">{promo.expires_at ? format(new Date(promo.expires_at), "MMM d, yyyy") : "Never"}</span></td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => setEditingPromo(promo)} className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all" title="Edit"><Edit2 className="w-4 h-4" /></button>
-                      <button onClick={() => handleToggleStatus(promo)} className={`p-2 rounded-lg transition-all ${promo.status === "revoked" ? "text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20" : "text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/20"}`} title={promo.status === "revoked" ? "Activate" : "Revoke"}>{promo.status === "revoked" ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}</button>
-                      <button onClick={() => handleDelete(promo.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all" title="Delete"><Trash2 className="w-4 h-4" /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Tabs defaultValue="promo" className="space-y-6">
+          <TabsList className="bg-muted/50 p-1 border border-border/50 rounded-xl">
+            <TabsTrigger value="promo" className="font-bold text-xs uppercase tracking-wider px-6 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Promo Codes</TabsTrigger>
+            <TabsTrigger value="template" className="font-bold text-xs uppercase tracking-wider px-6 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Template Codes</TabsTrigger>
+          </TabsList>
+
+          {/* ─── Promo Codes Tab ─────────────────────────────────────────────────── */}
+          <TabsContent value="promo" className="space-y-6 outline-none">
+            <div className="flex items-center justify-between">
+              <div className="relative w-64">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search promo codes..."
+                  className="pl-9 h-9 text-xs"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <Button onClick={() => setShowCreate(true)} className="h-9 font-bold text-xs uppercase tracking-wider rounded-lg">
+                <Plus className="w-4 h-4 mr-2" />
+                New Promo
+              </Button>
+            </div>
+
+            <Card className="border-border/50 shadow-sm overflow-hidden">
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-border/50 bg-muted/20">
+                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Code</th>
+                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Plan Details</th>
+                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-center">Status</th>
+                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Usage</th>
+                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Expires</th>
+                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/50">
+                      {loading ? (
+                        <tr><td colSpan={6} className="p-20 text-center"><RefreshCw className="w-6 h-6 animate-spin mx-auto opacity-20" /></td></tr>
+                      ) : apiError ? (
+                        <tr><td colSpan={6} className="p-20 text-center text-rose-500">
+                          <div className="flex flex-col items-center gap-3">
+                            <AlertTriangle className="w-10 h-10" />
+                            <p className="text-sm font-bold">Error loading promos: {apiError}</p>
+                          </div>
+                        </td></tr>
+                      ) : filtered.length === 0 ? (
+                        <tr><td colSpan={6} className="p-20 text-center text-muted-foreground">
+                          <div className="flex flex-col items-center gap-3">
+                            <Tag className="w-10 h-10 text-muted-foreground/40" />
+                            <p className="text-sm">No promo codes found.</p>
+                          </div>
+                        </td></tr>
+                      ) : (
+                        filtered.map((promo) => (
+                          <tr key={promo.id} className="group hover:bg-muted/30 transition-colors">
+                            <td className="p-4">
+                              <div className="flex items-center gap-2">
+                                <code className="bg-primary/5 text-primary font-mono font-bold px-2 py-1 rounded border border-primary/10">{promo.code}</code>
+                                <CopyButton text={promo.code} />
+                              </div>
+                              {promo.description && <p className="text-[10px] text-muted-foreground mt-1 truncate max-w-[150px]">{promo.description}</p>}
+                            </td>
+                            <td className="p-4">
+                              <div className="flex flex-col gap-1">
+                                <Badge className={`${PLAN_COLORS[promo.plan_id]} border-none font-bold text-[10px] py-0 px-2 h-5 w-fit`}>
+                                  {PLAN_LABELS[promo.plan_id]?.toUpperCase()}
+                                </Badge>
+                                <span className="text-xs font-medium text-foreground">{promo.months} {promo.months === 1 ? "Month" : "Months"}</span>
+                              </div>
+                            </td>
+                            <td className="p-4 text-center">
+                              <StatusBadge status={promo.status} expires_at={promo.expires_at} usage_count={promo.usage_count} max_uses={promo.max_uses} />
+                            </td>
+                            <td className="p-4">
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-1.5 text-xs">
+                                  <Hash className="w-3 h-3 text-muted-foreground" />
+                                  <span className="font-bold">{promo.usage_count}</span>
+                                  <span className="text-muted-foreground">/</span>
+                                  <span className="text-muted-foreground">{promo.max_uses}</span>
+                                </div>
+                                <div className="w-20 h-1 bg-muted rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-primary transition-all" 
+                                    style={{ width: `${Math.min(100, (promo.usage_count / promo.max_uses) * 100)}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-4 text-xs font-medium text-muted-foreground">
+                              {promo.expires_at ? format(new Date(promo.expires_at), "MMM d, yyyy") : "Never"}
+                            </td>
+                            <td className="p-4 text-right">
+                              <div className="flex justify-end gap-1">
+                                <Button variant="ghost" size="icon" onClick={() => setViewingRedemptions(promo)} className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10" title="View Usage">
+                                  <User className="w-4 h-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => setEditingPromo(promo)} className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                  <Edit2 className="w-4 h-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleToggleStatus(promo)} className={cn("h-8 w-8", promo.status === "revoked" ? "text-emerald-500 hover:bg-emerald-500/10" : "text-amber-500 hover:bg-amber-500/10")}>
+                                  {promo.status === "revoked" ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleDelete(promo.id)} className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10">
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ─── Template Codes Tab ─────────────────────────────────────────────── */}
+          <TabsContent value="template" className="space-y-6 outline-none">
+            <TemplateCodesWorkspace />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Create Modal */}
@@ -429,7 +609,7 @@ function PromoCodesTab() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-1.5 block">Plan</label>
-                  <select className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={form.plan_id} onChange={(e) => setForm({ ...form, plan_id: e.target.value })}>
+                  <select className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={form.plan_id} onChange={(e) => setForm({ ...form, plan_id: e.target.value as any })}>
                     <option value="basic">Basic</option>
                     <option value="pro">Pro</option>
                     <option value="ecommerce">Ecommerce</option>
@@ -501,44 +681,40 @@ function PromoCodesTab() {
           </form>}
         </DialogContent>
       </Dialog>
-    </>
+
+      <Dialog open={!!viewingRedemptions} onOpenChange={(open) => !open && setViewingRedemptions(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="w-5 h-5 text-primary" />
+              Usage History
+            </DialogTitle>
+            <DialogDescription>
+              Who used the code <code className="font-bold text-foreground">{viewingRedemptions?.code}</code>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <RedemptionList redemptions={viewingRedemptions?.promo_redemptions} />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-type Tab = "template" | "promo";
-
 export default function AdminCodesPage() {
-  const [tab, setTab] = useState<Tab>("template");
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Codes</h1>
-          <p className="text-muted-foreground mt-1">Manage template setup codes and subscription promo codes.</p>
+    <div className="flex flex-col gap-12">
+      <PromoCodesWorkspace />
+      <div className="max-w-7xl mx-auto w-full px-6 lg:px-10">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">Template Codes</h2>
+          <p className="text-muted-foreground mt-1 text-sm">Snapshots used for site generation.</p>
         </div>
+        <TemplateCodesWorkspace />
       </div>
-
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-muted/50 rounded-xl w-fit mb-6 border">
-        <button
-          onClick={() => setTab("template")}
-          className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${tab === "template" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-        >
-          Template Codes
-        </button>
-        <button
-          onClick={() => setTab("promo")}
-          className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${tab === "promo" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-        >
-          <Tag className="w-3.5 h-3.5" />
-          Promo Codes
-        </button>
-      </div>
-
-      {tab === "template" ? <TemplateCodesTab /> : <PromoCodesTab />}
     </div>
   );
 }

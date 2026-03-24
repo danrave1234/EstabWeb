@@ -129,7 +129,7 @@ function LoginContent() {
           <div className="pt-8 border-t border-white/10">
             <div className="flex -space-x-3 mb-4">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-10 h-10 rounded-full border-2 border-primary bg-primary-foreground/20 flex items-center justify-center overflow-hidden">
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-primary bg-white/20 text-white flex items-center justify-center overflow-hidden">
                    <div className="w-full h-full flex items-center justify-center text-[10px] font-bold">U{i}</div>
                 </div>
               ))}

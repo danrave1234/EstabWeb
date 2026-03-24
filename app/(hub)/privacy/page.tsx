@@ -169,8 +169,8 @@ export default async function PrivacyPage() {
           <h2 className="text-2xl font-semibold mt-8 mb-4 text-primary">13. Contact Us</h2>
           <p>
             For privacy-related concerns, contact us at{" "}
-            <a href="mailto:privacy@estabweb.com">privacy@estabweb.com</a> or{" "}
-            <a href="mailto:support@estabweb.com">support@estabweb.com</a>.
+            <a href="mailto:admin@estabweb.com">admin@estabweb.com</a> or{" "}
+            <a href="mailto:contact@estabweb.com">contact@estabweb.com</a>.
           </p>
         </section>
       </div>

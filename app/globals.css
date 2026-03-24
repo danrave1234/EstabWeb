@@ -40,29 +40,19 @@
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
-  --ring: var(----ring);
-  --input: var(----input);
-  --border: var(----border);
-  --warning-foreground: var(----warning-foreground);
-  --warning: var(----warning);
-  --success-foreground: var(----success-foreground);
-  --success: var(----success);
-  --info-foreground: var(----info-foreground);
-  --info: var(----info);
-  --destructive-foreground: var(----destructive-foreground);
-  --destructive: var(----destructive);
-  --accent-foreground: var(----accent-foreground);
-  --accent: var(----accent);
-  --muted-foreground: var(----muted-foreground);
-  --muted: var(----muted);
-  --secondary-foreground: var(----secondary-foreground);
-  --primary-foreground: var(----primary-foreground);
-  --popover-foreground: var(----popover-foreground);
-  --popover: var(----popover);
-  --card-foreground: var(----card-foreground);
-  --card: var(----card);
-  --foreground: var(----foreground);
-  --background: var(----background);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
 }
 
 :root {

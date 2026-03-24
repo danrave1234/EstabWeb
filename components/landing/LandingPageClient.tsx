@@ -486,7 +486,7 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
                   </Link>
                   <Link
                     href="/contact"
-                    className="flex-1 px-6 py-3 bg-primary-foreground/10 border border-white/20 rounded-full text-sm font-bold hover:bg-white/20 transition-all flex items-center justify-center"
+                    className="flex-1 px-6 py-3 bg-white/15 border border-white/35 text-white rounded-full text-sm font-bold hover:bg-white/25 transition-all flex items-center justify-center"
                   >
                     Request a Design
                   </Link>

@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import useSWR from "swr";
-import { Settings, X, ChevronRight, ChevronLeft, Download, Moon, Sun, Type, Layout, Palette, PanelTop, PanelBottom, Layers, Copy, Check, Plus, Trash2, Image as ImageIcon, Wand2 } from "lucide-react";
+import { Settings, X, ChevronRight, ChevronLeft, Download, Moon, Sun, Type, Layout, Palette, PanelTop, PanelBottom, Layers, Copy, Check, Plus, Trash2, Image as ImageIcon, Wand2, Save, Loader2 } from "lucide-react";
 import { GENRE_PRESETS, GENRE_LABELS } from "@/config/presets";
+import { formatSectionLabel, sectionIdToKey, COLOR_THEME_SWATCHES, TYPOGRAPHY_OPTIONS as GLOBAL_TYPOGRAPHY_OPTIONS } from "@/config/dashboard-config";
+import { BLOCK_REGISTRY } from "@/lib/utils/block-registry";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/Dialog";
 import ImageUpload from "./ImageUpload";
@@ -148,6 +150,21 @@ const COLOR_THEMES = [
   { value: "mono", label: "Mono", primary: "#000000" },
 ];
 
+const TYPOGRAPHY_OPTIONS = [
+  { id: "modern", label: "Modern" },
+  { id: "elegant", label: "Elegant" },
+  { id: "bold", label: "Bold" },
+  { id: "clinical", label: "Clinical" },
+  { id: "technical", label: "Technical" },
+  { id: "playful", label: "Playful" },
+  { id: "traditional", label: "Traditional" },
+  { id: "lucky", label: "Lucky Guy" },
+  { id: "display", label: "Display" },
+] as const;
+
+const HEADER_STYLE_OPTIONS = ["solid", "floating", "tubelight", "megamenu"] as const;
+const FOOTER_STYLE_OPTIONS = ["lead-magnet", "simple", "minimal"] as const;
+
 function SectionToggle({ id, label, activeSections, onToggle }: { id: string, label: string, activeSections: string[], onToggle: (id: any) => void }) {
   return (
     <label className="flex items-center gap-2 p-1.5 rounded-lg border border-transparent hover:bg-muted/30 cursor-pointer transition-colors has-[:checked]:border-primary/30 has-[:checked]:bg-primary/5">
@@ -166,9 +183,37 @@ type SectionId = (typeof SECTIONS)[number]["id"];
 
 const configFetcher = (url: string) => fetch(url).then((res) => res.json());
 
+type TemplateDraft = {
+  id: string;
+  label: string;
+  payload: any;
+  created_at: string;
+  updated_at: string;
+  expires_at: string;
+};
+
+const TEAM_SECTION_IDS = new Set(["team", "team-carousel", "team-grid", "team--carousel", "team--showcase"]);
+
+function toObject(value: unknown): Record<string, any> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return value as Record<string, any>;
+}
+
+function getString(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function pickExistingStringKey(section: Record<string, any>, keys: string[], fallback: string): string {
+  for (const key of keys) {
+    if (typeof section?.[key] === "string") return key;
+  }
+  return fallback;
+}
+
 export default function SiteEditorSidebar() {
   const [isOpen, setIsVisible] = useState(false);
   const { data: swrData, isLoading: loading } = useSWR<any>("/api/config", configFetcher);
+  const { data: templateDraftRows, isLoading: draftLoading, mutate: mutateDrafts } = useSWR<TemplateDraft[]>("/api/admin/template-drafts", configFetcher);
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
@@ -183,7 +228,16 @@ export default function SiteEditorSidebar() {
   const [generatedCode, setGeneratedCode] = useState("");
   const [copied, setCopied] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
+  const [businessPageUrl, setBusinessPageUrl] = useState("");
+  const [businessImageDataUrl, setBusinessImageDataUrl] = useState("");
+  const [businessImageName, setBusinessImageName] = useState("");
   const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [aiUseSearch, setAiUseSearch] = useState(true);
+  const [aiSources, setAiSources] = useState<string[]>([]);
+  const [draftLabel, setDraftLabel] = useState("");
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [loadingDraftId, setLoadingDraftId] = useState<string | null>(null);
+  const [deletingDraftId, setDeletingDraftId] = useState<string | null>(null);
 
   const updateData = async (newData: any) => {
     setData(newData);
@@ -212,6 +266,112 @@ export default function SiteEditorSidebar() {
   if (loading || !data) return null;
 
   const activeSections = data.activeSections || ["hero"];
+  const uniqueActiveSections = Array.from(
+    new Set(
+      (Array.isArray(activeSections) ? activeSections : ["hero"])
+        .filter((sectionId) => typeof sectionId === "string" && sectionId.trim().length > 0)
+    )
+  );
+  const activeSectionMeta = uniqueActiveSections.map((sectionId) => ({
+    id: sectionId,
+    key: sectionIdToKey(sectionId),
+    label: formatSectionLabel(sectionId),
+  }));
+
+  const heroSectionEntry =
+    activeSectionMeta.find((section) => section.id.startsWith("hero") || section.key.startsWith("hero")) ||
+    { id: "hero", key: "hero", label: "Hero Section" };
+  const heroSectionData = toObject(data?.[heroSectionEntry.key] ?? data?.hero);
+  const heroTitleField = pickExistingStringKey(heroSectionData, ["title", "heading"], "title");
+  const heroSubtitleField = pickExistingStringKey(heroSectionData, ["subtitle", "description"], "subtitle");
+  const heroImageField = pickExistingStringKey(heroSectionData, ["backgroundImage", "imageUrl", "image1"], "backgroundImage");
+
+  const contactSectionEntry =
+    activeSectionMeta.find((section) => section.id.startsWith("contact") || section.key.startsWith("contact")) ||
+    { id: "contact", key: "contact", label: "Contact Section" };
+  const contactSectionData = toObject(data?.[contactSectionEntry.key] ?? data?.contact);
+
+  const hasTeamSection = uniqueActiveSections.some((sectionId) => {
+    const sectionKey = sectionIdToKey(sectionId);
+    return TEAM_SECTION_IDS.has(sectionId) || sectionKey.startsWith("team");
+  });
+  const teamSectionEntry =
+    activeSectionMeta.find((section) => section.key === "teamShowcase" || section.key === "teamCarousel") ||
+    { id: "team-carousel", key: "teamCarousel", label: "Team Members" };
+  const teamSectionData = toObject(data?.[teamSectionEntry.key] ?? data?.teamCarousel);
+  const teamMembers = Array.isArray(teamSectionData.members) ? teamSectionData.members : [];
+  const nonCoreSectionMeta = activeSectionMeta.filter((section) => {
+    if (section.id === "brand") return false;
+    if (section.id.startsWith("hero") || section.id.startsWith("contact")) return false;
+    if (TEAM_SECTION_IDS.has(section.id) || section.key.startsWith("team")) return false;
+    return true;
+  });
+
+  const setSectionField = (sectionKey: string, field: string, value: any, persist = false) => {
+    const next = {
+      ...data,
+      [sectionKey]: {
+        ...toObject(data?.[sectionKey]),
+        [field]: value,
+      },
+    };
+    setData(next);
+    if (persist) {
+      void updateData(next);
+    }
+  };
+
+  const setSeoField = (field: string, value: any, persist = false) => {
+    const next = {
+      ...data,
+      seo: {
+        ...toObject(data?.seo),
+        [field]: value,
+      },
+    };
+    setData(next);
+    if (persist) {
+      void updateData(next);
+    }
+  };
+
+  const setSeoOgField = (field: string, value: any, persist = false) => {
+    const next = {
+      ...data,
+      seo: {
+        ...toObject(data?.seo),
+        og: {
+          ...toObject(data?.seo?.og),
+          [field]: value,
+        },
+      },
+    };
+    setData(next);
+    if (persist) {
+      void updateData(next);
+    }
+  };
+
+  const setTeamMembers = (members: any[], persist = false) => {
+    const next = {
+      ...data,
+      [teamSectionEntry.key]: {
+        ...toObject(data?.[teamSectionEntry.key]),
+        members,
+      },
+    };
+    setData(next);
+    if (persist) {
+      void updateData(next);
+    }
+  };
+
+  const seoKeywordsText = Array.isArray(data?.seo?.keywords)
+    ? data.seo.keywords.join(", ")
+    : getString(data?.seo?.keywords);
+
+  const templateDrafts = Array.isArray(templateDraftRows) ? templateDraftRows : [];
+  const canRunAiTemplate = aiPrompt.trim().length >= 5 || businessPageUrl.trim().length > 0 || businessImageDataUrl.length > 0;
 
   return (
     <>
@@ -288,12 +448,21 @@ export default function SiteEditorSidebar() {
               <div className="space-y-6">
                 <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <Wand2 className="w-4 h-4 text-primary" /> Auto-Populate Content
+                    <Wand2 className="w-4 h-4 text-primary" /> Auto-Generate Template
                   </h3>
                   <p className="text-[10px] text-muted-foreground">
-                    Describe the client and let AI fill in the brand name, hero section, contact info, and location.
+                    Describe the client and let AI build the full setup: copy, hero style, color palette, typography, layout styles, and recommended page sections.
                   </p>
                   <div className="space-y-3">
+                    <label className="flex items-center gap-2 rounded-lg border border-border bg-background px-2.5 py-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={aiUseSearch}
+                        onChange={(e) => setAiUseSearch(e.target.checked)}
+                        className="h-3.5 w-3.5 rounded border-border text-primary focus:ring-primary"
+                      />
+                      Use web search for latest public business details
+                    </label>
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold uppercase text-muted-foreground">Business Description</label>
                       <textarea
@@ -304,15 +473,118 @@ export default function SiteEditorSidebar() {
                         className="w-full p-2 text-xs border rounded bg-background resize-none focus:ring-1 focus:ring-primary outline-none"
                       />
                     </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Business Page URL (optional)</label>
+                      <input
+                        type="url"
+                        value={businessPageUrl}
+                        onChange={(e) => setBusinessPageUrl(e.target.value)}
+                        placeholder="https://www.facebook.com/yourbusinesspage"
+                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                      />
+                      <p className="text-[10px] text-muted-foreground">
+                        Paste a Facebook page or business website URL to pull public logo/cover/contact signals.
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Business Screenshot / Logo (optional)</label>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/gif"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 3 * 1024 * 1024) {
+                            toast.error("Image is too large. Use up to 3MB.");
+                            return;
+                          }
+
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            const result = typeof reader.result === "string" ? reader.result : "";
+                            if (!result.startsWith("data:image/")) {
+                              toast.error("Unsupported image format.");
+                              return;
+                            }
+                            setBusinessImageDataUrl(result);
+                            setBusinessImageName(file.name);
+                          };
+                          reader.onerror = () => toast.error("Failed to read image file.");
+                          reader.readAsDataURL(file);
+                        }}
+                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none file:mr-3 file:rounded file:border-0 file:bg-primary/10 file:px-2 file:py-1 file:text-[10px] file:font-semibold file:text-primary"
+                      />
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] text-muted-foreground">
+                          If Facebook blocks scraping, upload a page screenshot or logo so AI can extract details.
+                        </p>
+                        {businessImageDataUrl && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setBusinessImageDataUrl("");
+                              setBusinessImageName("");
+                            }}
+                            className="text-[10px] font-semibold text-destructive hover:underline"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      {businessImageDataUrl && (
+                        <div className="rounded-lg border border-border bg-background p-2">
+                          <p className="truncate text-[10px] font-semibold text-foreground">{businessImageName || "Uploaded image"}</p>
+                        </div>
+                      )}
+                    </div>
                     <button
-                      disabled={isAiGenerating || aiPrompt.trim().length < 5}
+                      disabled={isAiGenerating || !canRunAiTemplate}
                       onClick={async () => {
                         setIsAiGenerating(true);
                         try {
                           const res = await fetch('/api/ai/populate-template', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ prompt: aiPrompt })
+                            body: JSON.stringify({
+                              prompt: aiPrompt,
+                              useSearch: aiUseSearch,
+                              businessPageUrl,
+                              businessImageDataUrl,
+                              currentConfig: {
+                                activeSections: data.activeSections || [],
+                              },
+                              options: {
+                                themes: BLOCK_REGISTRY.filter(b => b.sectionType === 'hero' && !b.legacy).map((item) => ({ 
+                                  id: item.id, 
+                                  label: item.label || formatSectionLabel(item.id) 
+                                })),
+                                colorThemes: Object.keys(COLOR_THEME_SWATCHES).map((id) => {
+                                  const local = COLOR_THEMES.find(t => t.value === id);
+                                  return {
+                                    id,
+                                    label: local?.label || id.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+                                    primary: COLOR_THEME_SWATCHES[id][0],
+                                    swatch: local?.swatch || ""
+                                  };
+                                }),
+                                typographyStyles: GLOBAL_TYPOGRAPHY_OPTIONS.map((item) => ({ id: item.value, label: item.label })),
+                                headerStyles: HEADER_STYLE_OPTIONS.map((style) => ({ id: style, label: style })),
+                                footerStyles: FOOTER_STYLE_OPTIONS.map((style) => ({ id: style, label: style })),
+                                sections: BLOCK_REGISTRY.filter(b => !b.legacy).map((item) => ({ 
+                                  id: item.id, 
+                                  label: item.label || formatSectionLabel(item.id) 
+                                })),
+                                sectionIds: BLOCK_REGISTRY.filter(b => !b.legacy).map((item) => item.id),
+                                presets: Object.entries(GENRE_PRESETS).map(([id, preset]) => ({
+                                  id,
+                                  label: GENRE_LABELS[id] || id,
+                                  theme: preset.theme,
+                                  colorTheme: preset.colorTheme,
+                                  typographyStyle: preset.typographyStyle || "modern",
+                                  activeSections: Array.isArray(preset.activeSections) ? preset.activeSections : [],
+                                })),
+                              }
+                            })
                           });
                           const result = await res.json();
                           if (result.error) throw new Error(result.error);
@@ -328,12 +600,51 @@ export default function SiteEditorSidebar() {
                           if (result.contactEmail) newData.contact.email = result.contactEmail;
                           if (result.contactPhone) newData.contact.phone = result.contactPhone;
                           if (result.location) newData.hero.localCoverage = result.location;
+                          if (result.logoUrl) newData.brand.logoUrl = result.logoUrl;
+                          if (result.heroImageUrl) newData.hero.backgroundImage = result.heroImageUrl;
+                          if (result.colorTheme) newData.colorTheme = result.colorTheme;
+                          if (result.typographyStyle) newData.typographyStyle = result.typographyStyle;
+                          if (result.headerStyle) newData.headerStyle = result.headerStyle;
+                          if (result.footerStyle) newData.footerStyle = result.footerStyle;
+                          if (typeof result.darkMode === "boolean") newData.darkMode = result.darkMode;
+                          if (Array.isArray(result.activeSections) && result.activeSections.length > 0) {
+                            newData.activeSections = result.activeSections;
+                          }
+
+                          if (result.theme) {
+                            const selectedTheme = BLOCK_REGISTRY.find(b => b.id === result.theme || b.variant === result.theme);
+                            if (selectedTheme) {
+                              newData.theme = selectedTheme.variant || selectedTheme.id;
+                              // Ensure this hero is in activeSections if not already
+                              const hasSelectedHero = newData.activeSections.includes(selectedTheme.id);
+                              if (!hasSelectedHero) {
+                                const heroIndex = newData.activeSections.findIndex((id: string) => id === 'hero' || id.startsWith('hero--'));
+                                if (heroIndex >= 0) {
+                                  newData.activeSections[heroIndex] = selectedTheme.id;
+                                } else {
+                                  newData.activeSections.unshift(selectedTheme.id);
+                                }
+                              }
+                            } else {
+                              newData.theme = result.theme;
+                            }
+                          }
+                          setAiSources(Array.isArray(result.sources) ? result.sources : []);
+
+                          if (result.sectionsData && typeof result.sectionsData === 'object') {
+                            Object.entries(result.sectionsData).forEach(([key, value]) => {
+                              if (value && typeof value === 'object' && !Array.isArray(value)) {
+                                newData[key] = { ...(newData[key] || {}), ...value };
+                              }
+                            });
+                          }
 
                           updateData(newData);
-                          toast.success('Template populated with AI');
+                          toast.success('Full template generated with AI');
                           setAiPrompt("");
                         } catch (err: any) {
                           console.error(err);
+                          setAiSources([]);
                           toast.error(err?.message || 'Failed to populate template');
                         } finally {
                           setIsAiGenerating(false);
@@ -342,17 +653,109 @@ export default function SiteEditorSidebar() {
                       className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold disabled:opacity-50 shadow-md flex items-center justify-center gap-2"
                     >
                       {isAiGenerating ? <Wand2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-                      {isAiGenerating ? "Generating..." : "Generate Content"}
+                      {isAiGenerating ? "Generating..." : "Generate Full Template"}
                     </button>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        value={draftLabel}
+                        onChange={(e) => setDraftLabel(e.target.value)}
+                        placeholder="Save as draft (e.g. BrightSmile Dental)"
+                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                      />
+                      <button
+                        disabled={isSavingDraft || isAiGenerating}
+                        onClick={async () => {
+                          setIsSavingDraft(true);
+                          try {
+                            const label = draftLabel.trim() || data.brand?.name || "Untitled Working Draft";
+                            const res = await fetch("/api/admin/template-drafts", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ label, payload: data }),
+                            });
+                            const result = await res.json();
+                            if (!res.ok || result.error) throw new Error(result.error || "Failed to save draft");
+                            setDraftLabel("");
+                            mutateDrafts();
+                            toast.success("Temporary draft saved");
+                          } catch (err: any) {
+                            console.error(err);
+                            toast.error(err?.message || "Failed to save draft");
+                          } finally {
+                            setIsSavingDraft(false);
+                          }
+                        }}
+                        className="h-9 whitespace-nowrap rounded-lg bg-primary px-3 text-xs font-bold text-primary-foreground disabled:opacity-50"
+                      >
+                        {isSavingDraft ? "Saving..." : "Save Draft"}
+                      </button>
+                      <button
+                        disabled={isAiGenerating || isSavingDraft}
+                        onClick={async () => {
+                          if (confirm("Discard all current unsaved edits and reset the builder?")) {
+                            try {
+                              await fetch('/api/admin/cleanup-assets', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ payload: data })
+                              });
+                            } catch (e) {
+                              console.error("Cleanup failed", e);
+                            }
+                            window.location.reload();
+                          }
+                        }}
+                        className="h-9 whitespace-nowrap rounded-lg border border-destructive/50 bg-background px-3 text-xs font-bold text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                        title="Reset the builder to start over"
+                      >
+                        Discard
+                      </button>
+                    </div>
+                    {aiSources.length > 0 && (
+                      <div className="space-y-1 rounded-lg border border-border bg-background p-2.5">
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Search Sources Used</p>
+                        <div className="max-h-24 space-y-1 overflow-y-auto">
+                          {aiSources.map((source) => (
+                            <a
+                              key={source}
+                              href={source}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="block truncate text-[10px] text-primary hover:underline"
+                              title={source}
+                            >
+                              {source}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             )}
 
             {activeTab === "content" && (
-              <div className="space-y-8">
-                {/* Brand & Hero */}
-                <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="space-y-3 p-4 border border-border rounded-xl bg-muted/20">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-primary" /> Active Template Sections
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {activeSectionMeta.map((section) => (
+                      <span
+                        key={`${section.id}-${section.key}`}
+                        className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[10px] font-semibold"
+                        title={`Config key: ${section.key}`}
+                      >
+                        {section.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                       <ImageIcon className="w-4 h-4 text-primary" /> Brand Identity
@@ -361,390 +764,386 @@ export default function SiteEditorSidebar() {
                       <div className="space-y-1">
                         <label className="text-[10px] font-bold uppercase text-muted-foreground">Business Name</label>
                         <input
-                          value={data.brand?.name || ""}
+                          value={getString(data?.brand?.name)}
                           onChange={(e) => {
-                            setData({ ...data, brand: { ...data.brand, name: e.target.value } });
+                            const next = {
+                              ...data,
+                              brand: {
+                                ...toObject(data?.brand),
+                                name: e.target.value,
+                              },
+                            };
+                            setData(next);
                           }}
-                          onBlur={() => updateData(data)}
+                          onBlur={(e) => {
+                            const next = {
+                              ...data,
+                              brand: {
+                                ...toObject(data?.brand),
+                                name: e.target.value,
+                              },
+                            };
+                            void updateData(next);
+                          }}
                           className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
                         />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] font-bold uppercase text-muted-foreground">Logo Image</label>
                         <ImageUpload
-                          value={data.brand?.logoUrl || ""}
+                          value={getString(data?.brand?.logoUrl)}
                           onChange={(url) => {
-                            updateData({ ...data, brand: { ...data.brand, logoUrl: url } });
+                            void updateData({
+                              ...data,
+                              brand: {
+                                ...toObject(data?.brand),
+                                logoUrl: url,
+                              },
+                            });
                           }}
                         />
-                        <p className="text-[10px] text-amber-500 leading-snug">⚠️ Use a <strong>PNG or SVG with a transparent background</strong> — logos with a solid background will show a black box in the header.</p>
+                        <p className="text-[10px] text-amber-600 leading-snug">Use PNG or SVG with transparent background for best header rendering.</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <PanelTop className="w-4 h-4 text-primary" /> Hero Content
+                      <PanelTop className="w-4 h-4 text-primary" /> {heroSectionEntry.label}
                     </h3>
+                    <p className="text-[10px] text-muted-foreground">Section ID: {heroSectionEntry.id}  |  Config key: {heroSectionEntry.key}</p>
                     <div className="space-y-3">
                       <div className="space-y-1">
                         <label className="text-[10px] font-bold uppercase text-muted-foreground">Main Title</label>
                         <input
-                          value={data.hero?.title || ""}
-                          onChange={(e) => {
-                            setData({ ...data, hero: { ...data.hero, title: e.target.value } });
-                          }}
-                          onBlur={() => updateData(data)}
+                          value={getString(heroSectionData?.[heroTitleField])}
+                          onChange={(e) => setSectionField(heroSectionEntry.key, heroTitleField, e.target.value)}
+                          onBlur={(e) => setSectionField(heroSectionEntry.key, heroTitleField, e.target.value, true)}
                           className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Subtitle</label>
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Subtitle / Description</label>
                         <textarea
-                          value={data.hero?.subtitle || ""}
-                          onChange={(e) => {
-                            setData({ ...data, hero: { ...data.hero, subtitle: e.target.value } });
-                          }}
-                          onBlur={() => updateData(data)}
-                          rows={2}
+                          value={getString(heroSectionData?.[heroSubtitleField])}
+                          onChange={(e) => setSectionField(heroSectionEntry.key, heroSubtitleField, e.target.value)}
+                          onBlur={(e) => setSectionField(heroSectionEntry.key, heroSubtitleField, e.target.value, true)}
+                          rows={3}
                           className="w-full p-2 text-xs border rounded bg-background resize-none focus:ring-1 focus:ring-primary outline-none"
                         />
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Contact & Location */}
-                <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-primary" /> Contact & Location
-                  </h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Email</label>
-                      <input
-                        value={data.contact?.email || ""}
-                        onChange={(e) => {
-                          setData({ ...data, contact: { ...data.contact, email: e.target.value } });
-                        }}
-                        onBlur={() => updateData(data)}
-                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Phone</label>
-                      <input
-                        value={data.contact?.phone || ""}
-                        onChange={(e) => {
-                          setData({ ...data, contact: { ...data.contact, phone: e.target.value } });
-                        }}
-                        onBlur={() => updateData(data)}
-                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Location</label>
-                      <input
-                        value={data.hero?.localCoverage || ""}
-                        onChange={(e) => {
-                          setData({ ...data, hero: { ...data.hero, localCoverage: e.target.value } });
-                        }}
-                        onBlur={() => updateData(data)}
-                        placeholder="e.g. Metro Manila"
-                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Team Management */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Layout className="w-4 h-4 text-primary" /> Team Members
-                    </h3>
-                    <button
-                      onClick={() => {
-                        const newMember = {
-                          name: "New Member",
-                          specialty: "Position / Role",
-                          imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
-                          bioUrl: "#",
-                        };
-                        const currentMembers = data.teamCarousel?.members || [];
-                        updateData({
-                          ...data,
-                          teamCarousel: {
-                            ...data.teamCarousel,
-                            members: [...currentMembers, newMember]
-                          }
-                        });
-                      }}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-bold hover:opacity-90 transition shadow-sm"
-                    >
-                      <Plus className="w-4 h-4" /> Add Member
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    {(data.teamCarousel?.members || []).map((member: any, index: number) => (
-                      <div key={index} className="p-4 border border-border rounded-xl bg-muted/20 space-y-3 relative group/member shadow-sm">
-                        <button
-                          onClick={() => {
-                            const members = [...data.teamCarousel.members];
-                            members.splice(index, 1);
-                            updateData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
-                          }}
-                          className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover/member:opacity-100 transition shadow-md z-10"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-
-                        <div className="flex gap-4">
-                          <div className="w-20 h-20 shrink-0">
-                            <ImageUpload
-                              value={member.imageUrl}
-                              onChange={(url) => {
-                                const members = [...data.teamCarousel.members];
-                                members[index] = { ...member, imageUrl: url };
-                                updateData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
-                              }}
-                            />
-                          </div>
-                          <div className="flex-1 space-y-2">
-                            <div className="space-y-1">
-                              <label className="text-[9px] font-bold uppercase text-muted-foreground">Name</label>
-                              <input
-                                value={member.name}
-                                onChange={(e) => {
-                                  const members = [...data.teamCarousel.members];
-                                  members[index] = { ...member, name: e.target.value };
-                                  setData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
-                                }}
-                                onBlur={() => updateData(data)}
-                                className="w-full p-1.5 text-[11px] border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[9px] font-bold uppercase text-muted-foreground">Role</label>
-                              <input
-                                value={member.specialty}
-                                onChange={(e) => {
-                                  const members = [...data.teamCarousel.members];
-                                  members[index] = { ...member, specialty: e.target.value };
-                                  setData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
-                                }}
-                                onBlur={() => updateData(data)}
-                                className="w-full p-1.5 text-[11px] border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "content" && (
-              <div className="space-y-8">
-                {/* Brand & Hero */}
-                <div className="grid grid-cols-2 gap-8">
-                  <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <ImageIcon className="w-4 h-4 text-primary" /> Brand Identity
-                    </h3>
-                    <div className="space-y-3">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Business Name</label>
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Location / Coverage</label>
                         <input
-                          value={data.brand?.name || ""}
-                          onChange={(e) => {
-                            setData({ ...data, brand: { ...data.brand, name: e.target.value } });
-                          }}
-                          onBlur={() => updateData(data)}
+                          value={getString(heroSectionData?.localCoverage)}
+                          onChange={(e) => setSectionField(heroSectionEntry.key, 'localCoverage', e.target.value)}
+                          onBlur={(e) => setSectionField(heroSectionEntry.key, 'localCoverage', e.target.value, true)}
+                          placeholder="e.g. Metro Manila"
                           className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Logo Image</label>
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Hero Image</label>
                         <ImageUpload
-                          value={data.brand?.logoUrl || ""}
-                          onChange={(url) => {
-                            updateData({ ...data, brand: { ...data.brand, logoUrl: url } });
-                          }}
+                          value={getString(heroSectionData?.[heroImageField])}
+                          onChange={(url) => setSectionField(heroSectionEntry.key, heroImageField, url, true)}
                         />
-                        <p className="text-[10px] text-amber-500 leading-snug">⚠️ Use a <strong>PNG or SVG with a transparent background</strong> — logos with a solid background will show a black box in the header.</p>
                       </div>
                     </div>
                   </div>
+                </div>
 
+                <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <PanelTop className="w-4 h-4 text-primary" /> Hero Content
+                      <Settings className="w-4 h-4 text-primary" /> {contactSectionEntry.label}
                     </h3>
+                    <p className="text-[10px] text-muted-foreground">Section ID: {contactSectionEntry.id}  |  Config key: {contactSectionEntry.key}</p>
                     <div className="space-y-3">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Main Title</label>
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Email</label>
                         <input
-                          value={data.hero?.title || ""}
-                          onChange={(e) => {
-                            setData({ ...data, hero: { ...data.hero, title: e.target.value } });
-                          }}
-                          onBlur={() => updateData(data)}
+                          value={getString(contactSectionData?.email)}
+                          onChange={(e) => setSectionField(contactSectionEntry.key, 'email', e.target.value)}
+                          onBlur={(e) => setSectionField(contactSectionEntry.key, 'email', e.target.value, true)}
                           className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Subtitle</label>
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Phone</label>
+                        <input
+                          value={getString(contactSectionData?.phone)}
+                          onChange={(e) => setSectionField(contactSectionEntry.key, 'phone', e.target.value)}
+                          onBlur={(e) => setSectionField(contactSectionEntry.key, 'phone', e.target.value, true)}
+                          className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Address</label>
                         <textarea
-                          value={data.hero?.subtitle || ""}
-                          onChange={(e) => {
-                            setData({ ...data, hero: { ...data.hero, subtitle: e.target.value } });
-                          }}
-                          onBlur={() => updateData(data)}
+                          value={getString(contactSectionData?.address)}
+                          onChange={(e) => setSectionField(contactSectionEntry.key, 'address', e.target.value)}
+                          onBlur={(e) => setSectionField(contactSectionEntry.key, 'address', e.target.value, true)}
                           rows={2}
                           className="w-full p-2 text-xs border rounded bg-background resize-none focus:ring-1 focus:ring-primary outline-none"
                         />
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Contact & Location */}
-                <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-primary" /> Contact & Location
-                  </h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Email</label>
-                      <input
-                        value={data.contact?.email || ""}
-                        onChange={(e) => {
-                          setData({ ...data, contact: { ...data.contact, email: e.target.value } });
-                        }}
-                        onBlur={() => updateData(data)}
-                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Phone</label>
-                      <input
-                        value={data.contact?.phone || ""}
-                        onChange={(e) => {
-                          setData({ ...data, contact: { ...data.contact, phone: e.target.value } });
-                        }}
-                        onBlur={() => updateData(data)}
-                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Location</label>
-                      <input
-                        value={data.hero?.localCoverage || ""}
-                        onChange={(e) => {
-                          setData({ ...data, hero: { ...data.hero, localCoverage: e.target.value } });
-                        }}
-                        onBlur={() => updateData(data)}
-                        placeholder="e.g. Metro Manila"
-                        className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Team Management */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Layout className="w-4 h-4 text-primary" /> Team Members
+                      <Type className="w-4 h-4 text-primary" /> SEO
                     </h3>
-                    <button
-                      onClick={() => {
-                        const newMember = {
-                          name: "New Member",
-                          specialty: "Position / Role",
-                          imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
-                          bioUrl: "#",
-                        };
-                        const currentMembers = data.teamCarousel?.members || [];
-                        updateData({
-                          ...data,
-                          teamCarousel: {
-                            ...data.teamCarousel,
-                            members: [...currentMembers, newMember]
-                          }
-                        });
-                      }}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-bold hover:opacity-90 transition shadow-sm"
-                    >
-                      <Plus className="w-4 h-4" /> Add Member
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    {(data.teamCarousel?.members || []).map((member: any, index: number) => (
-                      <div key={index} className="p-4 border border-border rounded-xl bg-muted/20 space-y-3 relative group/member shadow-sm">
-                        <button
-                          onClick={() => {
-                            const members = [...data.teamCarousel.members];
-                            members.splice(index, 1);
-                            updateData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Meta Title</label>
+                        <input
+                          value={getString(data?.seo?.title)}
+                          onChange={(e) => setSeoField('title', e.target.value)}
+                          onBlur={(e) => setSeoField('title', e.target.value, true)}
+                          className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Meta Description</label>
+                        <textarea
+                          value={getString(data?.seo?.description)}
+                          onChange={(e) => setSeoField('description', e.target.value)}
+                          onBlur={(e) => setSeoField('description', e.target.value, true)}
+                          rows={3}
+                          className="w-full p-2 text-xs border rounded bg-background resize-none focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Keywords (comma separated)</label>
+                        <input
+                          value={seoKeywordsText}
+                          onChange={(e) => {
+                            const nextKeywords = e.target.value
+                              .split(',')
+                              .map((item) => item.trim())
+                              .filter(Boolean);
+                            setSeoField('keywords', nextKeywords);
                           }}
-                          className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover/member:opacity-100 transition shadow-md z-10"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-
-                        <div className="flex gap-4">
-                          <div className="w-20 h-20 shrink-0">
-                            <ImageUpload
-                              value={member.imageUrl}
-                              onChange={(url) => {
-                                const members = [...data.teamCarousel.members];
-                                members[index] = { ...member, imageUrl: url };
-                                updateData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
-                              }}
-                            />
-                          </div>
-                          <div className="flex-1 space-y-2">
-                            <div className="space-y-1">
-                              <label className="text-[9px] font-bold uppercase text-muted-foreground">Name</label>
-                              <input
-                                value={member.name}
-                                onChange={(e) => {
-                                  const members = [...data.teamCarousel.members];
-                                  members[index] = { ...member, name: e.target.value };
-                                  setData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
-                                }}
-                                onBlur={() => updateData(data)}
-                                className="w-full p-1.5 text-[11px] border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[9px] font-bold uppercase text-muted-foreground">Role</label>
-                              <input
-                                value={member.specialty}
-                                onChange={(e) => {
-                                  const members = [...data.teamCarousel.members];
-                                  members[index] = { ...member, specialty: e.target.value };
-                                  setData({ ...data, teamCarousel: { ...data.teamCarousel, members } });
-                                }}
-                                onBlur={() => updateData(data)}
-                                className="w-full p-1.5 text-[11px] border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
-                              />
-                            </div>
-                          </div>
+                          onBlur={(e) => {
+                            const nextKeywords = e.target.value
+                              .split(',')
+                              .map((item) => item.trim())
+                              .filter(Boolean);
+                            setSeoField('keywords', nextKeywords, true);
+                          }}
+                          className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-muted-foreground">Canonical URL</label>
+                        <input
+                          value={getString(data?.seo?.canonical)}
+                          onChange={(e) => setSeoField('canonical', e.target.value)}
+                          onBlur={(e) => setSeoField('canonical', e.target.value, true)}
+                          className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground">OG Title</label>
+                          <input
+                            value={getString(data?.seo?.og?.title)}
+                            onChange={(e) => setSeoOgField('title', e.target.value)}
+                            onBlur={(e) => setSeoOgField('title', e.target.value, true)}
+                            className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground">OG Image</label>
+                          <input
+                            value={getString(data?.seo?.og?.image)}
+                            onChange={(e) => setSeoOgField('image', e.target.value)}
+                            onBlur={(e) => setSeoOgField('image', e.target.value, true)}
+                            className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                          />
                         </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
+
+                {nonCoreSectionMeta.length > 0 && (
+                  <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Layout className="w-4 h-4 text-primary" /> Section Quick Edit
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {nonCoreSectionMeta.map((section) => {
+                        const sectionData = toObject(data?.[section.key]);
+                        const titleKey = pickExistingStringKey(sectionData, ['title', 'heading', 'label', 'badge'], '');
+                        const subtitleCandidate = pickExistingStringKey(sectionData, ['subtitle', 'description', 'tagline'], '');
+                        const subtitleKey = subtitleCandidate && subtitleCandidate !== titleKey ? subtitleCandidate : '';
+                        const ctaCandidate = pickExistingStringKey(sectionData, ['ctaText', 'buttonText', 'primaryCTA', 'formSubmitText'], '');
+                        const ctaKey = ctaCandidate && ctaCandidate !== titleKey && ctaCandidate !== subtitleKey ? ctaCandidate : '';
+                        const hasEditableField = Boolean(titleKey || subtitleKey || ctaKey);
+
+                        return (
+                          <div key={`${section.id}-${section.key}`} className="space-y-2 rounded-lg border border-border bg-background p-3">
+                            <div>
+                              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{section.label}</p>
+                              <p className="text-[9px] text-muted-foreground">{section.id}  |  {section.key}</p>
+                            </div>
+
+                            {!hasEditableField && (
+                              <p className="text-[10px] text-muted-foreground">No quick-edit text fields were detected for this section.</p>
+                            )}
+
+                            {titleKey && (
+                              <div className="space-y-1">
+                                <label className="text-[9px] font-bold uppercase text-muted-foreground">Title</label>
+                                <input
+                                  value={getString(sectionData?.[titleKey])}
+                                  onChange={(e) => setSectionField(section.key, titleKey, e.target.value)}
+                                  onBlur={(e) => setSectionField(section.key, titleKey, e.target.value, true)}
+                                  className="w-full p-1.5 text-[11px] border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                                />
+                              </div>
+                            )}
+
+                            {subtitleKey && (
+                              <div className="space-y-1">
+                                <label className="text-[9px] font-bold uppercase text-muted-foreground">Subtitle</label>
+                                <textarea
+                                  value={getString(sectionData?.[subtitleKey])}
+                                  onChange={(e) => setSectionField(section.key, subtitleKey, e.target.value)}
+                                  onBlur={(e) => setSectionField(section.key, subtitleKey, e.target.value, true)}
+                                  rows={2}
+                                  className="w-full p-1.5 text-[11px] border rounded bg-background resize-none focus:ring-1 focus:ring-primary outline-none"
+                                />
+                              </div>
+                            )}
+
+                            {ctaKey && (
+                              <div className="space-y-1">
+                                <label className="text-[9px] font-bold uppercase text-muted-foreground">CTA Text</label>
+                                <input
+                                  value={getString(sectionData?.[ctaKey])}
+                                  onChange={(e) => setSectionField(section.key, ctaKey, e.target.value)}
+                                  onBlur={(e) => setSectionField(section.key, ctaKey, e.target.value, true)}
+                                  className="w-full p-1.5 text-[11px] border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {hasTeamSection && (
+                  <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                          <Layout className="w-4 h-4 text-primary" /> Team Members
+                        </h3>
+                        <p className="text-[10px] text-muted-foreground">Section ID: {teamSectionEntry.id}  |  Config key: {teamSectionEntry.key}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const newMember = teamSectionEntry.key === 'teamShowcase'
+                            ? {
+                                id: `member-${Date.now()}`,
+                                name: 'New Member',
+                                role: 'Position / Role',
+                                image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80',
+                              }
+                            : {
+                                name: 'New Member',
+                                specialty: 'Position / Role',
+                                imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80',
+                                bioUrl: '#',
+                              };
+                          setTeamMembers([...teamMembers, newMember], true);
+                        }}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-bold hover:opacity-90 transition shadow-sm"
+                      >
+                        <Plus className="w-4 h-4" /> Add Member
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {teamMembers.map((member: any, index: number) => {
+                        const roleField = typeof member?.specialty === 'string' ? 'specialty' : 'role';
+                        const imageField = typeof member?.imageUrl === 'string' ? 'imageUrl' : 'image';
+
+                        return (
+                          <div key={index} className="p-4 border border-border rounded-xl bg-background space-y-3 relative group/member shadow-sm">
+                            <button
+                              onClick={() => {
+                                const nextMembers = [...teamMembers];
+                                nextMembers.splice(index, 1);
+                                setTeamMembers(nextMembers, true);
+                              }}
+                              className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover/member:opacity-100 transition shadow-md z-10"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+
+                            <div className="flex gap-4">
+                              <div className="w-20 h-20 shrink-0">
+                                <ImageUpload
+                                  value={getString(member?.[imageField])}
+                                  onChange={(url) => {
+                                    const nextMembers = [...teamMembers];
+                                    nextMembers[index] = { ...member, [imageField]: url };
+                                    setTeamMembers(nextMembers, true);
+                                  }}
+                                />
+                              </div>
+                              <div className="flex-1 space-y-2">
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-bold uppercase text-muted-foreground">Name</label>
+                                  <input
+                                    value={getString(member?.name)}
+                                    onChange={(e) => {
+                                      const nextMembers = [...teamMembers];
+                                      nextMembers[index] = { ...member, name: e.target.value };
+                                      setTeamMembers(nextMembers);
+                                    }}
+                                    onBlur={(e) => {
+                                      const nextMembers = [...teamMembers];
+                                      nextMembers[index] = { ...member, name: e.target.value };
+                                      setTeamMembers(nextMembers, true);
+                                    }}
+                                    className="w-full p-1.5 text-[11px] border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-bold uppercase text-muted-foreground">Role</label>
+                                  <input
+                                    value={getString(member?.[roleField])}
+                                    onChange={(e) => {
+                                      const nextMembers = [...teamMembers];
+                                      nextMembers[index] = { ...member, [roleField]: e.target.value };
+                                      setTeamMembers(nextMembers);
+                                    }}
+                                    onBlur={(e) => {
+                                      const nextMembers = [...teamMembers];
+                                      nextMembers[index] = { ...member, [roleField]: e.target.value };
+                                      setTeamMembers(nextMembers, true);
+                                    }}
+                                    className="w-full p-1.5 text-[11px] border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
-
             {activeTab === "presets" && (
               <div className="space-y-6">
                 {/* Genre Presets */}
@@ -878,6 +1277,88 @@ export default function SiteEditorSidebar() {
                     </div>
                   </div>
                 </div>
+
+                <div className="space-y-4 rounded-2xl border border-border bg-muted/20 p-4">
+                  <div className="space-y-1">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Save className="w-4 h-4 text-primary" /> Saved Drafts
+                    </h3>
+                  </div>
+
+                  <div className="space-y-2 rounded-xl border border-border bg-background/70 p-2">
+                    {draftLoading ? (
+                      <div className="flex items-center justify-center py-4 text-xs text-muted-foreground">
+                        <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                        Loading drafts...
+                      </div>
+                    ) : templateDrafts.length === 0 ? (
+                      <p className="py-3 text-center text-[10px] text-muted-foreground">No temporary drafts yet.</p>
+                    ) : (
+                      <div className="max-h-48 space-y-1 overflow-y-auto pr-1">
+                        {templateDrafts.map((draft) => {
+                          const isLoadingThis = loadingDraftId === draft.id;
+                          const isDeletingThis = deletingDraftId === draft.id;
+
+                          return (
+                            <div key={draft.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-2.5 py-2">
+                              <div className="min-w-0">
+                                <p className="truncate text-[11px] font-semibold text-foreground">{draft.label}</p>
+                                <p className="text-[9px] text-muted-foreground">
+                                  Updated {new Date(draft.updated_at).toLocaleString()}
+                                </p>
+                                <p className="text-[9px] text-muted-foreground">
+                                  Expires {new Date(draft.expires_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  disabled={isLoadingThis || isDeletingThis}
+                                  onClick={async () => {
+                                    setLoadingDraftId(draft.id);
+                                    try {
+                                      await updateData(draft.payload);
+                                      toast.success("Draft loaded");
+                                    } catch (err: any) {
+                                      console.error(err);
+                                      toast.error(err?.message || "Failed to load draft");
+                                    } finally {
+                                      setLoadingDraftId(null);
+                                    }
+                                  }}
+                                  className="rounded-md border border-border px-2 py-1 text-[10px] font-bold hover:bg-muted disabled:opacity-50"
+                                >
+                                  {isLoadingThis ? "Loading..." : "Load"}
+                                </button>
+                                <button
+                                  disabled={isLoadingThis || isDeletingThis}
+                                  onClick={async () => {
+                                    if (!confirm(`Delete draft "${draft.label}"?`)) return;
+                                    setDeletingDraftId(draft.id);
+                                    try {
+                                      const res = await fetch(`/api/admin/template-drafts?id=${draft.id}`, { method: "DELETE" });
+                                      const result = await res.json();
+                                      if (!res.ok || result.error) throw new Error(result.error || "Failed to delete draft");
+                                      mutateDrafts();
+                                      toast.success("Draft deleted");
+                                    } catch (err: any) {
+                                      console.error(err);
+                                      toast.error(err?.message || "Failed to delete draft");
+                                    } finally {
+                                      setDeletingDraftId(null);
+                                    }
+                                  }}
+                                  className="rounded-md border border-destructive/30 px-2 py-1 text-[10px] font-bold text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                                >
+                                  {isDeletingThis ? "Deleting..." : "Delete"}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -971,17 +1452,7 @@ export default function SiteEditorSidebar() {
                       <Type className="w-4 h-4 text-primary" /> Typography
                     </h3>
                     <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { id: "modern", label: "Modern" },
-                        { id: "elegant", label: "Elegant" },
-                        { id: "bold", label: "Bold" },
-                        { id: "clinical", label: "Clinical" },
-                        { id: "technical", label: "Technical" },
-                        { id: "playful", label: "Playful" },
-                        { id: "traditional", label: "Traditional" },
-                        { id: "lucky", label: "Lucky Guy" },
-                        { id: "display", label: "Display" },
-                      ].map((t) => (
+                      {TYPOGRAPHY_OPTIONS.map((t) => (
                         <button
                           key={t.id}
                           onClick={() => updateData({ ...data, typographyStyle: t.id })}
@@ -1001,7 +1472,7 @@ export default function SiteEditorSidebar() {
                       <PanelTop className="w-4 h-4 text-primary" /> Header Style
                     </h3>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {["solid", "floating", "tubelight", "megamenu"].map((style) => (
+                      {HEADER_STYLE_OPTIONS.map((style) => (
                         <button
                           key={style}
                           onClick={() => updateData({ ...data, headerStyle: style })}
@@ -1018,7 +1489,7 @@ export default function SiteEditorSidebar() {
                       <PanelBottom className="w-4 h-4 text-primary" /> Footer Style
                     </h3>
                     <div className="grid grid-cols-2 gap-2">
-                      {["lead-magnet", "simple", "minimal"].map((style) => (
+                      {FOOTER_STYLE_OPTIONS.map((style) => (
                         <button
                           key={style}
                           onClick={() => updateData({ ...data, footerStyle: style })}
@@ -1206,7 +1677,7 @@ export default function SiteEditorSidebar() {
                         setData({ ...data, hero: { ...data.hero, promoText: e.target.value } });
                       }}
                       onBlur={() => updateData(data)}
-                      placeholder="e.g. Valentine’s Promo"
+                      placeholder="e.g. Valentine's Promo"
                       className="w-full p-2 text-xs border rounded bg-background"
                     />
                   </div>
@@ -1556,3 +2027,4 @@ export default function SiteEditorSidebar() {
     </>
   );
 }
+

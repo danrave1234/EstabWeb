@@ -181,7 +181,7 @@ export default async function TermsPage() {
           <h2 className="text-2xl font-semibold mt-8 mb-4 text-primary">19. Contact Us</h2>
           <p>
             For questions about these Terms, contact us at{" "}
-            <a href="mailto:support@estabweb.com">support@estabweb.com</a>.
+            <a href="mailto:contact@estabweb.com">contact@estabweb.com</a>.
           </p>
         </section>
       </div>

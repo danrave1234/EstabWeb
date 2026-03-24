@@ -2,6 +2,7 @@ import { dynamicWithSkeleton } from "@/lib/utils/dynamic";
 import { DEFAULT_FAQ_ACCORDION } from "@/config/dashboard-config";
 import React from "react";
 import { SECTION_NAV_MAP, slugify, categoryLabelForSection } from "@/lib/utils/blocks";
+import { allFontVariables, getFontVariables } from "@/lib/fonts";
 
 import SmartContactCTA from "@/components/shared/SmartContactCTA";
 import SiteEditorSidebar from "@/components/shared/SiteEditorSidebar";
@@ -74,6 +75,9 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     faqAccordion = DEFAULT_FAQ_ACCORDION,
     logoCloud = {},
     navigation = [],
+    colorTheme = "partner",
+    darkMode = false,
+    typographyStyle = "modern",
   } = data;
 
 
@@ -179,8 +183,15 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
     return sectionId.replace(/[-_]/g, " ").replace(/--/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
+  const mode = darkMode ? "dark" : "light";
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div 
+      data-theme={colorTheme}
+      data-mode={mode}
+      data-typography={typographyStyle}
+      className={`min-h-screen bg-background flex flex-col client-site ${allFontVariables} ${getFontVariables(colorTheme, typographyStyle)}`}
+    >
       {isAdmin && <SiteEditorSidebar />}
       {announcementBarId && (
         <PromoBannerStrip

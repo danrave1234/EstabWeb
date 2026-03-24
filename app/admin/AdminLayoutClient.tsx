@@ -1,9 +1,11 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import useSWR from "swr";
 import MainHeader from "@/components/shared/MainHeader";
+import AdminSidebar from "@/components/admin/AdminSidebar";
 import ScrollReveal from "@/components/shared/ScrollReveal";
 import { Toaster } from "sonner";
 import { mainSiteConfig } from "@/config/main-site-config";
@@ -21,6 +23,7 @@ export default function AdminLayoutClient({
 }) {
   const pathname = usePathname();
   const isPreview = pathname === "/admin/preview" || pathname === "/admin/template";
+  const [collapsed, setCollapsed] = useState(false);
 
   const { data: configData } = useSWR(
     isPreview ? "/api/config" : null,
@@ -53,15 +56,32 @@ export default function AdminLayoutClient({
 
   return (
     <AuthProvider initialUser={user ?? null}>
-    <NetworkOfflineBanner />
-    <div className="min-h-screen flex flex-col">
-      {!isPreview && <MainHeader variant="admin" initialUser={user} role={role} />}
-      <main className={`flex-1 ${!isPreview ? 'pt-16' : ''}`}>
-        {children}
-      </main>
-      <ScrollReveal />
-      <Toaster position="top-right" richColors />
-    </div>
+      <NetworkOfflineBanner />
+      <div className="min-h-screen flex bg-muted/30">
+        {!isPreview && (
+          <AdminSidebar 
+            user={user} 
+            role={role} 
+            collapsed={collapsed} 
+            onToggleCollapse={() => setCollapsed(!collapsed)} 
+          />
+        )}
+        <div className={cn(
+          "flex-1 flex flex-col min-h-screen transition-all duration-300", 
+          !isPreview && (collapsed ? "lg:pl-20" : "lg:pl-64")
+        )}>
+          {!isPreview && (
+            <header className="h-16 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-30 px-8 flex items-center justify-between lg:hidden">
+              <span className="font-bold">EstabWeb Admin</span>
+            </header>
+          )}
+          <main className="flex-1">
+            {children}
+          </main>
+          <ScrollReveal />
+        </div>
+        <Toaster position="top-right" richColors />
+      </div>
     </AuthProvider>
   );
 }

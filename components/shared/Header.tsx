@@ -118,7 +118,7 @@ export default function Header({
   );
 
   const DesktopNav = () => (
-    <nav aria-label="Primary" className={`hidden md:flex items-center flex-1 min-w-0 ${isFloating ? "gap-0.5 justify-center overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none]" : "gap-1"}`}>
+    <nav aria-label="Primary" className={`hidden md:flex items-center flex-1 min-w-0 ${isFloating ? "gap-0.5 justify-center overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none]" : "gap-1 justify-center"}`}>
       {navigation.map((item) => (
         isInternalRoute(item.href) ? (
           <Link

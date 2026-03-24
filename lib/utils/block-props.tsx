@@ -280,14 +280,35 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
         />
       );
       break;
-    case "hero": {
+    case "hero":
+    case "hero--generic":
+    case "hero--lawyer":
+    case "hero--dentist":
+    case "hero--clinic":
+    case "hero--gym":
+    case "hero--startup":
+    case "hero--chiropractor":
+    case "hero--cleaning":
+    case "hero--pool":
+    case "hero--pest-control":
+    case "hero--real-estate-modern":
+    case "hero--before-after-split":
+    case "hero--industrial":
+    case "hero--clean-delivery":
+    case "hero--luxury-soft":
+    case "hero--academic-clean":
+    case "hero--hvac":
+    case "hero--hvac-blue": {
+      // For hero--variant, effective theme is the variant part, otherwise use 'theme' prop
+      const effectiveTheme = sectionId.startsWith("hero--") ? sectionId.split('--')[1] : theme;
+
       // Dedicated hero component per theme (lookup map — no if/else chain)
-      const dedicatedHero = HERO_BY_THEME[theme];
+      const dedicatedHero = HERO_BY_THEME[effectiveTheme];
       if (dedicatedHero) {
         sectionContent = React.cloneElement(dedicatedHero, { key });
       } else {
         // Authority layout: theme drives the layout prop
-        const authorityLayout = AUTHORITY_LAYOUT_BY_THEME[theme] as any;
+        const authorityLayout = AUTHORITY_LAYOUT_BY_THEME[effectiveTheme] as any;
         sectionContent = <HeroAuthority key={key} {...heroProps} layout={authorityLayout} />;
       }
       break;

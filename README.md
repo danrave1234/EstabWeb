@@ -10,12 +10,13 @@ EstabWeb is a multi-tenant SaaS platform for generating and managing industry-op
 
 ## End-to-End Flow
 
-1. Admin updates the master template in `/admin/preview`.
-2. Client signs up and redeems a code in `/dashboard/onboarding`.
-3. Client edits content in the dashboard (saved to `draft_config`).
-4. Client submits a change request.
-5. Admin approves, publishing `draft_config` to `current_config`.
-6. Public site is served on subdomain or custom domain through middleware routing.
+1. Admin prepares a business-specific draft in `/admin/template` (`template_master` editor + temporary draft snapshots).
+2. Admin generates a template redemption code only when the prospect is ready.
+3. Client signs up and redeems a code in `/dashboard/onboarding`.
+4. Client edits content in the dashboard (saved to `draft_config`).
+5. Client submits a change request.
+6. Admin approves, publishing `draft_config` to `current_config`.
+7. Public site is served on subdomain or custom domain through middleware routing.
 
 ## Tech Stack
 
@@ -35,6 +36,25 @@ EstabWeb is a multi-tenant SaaS platform for generating and managing industry-op
 - Public Sites: `/(sites)/[domain]`
 - Hub Pages: `/(hub)`
 - API Routes: `/api/*`
+
+## Admin Template AI + Drafts
+
+- `POST /api/ai/populate-template` now supports Gemini Search-grounded generation for up-to-date business context.
+- It returns full template recommendations: brand copy, `theme`, `colorTheme`, `typographyStyle`, `headerStyle`, `footerStyle`, `darkMode`, and `activeSections`.
+- It now injects structured design-system context into the AI prompt (preset blueprints, section labels/config keys, hero/theme labels, color swatches, typography metadata, and dark/light mode hints) so selections follow real preset patterns instead of random combinations.
+- It accepts optional `businessPageUrl` (e.g., Facebook page URL) and extracts public page signals (logo/cover/contact hints) to reduce manual asset setup.
+- It also accepts optional `businessImageDataUrl` (uploaded screenshot/logo) so AI can extract business details when page scraping is blocked.
+- Model/env controls:
+  - `GEMINI_TEMPLATE_MODEL` (default: `gemini-2.5-flash`)
+  - `GEMINI_TEMPLATE_USE_SEARCH` (default: `true`)
+- `/admin/template` supports temporary draft snapshots via `template_drafts`:
+  - Save WIP business versions (brand name, logo, photos, content)
+  - Load drafts back into the editor
+  - Delete obsolete drafts
+  - Drafts auto-expire after 30 days (`expires_at`) and are cleaned by cron
+- Template codes remain the final share step for prospects:
+  - Draft first (`template_drafts`)
+  - Convert to shareable code (`template_codes`) only when needed
 
 ## Preset Config Notes
 
@@ -86,6 +106,8 @@ PAYMONGO_WEBHOOK_SECRET=
 VERCEL_API_TOKEN=
 VERCEL_PROJECT_ID=
 GEMINI_API_KEY=
+GEMINI_TEMPLATE_MODEL=gemini-2.5-flash
+GEMINI_TEMPLATE_USE_SEARCH=true
 CRON_SECRET=
 REDIS_HOST=
 REDIS_PORT=
@@ -107,6 +129,13 @@ migrations/004_add_support_requests_table.sql
 migrations/005_payment_idempotency.sql
 migrations/006_add_subscription_interval.sql
 migrations/007_add_ai_usage_count.sql
+migrations/008_analytics_identity_and_attribution.sql
+migrations/009_fix_project_events_add_missing_event_types.sql
+migrations/010_add_site_status.sql
+migrations/011_add_missing_lead_columns.sql
+migrations/012_add_promo_codes.sql
+migrations/013_add_template_drafts.sql
+migrations/014_add_template_draft_expiry.sql
 ```
 
 3. Install and run:
@@ -124,6 +153,11 @@ npm run dev
 - `npm run check:boundaries`: enforce module import boundaries
 - `npm run migrate`: run migration helper script
 - `npm run migrate:status`: migration status
+
+Cron jobs (see `vercel.json`):
+- `/api/cron/renew-subscriptions`
+- `/api/cron/keep-alive`
+- `/api/cron/cleanup-template-drafts` (removes expired 30-day drafts and draft-owned uploaded assets)
 
 ## GEO SEO (AI Searchability)
 

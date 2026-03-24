@@ -7,7 +7,7 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from '@/components/ui/Table'
+} from "@/components/ui/Table"
 import {
   CreditCard,
   TrendingUp,
@@ -15,9 +15,16 @@ import {
   ArrowDownRight,
   DollarSign,
   Calendar,
-  ExternalLink
+  ExternalLink,
+  Search,
+  CheckCircle2,
+  Clock
 } from 'lucide-react'
 import Link from 'next/link'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,8 +49,7 @@ interface PaymentWithProject {
 
 export default async function AdminTransactionsPage() {
   const supabase = await createClient()
-  const { data } = await supabase.auth.getUser()
-  const user = data?.user
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) return redirect('/login')
 
   // Admin check
@@ -118,12 +124,47 @@ export default async function AdminTransactionsPage() {
 
   const recentTransactions = typedPayments.slice(0, 5)
 
+  const stats = [
+    {
+      title: "Total Revenue",
+      value: `₱${totalRevenue.toLocaleString()}`,
+      description: "Lifetime earnings",
+      icon: DollarSign,
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/10"
+    },
+    {
+      title: "Monthly Revenue",
+      value: `₱${monthlyRevenue.toLocaleString()}`,
+      description: "Current month",
+      icon: TrendingUp,
+      color: "text-blue-500",
+      bg: "bg-blue-500/10"
+    },
+    {
+      title: "Last 30 Days",
+      value: `₱${last30DaysRevenue.toLocaleString()}`,
+      description: "Rolling 30-day period",
+      icon: Calendar,
+      color: "text-purple-500",
+      bg: "bg-purple-500/10"
+    },
+    {
+      title: "Transactions",
+      value: typedPayments.length.toString(),
+      description: "Total successful payments",
+      icon: CreditCard,
+      color: "text-amber-500",
+      bg: "bg-amber-500/10"
+    }
+  ]
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <div className="container mx-auto py-10 px-4">
         <div className="flex flex-col gap-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Transaction Dashboard</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Transactions</h1>
             <p className="text-muted-foreground mt-2">
               Monitor revenue, payment history, and subscription performance.
             </p>
@@ -131,147 +172,154 @@ export default async function AdminTransactionsPage() {
 
           {/* Stats Grid */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-              <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <p className="text-sm font-medium">Total Revenue</p>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">₱{totalRevenue.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">
-                  Lifetime earnings
-                </p>
-              </div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-              <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <p className="text-sm font-medium">Monthly Revenue</p>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">₱{monthlyRevenue.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">
-                  Current month
-                </p>
-              </div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-              <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <p className="text-sm font-medium">Last 30 Days</p>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">₱{last30DaysRevenue.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">
-                  Rolling 30-day period
-                </p>
-              </div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-              <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <p className="text-sm font-medium">Transactions</p>
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{typedPayments.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Total successful payments
-                </p>
-              </div>
-            </div>
+            {stats.map((stat) => (
+              <Card key={stat.title} className="border-border/50 shadow-sm hover:shadow-md transition-all duration-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </CardTitle>
+                  <div className={`p-2 rounded-lg ${stat.bg} ${stat.color}`}>
+                    <stat.icon className="h-4 w-4" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold tracking-tight">{stat.value}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {stat.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
           {/* Transactions Table */}
-          <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-border">
-              <h2 className="text-xl font-semibold">Payment History</h2>
-              <p className="text-sm text-muted-foreground">A detailed list of all processed payments.</p>
-            </div>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Project / Client</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Auto Subscribe</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Reference</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {typedPayments.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
-                        No transactions recorded yet.
-                      </TableCell>
+          <Card className="border-border/50 shadow-sm overflow-hidden">
+            <CardHeader className="border-b border-border/50 bg-muted/20">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl">Payment History</CardTitle>
+                  <CardDescription>A detailed list of all processed payments.</CardDescription>
+                </div>
+                <div className="relative w-64 hidden md:block">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search transactions..."
+                    className="pl-9 h-9 text-xs"
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="font-bold text-xs uppercase tracking-wider h-12">Date</TableHead>
+                      <TableHead className="font-bold text-xs uppercase tracking-wider h-12">Project / Client</TableHead>
+                      <TableHead className="font-bold text-xs uppercase tracking-wider h-12">Amount</TableHead>
+                      <TableHead className="font-bold text-xs uppercase tracking-wider h-12">Auto Renew</TableHead>
+                      <TableHead className="font-bold text-xs uppercase tracking-wider h-12">Status</TableHead>
+                      <TableHead className="font-bold text-xs uppercase tracking-wider h-12">Reference</TableHead>
+                      <TableHead className="text-right font-bold text-xs uppercase tracking-wider h-12">Action</TableHead>
                     </TableRow>
-                  ) : (
-                    typedPayments.map((p) => (
-                      <TableRow key={p.id}>
-                        <TableCell className="whitespace-nowrap">
-                          {new Date(p.created_at).toLocaleDateString('en-PH', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-1.5">
-                              {p.projects?.custom_domain && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">Custom</span>
-                              )}
-                              <span className={p.projects?.custom_domain ? "font-medium text-foreground" : "font-medium"}>
-                                {p.projects?.custom_domain || p.projects?.subdomain || 'Unknown Project'}
-                              </span>
+                  </TableHeader>
+                  <TableBody>
+                    {typedPayments.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center text-muted-foreground py-20">
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="p-3 rounded-full bg-muted/50">
+                              <CreditCard className="w-6 h-6 opacity-20" />
                             </div>
-                            <span className="text-xs text-muted-foreground">{p.projects?.profiles?.email || 'Unknown Client'}</span>
+                            <p className="text-sm">No transactions recorded yet.</p>
                           </div>
                         </TableCell>
-                        <TableCell className="font-semibold">
-                          {p.currency} {Number(p.amount).toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          {p.projects?.auto_renew ? (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
-                              Yes
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200">
-                              No
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
-                            {p.status}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-xs font-mono text-muted-foreground">
-                          {p.paymongo_payment_id || p.paymongo_link_id || '—'}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {p.paymongo_payment_id && (
-                            <Link
-                              href={`https://dashboard.paymongo.com/payments/${p.paymongo_payment_id}`}
-                              target="_blank"
-                              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                            >
-                              PayMongo <ExternalLink className="h-3 w-3" />
-                            </Link>
-                          )}
-                        </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+                    ) : (
+                      typedPayments.map((p) => (
+                        <TableRow key={p.id} className="group hover:bg-muted/30 transition-colors">
+                          <TableCell className="whitespace-nowrap py-4">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-sm font-medium">
+                                {new Date(p.created_at).toLocaleDateString('en-PH', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {new Date(p.created_at).toLocaleTimeString('en-PH', {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="flex flex-col min-w-[150px]">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-bold text-sm text-foreground">
+                                  {p.projects?.custom_domain || p.projects?.subdomain || 'Unknown'}
+                                </span>
+                                {p.projects?.custom_domain && (
+                                  <Badge className="bg-emerald-500/10 text-emerald-600 border-none font-bold text-[9px] h-4 py-0 px-1.5">
+                                    CUSTOM
+                                  </Badge>
+                                )}
+                              </div>
+                              <span className="text-xs text-muted-foreground truncate">{p.projects?.profiles?.email || 'Unknown Client'}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <span className="font-bold text-sm">
+                              {p.currency} {Number(p.amount).toLocaleString()}
+                            </span>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            {p.projects?.auto_renew ? (
+                              <Badge className="bg-blue-500/10 text-blue-600 border-none font-bold text-[10px] py-0 px-2 h-5">
+                                <CheckCircle2 className="w-3 h-3 mr-1" />
+                                ACTIVE
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-muted-foreground border-border/50 font-bold text-[10px] py-0 px-2 h-5 bg-muted/20">
+                                <Clock className="w-3 h-3 mr-1" />
+                                OFF
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <Badge className="bg-emerald-500/10 text-emerald-600 border-none font-bold text-[10px] py-0 px-2 h-5">
+                              {p.status.toUpperCase()}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <code className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
+                              {(p.paymongo_payment_id || p.paymongo_link_id || '—').slice(0, 15)}...
+                            </code>
+                          </TableCell>
+                          <TableCell className="text-right py-4">
+                            {p.paymongo_payment_id && (
+                              <Button asChild variant="ghost" size="sm" className="h-8 px-2 hover:bg-primary/10 hover:text-primary">
+                                <Link
+                                  href={`https://dashboard.paymongo.com/payments/${p.paymongo_payment_id}`}
+                                  target="_blank"
+                                  className="font-bold text-[10px] uppercase tracking-wider"
+                                >
+                                  PayMongo
+                                  <ExternalLink className="ml-1.5 h-3 w-3" />
+                                </Link>
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

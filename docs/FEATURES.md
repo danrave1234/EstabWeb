@@ -167,6 +167,8 @@ The following paths are never redirected to subdomains on the root domain:
 
 ### 4.2 Template Editor
 
+> Update (2026-03-25): The master template now lives in `site_config` key `template_master`, and admins can save temporary business-specific drafts in `template_drafts` via `/api/admin/template-drafts` before generating share codes. Drafts auto-expire after 30 days and are cleaned by cron.
+
 **Files:** `app/admin/template/page.tsx`, `app/admin/preview/page.tsx`
 
 **What it does:** Allows the admin to edit the master site template — the "DNA" that all new client projects are seeded from.
@@ -181,6 +183,8 @@ The following paths are never redirected to subdomains on the root domain:
 ---
 
 ### 4.3 Code Generation & Management
+
+> Update (2026-03-25): Template code records use `template_codes` (not `codes`) and carry a full payload snapshot. Recommended workflow: save WIP in `template_drafts`, then create a code only for qualified prospects.
 
 **File:** `app/admin/codes/page.tsx`, `app/api/codes/`
 
@@ -867,6 +871,17 @@ All API routes are under `app/api/` and use Next.js Route Handlers.
 
 ### 8.10 Config API
 
+**Admin template endpoints (added 2026-03-25):**
+- `GET /api/config` -> returns `site_config.template_master`.
+- `POST /api/config` -> updates `site_config.template_master`.
+- `GET|POST|PATCH|DELETE /api/admin/template-drafts` -> CRUD for admin-only temporary template drafts.
+- `POST /api/ai/populate-template` -> full template generation (content + theme + color + typography + header/footer styles + section selection) with optional Gemini Google Search grounding (`useSearch`).
+- `POST /api/ai/populate-template` injects structured design-system context (preset blueprints, section labels/keys, hero/theme labels, color swatches, typography metadata, and dark/light hints) so AI picks combinations aligned with real templates.
+- `POST /api/ai/populate-template` also accepts optional `businessPageUrl` to extract public page metadata (logo/cover/contact hints) from social profiles or business websites and apply them into template config. It uses a hint-based fallback for restricted social scrapers (Facebook, etc.) to trigger a mandatory web search for official branding (colors, names, logos).
+- `POST /api/ai/populate-template` enforces strict branding accuracy (e.g., matching known brand colors to closest themes) and logic-based section sequencing (Hero -> Services -> Social Proof -> Contact).
+- `POST /api/ai/populate-template` also accepts optional `businessImageDataUrl` (uploaded screenshot/logo) for multimodal extraction fallback when direct page scraping is unavailable.
+- `GET /api/cron/cleanup-template-drafts` -> daily cleanup of expired drafts and draft-owned uploaded image assets.
+
 **`GET /api/config?projectId=xxx&preview=true`**
 - Returns the merged config (current + draft) for a project as JSON.
 - Used by the dashboard iframe to load the live preview.
@@ -899,6 +914,11 @@ All API routes are under `app/api/` and use Next.js Route Handlers.
 **`GET /api/cron/keep-alive`**
 - Runs periodically.
 - Executes a lightweight query against Supabase to prevent the free-tier database from sleeping.
+
+**`GET /api/cron/cleanup-template-drafts`**
+- Protected by `Authorization: Bearer {CRON_SECRET}` header.
+- Runs daily (configured in `vercel.json`).
+- Deletes expired admin template drafts (`expires_at < now`) and attempts to remove draft-owned `site-assets` images referenced in draft payload JSON.
 
 ---
 
@@ -1104,9 +1124,14 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 | `leads` | Lead captures from public site contact forms |
 | `platform_settings` | Admin-configurable platform defaults (publish limits, plan definitions) |
 
+**Schema updates (2026-03-25):**
+- Added `template_drafts` for temporary admin marketing-flow snapshots.
+- Added `template_drafts.expires_at` (30-day TTL) with scheduled cleanup.
+- Active template code table is `template_codes` (plus `code_redemptions` audit trail).
+- Master template JSON source is `site_config` key `template_master`.
+
 **Row-Level Security (RLS):** All client-facing tables have RLS policies ensuring clients can only read/write their own rows. Admin operations use the service-role client which bypasses RLS.
 
 ---
 
-*Last updated: 2026-03-12*
-
+*Last updated: 2026-03-25*
