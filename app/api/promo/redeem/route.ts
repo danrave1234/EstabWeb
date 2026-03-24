@@ -61,7 +61,6 @@ export async function POST(req: Request) {
         has_paid_initial: true,
         publish_limit: 999,
         publish_limit_daily: 50,
-        updated_at: now,
       })
       .eq('id', projectId)
 
@@ -77,7 +76,7 @@ export async function POST(req: Request) {
     // Increment usage count
     await service
       .from('promo_codes')
-      .update({ usage_count: promo.usage_count + 1, updated_at: now })
+      .update({ usage_count: promo.usage_count + 1 })
       .eq('id', promo.id)
 
     return NextResponse.json({
