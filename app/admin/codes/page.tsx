@@ -87,26 +87,31 @@ function buildIso(day: string, month: string, year: string): string | null {
 }
 
 function DatePicker({ value, onChange, label, optional }: { value: string | null; onChange: (v: string | null) => void; label: string; optional?: boolean }) {
-  const parts = parseDateParts(value);
+  const initial = parseDateParts(value);
+  const [month, setMonth] = useState(initial.month);
+  const [day, setDay] = useState(initial.day);
+  const [year, setYear] = useState(initial.year);
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => currentYear + i);
-  const daysInMonth = parts.month && parts.year ? new Date(Number(parts.year), Number(parts.month), 0).getDate() : 31;
+  const daysInMonth = month && year ? new Date(Number(year), Number(month), 0).getDate() : 31;
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const sel = "w-full px-3 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer";
-  const update = (d: string, m: string, y: string) => onChange(buildIso(d, m, y));
+  const handleMonth = (m: string) => { setMonth(m); onChange(buildIso(day, m, year)); };
+  const handleDay = (d: string) => { setDay(d); onChange(buildIso(d, month, year)); };
+  const handleYear = (y: string) => { setYear(y); onChange(buildIso(day, month, y)); };
   return (
     <div>
       <label className="text-sm font-medium mb-1.5 block">{label}{optional && <span className="text-muted-foreground font-normal ml-1">(optional)</span>}</label>
       <div className="grid grid-cols-3 gap-2">
-        <select className={sel} value={parts.month} onChange={(e) => update(parts.day, e.target.value, parts.year)}>
+        <select className={sel} value={month} onChange={(e) => handleMonth(e.target.value)}>
           <option value="">Month</option>
           {MONTHS.map((m, i) => <option key={i+1} value={String(i+1)}>{m}</option>)}
         </select>
-        <select className={sel} value={parts.day} onChange={(e) => update(e.target.value, parts.month, parts.year)}>
+        <select className={sel} value={day} onChange={(e) => handleDay(e.target.value)}>
           <option value="">Day</option>
           {days.map((d) => <option key={d} value={String(d)}>{d}</option>)}
         </select>
-        <select className={sel} value={parts.year} onChange={(e) => update(parts.day, parts.month, e.target.value)}>
+        <select className={sel} value={year} onChange={(e) => handleYear(e.target.value)}>
           <option value="">Year</option>
           {years.map((y) => <option key={y} value={String(y)}>{y}</option>)}
         </select>
