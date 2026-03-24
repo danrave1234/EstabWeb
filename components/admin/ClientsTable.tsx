@@ -2,11 +2,17 @@
 
 import { useState, useMemo, useTransition } from "react"
 import Link from "next/link"
-import { Globe, ExternalLink, Search, ChevronDown, ChevronUp, Users, ShieldCheck } from "lucide-react"
+import {
+  Globe, ExternalLink, Search, ChevronDown, ChevronUp,
+  ShieldCheck, Calendar, Tag, BarChart2, Clock, AlertTriangle,
+  CheckCircle2, XCircle, Ticket, RefreshCw, Eye
+} from "lucide-react"
 import SubscriptionManage from "@/components/admin/SubscriptionManage"
 import DomainManage from "@/components/admin/DomainManage"
 import SiteStatusManage from "@/components/admin/SiteStatusManage"
 import { updateUserRole } from "@/app/admin/actions"
+
+// ─── Constants ───────────────────────────────────────────────────────────────
 
 const ROLE_LABELS: Record<string, string> = {
   admin: "Admin",
@@ -20,6 +26,59 @@ const ROLE_COLORS: Record<string, string> = {
   client: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",
 }
 
+const STATUS_COLORS: Record<string, string> = {
+  free: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",
+  trial: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+  active: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+  admin_granted: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+  expired: "bg-red-500/10 text-red-600 border-red-500/20",
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  free: "Free",
+  trial: "Trial",
+  active: "Active",
+  admin_granted: "Granted",
+  expired: "Expired",
+}
+
+const PLAN_LABELS: Record<string, string> = {
+  free: "Free",
+  basic: "Basic",
+  pro: "Pro",
+  ecommerce: "Ecommerce",
+  custom: "Custom",
+}
+
+const SITE_STATUS_COLORS: Record<string, string> = {
+  active: "text-emerald-600",
+  disabled: "text-amber-600",
+  archived: "text-red-500",
+}
+
+const ALL_STATUSES = ["all", "free", "trial", "active", "admin_granted"] as const
+type StatusFilter = (typeof ALL_STATUSES)[number]
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function fmt(dateStr: string | null | undefined) {
+  if (!dateStr) return null
+  return new Date(dateStr).toLocaleDateString("en-PH", {
+    month: "short", day: "numeric", year: "numeric",
+  })
+}
+
+function daysFromNow(dateStr: string | null | undefined): number | null {
+  if (!dateStr) return null
+  return Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86400000)
+}
+
+function initials(email: string | null, id: string) {
+  return (email || id)[0].toUpperCase()
+}
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
 function RoleSelect({ userId, currentRole }: { userId: string; currentRole: string | null }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -29,11 +88,8 @@ function RoleSelect({ userId, currentRole }: { userId: string; currentRole: stri
     const newRole = e.target.value as "admin" | "sub_admin" | "client"
     setError(null)
     startTransition(async () => {
-      try {
-        await updateUserRole(userId, newRole)
-      } catch (err: any) {
-        setError(err.message)
-      }
+      try { await updateUserRole(userId, newRole) }
+      catch (err: any) { setError(err.message) }
     })
   }
 
@@ -43,7 +99,7 @@ function RoleSelect({ userId, currentRole }: { userId: string; currentRole: stri
         value={role}
         onChange={handleChange}
         disabled={isPending}
-        className="text-xs rounded-lg border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50"
+        className="text-xs rounded-lg border border-border bg-background px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 cursor-pointer"
       >
         <option value="client">Client</option>
         <option value="sub_admin">Sub-Admin</option>
@@ -53,6 +109,23 @@ function RoleSelect({ userId, currentRole }: { userId: string; currentRole: stri
     </div>
   )
 }
+
+function StatusPill({ status }: { status: string }) {
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${STATUS_COLORS[status] || STATUS_COLORS.free}`}>
+      {STATUS_LABELS[status] || status}
+    </span>
+  )
+}
+
+function SiteStatusIcon({ status }: { status: string | null | undefined }) {
+  const s = status || "active"
+  if (s === "active") return <CheckCircle2 className={`w-3.5 h-3.5 ${SITE_STATUS_COLORS.active}`} />
+  if (s === "disabled") return <AlertTriangle className={`w-3.5 h-3.5 ${SITE_STATUS_COLORS.disabled}`} />
+  return <XCircle className={`w-3.5 h-3.5 ${SITE_STATUS_COLORS.archived}`} />
+}
+
+// ─── Interfaces ───────────────────────────────────────────────────────────────
 
 interface ProfileRow {
   id: string
@@ -68,11 +141,17 @@ interface ProjectRow {
   custom_domain?: string | null
   created_at?: string | null
   subscription_status?: string | null
+  subscription_plan_id?: string | null
+  subscription_ends_at?: string | null
   trial_ends_at?: string | null
   publish_limit?: number | null
+  publish_limit_daily?: number | null
   publish_count?: number | null
+  publish_count_today?: number | null
+  publish_date?: string | null
   site_status?: string | null
   site_status_reason?: string | null
+  promo_code_used?: string | null
 }
 
 interface ClientRow {
@@ -85,22 +164,188 @@ interface ClientsTableProps {
   rootDomain: string
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  free: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",
-  trial: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-  active: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-  admin_granted: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+// ─── Project Card ─────────────────────────────────────────────────────────────
+
+function ProjectCard({ proj, rootDomain, index }: { proj: ProjectRow; rootDomain: string; index: number }) {
+  const [showManage, setShowManage] = useState(false)
+  const status = proj.subscription_status || "free"
+  const plan = proj.subscription_plan_id || "free"
+  const siteUrl = proj.custom_domain
+    ? `https://${proj.custom_domain}`
+    : proj.subdomain
+    ? `https://${proj.subdomain}.${rootDomain}`
+    : null
+
+  const trialDays = daysFromNow(proj.trial_ends_at)
+  const subDays = daysFromNow(proj.subscription_ends_at)
+  const isTrialExpired = status === "trial" && trialDays !== null && trialDays < 0
+  const isExpiringSoon = status === "active" && subDays !== null && subDays <= 7 && subDays >= 0
+
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      {/* Site header */}
+      <div className="px-4 py-3 bg-muted/20 border-b border-border flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <SiteStatusIcon status={proj.site_status} />
+          <span className="text-xs text-muted-foreground font-mono">#{index + 1}</span>
+          {siteUrl ? (
+            <Link
+              href={siteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-medium hover:underline truncate max-w-[260px]"
+            >
+              <Globe className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              {proj.custom_domain || `${proj.subdomain}.${rootDomain}`}
+              <ExternalLink className="w-3 h-3 opacity-40 shrink-0" />
+            </Link>
+          ) : (
+            <span className="text-sm text-muted-foreground italic">No domain set</span>
+          )}
+          {proj.custom_domain && (
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+              Custom
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <StatusPill status={status} />
+          <button
+            onClick={() => setShowManage(v => !v)}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium transition-colors cursor-pointer"
+          >
+            {showManage ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            Manage
+          </button>
+        </div>
+      </div>
+
+      {/* Subscription details grid */}
+      <div className="px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3">
+
+        {/* Plan */}
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5 flex items-center gap-1">
+            <Tag className="w-3 h-3" /> Plan
+          </p>
+          <p className="text-sm font-semibold capitalize">
+            {PLAN_LABELS[plan] || plan}
+          </p>
+        </div>
+
+        {/* Trial / Subscription expiry */}
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5 flex items-center gap-1">
+            <Calendar className="w-3 h-3" />
+            {status === "trial" ? "Trial Ends" : "Renews / Ends"}
+          </p>
+          {status === "trial" && proj.trial_ends_at ? (
+            <p className={`text-sm font-medium ${isTrialExpired ? "text-red-600" : trialDays !== null && trialDays <= 3 ? "text-amber-600" : ""}`}>
+              {fmt(proj.trial_ends_at)}
+              {isTrialExpired
+                ? <span className="ml-1 text-[10px] font-semibold text-red-500">(Expired)</span>
+                : trialDays !== null && trialDays >= 0
+                ? <span className="ml-1 text-[10px] text-muted-foreground">{trialDays}d left</span>
+                : null}
+            </p>
+          ) : status === "active" && proj.subscription_ends_at ? (
+            <p className={`text-sm font-medium ${isExpiringSoon ? "text-amber-600" : ""}`}>
+              {fmt(proj.subscription_ends_at)}
+              {isExpiringSoon && subDays !== null && (
+                <span className="ml-1 text-[10px] font-semibold text-amber-500">{subDays}d left</span>
+              )}
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">—</p>
+          )}
+        </div>
+
+        {/* Promo code */}
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5 flex items-center gap-1">
+            <Ticket className="w-3 h-3" /> Promo Code
+          </p>
+          {proj.promo_code_used ? (
+            <p className="text-sm font-mono font-semibold text-primary">{proj.promo_code_used}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">—</p>
+          )}
+        </div>
+
+        {/* Publish usage */}
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5 flex items-center gap-1">
+            <BarChart2 className="w-3 h-3" /> Publishes
+          </p>
+          <p className="text-sm font-medium">
+            {proj.publish_count ?? 0}
+            <span className="text-muted-foreground text-xs"> / {proj.publish_limit ?? "∞"} total</span>
+          </p>
+          <p className="text-[10px] text-muted-foreground">
+            {proj.publish_count_today ?? 0} / {proj.publish_limit_daily ?? "∞"} today
+          </p>
+        </div>
+
+        {/* Site status */}
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5 flex items-center gap-1">
+            <Eye className="w-3 h-3" /> Visibility
+          </p>
+          <p className={`text-sm font-medium capitalize ${SITE_STATUS_COLORS[proj.site_status || "active"]}`}>
+            {proj.site_status || "active"}
+          </p>
+          {proj.site_status_reason && (
+            <p className="text-[10px] text-muted-foreground truncate max-w-[140px]" title={proj.site_status_reason}>
+              {proj.site_status_reason}
+            </p>
+          )}
+        </div>
+
+        {/* Created */}
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5 flex items-center gap-1">
+            <Clock className="w-3 h-3" /> Created
+          </p>
+          <p className="text-sm text-muted-foreground">{fmt(proj.created_at) || "—"}</p>
+        </div>
+
+        {/* Project ID */}
+        <div className="col-span-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-0.5">
+            Project ID
+          </p>
+          <p className="text-[11px] font-mono text-muted-foreground truncate">{proj.id}</p>
+        </div>
+      </div>
+
+      {/* Manage panel */}
+      {showManage && (
+        <div className="border-t border-border px-4 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-muted/10">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+              Subscription
+            </p>
+            <SubscriptionManage project={proj as any} />
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+              Custom Domain
+            </p>
+            <DomainManage project={proj as any} />
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+              Site Visibility
+            </p>
+            <SiteStatusManage project={proj as any} />
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  free: "Free",
-  trial: "Trial",
-  active: "Paid",
-  admin_granted: "Granted",
-}
-
-const ALL_STATUSES = ["all", "free", "trial", "active", "admin_granted"] as const
-type StatusFilter = (typeof ALL_STATUSES)[number]
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function ClientsTable({ rows, rootDomain }: ClientsTableProps) {
   const [search, setSearch] = useState("")
@@ -126,7 +371,8 @@ export default function ClientsTable({ rows, rootDomain }: ClientsTableProps) {
         projects.some(
           (p) =>
             (p.subdomain || "").toLowerCase().includes(q) ||
-            (p.custom_domain || "").toLowerCase().includes(q)
+            (p.custom_domain || "").toLowerCase().includes(q) ||
+            (p.promo_code_used || "").toLowerCase().includes(q)
         )
 
       const matchesStatus =
@@ -139,6 +385,7 @@ export default function ClientsTable({ rows, rootDomain }: ClientsTableProps) {
 
   return (
     <div className="flex flex-col gap-5">
+
       {/* Search + Filter bar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -147,7 +394,7 @@ export default function ClientsTable({ rows, rootDomain }: ClientsTableProps) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by email, subdomain, or domain…"
+            placeholder="Search by email, subdomain, domain, or promo code…"
             className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>
@@ -156,7 +403,7 @@ export default function ClientsTable({ rows, rootDomain }: ClientsTableProps) {
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 text-xs rounded-lg border font-medium transition-colors ${
+              className={`px-3 py-1.5 text-xs rounded-lg border font-medium transition-colors cursor-pointer ${
                 statusFilter === s
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-background border-border hover:bg-muted text-muted-foreground"
@@ -175,171 +422,107 @@ export default function ClientsTable({ rows, rootDomain }: ClientsTableProps) {
 
       {/* Client list */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-border bg-card py-20 text-center text-muted-foreground">
+        <div className="rounded-xl border border-border bg-card py-20 text-center text-muted-foreground text-sm">
           No clients match your search.
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {filtered.map(({ profile, projects: clientProjects }) => {
             const isExpanded = expandedIds.has(profile.id)
             const hasProjects = clientProjects.length > 0
 
+            // Summary badges for collapsed view
+            const statusSummary = clientProjects.reduce<Record<string, number>>((acc, p) => {
+              const s = p.subscription_status || "free"
+              acc[s] = (acc[s] || 0) + 1
+              return acc
+            }, {})
+
             return (
               <div key={profile.id} className="rounded-xl border border-border bg-card overflow-hidden">
-                {/* Client header row */}
+
+                {/* Client header */}
                 <button
                   onClick={() => toggleExpand(profile.id)}
-                  className="w-full flex items-center justify-between px-5 py-4 bg-muted/30 hover:bg-muted/50 transition-colors text-left"
+                  className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors text-left cursor-pointer"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary overflow-hidden">
+                    {/* Avatar */}
+                    <div className="w-9 h-9 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary overflow-hidden border border-border">
                       {profile.avatar_url ? (
                         <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       ) : (
-                        (profile.email || profile.id)[0].toUpperCase()
+                        initials(profile.email, profile.id)
                       )}
                     </div>
+
+                    {/* Email + ID */}
                     <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{profile.email || profile.id}</p>
+                      <p className="font-semibold text-sm truncate leading-tight">{profile.email || "—"}</p>
                       <p className="text-[10px] text-muted-foreground font-mono truncate">{profile.id}</p>
                     </div>
                   </div>
+
                   <div className="flex items-center gap-3 shrink-0 ml-4">
-                    {/* Status badges summary */}
+                    {/* Status summary pills */}
                     <div className="hidden sm:flex items-center gap-1.5 flex-wrap justify-end">
-                      {clientProjects.map((p) => {
-                        const s = p.subscription_status || "free"
-                        return (
-                          <span
-                            key={p.id}
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${STATUS_COLORS[s] || STATUS_COLORS.free}`}
-                          >
-                            {p.custom_domain || p.subdomain || "—"} · {STATUS_LABELS[s] || s}
-                          </span>
-                        )
-                      })}
-                      {clientProjects.length === 0 && (
+                      {Object.entries(statusSummary).map(([s, count]) => (
+                        <span key={s} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${STATUS_COLORS[s] || STATUS_COLORS.free}`}>
+                          {count > 1 && <span>{count}×</span>}
+                          {STATUS_LABELS[s] || s}
+                        </span>
+                      ))}
+                      {!hasProjects && (
                         <span className="text-xs text-muted-foreground italic">No websites</span>
                       )}
                     </div>
+
+                    {/* Site count */}
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
                       {clientProjects.length} {clientProjects.length === 1 ? "site" : "sites"}
                     </span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border capitalize ${ROLE_COLORS[profile.role || "client"] || ROLE_COLORS.client}`}>
+
+                    {/* Role badge */}
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border capitalize ${ROLE_COLORS[profile.role || "client"] || ROLE_COLORS.client}`}>
                       {ROLE_LABELS[profile.role || "client"] || profile.role || "Client"}
                     </span>
-                    {isExpanded ? (
-                      <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                    )}
+
+                    {isExpanded
+                      ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                      : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                   </div>
                 </button>
 
-                {/* Expanded: project rows */}
+                {/* Expanded content */}
                 {isExpanded && (
-                  <div className="divide-y divide-border">
+                  <div className="border-t border-border">
+
+                    {/* Role management row */}
+                    <div className="px-5 py-3 bg-muted/10 border-b border-border flex items-center gap-4 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Account Role</span>
+                      </div>
+                      <RoleSelect userId={profile.id} currentRole={profile.role} />
+                      <div className="flex items-center gap-2 ml-auto">
+                        <RefreshCw className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground">
+                          {hasProjects ? `${clientProjects.length} website${clientProjects.length !== 1 ? "s" : ""}` : "No websites yet"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Projects */}
                     {!hasProjects ? (
-                      <div className="px-5 py-6 flex flex-col gap-4">
-                        <p className="text-sm text-muted-foreground italic">No websites yet.</p>
-                        <div className="rounded-lg border border-border bg-muted/20 px-4 py-3 max-w-xs">
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
-                            <ShieldCheck className="w-3 h-3" /> Role
-                          </p>
-                          <RoleSelect userId={profile.id} currentRole={profile.role} />
-                        </div>
+                      <div className="px-5 py-8 text-center text-sm text-muted-foreground italic">
+                        This client has no websites yet.
                       </div>
                     ) : (
-                      clientProjects.map((proj, idx) => {
-                        const href = proj.custom_domain
-                          ? `https://${proj.custom_domain}`
-                          : proj.subdomain
-                          ? `https://${proj.subdomain}.${rootDomain}`
-                          : "#"
-                        const status = proj.subscription_status || "free"
-                        const statusColor = STATUS_COLORS[status] || STATUS_COLORS.free
-                        const statusLabel = STATUS_LABELS[status] || status
-
-                        return (
-                          <div key={proj.id} className="px-5 py-4">
-                            {/* Site info row */}
-                            <div className="flex flex-wrap items-center gap-2 mb-3">
-                              <span className="text-xs text-muted-foreground">#{idx + 1}</span>
-                              <Link
-                                href={href}
-                                target={href.startsWith("http") ? "_blank" : undefined}
-                                rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-                                  proj.custom_domain
-                                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 hover:bg-emerald-500/20"
-                                    : "bg-background hover:bg-muted"
-                                } ${
-                                  proj.subdomain || proj.custom_domain
-                                    ? ""
-                                    : "opacity-40 pointer-events-none"
-                                }`}
-                              >
-                                <Globe className="w-3 h-3" />
-                                {proj.custom_domain
-                                  ? proj.custom_domain
-                                  : proj.subdomain
-                                  ? `${proj.subdomain}.${rootDomain}`
-                                  : "no-subdomain"}
-                                {(proj.subdomain || proj.custom_domain) && (
-                                  <ExternalLink className="w-2.5 h-2.5 opacity-50" />
-                                )}
-                              </Link>
-                              {proj.custom_domain && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
-                                  Custom
-                                </span>
-                              )}
-                              <span
-                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${statusColor}`}
-                              >
-                                {statusLabel}
-                                {proj.trial_ends_at && status === "trial" && (
-                                  <span className="ml-1 opacity-70">
-                                    · {new Date(proj.trial_ends_at).toLocaleDateString()}
-                                  </span>
-                                )}
-                              </span>
-                            </div>
-
-                            {/* Actions row */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                              <div className="rounded-lg border border-border bg-muted/20 px-4 py-3">
-                                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-                                  Custom Domain
-                                </p>
-                                <DomainManage project={proj as any} />
-                              </div>
-                              <div className="rounded-lg border border-border bg-muted/20 px-4 py-3">
-                                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-                                  Subscription
-                                </p>
-                                <SubscriptionManage project={proj as any} />
-                              </div>
-                            </div>
-                            {/* Site visibility */}
-                            <div className="rounded-lg border border-border bg-muted/20 px-4 py-3 mt-4">
-                              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-                                Site Visibility
-                              </p>
-                              <SiteStatusManage project={proj as any} />
-                            </div>
-                            {/* Role management — only shown on last project row to avoid duplication */}
-                            {idx === 0 && (
-                              <div className="rounded-lg border border-border bg-muted/20 px-4 py-3 mt-4">
-                                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1">
-                                  <ShieldCheck className="w-3 h-3" /> Role
-                                </p>
-                                <RoleSelect userId={profile.id} currentRole={profile.role} />
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })
+                      <div className="p-4 flex flex-col gap-4">
+                        {clientProjects.map((proj, idx) => (
+                          <ProjectCard key={proj.id} proj={proj} rootDomain={rootDomain} index={idx} />
+                        ))}
+                      </div>
                     )}
                   </div>
                 )}
