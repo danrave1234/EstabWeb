@@ -3,6 +3,13 @@
 import { useState } from "react";
 import useSWR from "swr";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/Dialog";
+import {
   Plus,
   Trash2,
   Edit2,
@@ -65,29 +72,47 @@ const PLAN_COLORS: Record<string, string> = {
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-const EXPIRY_OPTIONS = [
-  { label: "No expiry", value: "" },
-  { label: "7 days", days: 7 },
-  { label: "14 days", days: 14 },
-  { label: "30 days", days: 30 },
-  { label: "3 months", days: 90 },
-  { label: "6 months", days: 180 },
-  { label: "1 year", days: 365 },
-];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-function expiryToDate(days: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
+function parseDateParts(iso: string | null): { day: string; month: string; year: string } {
+  if (!iso) return { day: "", month: "", year: "" };
+  const d = new Date(iso);
+  return { day: String(d.getDate()), month: String(d.getMonth() + 1), year: String(d.getFullYear()) };
+}
+
+function buildIso(day: string, month: string, year: string): string | null {
+  if (!day || !month || !year) return null;
+  const d = new Date(Number(year), Number(month) - 1, Number(day));
   return d.toISOString().split("T")[0];
 }
 
-function dateToExpiryOption(dateStr: string | null): string {
-  if (!dateStr) return "";
-  const target = new Date(dateStr);
-  const now = new Date();
-  const diffDays = Math.round((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  const match = EXPIRY_OPTIONS.find((o) => "days" in o && Math.abs((o as any).days - diffDays) <= 1);
-  return match && "days" in match ? String((match as any).days) : "";
+function DatePicker({ value, onChange, label, optional }: { value: string | null; onChange: (v: string | null) => void; label: string; optional?: boolean }) {
+  const parts = parseDateParts(value);
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 10 }, (_, i) => currentYear + i);
+  const daysInMonth = parts.month && parts.year ? new Date(Number(parts.year), Number(parts.month), 0).getDate() : 31;
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const sel = "w-full px-3 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer";
+  const update = (d: string, m: string, y: string) => onChange(buildIso(d, m, y));
+  return (
+    <div>
+      <label className="text-sm font-medium mb-1.5 block">{label}{optional && <span className="text-muted-foreground font-normal ml-1">(optional)</span>}</label>
+      <div className="grid grid-cols-3 gap-2">
+        <select className={sel} value={parts.month} onChange={(e) => update(parts.day, e.target.value, parts.year)}>
+          <option value="">Month</option>
+          {MONTHS.map((m, i) => <option key={i+1} value={String(i+1)}>{m}</option>)}
+        </select>
+        <select className={sel} value={parts.day} onChange={(e) => update(e.target.value, parts.month, parts.year)}>
+          <option value="">Day</option>
+          {days.map((d) => <option key={d} value={String(d)}>{d}</option>)}
+        </select>
+        <select className={sel} value={parts.year} onChange={(e) => update(parts.day, parts.month, e.target.value)}>
+          <option value="">Year</option>
+          {years.map((y) => <option key={y} value={String(y)}>{y}</option>)}
+        </select>
+      </div>
+    </div>
+  );
 }
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
@@ -202,30 +227,27 @@ function TemplateCodesTab() {
         </div>
       </div>
 
-      {editingCode && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-background border rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b">
-              <h3 className="text-xl font-bold">Edit Code Limits</h3>
-              <p className="text-sm text-muted-foreground mt-1">Code: <span className="font-mono text-primary font-bold">{editingCode.code}</span></p>
-            </div>
-            <form onSubmit={handleUpdateLimits} className="p-6 space-y-4">
+      <Dialog open={!!editingCode} onOpenChange={(o) => { if (!o) setEditingCode(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Code Limits</DialogTitle>
+            <DialogDescription>Code: <span className="font-mono text-primary font-bold">{editingCode?.code}</span></DialogDescription>
+          </DialogHeader>
+          {editingCode && (
+            <form onSubmit={handleUpdateLimits} className="space-y-4 pt-2">
               <div>
                 <label className="text-sm font-medium mb-1.5 block">Max Redemptions</label>
-                <input type="number" min="1" className="w-full px-4 py-2 bg-muted/50 border rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" value={editingCode.max_uses} onChange={(e) => setEditingCode({ ...editingCode, max_uses: parseInt(e.target.value) })} />
+                <input type="number" min="1" className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={editingCode.max_uses} onChange={(e) => setEditingCode({ ...editingCode, max_uses: parseInt(e.target.value) })} />
               </div>
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">Expiration Date</label>
-                <input type="date" className="w-full px-4 py-2 bg-muted/50 border rounded-lg focus:ring-2 focus:ring-primary/20 outline-none" value={editingCode.expires_at ? editingCode.expires_at.split("T")[0] : ""} onChange={(e) => setEditingCode({ ...editingCode, expires_at: e.target.value })} />
-              </div>
+              <DatePicker label="Expiration Date" optional value={editingCode.expires_at} onChange={(v) => setEditingCode({ ...editingCode, expires_at: v })} />
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setEditingCode(null)} className="flex-1 px-4 py-2.5 text-sm font-medium border rounded-xl hover:bg-muted transition-colors">Cancel</button>
                 <button type="submit" className="flex-1 px-4 py-2.5 text-sm font-bold bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-all">Save Changes</button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
@@ -384,14 +406,13 @@ function PromoCodesTab() {
       </div>
 
       {/* Create Modal */}
-      {showCreate && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-background border rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b">
-              <h3 className="text-xl font-bold">Create Promo Code</h3>
-              <p className="text-sm text-muted-foreground mt-1">Generate a subscription promo code for clients.</p>
-            </div>
-            <form onSubmit={handleCreate} className="p-6 space-y-4">
+      <Dialog open={showCreate} onOpenChange={(o) => { if (!o) { setShowCreate(false); setForm(DEFAULT_PROMO_FORM); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create Promo Code</DialogTitle>
+            <DialogDescription>Generate a subscription promo code for clients.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreate} className="space-y-4 pt-2">
               <div>
                 <label className="text-sm font-medium mb-1.5 block">Code Prefix <span className="text-muted-foreground font-normal">(optional)</span></label>
                 <input type="text" placeholder="e.g. LAUNCH → LAUNCH-XXXXXXXX" className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none uppercase" value={form.prefix} onChange={(e) => setForm({ ...form, prefix: e.target.value })} maxLength={12} />
@@ -420,35 +441,26 @@ function PromoCodesTab() {
                   <label className="text-sm font-medium mb-1.5 block">Max Uses</label>
                   <input type="number" min="1" className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={form.max_uses} onChange={(e) => setForm({ ...form, max_uses: Number(e.target.value) })} />
                 </div>
-                <div>
-                  <label className="text-sm font-medium mb-1.5 block">Expires On <span className="text-muted-foreground font-normal">(optional)</span></label>
-                  <select className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={form.expires_at ? (() => { const d = new Date(form.expires_at); const now = new Date(); const diff = Math.round((d.getTime() - now.getTime()) / (1000*60*60*24)); const m = EXPIRY_OPTIONS.find(o => "days" in o && Math.abs((o as any).days - diff) <= 1); return m && "days" in m ? String((m as any).days) : ""; })() : ""} onChange={(e) => setForm({ ...form, expires_at: e.target.value ? expiryToDate(Number(e.target.value)) : "" })}>
-                    {EXPIRY_OPTIONS.map((o) => (
-                      <option key={"days" in o ? (o as any).days : "none"} value={"days" in o ? String((o as any).days) : ""}>{o.label}</option>
-                    ))}
-                  </select>
-                </div>
               </div>
+              <DatePicker label="Expires On" optional value={form.expires_at || null} onChange={(v) => setForm({ ...form, expires_at: v || "" })} />
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => { setShowCreate(false); setForm(DEFAULT_PROMO_FORM); }} className="flex-1 px-4 py-2.5 text-sm font-medium border rounded-xl hover:bg-muted transition-colors">Cancel</button>
                 <button type="submit" disabled={saving} className="flex-1 px-4 py-2.5 text-sm font-bold bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-all disabled:opacity-60">
                   {saving ? "Creating…" : "Create Code"}
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Modal */}
-      {editingPromo && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-background border rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b">
-              <h3 className="text-xl font-bold">Edit Promo Code</h3>
-              <p className="text-sm text-muted-foreground mt-1">Code: <span className="font-mono text-primary font-bold">{editingPromo.code}</span></p>
-            </div>
-            <form onSubmit={handleEdit} className="p-6 space-y-4">
+      <Dialog open={!!editingPromo} onOpenChange={(o) => { if (!o) setEditingPromo(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Promo Code</DialogTitle>
+            <DialogDescription>Code: <span className="font-mono text-primary font-bold">{editingPromo?.code}</span></DialogDescription>
+          </DialogHeader>
+          {editingPromo && <form onSubmit={handleEdit} className="space-y-4 pt-2">
               <div>
                 <label className="text-sm font-medium mb-1.5 block">Description</label>
                 <input type="text" className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={editingPromo.description || ""} onChange={(e) => setEditingPromo({ ...editingPromo, description: e.target.value })} />
@@ -473,25 +485,17 @@ function PromoCodesTab() {
                   <label className="text-sm font-medium mb-1.5 block">Max Uses</label>
                   <input type="number" min="1" className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={editingPromo.max_uses} onChange={(e) => setEditingPromo({ ...editingPromo, max_uses: Number(e.target.value) })} />
                 </div>
-                <div>
-                  <label className="text-sm font-medium mb-1.5 block">Expires On</label>
-                  <select className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={editingPromo.expires_at ? (() => { const d = new Date(editingPromo.expires_at!); const now = new Date(); const diff = Math.round((d.getTime() - now.getTime()) / (1000*60*60*24)); const m = EXPIRY_OPTIONS.find(o => "days" in o && Math.abs((o as any).days - diff) <= 1); return m && "days" in m ? String((m as any).days) : ""; })() : ""} onChange={(e) => setEditingPromo({ ...editingPromo, expires_at: e.target.value ? expiryToDate(Number(e.target.value)) : null })}>
-                    {EXPIRY_OPTIONS.map((o) => (
-                      <option key={"days" in o ? (o as any).days : "none"} value={"days" in o ? String((o as any).days) : ""}>{o.label}</option>
-                    ))}
-                  </select>
-                </div>
               </div>
+              <DatePicker label="Expires On" optional value={editingPromo.expires_at} onChange={(v) => setEditingPromo({ ...editingPromo, expires_at: v })} />
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setEditingPromo(null)} className="flex-1 px-4 py-2.5 text-sm font-medium border rounded-xl hover:bg-muted transition-colors">Cancel</button>
                 <button type="submit" disabled={saving} className="flex-1 px-4 py-2.5 text-sm font-bold bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-all disabled:opacity-60">
                   {saving ? "Saving…" : "Save Changes"}
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+          </form>}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
