@@ -33,7 +33,7 @@ export async function GET(req: Request) {
 
   const { data: projects, error } = await supabase
     .from('projects')
-    .select('id, subdomain, subscription_plan_id, subscription_interval, subscription_ends_at, renewal_link_created_at, profiles:client_id(email)')
+    .select('id, subdomain, subscription_plan_id, subscription_interval, subscription_ends_at, renewal_link_created_at')
     .eq('auto_renew', true)
     .eq('subscription_status', 'active')
     .lte('subscription_ends_at', cutoff.toISOString())
@@ -146,6 +146,10 @@ export async function GET(req: Request) {
 
   const downgradeResults: { projectId: string; status: string; domain?: string; error?: string }[] = []
 
+  if (expiredError) {
+    console.error('[cron/renew-subscriptions] Error fetching expired projects:', expiredError)
+  }
+
   if (!expiredError && expiredProjects && expiredProjects.length > 0) {
     for (const proj of expiredProjects) {
       // Double-check: only downgrade if the relevant expiry date has passed
@@ -177,6 +181,7 @@ export async function GET(req: Request) {
             custom_domain: null,
             publish_limit: 5,
             publish_limit_daily: 1,
+            auto_renew: false,
           })
           .eq('id', proj.id)
 

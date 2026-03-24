@@ -1,11 +1,14 @@
 "use client"
 
+import * as React from "react"
 import { Zap } from "lucide-react"
 
 interface UpgradeButtonProps {
   projectId: string
   subscriptionStatus?: string | null
   subscriptionPlanId?: string | null
+  trialEndsAt?: string | null
+  subscriptionEndsAt?: string | null
   variant?: "sidebar" | "inline" | "badge"
 }
 
@@ -59,6 +62,8 @@ export default function UpgradeButton({
   projectId,
   subscriptionStatus = "free",
   subscriptionPlanId = null,
+  trialEndsAt = null,
+  subscriptionEndsAt = null,
   variant = "inline",
 }: UpgradeButtonProps) {
   const status = ((subscriptionStatus || "free").toLowerCase() as keyof typeof STATUS_STYLES)
@@ -67,6 +72,21 @@ export default function UpgradeButton({
   const label = displayLabelForStatus(status, planId)
 
   const isUpgradable = status === "free" || status === "trial"
+
+  const expiryTooltip = React.useMemo(() => {
+    if (status === "trial" && trialEndsAt) {
+      const daysLeft = Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)
+      const dateStr = new Date(trialEndsAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+      if (daysLeft <= 0) return `Trial expired on ${dateStr}`
+      return `Trial ends in ${daysLeft}d — ${dateStr}`
+    }
+    if (status === "active" && subscriptionEndsAt) {
+      const daysLeft = Math.ceil((new Date(subscriptionEndsAt).getTime() - Date.now()) / 86400000)
+      const dateStr = new Date(subscriptionEndsAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+      if (daysLeft <= 7) return `Plan expires in ${daysLeft}d — ${dateStr}`
+    }
+    return null
+  }, [status, trialEndsAt, subscriptionEndsAt])
 
   const handleUpgrade = () => {
     if (!isUpgradable) return
@@ -87,6 +107,7 @@ export default function UpgradeButton({
       <button
         onClick={handleUpgrade}
         disabled={!isUpgradable}
+        title={expiryTooltip || undefined}
         className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors disabled:opacity-50 border ${statusStyle.inline}`}
       >
         <Zap className="w-3.5 h-3.5" />

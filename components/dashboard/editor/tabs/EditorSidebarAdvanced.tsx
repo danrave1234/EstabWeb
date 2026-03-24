@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import {
-    History, RotateCcw, CreditCard, Globe, ChevronRight, Settings
+    History, RotateCcw, CreditCard, Globe, ChevronRight
 } from "lucide-react"
 
 interface SidebarAdvancedTabProps {
@@ -13,6 +13,7 @@ interface SidebarAdvancedTabProps {
     setSelectedSection: (s: string | null) => void;
     refreshPreview: () => void;
 }
+
 
 export function SidebarAdvancedTab({
     setHistoryOpen,
@@ -90,7 +91,6 @@ export function SidebarAdvancedTab({
                     </div>
                     <ChevronRight className="w-3.5 h-3.5 text-muted-foreground opacity-40 group-hover:opacity-100 transition-opacity" />
                 </button>
-
                 <button
                     onClick={() => setSelectedSection('domain')}
                     className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-muted/40 transition-all border border-transparent group"

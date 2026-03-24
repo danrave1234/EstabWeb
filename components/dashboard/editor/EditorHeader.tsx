@@ -242,6 +242,8 @@ export function EditorHeader({
                         projectId={project.id}
                         subscriptionStatus={project.subscription_status}
                         subscriptionPlanId={project.subscription_plan_id}
+                        trialEndsAt={project.trial_ends_at}
+                        subscriptionEndsAt={project.subscription_ends_at}
                     />
                 </div>
                 <div className="hidden xs:block shrink-0">
@@ -249,6 +251,8 @@ export function EditorHeader({
                         projectId={project.id}
                         subscriptionStatus={project.subscription_status}
                         subscriptionPlanId={project.subscription_plan_id}
+                        trialEndsAt={project.trial_ends_at}
+                        subscriptionEndsAt={project.subscription_ends_at}
                     />
                 </div>
             </div>

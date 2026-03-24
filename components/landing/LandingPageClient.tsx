@@ -142,7 +142,7 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
           templatePreviews={templatePreviews}
           previewMode={previewMode}
           badgeLabel={undefined}
-          title="Affordable Website Design Philippines"
+          title="Affordable Website Design in the Philippines"
           description="Looking for website design price in the Philippines or monthly website maintenance? Start with ready templates, launch fast, and edit anytime."
           points={[
             'Transparent setup + monthly plans',

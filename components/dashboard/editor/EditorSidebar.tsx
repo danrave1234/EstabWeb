@@ -62,6 +62,7 @@ interface EditorSidebarProps {
   typographyRectRef: React.MutableRefObject<DOMRect | null>;
 }
 
+
 export function EditorSidebar({
   mobileSidebarOpen,
   setMobileSidebarOpen,

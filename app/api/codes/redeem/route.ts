@@ -105,6 +105,7 @@ export async function POST(req: Request) {
       updatePayload.publish_count = 0
       updatePayload.publish_count_today = 0
       updatePayload.publish_period_start = new Date().toISOString()
+      updatePayload.auto_renew = false
     }
     
     // Reset any pending change requests if applying a full template (optional, but cleaner)
