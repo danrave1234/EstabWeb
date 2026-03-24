@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Globe, Users, Building2, TrendingUp } from 'lucide-react'
 import ClientsTable from '@/components/admin/ClientsTable'
 export const dynamic = 'force-dynamic'
 
@@ -45,8 +44,8 @@ export default async function AdminClientsPage() {
   if (profile?.role !== 'admin') return redirect('/dashboard')
 
   const [
-    { data: profiles, error: profilesErr },
-    { data: projects, error: projectsErr },
+    { data: profiles },
+    { data: projects },
     { data: redemptions },
   ] = await Promise.all([
     supabase
@@ -63,7 +62,6 @@ export default async function AdminClientsPage() {
       .select('project_id,promo_codes(code)'),
   ])
 
-  // Build promo code map: project_id -> code string
   const promoByProject = new Map<string, string>()
   for (const r of (redemptions ?? []) as any[]) {
     if (r.project_id && r.promo_codes?.code) {
@@ -85,74 +83,46 @@ export default async function AdminClientsPage() {
     projects: byOwner.get((p as any).id) ?? []
   }))
 
-  const hadRlsIssue = !!projectsErr || !!profilesErr
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com'
+  const allProjects = (projects ?? []) as ProjectRow[]
 
-  const totalClients = rows.length
-  const totalProjects = (projects ?? []).length
-  const activeProjects = (projects ?? []).filter(
-    (p: any) => p.subscription_status === 'active' || p.subscription_status === 'admin_granted'
-  ).length
-  const trialProjects = (projects ?? []).filter((p: any) => p.subscription_status === 'trial').length
+  const stats = {
+    clients: rows.length,
+    sites: allProjects.length,
+    active: allProjects.filter(p => p.subscription_status === 'active' || p.subscription_status === 'admin_granted').length,
+    trial: allProjects.filter(p => p.subscription_status === 'trial').length,
+    free: allProjects.filter(p => !p.subscription_status || p.subscription_status === 'free').length,
+    promoUsed: promoByProject.size,
+  }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <div className="container mx-auto py-10 px-4 max-w-7xl">
+    <div className="min-h-screen bg-background">
+      <div className="max-w-6xl mx-auto px-4 py-10 flex flex-col gap-8">
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight">Clients & Websites</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage client accounts, domains, and subscriptions.
-            {hadRlsIssue && (
-              <span className="text-amber-600 ml-1">
-                Some data may be hidden due to database policies.
-              </span>
-            )}
-          </p>
+        {/* Page title */}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-xl font-bold tracking-tight">Clients</h1>
+          <p className="text-sm text-muted-foreground">All registered client accounts and their websites.</p>
         </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10 shrink-0">
-              <Users className="w-4 h-4 text-primary" />
+        {/* Stats strip */}
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          {[
+            { label: "Clients",    value: stats.clients,   accent: "text-foreground" },
+            { label: "Sites",      value: stats.sites,     accent: "text-foreground" },
+            { label: "Active",     value: stats.active,    accent: "text-emerald-600" },
+            { label: "Trial",      value: stats.trial,     accent: "text-sky-600" },
+            { label: "Free",       value: stats.free,      accent: "text-zinc-500" },
+            { label: "Promo Used", value: stats.promoUsed, accent: "text-violet-600" },
+          ].map(s => (
+            <div key={s.label} className="rounded-lg border border-border bg-card px-4 py-3 flex flex-col gap-0.5">
+              <span className={`text-xl font-bold tabular-nums ${s.accent}`}>{s.value}</span>
+              <span className="text-[11px] text-muted-foreground">{s.label}</span>
             </div>
-            <div>
-              <p className="text-2xl font-bold">{totalClients}</p>
-              <p className="text-xs text-muted-foreground">Total Clients</p>
-            </div>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/10 shrink-0">
-              <Globe className="w-4 h-4 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{totalProjects}</p>
-              <p className="text-xs text-muted-foreground">Total Websites</p>
-            </div>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10 shrink-0">
-              <Building2 className="w-4 h-4 text-emerald-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{activeProjects}</p>
-              <p className="text-xs text-muted-foreground">Active / Granted</p>
-            </div>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-amber-500/10 shrink-0">
-              <TrendingUp className="w-4 h-4 text-amber-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{trialProjects}</p>
-              <p className="text-xs text-muted-foreground">On Trial</p>
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* Client table with search + filter */}
+        {/* Table */}
         <ClientsTable rows={rows} rootDomain={rootDomain} />
 
       </div>
