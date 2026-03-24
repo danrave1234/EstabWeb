@@ -44,14 +44,12 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  if (!projects || projects.length === 0) {
-    return NextResponse.json({ message: 'No projects need renewal', processed: 0 })
-  }
+  // (continue to downgrade block even if no renewal projects found)
 
   const auth = Buffer.from(`${secret}:`).toString('base64')
   const results: { projectId: string; status: string; checkoutUrl?: string; error?: string }[] = []
 
-  for (const proj of projects) {
+  for (const proj of (projects ?? [])) {
     try {
       const activePlanId = proj.subscription_plan_id || 'basic'
       const plan = getPlan(activePlanId)
@@ -200,8 +198,8 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json({
-    message: `Processed ${projects.length} projects: ${succeeded} succeeded, ${failed} failed. Downgraded ${downgradeResults.filter(r => r.status === 'downgraded').length} expired projects.`,
-    processed: projects.length,
+    message: `Processed ${projects?.length ?? 0} projects: ${succeeded} succeeded, ${failed} failed. Downgraded ${downgradeResults.filter(r => r.status === 'downgraded').length} expired projects.`,
+    processed: projects?.length ?? 0,
     succeeded,
     failed,
     results,
