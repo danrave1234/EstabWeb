@@ -22,7 +22,7 @@ const PLAN_LABELS: Record<string, string> = {
 
 const STATUS_STYLES: Record<string, { inline: string; badge: string }> = {
   free: {
-    inline: "text-amber-600 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20",
+    inline: "text-white bg-primary border-primary hover:bg-primary/90",
     badge: "text-amber-600 bg-amber-500/10 border border-amber-500/20",
   },
   trial: {
@@ -46,7 +46,7 @@ function normalizePlanId(planId?: string | null): keyof typeof PLAN_LABELS {
 }
 
 function displayLabelForStatus(status: string, planId: keyof typeof PLAN_LABELS): string {
-  if (status === "free") return "Free"
+  if (status === "free") return "Subscribe"
   if (status === "trial") {
     const planLabel = PLAN_LABELS[planId]
     return planId === "free" ? "Trial" : `Trial ${planLabel}`
