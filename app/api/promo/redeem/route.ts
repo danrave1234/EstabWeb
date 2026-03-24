@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getPlan } from '@/config/plans'
 
 export async function POST(req: Request) {
   try {
@@ -49,6 +50,7 @@ export async function POST(req: Request) {
     // Calculate subscription end date
     const endsAt = new Date()
     endsAt.setMonth(endsAt.getMonth() + promo.months)
+    const planConfig = getPlan(promo.plan_id || 'basic')
 
     // Activate subscription on project
     const { error: updateErr } = await service
@@ -59,8 +61,9 @@ export async function POST(req: Request) {
         subscription_ends_at: endsAt.toISOString(),
         auto_renew: false,
         has_paid_initial: true,
-        publish_limit: 999,
-        publish_limit_daily: 50,
+        publish_limit: planConfig.publishLimit,
+        publish_limit_daily: planConfig.publishLimitDaily,
+        ai_usage_limit: planConfig.aiGenerationsLimit,
       })
       .eq('id', projectId)
 

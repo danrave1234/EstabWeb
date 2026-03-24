@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { getSectionKey } from '@/lib/utils/config-mapping'
 import { generateSubdomain } from '@/lib/codes'
 import { addSubdomainToVercel, addDomainToVercel } from '@/lib/utils/vercel-domains'
+import { getPlan, TRIAL_DAYS } from '@/config/plans'
 
 const processChangeRequestSchema = z.object({
   requestId: z.string().uuid(),
@@ -284,6 +285,98 @@ export async function updateProjectAIStats(projectId: string, aiUsageCount: numb
     .eq('id', projectId)
 
   if (error) return { error: error.message }
+  revalidatePath('/admin/clients')
+  revalidatePath('/dashboard')
+  return { success: true }
+}
+
+const updateProjectAdminControlsSchema = z.object({
+  projectId: z.string().uuid(),
+  subscriptionStatus: z.enum(['free', 'trial', 'active', 'admin_granted']).optional(),
+  planId: z.enum(['free', 'basic', 'pro', 'ecommerce', 'custom']).optional(),
+  trialDays: z.number().int().min(0).max(365).optional(),
+  subscriptionEndsAt: z.string().datetime().nullable().optional(),
+  publishLimit: z.number().int().min(1).optional(),
+  publishLimitDaily: z.number().int().min(1).optional(),
+  publishCount: z.number().int().min(0).optional(),
+  publishCountToday: z.number().int().min(0).optional(),
+  aiUsageCount: z.number().int().min(0).optional(),
+  aiUsageLimit: z.number().int().min(0).nullable().optional(),
+  resetPublishCounters: z.boolean().optional(),
+})
+
+type AdminControlsInput = Omit<z.infer<typeof updateProjectAdminControlsSchema>, 'projectId'>
+
+export async function updateProjectAdminControls(projectId: string, input: AdminControlsInput) {
+  const validated = updateProjectAdminControlsSchema.safeParse({ projectId, ...input })
+  if (!validated.success) return { error: 'Invalid input' }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') return { error: 'Forbidden' }
+
+  const data = validated.data
+  const payload: Record<string, unknown> = {}
+
+  if (data.subscriptionStatus) {
+    payload.subscription_status = data.subscriptionStatus
+
+    if (data.subscriptionStatus === 'trial') {
+      const trialDays = data.trialDays ?? TRIAL_DAYS
+      const ends = new Date()
+      ends.setDate(ends.getDate() + trialDays)
+      payload.trial_ends_at = ends.toISOString()
+      payload.subscription_ends_at = null
+    }
+
+    if (data.subscriptionStatus === 'active' || data.subscriptionStatus === 'admin_granted') {
+      payload.trial_ends_at = null
+    }
+
+    if (data.subscriptionStatus === 'admin_granted') {
+      payload.admin_granted_by = user.id
+      payload.admin_granted_at = new Date().toISOString()
+    } else {
+      payload.admin_granted_by = null
+      payload.admin_granted_at = null
+    }
+  }
+
+  if (data.planId) {
+    payload.subscription_plan_id = data.planId
+
+    const plan = getPlan(data.planId)
+    if (data.publishLimit == null) payload.publish_limit = plan.publishLimit
+    if (data.publishLimitDaily == null) payload.publish_limit_daily = plan.publishLimitDaily
+    if (data.aiUsageLimit === undefined) payload.ai_usage_limit = plan.aiGenerationsLimit
+  }
+
+  if (data.subscriptionEndsAt !== undefined) {
+    payload.subscription_ends_at = data.subscriptionEndsAt
+  }
+
+  if (data.publishLimit != null) payload.publish_limit = data.publishLimit
+  if (data.publishLimitDaily != null) payload.publish_limit_daily = data.publishLimitDaily
+  if (data.publishCount != null) payload.publish_count = data.publishCount
+  if (data.publishCountToday != null) payload.publish_count_today = data.publishCountToday
+  if (data.aiUsageCount != null) payload.ai_usage_count = data.aiUsageCount
+  if (data.aiUsageLimit !== undefined) payload.ai_usage_limit = data.aiUsageLimit
+
+  if (data.resetPublishCounters) {
+    payload.publish_count = 0
+    payload.publish_count_today = 0
+    payload.publish_date = null
+    payload.publish_period_start = new Date().toISOString()
+  }
+
+  if (Object.keys(payload).length === 0) return { error: 'No changes provided' }
+
+  const { error } = await supabase.from('projects').update(payload).eq('id', projectId)
+  if (error) return { error: error.message }
+
   revalidatePath('/admin/clients')
   revalidatePath('/dashboard')
   return { success: true }

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import ClientsTable from '@/components/admin/ClientsTable'
+import ClientsWorkspaceV2 from '@/components/admin/ClientsWorkspaceV2'
 export const dynamic = 'force-dynamic'
 
 interface ProfileRow {
@@ -28,6 +28,8 @@ interface ProjectRow {
   site_status?: string | null
   site_status_reason?: string | null
   promo_code_used?: string | null
+  ai_usage_count?: number | null
+  ai_usage_limit?: number | null
 }
 
 export default async function AdminClientsPage() {
@@ -41,7 +43,7 @@ export default async function AdminClientsPage() {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'admin') return redirect('/dashboard')
+  if (profile?.role !== 'admin' && profile?.role !== 'sub_admin') return redirect('/dashboard')
 
   const [
     { data: profiles },
@@ -55,7 +57,7 @@ export default async function AdminClientsPage() {
       .order('email', { ascending: true }),
     supabase
       .from('projects')
-      .select('id,client_id,subdomain,custom_domain,created_at,subscription_status,subscription_plan_id,subscription_ends_at,trial_ends_at,publish_limit,publish_limit_daily,publish_count,publish_count_today,publish_date,site_status,site_status_reason')
+      .select('id,client_id,subdomain,custom_domain,created_at,subscription_status,subscription_plan_id,subscription_ends_at,trial_ends_at,publish_limit,publish_limit_daily,publish_count,publish_count_today,publish_date,site_status,site_status_reason,ai_usage_count,ai_usage_limit')
       .order('created_at', { ascending: false }),
     supabase
       .from('promo_redemptions')
@@ -78,54 +80,11 @@ export default async function AdminClientsPage() {
     byOwner.set(p.client_id, arr)
   }
 
-  const rows = (profiles ?? []).map((p) => ({
-    profile: p as ProfileRow,
-    projects: byOwner.get((p as any).id) ?? []
+  const rows = (profiles ?? []).map((row) => ({
+    profile: row as ProfileRow,
+    projects: byOwner.get((row as ProfileRow).id) ?? []
   }))
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'estabweb.com'
-  const allProjects = (projects ?? []) as ProjectRow[]
-
-  const stats = {
-    clients: rows.length,
-    sites: allProjects.length,
-    active: allProjects.filter(p => p.subscription_status === 'active' || p.subscription_status === 'admin_granted').length,
-    trial: allProjects.filter(p => p.subscription_status === 'trial').length,
-    free: allProjects.filter(p => !p.subscription_status || p.subscription_status === 'free').length,
-    promoUsed: promoByProject.size,
-  }
-
-  return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto px-4 py-10 flex flex-col gap-8">
-
-        {/* Page title */}
-        <div className="flex flex-col gap-1">
-          <h1 className="text-xl font-bold tracking-tight">Clients</h1>
-          <p className="text-sm text-muted-foreground">All registered client accounts and their websites.</p>
-        </div>
-
-        {/* Stats strip */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-          {[
-            { label: "Clients",    value: stats.clients,   accent: "text-foreground" },
-            { label: "Sites",      value: stats.sites,     accent: "text-foreground" },
-            { label: "Active",     value: stats.active,    accent: "text-emerald-600" },
-            { label: "Trial",      value: stats.trial,     accent: "text-sky-600" },
-            { label: "Free",       value: stats.free,      accent: "text-zinc-500" },
-            { label: "Promo Used", value: stats.promoUsed, accent: "text-violet-600" },
-          ].map(s => (
-            <div key={s.label} className="rounded-lg border border-border bg-card px-4 py-3 flex flex-col gap-0.5">
-              <span className={`text-xl font-bold tabular-nums ${s.accent}`}>{s.value}</span>
-              <span className="text-[11px] text-muted-foreground">{s.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Table */}
-        <ClientsTable rows={rows} rootDomain={rootDomain} />
-
-      </div>
-    </div>
-  )
+  return <ClientsWorkspaceV2 rows={rows} rootDomain={rootDomain} />
 }
