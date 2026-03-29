@@ -110,7 +110,7 @@ export function PricingTable({
                 "border border-zinc-200 dark:border-zinc-800",
                 "sm:flex-1",
                 selectedPlan === plan.level
-                  ? "ring-2 ring-primary shadow-md shadow-primary/10 border-primary bg-primary/5"
+                  ? "ring-2 ring-primary border-primary bg-primary/5"
                   : "hover:border-zinc-300 dark:hover:border-zinc-700 bg-background",
               )}
             >
@@ -173,7 +173,7 @@ export function PricingTable({
                     )}
                   >
                     {checked ? (
-                      <span className="shrink-0 w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="shrink-0 w-4 h-4 rounded-full flex items-center justify-center bg-primary/10">
                         <CheckIcon className="w-2.5 h-2.5 text-primary" />
                       </span>
                     ) : (
@@ -211,8 +211,7 @@ export function PricingTable({
                   key={feature.name}
                   className={cn(
                     "flex items-center p-2.5 sm:p-4 transition-colors bg-background",
-                    feature.included === selectedPlan &&
-                      "bg-primary/[0.03]",
+                    feature.included === selectedPlan ? "bg-primary/[0.03]" : "",
                   )}
                 >
                   <div className="flex-1 text-[10px] sm:text-sm sticky left-0 bg-inherit z-10 pr-2 border-r border-zinc-200 dark:border-zinc-800 shadow-[2px_0_5px_rgba(0,0,0,0.05)] font-medium leading-tight">{feature.name}</div>
@@ -246,7 +245,7 @@ export function PricingTable({
           <Button
             onClick={() => onButtonClick?.(selectedPlan)}
             className={cn(
-              "w-full sm:w-auto bg-primary text-primary-foreground hover:opacity-90 px-6 py-2.5 rounded-full font-black text-xs sm:text-sm shadow-lg shadow-primary/20",
+              "w-full sm:w-auto bg-primary text-primary-foreground hover:opacity-90 px-6 py-2.5 rounded-full font-black text-xs sm:text-sm shadow-lg",
               buttonClassName,
             )}
           >

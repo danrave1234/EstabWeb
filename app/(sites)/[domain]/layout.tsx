@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Script from "next/script";
 import "@/app/globals.css";
 import { allFontVariables, getFontVariables } from "@/lib/fonts";
 import ScrollReveal from "@/components/shared/ScrollReveal";
@@ -10,6 +11,7 @@ import { getCachedSiteConfig } from "@/lib/utils/site-config";
 import { COLOR_THEME_SWATCHES } from "@/config/dashboard-config";
 import StructuredData from "@/components/shared/StructuredData";
 import { GoogleAnalytics, FacebookPixel, AnalyticsProvider } from "@/components/shared/Analytics";
+import SessionRecorder from "@/components/shared/SessionRecorder";
 import { generateSchema } from "@/lib/utils/schema";
 import NetworkOfflineBanner from "@/components/shared/NetworkOfflineBanner";
 import { getPageBySlug, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
@@ -163,7 +165,7 @@ export default async function SiteLayout({
     >
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         {dbConf && (
           <>
             {/* Site-wide WebSite schema - always present */}
@@ -243,11 +245,18 @@ export default async function SiteLayout({
           {dbConf?.analytics?.pixelId && <FacebookPixel id={dbConf.analytics.pixelId} />}
           <NetworkOfflineBanner />
           <ScrollReveal />
+          {projectId && <SessionRecorder projectId={projectId} />}
           {children}
           <Toaster position="top-right" richColors />
         </AnalyticsProvider>
         <Analytics />
         <SpeedInsights />
+        {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+          <Script
+            src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
+            strategy="lazyOnload"
+          />
+        )}
       </body>
     </html>
   );

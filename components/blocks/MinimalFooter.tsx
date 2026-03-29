@@ -105,6 +105,12 @@ export default function MinimalFooter({
         <p className="mt-2 text-xs text-muted-foreground">
           © {new Date().getFullYear()} {brandName}. All rights reserved.
         </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Powered by{" "}
+          <a href="https://estabweb.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+            EstabWeb
+          </a>
+        </p>
       </div>
     </footer>
   );

@@ -3,6 +3,7 @@ import { GENRE_LABELS, GENRE_PRESETS } from "@/config/presets";
 import { COLOR_THEME_SWATCHES, formatSectionLabel, sectionIdToKey, TYPOGRAPHY_OPTIONS } from "@/config/dashboard-config";
 import { scrapeUrlWithApify } from "@/lib/utils/scraper";
 import { SECTION_FIELD_SCHEMA } from "@/lib/ai/section-field-schema";
+import { rateLimit, getClientIp, RATE_LIMIT_PRESETS } from "@/lib/security/rate-limit";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const TEMPLATE_AI_MODEL = process.env.GEMINI_TEMPLATE_MODEL?.trim() || "gemini-1.5-flash";
@@ -467,6 +468,13 @@ async function extractPageSignals(sourceUrl: string): Promise<PageSignals | null
 export async function POST(req: NextRequest) {
     if (!GEMINI_API_KEY) {
         return NextResponse.json({ error: "Gemini API key not configured" }, { status: 500 });
+    }
+
+    // Rate limit: 10 req/min per IP
+    const ip = getClientIp(req.headers);
+    const rl = await rateLimit(ip, RATE_LIMIT_PRESETS.ai);
+    if (!rl.allowed) {
+        return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
 
     const body = await req.json();

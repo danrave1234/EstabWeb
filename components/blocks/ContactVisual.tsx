@@ -33,6 +33,13 @@ export default function ContactVisual({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formStarted, setFormStarted] = useState(false);
+
+  function handleFormFocus() {
+    if (formStarted) return;
+    setFormStarted(true);
+    trackEvent({ type: 'form_start', section_key: 'contact--visual' });
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +55,7 @@ export default function ContactVisual({
       setSubmitError(result.error || "Something went wrong. Please try again.");
       return;
     }
+    trackEvent({ type: 'form_submit', section_key: 'contact--visual' });
     setIsSubmitted(true);
     setFormData({ name: "", email: "", message: "" });
     toast.success(formThankYouText || "Message sent successfully!");
@@ -123,7 +131,7 @@ export default function ContactVisual({
             <div className="relative z-10">
               <h3 className="text-2xl font-bold text-gray-900 mb-8">{formHeading}</h3>
               
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} onFocus={handleFormFocus} className="space-y-6">
                 <div className="space-y-2">
                   <input
                     type="text"

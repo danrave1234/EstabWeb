@@ -17,7 +17,7 @@ export default async function ContactPage() {
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 w-full">
           {/* Header Area */}
           <div className="lg:col-span-12 mb-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest border border-primary/20 mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest border mb-3 bg-primary/10 border-primary/20">
               Get in Touch
             </div>
             <h1 className="text-3xl lg:text-4xl font-black tracking-tight leading-tight">

@@ -118,7 +118,7 @@ export default function MinimalHero({
   }, []);
 
   return (
-    <section className={cn("minimal-root relative min-h-screen w-full overflow-hidden", className)}>
+    <section className={cn("minimal-root relative min-h-[100svh] w-full overflow-hidden", className)}>
       <style>{`
 @import url('https://fonts.cdnfonts.com/css/hubot-sans');
 

@@ -235,6 +235,12 @@ export default function LeadMagnetFooter({
               </a>
             </nav>
           </div>
+          <p className="mt-4 text-center text-xs text-muted-foreground md:text-right">
+            Powered by{" "}
+            <a href="https://estabweb.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              EstabWeb
+            </a>
+          </p>
         </div>
       </div>
     </footer>

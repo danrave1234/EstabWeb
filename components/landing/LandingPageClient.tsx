@@ -365,6 +365,7 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
                       }`}
                       sizes="(max-width: 640px) 85vw, (max-width: 1024px) 48vw, 31vw"
                     />
+                    <div className="absolute inset-0 bg-black/75 pointer-events-none" />
                   </div>
 
                   <div className="pt-4 space-y-2">

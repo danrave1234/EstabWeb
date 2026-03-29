@@ -96,7 +96,7 @@ export function FeaturedSpotlight({
         <p
           className="mt-6 max-w-[260px] break-words text-sm leading-relaxed transition-all duration-700 md:mt-8 md:max-w-[220px] md:text-base lg:mt-10 lg:max-w-[280px]"
           style={{
-            color: isHovered ? "hsl(var(--muted-foreground))" : "hsl(var(--muted-foreground) / 0.6)",
+            color: isHovered ? "rgb(var(--muted-foreground))" : "rgb(var(--muted-foreground) / 0.6)",
             transform: isHovered ? "translateY(-4px)" : "translateY(0)",
             transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
           }}
@@ -109,11 +109,11 @@ export function FeaturedSpotlight({
           <div
             className="flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-500 md:h-11 md:w-11 lg:h-12 lg:w-12"
             style={{
-              borderColor: isHovered ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground) / 0.3)",
-              backgroundColor: isHovered ? "hsl(var(--foreground))" : "transparent",
-              color: isHovered ? "hsl(var(--background))" : "hsl(var(--foreground))",
+              borderColor: isHovered ? "rgb(var(--foreground))" : "rgb(var(--muted-foreground) / 0.3)",
+              backgroundColor: isHovered ? "rgb(var(--foreground))" : "transparent",
+              color: isHovered ? "rgb(var(--background))" : "rgb(var(--foreground))",
               transform: isHovered ? "scale(1.05)" : "scale(1)",
-              boxShadow: isHovered ? "0 8px 32px hsl(var(--foreground) / 0.15)" : "0 0 0 transparent",
+              boxShadow: isHovered ? "0 8px 32px rgb(var(--foreground) / 0.15)" : "0 0 0 transparent",
               transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
@@ -152,7 +152,7 @@ export function FeaturedSpotlight({
           <div
             className="absolute -inset-3 border transition-all duration-700 md:-inset-4"
             style={{
-              borderColor: isHovered ? "hsl(var(--foreground) / 0.15)" : "transparent",
+              borderColor: isHovered ? "rgb(var(--foreground) / 0.15)" : "transparent",
               transform: isHovered ? "scale(1.01)" : "scale(1)",
               transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
             }}
@@ -163,7 +163,7 @@ export function FeaturedSpotlight({
             <div
               className="absolute -inset-1 transition-all duration-700"
               style={{
-                boxShadow: isHovered ? "0 24px 64px hsl(var(--foreground) / 0.1)" : "0 0 0 transparent",
+                boxShadow: isHovered ? "0 24px 64px rgb(var(--foreground) / 0.1)" : "0 0 0 transparent",
                 transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
               }}
             />

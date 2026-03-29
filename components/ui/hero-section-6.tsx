@@ -235,7 +235,7 @@ export function HeroSection({
                 <article
                   key={`m-top-${template.name}`}
                   className={cn(
-                    'shrink-0 overflow-hidden rounded-lg border border-border bg-card/70',
+                    'shrink-0 overflow-hidden rounded-lg border border-border',
                     index === 0 ? 'opacity-45' : 'opacity-85'
                   )}
                 >
@@ -247,13 +247,14 @@ export function HeroSection({
                       className="object-cover object-top"
                       sizes="132px"
                     />
+                    <div className="absolute inset-0 bg-black/60 pointer-events-none" />
                   </div>
                 </article>
               ))}
             </div>
             <div className="flex gap-2 opacity-70">
               {bottomCards.slice(0, 3).map((template) => (
-                <article key={`m-bottom-${template.name}`} className="shrink-0 overflow-hidden rounded-lg border border-border bg-card/40">
+                <article key={`m-bottom-${template.name}`} className="shrink-0 overflow-hidden rounded-lg border border-border">
                   <div className="relative h-[56px] w-[96px]">
                     <Image
                       src={template.image}
@@ -262,19 +263,20 @@ export function HeroSection({
                       className="object-cover object-top"
                       sizes="96px"
                     />
+                    <div className="absolute inset-0 bg-black/60 pointer-events-none" />
                   </div>
                 </article>
               ))}
             </div>
           </div>
-          <div className="absolute inset-0 bg-gradient-to-b from-background/35 via-background/70 to-background/92" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/45 via-background/20 to-background/5" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgb(var(--background)/0.35) 0%, rgb(var(--background)/0.70) 50%, rgb(var(--background)/0.92) 100%)' }} />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgb(var(--background)/0.45) 0%, rgb(var(--background)/0.20) 50%, rgb(var(--background)/0.05) 100%)' }} />
           <div className="absolute inset-0 backdrop-blur-[1.1px]" />
         </div>
 
         <div className="pointer-events-none absolute inset-0 z-10 hidden overflow-hidden lg:block">
           <div className="absolute inset-0 border-y border-border/70" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_30%,hsl(var(--primary)/0.12),transparent_55%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_30%,rgb(var(--primary)/0.12),transparent_55%)]" />
 
           <div className="absolute left-[24%] right-0 top-36 space-y-7">
             <div className="flex gap-4">
@@ -282,7 +284,7 @@ export function HeroSection({
                 <article
                   key={template.name}
                   className={cn(
-                    'shrink-0 overflow-hidden rounded-xl border border-border bg-card/70 shadow-xl shadow-black/20',
+                    'relative shrink-0 overflow-hidden rounded-xl border border-border shadow-xl shadow-black/20',
                     index === 0 ? 'opacity-45' : 'opacity-90'
                   )}
                 >
@@ -298,6 +300,7 @@ export function HeroSection({
                   <div className="border-t border-border bg-background/80 px-3 py-2">
                     <p className="text-sm text-muted-foreground">{template.name}</p>
                   </div>
+                  <div className="absolute inset-0 bg-black/65 pointer-events-none" />
                 </article>
               ))}
             </div>
@@ -309,7 +312,7 @@ export function HeroSection({
                 <article
                   key={template.name}
                   className={cn(
-                    'shrink-0 overflow-hidden rounded-xl border border-border bg-card/40',
+                    'shrink-0 overflow-hidden rounded-xl border border-border',
                     index < 2 ? 'opacity-30' : 'opacity-75'
                   )}
                 >
@@ -321,23 +324,25 @@ export function HeroSection({
                       className="scale-[1.04] object-cover object-top"
                       sizes="206px"
                     />
+                    <div className="absolute inset-0 bg-black/60 pointer-events-none" />
                   </div>
                 </article>
               ))}
             </div>
           </div>
 
-          <div className="absolute inset-0 bg-gradient-to-r from-background from-[18%] via-background/85 via-[38%] to-transparent to-[88%]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/18 via-transparent to-background/35" />
-          <div className="absolute inset-y-0 left-0 w-[74%] bg-background/6 backdrop-blur-[1.2px]" />
-          <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background/28 via-background/12 to-transparent" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgb(var(--background)/1) 18%, rgb(var(--background)/0.85) 38%, transparent 88%)' }} />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgb(var(--background)/0.18) 0%, transparent 50%, rgb(var(--background)/0.35) 100%)' }} />
+          <div className="absolute inset-y-0 left-0 w-[74%] backdrop-blur-[1.2px]" style={{ backgroundColor: 'rgb(var(--background)/0.06)' }} />
+          <div className="absolute inset-y-0 right-0 w-24" style={{ background: 'linear-gradient(to left, rgb(var(--background)/0.28) 0%, rgb(var(--background)/0.12) 50%, transparent 100%)' }} />
         </div>
 
       </div>
 
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[clamp(40px,5vw,88px)] bg-gradient-to-l from-background/18 to-transparent lg:block"
+        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[clamp(40px,5vw,88px)] lg:block"
+        style={{ background: 'linear-gradient(to left, rgb(var(--background)/0.18) 0%, transparent 100%)' }}
       />
     </section>
   )

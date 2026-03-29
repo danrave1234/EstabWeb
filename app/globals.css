@@ -92,6 +92,14 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   overflow-x: hidden;
+  /* Prevent Android Chrome text auto-scaling */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* iPhone safe area padding for notch / Dynamic Island */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 .app-shell-fonts {
@@ -99,11 +107,43 @@ body {
   --font-serif: var(--font-poppins), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 }
 
+/* Prevent iOS Safari from zooming on input focus (requires >= 16px font-size) */
+@supports (-webkit-touch-callout: none) {
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1em);
+  }
+}
+
 button,
 input,
 textarea,
 select {
   font: inherit;
+}
+
+/* Touch action hints for horizontal carousels / sliders */
+.touch-pan-y {
+  touch-action: pan-y;
+}
+
+/* Respect user's reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 /* Scroll Reveals */
@@ -161,4 +201,12 @@ html::-webkit-scrollbar-thumb:hover {
   background-color: var(--primary);
   /* Slight emphasis on hover */
   box-shadow: inset 0 0 0 9999px color-mix(in oklab, var(--primary) 10%, transparent);
+}
+
+/* iOS Safari viewport height fallback — svh not supported below iOS 15.4 */
+@supports not (min-height: 100svh) {
+  .min-h-\[100svh\] {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
 }

@@ -22,7 +22,7 @@ export default function HeroAero3({
   className,
 }: HeroAero3Props) {
   return (
-    <section className={cn("relative flex h-screen w-full items-center justify-center overflow-hidden", className)}>
+    <section className={cn("relative flex min-h-[100svh] w-full items-center justify-center overflow-hidden", className)}>
       {/* Background Grid Lines */}
       <div className="absolute inset-0 z-10 size-full pointer-events-none">
         <div className="grid w-full grid-cols-12 divide-x divide-white/10 h-full">

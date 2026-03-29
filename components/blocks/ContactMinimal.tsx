@@ -36,6 +36,13 @@ export default function ContactMinimal({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formStarted, setFormStarted] = useState(false);
+
+  function handleFormFocus() {
+    if (formStarted) return;
+    setFormStarted(true);
+    trackEvent({ type: 'form_start', section_key: 'contact--minimal' });
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +58,7 @@ export default function ContactMinimal({
       setSubmitError(result.error || "Something went wrong. Please try again.");
       return;
     }
+    trackEvent({ type: 'form_submit', section_key: 'contact--minimal' });
     setIsSubmitted(true);
     setFormData({ name: "", email: "", message: "" });
     toast.success(formThankYouText || "Message sent successfully!");
@@ -116,7 +124,7 @@ export default function ContactMinimal({
             
             <h3 className="text-xl font-bold text-foreground mb-8">{formHeading}</h3>
             
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} onFocus={handleFormFocus} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">{nameLabel}</label>
                 <input

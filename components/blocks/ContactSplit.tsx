@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { submitFormLead } from "@/components/shared/Analytics";
+import { submitFormLead, trackEvent } from "@/components/shared/Analytics";
 import { PhoneIcon, EnvelopeIcon, MapPinIcon, ClockIcon } from "@phosphor-icons/react";
 
 export type ContactSplitProps = {
@@ -40,6 +40,13 @@ export default function ContactSplit({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formStarted, setFormStarted] = useState(false);
+
+  function handleFormFocus() {
+    if (formStarted) return;
+    setFormStarted(true);
+    trackEvent({ type: 'form_start', section_key: 'contact--split' });
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +62,7 @@ export default function ContactSplit({
       setSubmitError(result.error || "Something went wrong. Please try again.");
       return;
     }
+    trackEvent({ type: 'form_submit', section_key: 'contact--split' });
     setIsSubmitted(true);
     setFormData({ name: "", email: "", message: "" });
     toast.success(formThankYouText || "Message sent successfully!");
@@ -110,7 +118,7 @@ export default function ContactSplit({
         {/* Form Side */}
         <div className="bg-muted/30 p-8 sm:p-16 lg:p-24 flex items-center reveal">
           <div className="max-w-md w-full">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} onFocus={handleFormFocus} className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">{nameLabel}</label>
                 <input

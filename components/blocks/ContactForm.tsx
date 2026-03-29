@@ -42,6 +42,13 @@ export default function ContactForm({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formStarted, setFormStarted] = useState(false);
+
+  function handleFormFocus() {
+    if (formStarted) return;
+    setFormStarted(true);
+    trackEvent({ type: 'form_start', section_key: 'contact' });
+  }
   const phoneHref = phone.replace(/\s/g, "");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,6 +65,7 @@ export default function ContactForm({
       setSubmitError(result.error || "Something went wrong. Please try again.");
       return;
     }
+    trackEvent({ type: 'form_submit', section_key: 'contact' });
     setIsSubmitted(true);
     setFormData({ name: "", email: "", message: "" });
     toast.success(formThankYouText || "Message sent successfully!");
@@ -79,7 +87,7 @@ export default function ContactForm({
           <div className="lg:col-span-12 xl:col-span-7 bg-background p-8 sm:p-16 rounded-[3rem] border border-border/40 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary/20 via-primary to-primary/20" />
 
-            <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
+            <form onSubmit={handleSubmit} onFocus={handleFormFocus} className="space-y-8 relative z-10">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <div className="space-y-3">
                   <label className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-foreground/60 ml-1">{nameLabel}</label>

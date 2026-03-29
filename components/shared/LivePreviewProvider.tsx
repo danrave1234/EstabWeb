@@ -1,7 +1,7 @@
 "use client"
-
 import * as React from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { mainSiteConfig } from '@/config/main-site-config'
 
 const LivePreviewContext = React.createContext<any>(null)
 
@@ -323,6 +323,13 @@ export default function LivePreviewProvider({ initialData, children }: LivePrevi
     root.setAttribute('data-theme', colorTheme)
     root.setAttribute('data-mode', mode)
     root.setAttribute('data-typography', typography)
+    return () => {
+      // Restore hub defaults on unmount so navigating away from dashboard
+      // doesn't leave the client site's theme/mode on the root element.
+      root.setAttribute('data-theme', mainSiteConfig.colorTheme)
+      root.setAttribute('data-mode', mainSiteConfig.darkMode ? 'dark' : 'light')
+      root.setAttribute('data-typography', mainSiteConfig.typographyStyle)
+    }
   }, [data])
 
   return (

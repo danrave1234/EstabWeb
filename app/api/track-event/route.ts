@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { headers } from "next/headers";
+import { trackEventLimiter } from "@/lib/security/rate-limit";
 
 const VALID_EVENT_TYPES = [
   "page_view",
@@ -15,27 +16,12 @@ const VALID_EVENT_TYPES = [
   "scroll_depth",
   "click_map",
   "form_start",
+  "form_submit",
   "session_start",
   "session_end",
 ] as const;
 type EventType = (typeof VALID_EVENT_TYPES)[number];
 
-// Simple in-memory rate limiter: IP -> { count, resetAt }
-const ipRateMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 100;
-const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = ipRateMap.get(ip);
-  if (!entry || now > entry.resetAt) {
-    ipRateMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
-    return false;
-  }
-  if (entry.count >= RATE_LIMIT) return true;
-  entry.count++;
-  return false;
-}
 
 export async function POST(request: Request) {
   try {
@@ -51,7 +37,8 @@ export async function POST(request: Request) {
     const region  = hdrs.get("x-vercel-ip-country-region");
     const country = hdrs.get("x-vercel-ip-country");
 
-    if (isRateLimited(ip)) {
+    const rl = await trackEventLimiter.check(ip);
+    if (!rl.allowed) {
       return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
 
@@ -85,9 +72,12 @@ export async function POST(request: Request) {
     if (!type || !VALID_EVENT_TYPES.includes(type)) {
       return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
     }
-
     if (!project_id || typeof project_id !== "string") {
       return NextResponse.json({ error: "Missing project_id" }, { status: 400 });
+    }
+    // Silently drop events from preview pages — they skew analytics
+    if (page_slug && /^\/preview\//i.test(page_slug)) {
+      return NextResponse.json({ success: true });
     }
 
     const supabase = createServiceClient();

@@ -135,7 +135,7 @@ export default function FaqClient() {
 
                 {/* Header */}
                 <div className="text-center mb-14 space-y-4">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest border border-primary/20">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest border bg-primary/10 border-primary/20">
                         Frequently Asked Questions
                     </div>
                     <h1 className="text-4xl lg:text-5xl font-black tracking-tight leading-[1.1]">

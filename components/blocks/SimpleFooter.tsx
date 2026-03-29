@@ -168,6 +168,12 @@ export default function SimpleFooter({
 
         <div className="mt-12 border-t border-border/50 pt-8 text-center text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} {brandName}. All rights reserved.</p>
+          <p className="mt-1">
+            Powered by{" "}
+            <a href="https://estabweb.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              EstabWeb
+            </a>
+          </p>
         </div>
       </div>
     </footer>

@@ -156,6 +156,7 @@ export type EventType =
   | 'scroll_depth'
   | 'click_map'
   | 'form_start'
+  | 'form_submit'
   | 'session_start'
   | 'session_end';
 

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
+import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
+import { codeRedeemLimiter } from '@/lib/security/rate-limit'
 import { generateSubdomain } from '@/lib/codes'
 import { normalizeConfig } from '@/lib/utils'
 import { TRIAL_DAYS, DEFAULT_PUBLISH_LIMIT, DEFAULT_PUBLISH_LIMIT_DAILY } from '@/lib/subscription'
@@ -7,6 +9,16 @@ import { addSubdomainToVercel } from '@/lib/utils/vercel-domains'
 
 export async function POST(req: Request) {
   try {
+    const hdrs = await headers()
+    const ip =
+      hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      hdrs.get('x-real-ip') ||
+      'unknown'
+    const rl = await codeRedeemLimiter.check(ip)
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+    }
+
     const { code, projectId } = await req.json()
     if (!code) return NextResponse.json({ error: 'Missing code' }, { status: 400 })
 

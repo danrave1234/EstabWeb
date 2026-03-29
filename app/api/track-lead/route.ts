@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { headers } from "next/headers";
 import { sendLeadFormNotification } from "@/lib/email/lead-notification";
+import { trackLeadLimiter } from "@/lib/security/rate-limit";
 
 const VALID_TYPES = ["messenger", "call", "form", "viber"] as const;
 type LeadType = (typeof VALID_TYPES)[number];
@@ -12,25 +13,6 @@ const EVENT_TYPE_MAP: Record<LeadType, string> = {
   messenger: "lead_messenger",
   viber:     "lead_viber",
 };
-
-// ---------------------------------------------------------------------------
-// Rate limiter: 10 requests per IP per hour (in-memory, resets on cold start)
-// ---------------------------------------------------------------------------
-const ipRateMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 10;
-const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = ipRateMap.get(ip);
-  if (!entry || now > entry.resetAt) {
-    ipRateMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
-    return false;
-  }
-  if (entry.count >= RATE_LIMIT) return true;
-  entry.count++;
-  return false;
-}
 
 // ---------------------------------------------------------------------------
 // reCAPTCHA v3 verification
@@ -67,7 +49,8 @@ export async function POST(request: Request) {
     const country = hdrs.get("x-vercel-ip-country");
 
     // Rate limit check
-    if (isRateLimited(ip)) {
+    const rl = await trackLeadLimiter.check(ip);
+    if (!rl.allowed) {
       return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
 

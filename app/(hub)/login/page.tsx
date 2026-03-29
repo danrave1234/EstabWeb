@@ -9,8 +9,11 @@ import { LogIn, UserPlus, ArrowRight, Loader2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import Image from "next/image"
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3"
 
-function LoginContent() {
+type ExecuteRecaptcha = ((action: string) => Promise<string>) | undefined
+
+function LoginContent({ executeRecaptcha }: { executeRecaptcha: ExecuteRecaptcha }) {
   const searchParams = useSearchParams()
   const initialMode = searchParams.get('mode') === 'signup' ? 'signup' : 'login'
   const recovered = searchParams.get('recovered') === '1'
@@ -52,8 +55,13 @@ function LoginContent() {
     setIsPending(true)
 
     const formData = new FormData(event.currentTarget)
-    
+
     try {
+      if (executeRecaptcha) {
+        const token = await executeRecaptcha(mode)
+        formData.set('recaptchaToken', token)
+      }
+
       const result = mode === 'login' 
         ? await login(formData) 
         : await signup(formData)
@@ -280,14 +288,26 @@ function LoginContent() {
   )
 }
 
+function LoginContentWithRecaptcha() {
+  const { executeRecaptcha } = useGoogleReCaptcha()
+  return <LoginContent executeRecaptcha={executeRecaptcha} />
+}
+
 export default function LoginPage() {
-  return (
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''
+  const suspense = (inner: React.ReactNode) => (
     <React.Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
       </div>
     }>
-      <LoginContent />
+      {inner}
     </React.Suspense>
+  )
+  if (!siteKey) return suspense(<LoginContent executeRecaptcha={undefined} />)
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={siteKey} scriptProps={{ async: true, defer: true }}>
+      {suspense(<LoginContentWithRecaptcha />)}
+    </GoogleReCaptchaProvider>
   )
 }

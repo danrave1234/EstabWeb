@@ -102,7 +102,7 @@ export default function HeroV7({
   onButtonClick,
 }: HeroV7Props) {
   return (
-    <section className="relative flex min-h-[90vh] md:h-screen w-full flex-col items-start justify-end overflow-hidden">
+    <section className="relative flex min-h-[90vh] md:min-h-[100svh] w-full flex-col items-start justify-end overflow-hidden">
       <div
         className="absolute inset-0 bg-center bg-cover transition-transform duration-700"
         style={{

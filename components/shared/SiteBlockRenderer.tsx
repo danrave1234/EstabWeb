@@ -190,7 +190,7 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
       data-theme={colorTheme}
       data-mode={mode}
       data-typography={typographyStyle}
-      className={`min-h-screen bg-background flex flex-col client-site ${allFontVariables} ${getFontVariables(colorTheme, typographyStyle)}`}
+      className={`min-h-[100svh] bg-background flex flex-col client-site ${allFontVariables} ${getFontVariables(colorTheme, typographyStyle)}`}
     >
       {isAdmin && <SiteEditorSidebar />}
       {announcementBarId && (

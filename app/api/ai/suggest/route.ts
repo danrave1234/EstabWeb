@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GENRE_LABELS } from "@/config/presets";
+import { rateLimit, getClientIp, RATE_LIMIT_PRESETS } from "@/lib/security/rate-limit";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL =
@@ -32,6 +33,13 @@ const GATED_SECTIONS: Record<string, string> = {
 export async function POST(req: NextRequest) {
   if (!GEMINI_API_KEY) {
     return NextResponse.json({ error: "Gemini API key not configured" }, { status: 500 });
+  }
+
+  // Rate limit: 10 req/min per IP
+  const ip = getClientIp(req.headers);
+  const rl = await rateLimit(ip, RATE_LIMIT_PRESETS.ai);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
   const { description } = await req.json();

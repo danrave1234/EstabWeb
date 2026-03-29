@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { sendNewUserAdminNotification } from '@/lib/email/admin-notification'
+import { verifyRecaptchaToken } from '@/lib/security/recaptcha'
 
 const authSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -12,6 +13,14 @@ const authSchema = z.object({
 })
 
 export async function login(formData: FormData) {
+  const recaptchaToken = formData.get('recaptchaToken') as string | null
+  if (recaptchaToken) {
+    const recaptcha = await verifyRecaptchaToken(recaptchaToken, 'login')
+    if (!recaptcha.success) {
+      return { error: 'Bot check failed. Please try again.' }
+    }
+  }
+
   const validatedFields = authSchema.safeParse(Object.fromEntries(formData.entries()))
   
   if (!validatedFields.success) {
@@ -38,6 +47,14 @@ export async function login(formData: FormData) {
 }
 
 export async function signup(formData: FormData) {
+  const recaptchaToken = formData.get('recaptchaToken') as string | null
+  if (recaptchaToken) {
+    const recaptcha = await verifyRecaptchaToken(recaptchaToken, 'signup')
+    if (!recaptcha.success) {
+      return { error: 'Bot check failed. Please try again.' }
+    }
+  }
+
   const validatedFields = authSchema.safeParse(Object.fromEntries(formData.entries()))
   
   if (!validatedFields.success) {

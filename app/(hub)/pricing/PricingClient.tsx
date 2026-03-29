@@ -79,7 +79,7 @@ export default function PricingClient() {
         <>
             <main className="flex-1 container mx-auto px-4 py-4 lg:py-10 flex flex-col items-center min-h-[calc(100vh-64px)]">
                 <div className="w-full max-w-4xl text-center mb-0 space-y-1.5 px-4">
-                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-primary/10 text-primary rounded-full text-[8px] font-bold uppercase tracking-widest border border-primary/20">
+                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 text-primary rounded-full text-[8px] font-bold uppercase tracking-widest border bg-primary/10 border-primary/20">
                         Transparent Pricing
                     </div>
                     <h1 className="text-xl lg:text-3xl font-black tracking-tight leading-tight">
@@ -112,9 +112,9 @@ export default function PricingClient() {
                     buttonClassName="bg-primary hover:bg-primary/90 rounded-full font-bold text-white dark:text-black"
                 />
 
-                <div className="mt-0 p-5 bg-muted/30 rounded-[28px] border border-border max-w-3xl w-full flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="mt-0 p-5 rounded-[28px] border border-border max-w-3xl w-full flex flex-col md:flex-row items-center justify-between gap-6 bg-muted/30">
                     <div className="flex gap-4">
-                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary shrink-0">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-primary shrink-0 bg-primary/10">
                             <Sparkle weight="duotone" className="w-5 h-5" />
                         </div>
                         <div>

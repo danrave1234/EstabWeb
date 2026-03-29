@@ -27,7 +27,7 @@ export default function HubLayoutClient({ children, initialUser }: HubLayoutClie
   // Once mounted on the client, we adjust to the dashboard layout if needed.
   const isDashboard = mounted ? (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) : false;
   const isOnboarding = mounted ? (pathname === "/onboarding" || pathname.startsWith("/onboarding/")) : false;
-  const isAuthPage = mounted ? (pathname === "/login" || pathname === "/signup" || pathname.startsWith("/auth/") || isOnboarding) : false;
+  const isAuthPage = mounted ? (pathname === "/login" || pathname === "/signup" || pathname.startsWith("/auth/") || isOnboarding) : (pathname === "/login" || pathname === "/signup" || pathname.startsWith("/auth/"));
 
   return (
     <>

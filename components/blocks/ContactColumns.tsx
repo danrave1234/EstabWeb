@@ -34,6 +34,13 @@ export default function ContactColumns({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formStarted, setFormStarted] = useState(false);
+
+  function handleFormFocus() {
+    if (formStarted) return;
+    setFormStarted(true);
+    trackEvent({ type: 'form_start', section_key: 'contact--columns' });
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +56,7 @@ export default function ContactColumns({
       setSubmitError(result.error || "Something went wrong. Please try again.");
       return;
     }
+    trackEvent({ type: 'form_submit', section_key: 'contact--columns' });
     setIsSubmitted(true);
     setFormData({ name: "", email: "", message: "" });
     toast.success(formThankYouText || "Message sent successfully!");
@@ -124,7 +132,7 @@ export default function ContactColumns({
 
           <h3 className="font-serif text-2xl sm:text-4xl font-black text-center mb-12 uppercase tracking-tight">{formHeading}</h3>
 
-          <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
+          <form onSubmit={handleSubmit} onFocus={handleFormFocus} className="space-y-8 relative z-10">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div className="space-y-3">
                 <label className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-foreground/60 ml-1">First Name</label>
