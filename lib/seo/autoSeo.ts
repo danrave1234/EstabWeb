@@ -1,3 +1,5 @@
+import { BLOCK_MAP } from "@/lib/utils/block-registry"
+
 export type StructuredDataType = "localbusiness" | "faq" | "article"
 
 export interface AutoSeoResult {
@@ -33,9 +35,50 @@ const TITLE_MAX = 60
 const DESC_MIN = 80
 const DESC_MAX = 155
 
+const PLACEHOLDER_PATTERNS = [
+  /your business name/ig,
+  /your city/ig,
+  /\[city\s*name\]/ig,
+  /cityname/ig,
+  /contact@yourbusiness\.com/ig,
+  /yourbusiness\.com/ig,
+  /123 main st/ig,
+]
+
 function asText(value: unknown): string {
   if (typeof value !== "string") return ""
   return value.replace(/\s+/g, " ").trim()
+}
+
+function stripPlaceholderTokens(value: string): string {
+  let cleaned = asText(value)
+  for (const pattern of PLACEHOLDER_PATTERNS) {
+    cleaned = cleaned.replace(pattern, "")
+  }
+
+  return cleaned
+    .replace(/\s+,/g, ",")
+    .replace(/,{2,}/g, ",")
+    .replace(/\s{2,}/g, " ")
+    .replace(/(?:^|\s)[-|/,]+(?=\s|$)/g, " ")
+    .trim()
+}
+
+function hasMeaningfulText(value: unknown): boolean {
+  return stripPlaceholderTokens(asText(value)).length > 0
+}
+
+function sanitizeSeoText(value: unknown): string {
+  return stripPlaceholderTokens(asText(value))
+}
+
+export function sanitizePublicContactValue(value: unknown): string {
+  return sanitizeSeoText(value)
+}
+
+export function sanitizeBrandName(value: unknown, fallback = ""): string {
+  const sanitized = sanitizeSeoText(value)
+  return sanitized || sanitizeSeoText(fallback)
 }
 
 function pickFirstText(...values: Array<unknown>): string {
@@ -65,6 +108,23 @@ function humanizeSlug(slug: string): string {
     .join(" ")
 }
 
+function isHomePage(page: Record<string, any>, pageSlug?: string): boolean {
+  const explicitSlug = asText(pageSlug).replace(/^\/+|\/+$/g, "").toLowerCase()
+  const pageValueSlug = asText(page?.slug).replace(/^\/+|\/+$/g, "").toLowerCase()
+
+  return explicitSlug.length === 0 && pageValueSlug.length === 0
+}
+
+function getEffectiveSeoConfig(config: Record<string, any>, page: Record<string, any>, pageSlug?: string): Record<string, any> {
+  const pageSeo = page?.seo && typeof page.seo === "object" ? page.seo : null
+  if (pageSeo) return pageSeo as Record<string, any>
+
+  const configSeo = config?.seo && typeof config.seo === "object" ? config.seo : null
+  if (!configSeo) return {}
+
+  return isHomePage(page, pageSlug) ? (configSeo as Record<string, any>) : {}
+}
+
 export function formatDomainAsBrand(domain: string): string {
   if (!domain) return "Business"
   // e.g. 'lawthings.online' -> 'lawthings'
@@ -77,7 +137,7 @@ export function formatDomainAsBrand(domain: string): string {
 }
 
 function sanitizeKeyword(value: unknown): string {
-  const text = asText(value)
+  const text = sanitizeSeoText(value)
   if (!text) return ""
   const cleaned = text.replace(/[^\w\s&-]/g, "").replace(/\s+/g, " ").trim()
   return truncateAtWord(cleaned, 48)
@@ -112,7 +172,7 @@ function readArrayTitles(items: unknown, keys: string[] = ["title", "name", "lab
   for (const item of items) {
     if (!item || typeof item !== "object") continue
     for (const key of keys) {
-      const text = asText((item as Record<string, unknown>)[key])
+      const text = sanitizeSeoText((item as Record<string, unknown>)[key])
       if (text) {
         out.push(text)
         break
@@ -122,14 +182,115 @@ function readArrayTitles(items: unknown, keys: string[] = ["title", "name", "lab
   return out
 }
 
+function pushUniqueText(target: string[], seen: Set<string>, value: unknown) {
+  const text = sanitizeSeoText(value)
+  if (!text) return
+  const key = text.toLowerCase()
+  if (seen.has(key)) return
+  seen.add(key)
+  target.push(text)
+}
+
+function collectSectionTexts(value: unknown, out: string[], seen: Set<string>, depth = 0) {
+  if (depth > 5 || value == null) return
+
+  if (typeof value === "string") {
+    pushUniqueText(out, seen, value)
+    return
+  }
+
+  if (typeof value === "number") {
+    pushUniqueText(out, seen, String(value))
+    return
+  }
+
+  if (typeof value === "boolean") return
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectSectionTexts(item, out, seen, depth + 1)
+    }
+    return
+  }
+
+  if (typeof value !== "object") return
+
+  const record = value as Record<string, unknown>
+  const preferredKeys = [
+    "title",
+    "heading",
+    "headline",
+    "name",
+    "label",
+    "subtitle",
+    "description",
+    "text",
+    "content",
+    "summary",
+    "tagline",
+    "caption",
+    "quote",
+    "question",
+    "answer",
+    "role",
+    "position",
+    "service",
+    "feature",
+    "category",
+    "plan",
+    "price",
+  ]
+
+  for (const key of preferredKeys) {
+    if (key in record) {
+      collectSectionTexts(record[key], out, seen, depth + 1)
+    }
+  }
+
+  for (const [key, nestedValue] of Object.entries(record)) {
+    if (preferredKeys.includes(key)) continue
+    if (["id", "slug", "href", "url", "image", "imageUrl", "src", "icon", "className", "html", "css", "js"].includes(key)) {
+      continue
+    }
+    collectSectionTexts(nestedValue, out, seen, depth + 1)
+  }
+}
+
+function resolveSectionData(config: Record<string, any>, page: Record<string, any>, sectionId: string): Record<string, any> {
+  const dataKey = BLOCK_MAP[sectionId]?.dataKey ?? sectionId
+  const pageValue = page?.[dataKey]
+  if (pageValue && typeof pageValue === "object") return pageValue as Record<string, any>
+  const globalValue = config?.[dataKey]
+  if (globalValue && typeof globalValue === "object") return globalValue as Record<string, any>
+  return {}
+}
+
+function getSectionTextPool(config: Record<string, any>, page: Record<string, any>): string[] {
+  const sections = Array.isArray(page?.activeSections)
+    ? page.activeSections
+    : Array.isArray(config?.activeSections)
+      ? config.activeSections
+      : []
+
+  const out: string[] = []
+  const seen = new Set<string>()
+  for (const sectionId of sections) {
+    if (typeof sectionId !== "string") continue
+    const sectionData = resolveSectionData(config, page, sectionId)
+    collectSectionTexts(sectionData, out, seen)
+  }
+
+  return out
+}
+
 function getLocation(config: Record<string, any>): string {
-  const city = asText(config?.contact?.city ?? config?.city)
-  const region = asText(config?.contact?.region ?? config?.region ?? config?.state)
-  const country = asText(config?.contact?.country ?? config?.country)
+  const city = sanitizeSeoText(config?.contact?.city ?? config?.city)
+  const region = sanitizeSeoText(config?.contact?.region ?? config?.region ?? config?.state)
+  const country = sanitizeSeoText(config?.contact?.country ?? config?.country)
   const byParts = [city, region, country].filter(Boolean).join(", ")
   if (byParts) return byParts
-  const address = asText(config?.contact?.address ?? config?.location)
-  if (!address || address.includes("CityName")) return ""
+  const address = sanitizeSeoText(config?.contact?.address ?? config?.location)
+  if (!address) return ""
   return truncateAtWord(address.split(",").slice(0, 2).join(", "), 60)
 }
 
@@ -145,7 +306,7 @@ function inferStructuredType(page: Record<string, any>): StructuredDataType {
 }
 
 function normalizeTitle(seed: string, brandName: string, location: string, theme: string, serviceHint: string): string {
-  let title = asText(seed).replace(/(?:\s*[-|]\s*)?Your Business Name/ig, "")
+  let title = sanitizeSeoText(seed)
   if (location) {
     title = title.replace(/\[City\s*Name\]/ig, location)
   } else {
@@ -189,7 +350,7 @@ function normalizeTitle(seed: string, brandName: string, location: string, theme
 }
 
 function normalizeDescription(seed: string, brandName: string, serviceHint: string, location: string, theme: string): string {
-  let description = asText(seed).replace(/(?:\s*[-|]\s*)?Your Business Name/ig, "")
+  let description = sanitizeSeoText(seed)
   if (location) {
     description = description.replace(/\[City\s*Name\]/ig, location)
   } else {
@@ -232,25 +393,16 @@ export function buildAutoSeoDefaults({
 }: BuildAutoSeoInput): AutoSeoResult {
   const config = (rawConfig && typeof rawConfig === "object" ? rawConfig : {}) as Record<string, any>
   const page = (rawPage && typeof rawPage === "object" ? rawPage : {}) as Record<string, any>
-  const rawSeo = (
-    page?.seo && typeof page.seo === "object"
-      ? page.seo
-      : config?.seo && typeof config.seo === "object"
-        ? config.seo
-        : {}
-  ) as Record<string, any>
+  const rawSeo = getEffectiveSeoConfig(config, page, pageSlug)
 
   const slug = asText(pageSlug ?? page?.slug).replace(/^\/+|\/+$/g, "").toLowerCase()
   const label = pickFirstText(pageLabel, page?.label, humanizeSlug(slug))
   const formattedDomain = domain ? formatDomainAsBrand(domain) : "Business"
-  let rawBrandName = asText(config?.brand?.name)
-  if (rawBrandName.toLowerCase() === "your business name") {
-    rawBrandName = ""
-  }
-  const brandName = pickFirstText(rawBrandName, formattedDomain)
+  const brandName = sanitizeBrandName(config?.brand?.name, formattedDomain) || formattedDomain
   const location = getLocation(config)
   const theme = asText(config?.theme).replace(/-/g, " ")
 
+  const sectionTextPool = getSectionTextPool(config, page)
   const serviceHints = uniqueKeywords(
     [
       page?.hero?.title,
@@ -261,26 +413,38 @@ export function buildAutoSeoDefaults({
       ...readArrayTitles(config?.practiceAreas?.items),
       ...readArrayTitles(config?.services?.items),
       ...readArrayTitles(config?.serviceAreas?.items),
+      ...sectionTextPool,
     ],
-    6
+    8
   )
 
-  const titleSeed = pickFirstText(rawSeo?.title, label === "Home" ? "" : label, config?.hero?.title, serviceHints[0])
+  const titleSeed = pickFirstText(
+    hasMeaningfulText(rawSeo?.title) ? rawSeo?.title : "",
+    label === "Home" ? "" : label,
+    page?.hero?.title,
+    config?.hero?.title,
+    sectionTextPool[0],
+    serviceHints[0]
+  )
   const title = normalizeTitle(titleSeed, brandName, location, theme, serviceHints[0] || label)
 
   const descriptionSeed = pickFirstText(
-    rawSeo?.description,
+    hasMeaningfulText(rawSeo?.description) ? rawSeo?.description : "",
     page?.hero?.subtitle,
     config?.hero?.subtitle,
     config?.features?.subtitle,
     config?.practiceAreas?.subtitle,
     config?.contact?.tagline,
     config?.contact?.subtitle,
-    config?.footer?.tagline
+    config?.footer?.tagline,
+    sectionTextPool.find((text) => text.length >= 40),
+    sectionTextPool[0]
   )
   const description = normalizeDescription(descriptionSeed, brandName, serviceHints[0] || label, location, theme)
 
-  const configuredKeywords = Array.isArray(rawSeo?.keywords) ? rawSeo.keywords : []
+  const configuredKeywords = Array.isArray(rawSeo?.keywords)
+    ? rawSeo.keywords.filter((keyword: unknown) => hasMeaningfulText(keyword))
+    : []
   const keywords = uniqueKeywords(
     configuredKeywords.length > 0
       ? configuredKeywords
@@ -291,6 +455,9 @@ export function buildAutoSeoDefaults({
         theme ? `${theme} services` : "",
         serviceHints[0],
         serviceHints[1],
+        serviceHints[2],
+        sectionTextPool[0],
+        sectionTextPool[1],
         location,
         `${brandName} ${serviceHints[0] || "services"}`,
       ],
@@ -322,9 +489,15 @@ export function buildAutoSeoDefaults({
     nofollow: false,
   }
 
-  const ogTitle = normalizeTitle(pickFirstText(rawSeo?.og?.title, title), brandName, location, theme, serviceHints[0] || label)
+  const ogTitle = normalizeTitle(
+    pickFirstText(hasMeaningfulText(rawSeo?.og?.title) ? rawSeo?.og?.title : "", title),
+    brandName,
+    location,
+    theme,
+    serviceHints[0] || label
+  )
   const ogDescription = normalizeDescription(
-    pickFirstText(rawSeo?.og?.description, description),
+    pickFirstText(hasMeaningfulText(rawSeo?.og?.description) ? rawSeo?.og?.description : "", description),
     brandName,
     serviceHints[0] || label,
     location,

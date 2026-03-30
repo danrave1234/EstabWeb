@@ -1,33 +1,23 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { trackEvent, getOrCreateSessionId } from "@/components/shared/Analytics"
+import { getOrCreateSessionId, trackEvent } from "@/components/shared/Analytics"
 
-const INACTIVITY_MS = 5 * 60 * 1000 // 5 minutes
+const INACTIVITY_MS = 5 * 60 * 1000
 
-/**
- * Fires session_start on mount and session_end on page unload or 5-min inactivity.
- * Attaches duration_seconds and page_count to the session_end event.
- * Gated by projectId — pass undefined when in admin/editor mode.
- */
 export function useSessionTracking(projectId?: string, pageSlug?: string) {
-  const startedAt   = useRef<number>(Date.now())
-  const pageCount   = useRef<number>(1)
+  const startedAt = useRef<number>(Date.now())
+  const pageCount = useRef<number>(1)
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const fired       = useRef(false)
+  const fired = useRef(false)
 
   useEffect(() => {
     if (!projectId) return
 
-    // Reset per project/page mount
+    const startKey = `_ss-${getOrCreateSessionId()}`
     startedAt.current = Date.now()
     fired.current = false
 
-    // Reset session ID tracking key so a new slug = new page in the session
-    pageCount.current++
-
-    // Fire session_start only once per sessionStorage lifetime
-    const startKey = `_ss-${getOrCreateSessionId()}`
     if (typeof sessionStorage !== "undefined" && !sessionStorage.getItem(startKey)) {
       sessionStorage.setItem(startKey, "1")
       pageCount.current = 1
@@ -38,6 +28,8 @@ export function useSessionTracking(projectId?: string, pageSlug?: string) {
         funnel_step: "landing",
         metadata: { ts: startedAt.current },
       })
+    } else {
+      pageCount.current += 1
     }
 
     function fireSessionEnd() {
@@ -60,17 +52,15 @@ export function useSessionTracking(projectId?: string, pageSlug?: string) {
       inactivityTimer.current = setTimeout(fireSessionEnd, INACTIVITY_MS)
     }
 
-    // Start inactivity timer
     resetInactivityTimer()
 
-    // Activity events reset the inactivity timer
     const activityEvents = ["mousemove", "keydown", "scroll", "click", "touchstart"]
     activityEvents.forEach((ev) => window.addEventListener(ev, resetInactivityTimer, { passive: true }))
 
-    // Fire on tab hide or page close
     function onVisibilityChange() {
       if (document.visibilityState === "hidden") fireSessionEnd()
     }
+
     document.addEventListener("visibilitychange", onVisibilityChange)
     window.addEventListener("beforeunload", fireSessionEnd)
 
@@ -80,5 +70,5 @@ export function useSessionTracking(projectId?: string, pageSlug?: string) {
       document.removeEventListener("visibilitychange", onVisibilityChange)
       window.removeEventListener("beforeunload", fireSessionEnd)
     }
-  }, [projectId, pageSlug])
+  }, [pageSlug, projectId])
 }

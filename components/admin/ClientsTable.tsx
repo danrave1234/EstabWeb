@@ -68,7 +68,7 @@ function avatar(email: string | null, id: string) {
 }
 
 function planLabel(p: string | null | undefined) {
-  const map: Record<string, string> = { free: "Free", basic: "Basic", pro: "Pro", ecommerce: "Ecom", custom: "Custom" }
+  const map: Record<string, string> = { free: "Free", basic: "Starter", pro: "Business", ecommerce: "Ecom", custom: "Custom" }
   return map[p || "free"] || p || "Free"
 }
 

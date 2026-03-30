@@ -10,19 +10,23 @@ const FAQ_CATEGORIES = [
         questions: [
             {
                 q: "What is EstabWeb?",
-                a: "EstabWeb is an affordable website service built for local businesses in the Philippines. We provide ready-made, professionally designed templates that you can customize with your own content, photos, and branding — all managed through a simple dashboard.",
+                a: "EstabWeb gives you a ready to use website for your business. We handle the design, setup, and hosting, and you can update your content anytime without needing technical skills.",
             },
             {
                 q: "Do I need technical skills to use EstabWeb?",
-                a: "Not at all. Our editor is designed for business owners, not developers. You can update your business name, photos, services, contact info, and more with just a few clicks — no coding required.",
+                a: "No. It is made for business owners. You can change your text, photos, contact details, and other content in a few clicks without coding.",
             },
             {
-                q: "How is EstabWeb different from website builders like Wix or Squarespace?",
-                a: "EstabWeb is managed for you. Instead of building everything yourself from a blank page, you start with a professionally designed template tailored to your industry. We also handle hosting, deployment, and technical maintenance — you just focus on your business.",
+                q: "How is EstabWeb different from website builders?",
+                a: "With website builders, you usually set up everything yourself. With EstabWeb, your website starts with a ready setup and built in hosting, so you can focus on running your business while still editing your content anytime.",
             },
             {
-                q: "What kinds of businesses is EstabWeb designed for?",
-                a: "EstabWeb works for a wide range of local businesses — law firms, dental clinics, salons, gyms, restaurants, pest control companies, real estate agents, auto shops, and more. We offer industry-specific templates for each.",
+                q: "What kinds of businesses is EstabWeb for?",
+                a: "EstabWeb is built for local businesses like clinics, salons, restaurants, real estate, gyms, law firms, and more. We use business specific templates so you do not have to start from zero.",
+            },
+            {
+                q: "Do you build the website for me?",
+                a: "Yes. We set up the website for you so you do not start from scratch. After that, you can update your own content anytime from the dashboard.",
             },
         ],
     },
@@ -31,23 +35,23 @@ const FAQ_CATEGORIES = [
         questions: [
             {
                 q: "How much does EstabWeb cost?",
-                a: "There's a one-time setup fee to get your website built, plus a recurring monthly or yearly care plan to keep it live, maintained, and editable. Visit our Pricing page for the latest plan details and prices.",
+                a: "There is a one time setup fee to build your website, then a monthly or yearly plan to keep it live and maintained. You can check the Pricing page for the latest plan details.",
             },
             {
                 q: "Are there any hidden fees?",
-                a: "No hidden fees. The setup price and monthly care plan are all you pay. Domain registration (if you want a custom domain like yourbusiness.com) is the only additional cost, and we guide you through that.",
+                a: "No. You only pay the setup and the plan you choose. A custom domain is optional and paid separately, and we guide you through that process.",
             },
             {
                 q: "Can I cancel anytime?",
-                a: "Yes. You can cancel before your next billing cycle to stop future charges. Your website will remain live until the end of your paid period.",
+                a: "Yes. You can cancel before your next billing cycle to stop future charges. Your website stays live until the end of your current paid period.",
             },
             {
-                q: "Do you offer a free trial or free plan?",
-                a: "We offer a free plan with limited features so you can explore the dashboard. To publish your site and access all features, a paid plan is required.",
+                q: "Do you offer a free plan?",
+                a: "Yes. There is a free plan with limited features so you can explore the dashboard. To publish more and unlock paid features, you will need a paid plan.",
             },
             {
-                q: "What happens if I don't pay my monthly subscription?",
-                a: "If payment fails or is not renewed, your website may be downgraded to free-tier limits — this can include restricted publishing and removal of features like custom domains. Your data is kept safe and you can reactivate anytime.",
+                q: "What happens if I do not continue my subscription?",
+                a: "If your paid plan ends, your project can be downgraded to free plan limits. That can include losing custom domain access and lower publishing limits, but your data stays saved so you can continue again later.",
             },
         ],
     },
@@ -55,24 +59,24 @@ const FAQ_CATEGORIES = [
         label: "Website & Features",
         questions: [
             {
-                q: "Can I use my own domain name (e.g. mybusiness.com)?",
-                a: "Yes! On paid plans, you can connect your own custom domain. We provide step-by-step DNS instructions, and once set up, your site goes live on your domain within minutes.",
+                q: "Can I use my own domain name?",
+                a: "Yes. On paid plans, you can use your own custom domain. We guide you through the setup.",
             },
             {
                 q: "Can I have multiple pages on my website?",
-                a: "Yes, multi-page websites are available on eligible plans. You can add pages like About, Gallery, Services, Blog, and more depending on your subscription.",
+                a: "Yes. Multi page websites are available on paid plans, so you can add pages like About, Services, Gallery, and more depending on your subscription.",
             },
             {
-                q: "Can I update my website content myself?",
-                a: "Absolutely. Through your dashboard's editor, you can update text, images, contact details, opening hours, promos, and more — anytime, without waiting for a developer.",
+                q: "Can I update my website myself?",
+                a: "Yes. You can update your content anytime through your dashboard. There is no need to hire a developer just to change text, photos, or business details.",
             },
             {
-                q: "Are the websites mobile-friendly?",
-                a: "Yes. All EstabWeb sites are fully responsive and optimized for mobile phones, tablets, and desktops out of the box.",
+                q: "Are the websites mobile friendly?",
+                a: "Yes. EstabWeb websites are built to work properly on phones, tablets, and computers.",
             },
             {
                 q: "Will my website show up on Google?",
-                a: "Yes. Every site includes a sitemap, robots.txt, and SEO fields (title, description, keywords) you can fill in. We also support Google Search Console verification and Bing Webmaster Tools to help search engines discover your site faster.",
+                a: "Yes. Your website includes search friendly basics like sitemap support, robots rules, and editable SEO fields such as page titles and descriptions. That helps search engines discover your site more easily.",
             },
         ],
     },
@@ -80,20 +84,24 @@ const FAQ_CATEGORIES = [
         label: "Support & Requests",
         questions: [
             {
-                q: "Can I request design changes or new features?",
-                a: "Yes. Depending on your plan, you can submit design update requests and our team will implement them for you. This covers layout adjustments, section additions, color changes, and more.",
+                q: "Can I request changes to my website?",
+                a: "Yes. If you need help with updates or want something adjusted, you can contact us and we can guide you based on your plan and the kind of change you need.",
             },
             {
-                q: "How long does it take to get my website set up?",
-                a: "Initial setup typically takes 1–3 business days after we receive your content (logo, photos, business details). Many sites go live even faster with complete information.",
+                q: "How long does it take to set up my website?",
+                a: "Website setup time depends on the content and details you provide, but many projects can be prepared quickly once we have what we need. Contact us if you want to confirm the timeline for your business.",
             },
             {
-                q: "What if I need something completely custom?",
-                a: "We can accommodate fully custom designs and features beyond our standard templates. Contact us with your requirements and we'll provide a tailored proposal.",
+                q: "How fast can I go live?",
+                a: "Many businesses can go live quickly once the setup details are complete, especially when the content is ready. The exact timeline depends on the information, revisions, and domain setup involved.",
+            },
+            {
+                q: "What if I need something custom?",
+                a: "If you need something beyond the standard setup, contact us with your requirements. We can review custom design or feature requests and recommend the right next step.",
             },
             {
                 q: "How do I get support?",
-                a: "You can reach us via the Contact page, email, or through your dashboard. We're available Monday to Friday, 9AM–6PM Philippine time.",
+                a: "You can reach us through the contact page or by email. Support hours shown on our contact page are Monday to Friday, 9AM to 6PM.",
             },
         ],
     },

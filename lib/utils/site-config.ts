@@ -50,7 +50,7 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
       if (projectId) {
         const { data } = await supabase
           .from("projects")
-          .select("id,subdomain,custom_domain,current_config,draft_config")
+          .select("id,subdomain,custom_domain,current_config,draft_config,config_version")
           .eq("id", projectId)
           .limit(1);
         dbRow = data?.[0];
@@ -58,7 +58,7 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
         // 1. Try exact match
         const { data, error, count } = await supabase
           .from("projects")
-          .select("id,subdomain,custom_domain,current_config,draft_config", { count: 'exact' })
+          .select("id,subdomain,custom_domain,current_config,draft_config,config_version", { count: 'exact' })
           .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`);
 
         dbRow = data?.[0];
@@ -70,7 +70,7 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
             const sub = domain.slice(0, -(ROOT_DOMAIN.length + 1));
             const { data: subData } = await supabase
               .from("projects")
-              .select("id,subdomain,custom_domain,current_config,draft_config")
+              .select("id,subdomain,custom_domain,current_config,draft_config,config_version")
               .eq("subdomain", sub)
               .limit(1);
             dbRow = subData?.[0];
@@ -81,7 +81,7 @@ export const getSiteConfig = cache(async (domain: string, headersList?: Headers)
         if (!dbRow) {
           const { data: ciData } = await supabase
             .from("projects")
-            .select("id,subdomain,custom_domain,current_config,draft_config")
+            .select("id,subdomain,custom_domain,current_config,draft_config,config_version")
             .ilike("subdomain", domain)
             .limit(1);
           dbRow = ciData?.[0];
@@ -383,7 +383,7 @@ async function fetchSiteConfigFromDB(domain: string): Promise<{ config: any | nu
 
     const { data } = await supabase
       .from("projects")
-      .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at,site_status,site_status_reason")
+      .select("id,subdomain,custom_domain,current_config,draft_config,config_version,subscription_status,trial_ends_at,subscription_ends_at,site_status,site_status_reason")
       .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`)
       .limit(1);
 
@@ -395,7 +395,7 @@ async function fetchSiteConfigFromDB(domain: string): Promise<{ config: any | nu
         const sub = domain.slice(0, -(ROOT_DOMAIN.length + 1));
         const { data: subData } = await supabase
           .from("projects")
-          .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at,site_status,site_status_reason")
+          .select("id,subdomain,custom_domain,current_config,draft_config,config_version,subscription_status,trial_ends_at,subscription_ends_at,site_status,site_status_reason")
           .eq("subdomain", sub)
           .limit(1);
         dbRow = subData?.[0];
@@ -405,7 +405,7 @@ async function fetchSiteConfigFromDB(domain: string): Promise<{ config: any | nu
     if (!dbRow) {
       const { data: ciData } = await supabase
         .from("projects")
-        .select("id,subdomain,custom_domain,current_config,draft_config,subscription_status,trial_ends_at,subscription_ends_at,site_status,site_status_reason")
+        .select("id,subdomain,custom_domain,current_config,draft_config,config_version,subscription_status,trial_ends_at,subscription_ends_at,site_status,site_status_reason")
         .ilike("subdomain", domain)
         .limit(1);
       dbRow = ciData?.[0];

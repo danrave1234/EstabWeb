@@ -37,6 +37,22 @@ EstabWeb is a multi-tenant SaaS platform for generating and managing industry-op
 - Hub Pages: `/(hub)`
 - API Routes: `/api/*`
 
+## Subscription Labels
+
+- Stored plan IDs remain `free`, `basic`, `pro`, `ecommerce`, and `custom` for backend logic, webhooks, and database records.
+- User-facing labels are: `Free`, `Starter` (`basic`), `Business` (`pro`), `E-commerce`, and `Custom`.
+- When adjusting pricing or plan copy, keep frontend, admin surfaces, payment descriptions, tests, and docs aligned without renaming the underlying stored plan IDs.
+
+## Analytics Value Layer
+
+- Analytics is session-based: public tracking now follows `session -> events -> attribution -> metrics` instead of relying on raw counters alone.
+- Public events are buffered and sent in batches through `components/shared/Analytics.tsx` to `/api/track-event`, which upserts `project_sessions` and bulk-inserts `project_events` with session, visitor, source, and funnel context.
+- Shared section analytics normalization still lives in `lib/analytics/section-insights.ts` and is emitted by `components/shared/SiteBlockRenderer.tsx` through `data-*` attributes consumed by `hooks/useSectionTracking.ts`, `hooks/useClickMapTracking.ts`, and `components/shared/Analytics.tsx`.
+- The simple heatmap-style insight is implemented as section attention: `hooks/useSectionTracking.ts` times how long a section stays visibly on screen while the tab/window is active, then sends summarized `section_attention` events instead of noisy per-tick updates.
+- Section analytics also carries interactivity metadata (`section_is_interactive`, `section_interaction_type`, `section_interaction_label`) so the dashboard can treat passive sections differently from CTA/form-heavy sections.
+- Published analytics is version-aware: the public site exposes `config_version` as `page_version_id`, and section events/leads carry `section_slot`, `section_variant`, `section_instance_id`, and `page_version_id` so dashboard insights do not mix old and new page layouts after a publish.
+- Leads are now attributable back to sessions through `project_leads.session_id`, allowing the dashboard in `app/(hub)/dashboard/analytics/page.tsx` to report which pages, traffic sources, and sections turned visits into inquiries using business-friendly wording.
+
 ## Admin Template AI + Drafts
 
 - `POST /api/ai/populate-template` now supports Gemini Search-grounded generation for up-to-date business context.
@@ -136,6 +152,8 @@ migrations/011_add_missing_lead_columns.sql
 migrations/012_add_promo_codes.sql
 migrations/013_add_template_drafts.sql
 migrations/014_add_template_draft_expiry.sql
+migrations/018_session_based_analytics.sql
+migrations/019_add_section_attention_event_type.sql
 ```
 
 3. Install and run:
@@ -174,6 +192,8 @@ The platform now ships GEO-focused discoverability defaults for both the hub dom
   - `lib/seo/llms.ts`
   - `lib/seo/hub-llms.ts`
   - `lib/seo/tenant-llms.ts`
+- Tenant metadata normalization lives in `lib/seo/autoSeo.ts`; placeholder onboarding/demo values (for example `Your Business Name`, `Your City`, and demo contact details) are stripped before public SEO metadata and schema are emitted.
+- Tenant favicons are served from the tenant host itself through `app/(sites)/[domain]/favicon.ico/route.ts`, and tenant metadata points icons to `https://{host}/favicon.ico` for stronger crawler compatibility.
 - Crawler policy mode (optional env):
   - `GEO_CRAWLER_POLICY_MODE=max-visibility` (default)
   - `GEO_CRAWLER_POLICY_MODE=training-restricted`

@@ -21,6 +21,8 @@ import {
 import { createClient } from "@/lib/supabase/client"
 import { User as SupabaseUser } from "@supabase/supabase-js"
 import { useAuth } from "@/components/providers/AuthProvider"
+import { useClickOutside } from "@/hooks/useClickOutside"
+import { NotificationsPopover } from "@/components/dashboard/NotificationsPopover"
 
 interface MainHeaderProps {
   initialUser?: SupabaseUser | null
@@ -32,7 +34,9 @@ interface MainHeaderProps {
 export default function MainHeader({ initialUser, variant, userEmail, role }: MainHeaderProps) {
   const { user, loading } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = React.useState(false)
+  const userMenuRef = useClickOutside(() => setUserMenuOpen(false))
   const [mobileOpen, setMobileOpen] = React.useState(false)
+  const mobileMenuRef = useClickOutside(() => setMobileOpen(false))
   const [scrolled, setScrolled] = React.useState(false)
   const pathname = usePathname()
   const desktopNavId = "main-header-desktop-nav"
@@ -153,7 +157,9 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
                 <div className="w-28 h-9 bg-muted animate-pulse rounded-full" />
               </div>
             ) : user ? (
-              <div className="relative">
+              <>
+                <NotificationsPopover />
+                <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => { setUserMenuOpen(!userMenuOpen); setMobileOpen(false) }}
                   className="flex items-center gap-3 p-1 pl-3 pr-1.5 rounded-full border border-border bg-background hover:bg-muted/50 transition-all duration-200 group cursor-pointer"
@@ -168,10 +174,8 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
                 </button>
 
                 {userMenuOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40 hidden md:block" onClick={() => setUserMenuOpen(false)} />
-                    <div className="absolute right-0 top-full mt-3 w-64 bg-background border border-border rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                      <div className="px-5 py-4 border-b border-border bg-muted/20">
+                  <div className="absolute right-0 top-full mt-3 w-64 bg-background border border-border rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="px-5 py-4 border-b border-border bg-muted/20">
                         <p className="text-sm font-semibold text-foreground truncate">{displayEmail}</p>
                         <div className="flex items-center gap-1.5 mt-1">
                           <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
@@ -237,9 +241,9 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
                         </button>
                       </div>
                     </div>
-                  </>
                 )}
               </div>
+              </>
             ) : (
               <div className="flex items-center gap-1 lg:gap-2">
                 <Link
@@ -257,6 +261,12 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
               </div>
             )}
           </div>
+          
+          {user && (
+            <div className="md:hidden flex items-center mr-1">
+              <NotificationsPopover />
+            </div>
+          )}
 
           {/* Mobile Menu Button */}
           <button
@@ -273,7 +283,7 @@ export default function MainHeader({ initialUser, variant, userEmail, role }: Ma
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border animate-in slide-in-from-top duration-300 overflow-hidden shadow-xl z-[60]">
+        <div ref={mobileMenuRef} className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-xl border-b border-border animate-in slide-in-from-top duration-300 overflow-hidden shadow-xl z-[60]">
           <nav id={mobileNavId} aria-label="Mobile Primary" className="flex flex-col p-4 gap-1 max-h-[80vh] overflow-y-auto">
             {navLinks.map((link) => (
               <Link

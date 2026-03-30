@@ -7,7 +7,7 @@ import LivePreviewProvider from "@/components/shared/LivePreviewProvider";
 import { getCachedSiteConfig } from "@/lib/utils/site-config";
 import { getPageBySlug, normalizePages, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
 import { isProPlan } from "@/lib/subscription";
-import { buildAutoSeoDefaults, formatDomainAsBrand } from "@/lib/seo/autoSeo";
+import { buildAutoSeoDefaults, formatDomainAsBrand, sanitizeBrandName } from "@/lib/seo/autoSeo";
 
 export const revalidate = 120;
 
@@ -38,9 +38,8 @@ export async function generateMetadata({
     domain,
   });
   const brand = config?.brand || {};
-  const rawBrandName = brand.name === "Your Business Name" ? "" : brand.name;
-  const brandName = rawBrandName || formatDomainAsBrand(domain);
-  const iconUrl = brand.favicon || brand.logoUrl || "/Logo.png";
+  const brandName = sanitizeBrandName(brand.name, formatDomainAsBrand(domain)) || formatDomainAsBrand(domain);
+  const iconUrl = `https://${preferredHost}/favicon.ico`;
   const canonical = `https://${preferredHost}${resolvedSeo.canonical}`;
 
   return {

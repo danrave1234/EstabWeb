@@ -118,7 +118,7 @@ export function PricingTable({
                 <span className="text-[10px] sm:text-sm font-bold truncate">{plan.name}</span>
                 {plan.popular && (
                   <span className="text-[7px] sm:text-xs bg-primary text-primary-foreground px-1 sm:px-2 py-0.5 rounded-full shrink-0 font-black">
-                    POP
+                    RECOMMENDED
                   </span>
                 )}
               </div>
@@ -149,7 +149,7 @@ export function PricingTable({
         >
           <span className="w-1 h-1 rounded-full bg-primary animate-pulse" />
           <span className="text-[10px] text-muted-foreground font-medium">
-            Tap a plan to see what&apos;s included
+            Tap a plan to see the key outcomes
           </span>
         </div>
 
@@ -193,13 +193,16 @@ export function PricingTable({
         <div className="hidden sm:block border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-background mx-1 shadow-sm">
           <div className="overflow-x-auto scrollbar-hide">
             <div className="min-w-[550px] sm:min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
-              <div className="flex items-center p-2.5 sm:p-4 bg-zinc-50 dark:bg-zinc-900 sticky top-0 z-20">
-                <div className="flex-1 text-[10px] sm:text-sm font-bold sticky left-0 bg-inherit z-10 pr-2 border-r border-zinc-200 dark:border-zinc-800 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">Features</div>
+              <div className="flex items-stretch bg-zinc-50 dark:bg-zinc-900 sticky top-0 z-20">
+                <div className="flex-1 text-[10px] sm:text-sm font-bold sticky left-0 bg-inherit z-10 px-2.5 py-2.5 sm:px-4 sm:py-4 pr-2 border-r border-zinc-200 dark:border-zinc-800 shadow-[2px_0_5px_rgba(0,0,0,0.05)] flex items-center">Key outcomes</div>
                 <div className="flex items-center gap-2 sm:gap-8 text-[10px] sm:text-sm">
                   {plans.map((plan) => (
                     <div
                       key={plan.level}
-                      className="w-16 sm:w-20 text-center font-bold px-1"
+                      className={cn(
+                        "w-16 sm:w-20 text-center font-bold px-1 py-2.5 sm:py-4 transition-colors flex items-center justify-center",
+                        plan.level === selectedPlan && "bg-primary/10 text-primary",
+                      )}
                     >
                       {plan.name === 'E-commerce' ? 'Ecom' : plan.name}
                     </div>
@@ -209,19 +212,16 @@ export function PricingTable({
               {features.map((feature) => (
                 <div
                   key={feature.name}
-                  className={cn(
-                    "flex items-center p-2.5 sm:p-4 transition-colors bg-background",
-                    feature.included === selectedPlan ? "bg-primary/[0.03]" : "",
-                  )}
+                  className="flex items-stretch transition-colors bg-background"
                 >
-                  <div className="flex-1 text-[10px] sm:text-sm sticky left-0 bg-inherit z-10 pr-2 border-r border-zinc-200 dark:border-zinc-800 shadow-[2px_0_5px_rgba(0,0,0,0.05)] font-medium leading-tight">{feature.name}</div>
+                  <div className="flex-1 text-[10px] sm:text-sm sticky left-0 bg-inherit z-10 px-2.5 py-2.5 sm:px-4 sm:py-4 pr-2 border-r border-zinc-200 dark:border-zinc-800 shadow-[2px_0_5px_rgba(0,0,0,0.05)] font-medium leading-tight flex items-center">{feature.name}</div>
                   <div className="flex items-center gap-2 sm:gap-8 text-[10px] sm:text-sm">
                     {plans.map((plan) => (
                       <div
                         key={plan.level}
                         className={cn(
-                          "w-16 sm:w-20 flex justify-center",
-                          plan.level === selectedPlan && "font-black text-primary",
+                          "w-16 sm:w-20 flex items-center justify-center py-2.5 sm:py-4 transition-colors",
+                          plan.level === selectedPlan && "bg-primary/10 font-black text-primary",
                         )}
                       >
                         {shouldShowCheck(feature.included, plan.level) ? (

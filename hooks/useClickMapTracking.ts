@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { trackEvent } from "@/components/shared/Analytics"
+import { getSectionAnalyticsMetaFromDataset, sectionMetaToEventMetadata } from "@/lib/analytics/section-insights"
 
 /**
  * Tracks every meaningful click and records element-based identifiers so
@@ -54,10 +55,15 @@ export function useClickMapTracking(projectId?: string, pageSlug?: string) {
 
       // Walk up DOM to find nearest section key
       let sectionKey: string | undefined
+      let sectionMeta = null
       let node: HTMLElement | null = el
       while (node && node !== document.body) {
         const attr = node.getAttribute("data-section")
-        if (attr) { sectionKey = attr; break }
+        if (attr) {
+          sectionKey = attr
+          sectionMeta = getSectionAnalyticsMetaFromDataset(node.dataset)
+          break
+        }
         node = node.parentElement
       }
 
@@ -70,6 +76,7 @@ export function useClickMapTracking(projectId?: string, pageSlug?: string) {
           element_id: elementId,
           element_type: elementType,
           element_text: elementText,
+          ...sectionMetaToEventMetadata(sectionMeta),
         },
       })
     }

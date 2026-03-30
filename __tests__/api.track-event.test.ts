@@ -3,6 +3,7 @@
 
 const mockProjectSingle = jest.fn()
 const mockEventsInsert = jest.fn()
+const mockSessionsUpsert = jest.fn()
 
 jest.mock("@/lib/supabase/service", () => ({
   createServiceClient: jest.fn(() => ({
@@ -16,6 +17,9 @@ jest.mock("@/lib/supabase/service", () => ({
       }
       if (table === "project_events") {
         return { insert: mockEventsInsert }
+      }
+      if (table === "project_sessions") {
+        return { upsert: mockSessionsUpsert }
       }
       return {}
     }),
@@ -84,28 +88,33 @@ describe("POST /api/track-event", () => {
   it("returns 200 and inserts event for a valid page_view", async () => {
     mockProjectSingle.mockResolvedValue({ data: { id: "proj-1" }, error: null })
     mockEventsInsert.mockResolvedValue({ error: null })
+    mockSessionsUpsert.mockResolvedValue({ error: null })
 
     const res = await POST(makeRequest({ type: "page_view", project_id: "proj-1", page_slug: "home" }))
     const json = await res.json()
     expect(res.status).toBe(200)
     expect(json.success).toBe(true)
     expect(mockEventsInsert).toHaveBeenCalledWith(
-      expect.objectContaining({ project_id: "proj-1", event_type: "page_view", page_slug: "home" }),
+      expect.arrayContaining([
+        expect.objectContaining({ project_id: "proj-1", event_type: "page_view", page_slug: "home" }),
+      ]),
     )
   })
 
   it("accepts lead_submit as a valid event type", async () => {
     mockProjectSingle.mockResolvedValue({ data: { id: "proj-1" }, error: null })
     mockEventsInsert.mockResolvedValue({ error: null })
+    mockSessionsUpsert.mockResolvedValue({ error: null })
 
     const res = await POST(makeRequest({ type: "lead_submit", project_id: "proj-1" }))
     expect(res.status).toBe(200)
   })
 
   it("accepts all declared valid event types", async () => {
-    const VALID = ["page_view", "section_view", "cta_click", "lead_submit", "lead_form", "lead_call", "lead_messenger", "lead_viber", "map_interact", "scroll_depth", "click_map", "form_start", "session_start", "session_end"]
+    const VALID = ["page_view", "section_view", "view_section", "cta_click", "click_cta", "lead_submit", "lead_form", "lead_call", "lead_messenger", "lead_viber", "map_interact", "scroll_depth", "scroll", "click_map", "form_start", "session_start", "session_end"]
     mockProjectSingle.mockResolvedValue({ data: { id: "proj-1" }, error: null })
     mockEventsInsert.mockResolvedValue({ error: null })
+    mockSessionsUpsert.mockResolvedValue({ error: null })
 
     for (const type of VALID) {
       jest.resetModules()
@@ -119,6 +128,7 @@ describe("POST /api/track-event", () => {
   it("stores visitor_id, session_id, event_id, and funnel_step in the insert", async () => {
     mockProjectSingle.mockResolvedValue({ data: { id: "proj-1" }, error: null })
     mockEventsInsert.mockResolvedValue({ error: null })
+    mockSessionsUpsert.mockResolvedValue({ error: null })
 
     await POST(makeRequest({
       type: "page_view",
@@ -129,18 +139,22 @@ describe("POST /api/track-event", () => {
       funnel_step: "landing",
     }))
     expect(mockEventsInsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        visitor_id:  "vis-abc",
-        session_id:  "ses-xyz",
-        event_id:    "evt-111",
-        funnel_step: "landing",
-      }),
+      expect.arrayContaining([
+        expect.objectContaining({
+          visitor_id:  "vis-abc",
+          session_id:  "ses-xyz",
+          event_id:    "evt-111",
+          funnel_step: "landing",
+        }),
+      ]),
     )
+    expect(mockSessionsUpsert).toHaveBeenCalled()
   })
 
   it("returns 500 when the DB insert fails", async () => {
     mockProjectSingle.mockResolvedValue({ data: { id: "proj-1" }, error: null })
     mockEventsInsert.mockResolvedValue({ error: { message: "db error" } })
+    mockSessionsUpsert.mockResolvedValue({ error: null })
 
     const res = await POST(makeRequest({ type: "cta_click", project_id: "proj-1" }))
     const json = await res.json()
@@ -158,21 +172,25 @@ describe("POST /api/track-event", () => {
     )
     mockProjectSingle.mockResolvedValue({ data: { id: "proj-1" }, error: null })
     mockEventsInsert.mockResolvedValue({ error: null })
+    mockSessionsUpsert.mockResolvedValue({ error: null })
 
     await POST(makeRequest({ type: "section_view", project_id: "proj-1" }))
     expect(mockEventsInsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        metadata: expect.objectContaining({ geo_city: "Manila", geo_country: "PH" }),
-      }),
+      expect.arrayContaining([
+        expect.objectContaining({
+          metadata: expect.objectContaining({ geo_city: "Manila", geo_country: "PH" }),
+        }),
+      ]),
     )
   })
 
   it("returns 429 after exceeding the rate limit", async () => {
     mockProjectSingle.mockResolvedValue({ data: { id: "proj-1" }, error: null })
     mockEventsInsert.mockResolvedValue({ error: null })
+    mockSessionsUpsert.mockResolvedValue({ error: null })
 
-    // The route allows 100 req/hr per IP. Send 101 requests from the same IP.
-    for (let i = 0; i < 100; i++) {
+    // The route allows 120 req/hr per IP. Send 121 requests from the same IP.
+    for (let i = 0; i < 120; i++) {
       await POST(makeRequest({ type: "page_view", project_id: "proj-1" }))
     }
     const res = await POST(makeRequest({ type: "page_view", project_id: "proj-1" }))

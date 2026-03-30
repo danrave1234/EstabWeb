@@ -17,13 +17,20 @@ import {
   PromoBannerStrip,
 } from "@/components/shared/BlockRegistry";
 import { renderSection, normalizeToArray } from "@/lib/utils/block-props";
+import { getSectionAnalyticsMeta } from "@/lib/analytics/section-insights";
 
 interface SiteBlockRendererProps {
   data: any;
   isAdmin?: boolean;
+  pageVersionId?: string;
 }
 
-export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRendererProps) {
+function buildSectionInstanceId(sectionId: string, sectionPosition: number, pageVersionId?: string) {
+  const versionPart = pageVersionId ?? "draft";
+  return `${versionPart}:${sectionPosition}:${sectionId}`;
+}
+
+export default function SiteBlockRenderer({ data, isAdmin = false, pageVersionId }: SiteBlockRendererProps) {
   if (!data) return null;
 
   const {
@@ -253,6 +260,8 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
             usedAnchorIds.add(stableAnchorId);
           }
           const sectionLabel = toSectionLabel(String(sectionId));
+          const analyticsMeta = getSectionAnalyticsMeta(String(sectionId), index + 1);
+          const sectionInstanceId = buildSectionInstanceId(String(sectionId), index + 1, pageVersionId);
 
           return (
             <section
@@ -262,6 +271,19 @@ export default function SiteBlockRenderer({ data, isAdmin = false }: SiteBlockRe
               data-section={sectionId}
               data-section-id={sectionId}
               data-section-index={index}
+              data-section-position={analyticsMeta.sectionPosition}
+              data-section-family={analyticsMeta.sectionFamily}
+              data-section-slot={analyticsMeta.sectionFamily}
+              data-section-variant={analyticsMeta.sectionVariant}
+              data-section-instance-id={sectionInstanceId}
+              data-page-version-id={pageVersionId}
+              data-section-label={analyticsMeta.sectionLabel}
+              data-section-purpose={analyticsMeta.sectionPurpose}
+              data-section-goal={analyticsMeta.sectionGoal}
+              data-section-is-hero={analyticsMeta.isHero}
+              data-section-is-interactive={analyticsMeta.isInteractive}
+              data-section-interaction-type={analyticsMeta.interactionType}
+              data-section-interaction-label={analyticsMeta.interactionLabel}
               className="scroll-mt-24"
             >
               {sectionContent}

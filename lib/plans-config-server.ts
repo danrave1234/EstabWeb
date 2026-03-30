@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { PLANS as DEFAULT_PLANS, ENABLE_ANNUAL_PLANS as DEFAULT_ENABLE_ANNUAL } from "@/config/plans"
+import { normalizePlansConfig } from "@/lib/plans-config"
 
 export async function getPlansConfig() {
     try {
@@ -12,7 +13,7 @@ export async function getPlansConfig() {
 
         if (data && data.payload) {
             return {
-                PLANS: (data.payload as any).PLANS || DEFAULT_PLANS,
+                PLANS: normalizePlansConfig((data.payload as any).PLANS || DEFAULT_PLANS),
                 ENABLE_ANNUAL_PLANS: (data.payload as any).ENABLE_ANNUAL_PLANS ?? DEFAULT_ENABLE_ANNUAL
             }
         }
@@ -20,5 +21,5 @@ export async function getPlansConfig() {
         // console.error(e)
     }
 
-    return { PLANS: DEFAULT_PLANS, ENABLE_ANNUAL_PLANS: DEFAULT_ENABLE_ANNUAL }
+    return { PLANS: normalizePlansConfig(DEFAULT_PLANS), ENABLE_ANNUAL_PLANS: DEFAULT_ENABLE_ANNUAL }
 }

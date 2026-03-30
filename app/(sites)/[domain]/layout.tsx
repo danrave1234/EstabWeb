@@ -11,11 +11,10 @@ import { getCachedSiteConfig } from "@/lib/utils/site-config";
 import { COLOR_THEME_SWATCHES } from "@/config/dashboard-config";
 import StructuredData from "@/components/shared/StructuredData";
 import { GoogleAnalytics, FacebookPixel, AnalyticsProvider } from "@/components/shared/Analytics";
-import SessionRecorder from "@/components/shared/SessionRecorder";
 import { generateSchema } from "@/lib/utils/schema";
 import NetworkOfflineBanner from "@/components/shared/NetworkOfflineBanner";
 import { getPageBySlug, normalizePagesWithDefaults } from "@/lib/utils/site-pages";
-import { buildAutoSeoDefaults, formatDomainAsBrand } from "@/lib/seo/autoSeo";
+import { buildAutoSeoDefaults, formatDomainAsBrand, sanitizeBrandName, sanitizePublicContactValue } from "@/lib/seo/autoSeo";
 import { isProPlan } from "@/lib/subscription";
 
 /**
@@ -51,9 +50,8 @@ export async function generateMetadata({
   });
 
   const brand = config?.brand || {};
-  const rawBrandName = brand.name === "Your Business Name" ? "" : brand.name;
-  const fallbackBrandName = rawBrandName || formatDomainAsBrand(domain);
-  const iconUrl = brand.favicon || brand.logoUrl || "/globe.svg";
+  const fallbackBrandName = sanitizeBrandName(brand.name, formatDomainAsBrand(domain)) || formatDomainAsBrand(domain);
+  const iconUrl = `https://${preferredHost}/favicon.ico`;
 
   return {
     // Fallback title - page.tsx and [slug]/page.tsx override this per-route.
@@ -86,6 +84,7 @@ export default async function SiteLayout({
   let host = "";
   let preferredHost = "";
   let projectId: string | undefined = undefined;
+  let pageVersionId: string | undefined = undefined;
   let homeSeoDefaults: ReturnType<typeof buildAutoSeoDefaults> | null = null;
   let homeSeoSettings: Record<string, any> = {};
 
@@ -98,6 +97,7 @@ export default async function SiteLayout({
     dbConf = siteData.config;
     const project = siteData.project;
     projectId = project?.id;
+    pageVersionId = project?.config_version != null ? String(project.config_version) : undefined;
     const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "estabweb.com").toLowerCase();
     const hostWithoutPort = (host.split(":")[0] || domain).toLowerCase();
     preferredHost =
@@ -140,8 +140,7 @@ export default async function SiteLayout({
     // use defaults
   }
 
-  const rawBrandName = dbConf?.brand?.name === "Your Business Name" ? "" : dbConf?.brand?.name;
-  const fallbackBrandName = rawBrandName || formatDomainAsBrand(domain);
+  const fallbackBrandName = sanitizeBrandName(dbConf?.brand?.name, formatDomainAsBrand(domain)) || formatDomainAsBrand(domain);
   const hostWithoutPort = (host.split(":")[0] || domain).toLowerCase();
   const schemaHost = preferredHost || hostWithoutPort;
   const origin = `https://${schemaHost}`;
@@ -190,14 +189,14 @@ export default async function SiteLayout({
                 "@id": organizationSchemaId,
                 "name": fallbackBrandName,
                 "url": origin,
-                "logo": dbConf.brand?.logoUrl || undefined,
-                "email": dbConf.contact?.email || undefined,
-                "telephone": dbConf.contact?.phone || undefined,
+                "logo": sanitizePublicContactValue(dbConf.brand?.logoUrl) || undefined,
+                "email": sanitizePublicContactValue(dbConf.contact?.email) || undefined,
+                "telephone": sanitizePublicContactValue(dbConf.contact?.phone) || undefined,
                 "sameAs": sameAs.length > 0 ? sameAs : undefined,
-                "address": dbConf.contact?.address
+                "address": sanitizePublicContactValue(dbConf.contact?.address)
                   ? {
                     "@type": "PostalAddress",
-                    "streetAddress": dbConf.contact.address,
+                    "streetAddress": sanitizePublicContactValue(dbConf.contact.address),
                   }
                   : undefined,
               }}
@@ -220,10 +219,14 @@ export default async function SiteLayout({
                   "name": fallbackBrandName,
                   "url": origin,
                 };
-                if (dbConf.brand?.logoUrl) defaultSchema["image"] = dbConf.brand.logoUrl;
-                if (dbConf.contact?.email) defaultSchema["email"] = dbConf.contact.email;
-                if (dbConf.contact?.phone) defaultSchema["telephone"] = dbConf.contact.phone;
-                if (dbConf.contact?.address) defaultSchema["address"] = { "@type": "PostalAddress", "streetAddress": dbConf.contact.address };
+                const brandLogo = sanitizePublicContactValue(dbConf.brand?.logoUrl);
+                const email = sanitizePublicContactValue(dbConf.contact?.email);
+                const phone = sanitizePublicContactValue(dbConf.contact?.phone);
+                const address = sanitizePublicContactValue(dbConf.contact?.address);
+                if (brandLogo) defaultSchema["image"] = brandLogo;
+                if (email) defaultSchema["email"] = email;
+                if (phone) defaultSchema["telephone"] = phone;
+                if (address) defaultSchema["address"] = { "@type": "PostalAddress", "streetAddress": address };
                 return <StructuredData data={defaultSchema} />;
               }
               return null;
@@ -240,12 +243,11 @@ export default async function SiteLayout({
         )}
       </head>
       <body className="antialiased">
-        <AnalyticsProvider projectId={projectId || dbConf?.projectId}>
+        <AnalyticsProvider projectId={projectId || dbConf?.projectId} pageVersionId={pageVersionId}>
           {dbConf?.analytics?.ga4Id && <GoogleAnalytics id={dbConf.analytics.ga4Id} />}
           {dbConf?.analytics?.pixelId && <FacebookPixel id={dbConf.analytics.pixelId} />}
           <NetworkOfflineBanner />
           <ScrollReveal />
-          {projectId && <SessionRecorder projectId={projectId} />}
           {children}
           <Toaster position="top-right" richColors />
         </AnalyticsProvider>

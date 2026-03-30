@@ -440,7 +440,7 @@ export default function OnboardingPage() {
                   </div>
 
                   {/* AI description box */}
-                  <div className="shrink-0 max-w-2xl mx-auto w-full">
+                  <div className="shrink-0 max-w-3xl mx-auto w-full rounded-3xl border border-border/60 bg-card/80 px-4 py-4 shadow-sm backdrop-blur-sm sm:px-5">
                     <div className="flex items-center gap-2 mb-2">
                       <Bot className="w-4 h-4 text-primary" />
                       <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
@@ -448,18 +448,18 @@ export default function OnboardingPage() {
                         <span className="font-normal normal-case tracking-normal">(optional)</span>
                       </label>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex flex-col gap-3 items-center">
                       <textarea
                         value={businessDescription}
                         onChange={(e) => setBusinessDescription(e.target.value)}
                         placeholder="e.g. We're a pest control company serving Metro Cebu, specializing in termite treatment and general pest management."
-                        rows={2}
-                        className="flex-1 px-4 py-3 text-sm border border-border rounded-xl bg-muted/30 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none placeholder:text-muted-foreground/40 transition-all font-medium"
+                        rows={3}
+                        className="min-h-[112px] w-full px-4 py-3 text-sm border border-border rounded-2xl bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none placeholder:text-muted-foreground/40 transition-all font-medium leading-6"
                       />
                       <button
                         onClick={handleAiAnalyze}
                         disabled={isAnalyzing || businessDescription.trim().length < 5}
-                        className="sm:w-auto px-6 py-3 rounded-xl bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 shrink-0 self-stretch shadow-lg shadow-primary/20"
+                        className="w-full sm:w-auto sm:min-w-[176px] px-6 py-3.5 rounded-2xl bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:translate-y-[-1px] active:scale-95 transition-all disabled:opacity-40 shrink-0 shadow-lg shadow-primary/20"
                       >
                         {isAnalyzing ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -477,7 +477,7 @@ export default function OnboardingPage() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 overflow-y-auto pt-2 pb-6 px-1 flex-1 content-start scrollbar-thin scrollbar-track-muted scrollbar-thumb-border">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 overflow-y-auto overflow-x-hidden pt-3 pb-6 px-1 md:px-2 flex-1 content-start scrollbar-thin scrollbar-track-muted scrollbar-thumb-border">
                     {Object.entries(GENRE_LABELS).map(([key, label]) => {
                       const Icon = BUSINESS_ICONS[key] || Layout;
                       const selected = businessType === key;
@@ -486,7 +486,7 @@ export default function OnboardingPage() {
                           key={key}
                           onClick={() => setBusinessType(key)}
                           className={`px-3 py-3 rounded-2xl border-2 transition-all text-center flex flex-col items-center justify-center gap-1.5 group relative h-[100px] ${selected
-                            ? "border-primary bg-primary shadow-[0_20px_40px_-12px_rgba(var(--primary-rgb),0.5)] -translate-y-2 scale-105"
+                            ? "border-primary bg-primary shadow-[0_20px_40px_-12px_rgba(var(--primary-rgb),0.5)] -translate-y-1 ring-2 ring-primary/20"
                             : "border-border bg-card hover:border-primary/40 hover:bg-muted/50 hover:-translate-y-1 shadow-sm"
                             }`}
                         >
@@ -538,7 +538,7 @@ export default function OnboardingPage() {
                     </p>
                   </div>
 
-                  <div className="grid gap-4 overflow-y-auto scrollbar-hide py-2 px-1 flex-1">
+                  <div className="grid gap-4 overflow-y-auto overflow-x-hidden scrollbar-hide pt-5 pb-3 px-1 md:px-2 flex-1">
                     {rankedPresets.slice(0, 8).map(({ key, label, preset }, idx) => {
                       const Icon = BUSINESS_ICONS[key] || Layout;
                       const isTop = idx === 0;
@@ -547,16 +547,16 @@ export default function OnboardingPage() {
                           key={key}
                           className={`relative group rounded-2xl border-2 p-5 transition-all duration-300 bg-card ${isTop
                             ? "border-primary bg-primary/5 shadow-xl shadow-primary/5 ring-2 ring-primary/5"
-                            : "border-border hover:border-primary/20"
+                            : "border-border hover:border-primary/20 hover:shadow-md"
                             }`}
                         >
                           {isTop && (
-                            <div className="absolute -top-3 left-8 px-4 py-1 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg">
+                            <div className="absolute top-0 left-6 -translate-y-1/2 px-4 py-1 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg">
                               Recommended
                             </div>
                           )}
                           {aiSuggestedPreset === key && (
-                            <div className="absolute -top-3 right-8 flex items-center gap-1 px-3 py-1 bg-violet-600 text-white text-[10px] font-black uppercase tracking-[0.15em] rounded-full shadow-lg">
+                            <div className="absolute top-0 right-6 -translate-y-1/2 flex items-center gap-1 px-3 py-1 bg-violet-600 text-white text-[10px] font-black uppercase tracking-[0.15em] rounded-full shadow-lg max-w-[calc(100%-3rem)]">
                               <Sparkles className="w-3 h-3" />
                               AI Choice
                             </div>

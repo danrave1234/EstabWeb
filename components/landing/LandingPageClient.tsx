@@ -142,23 +142,30 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
           templatePreviews={templatePreviews}
           previewMode={previewMode}
           badgeLabel={undefined}
-          title="Affordable Website Design in the Philippines"
-          description="Looking for website design price in the Philippines or monthly website maintenance? Start with ready templates, launch fast, and edit anytime."
+          title="Get a Business Website in 1 Day With No Tech Skills Needed"
+          description="We build, host, and let you edit your site anytime. Pay monthly."
           points={[
-            'Transparent setup + monthly plans',
-            'SEO-ready pages for local search',
-            'Launch fast with editable templates',
+            'Launch your website in 1 to 2 days',
+            'We handle design, hosting, and updates',
+            'Edit text, photos, and sections anytime',
           ]}
         />
 
         {/* Commitments */}
         <section className="py-12 sm:py-24 border-y border-border bg-muted/30 reveal">
           <div className="container mx-auto px-4">
+            <div className="mx-auto mb-8 max-w-3xl rounded-2xl border border-border bg-background p-5 text-center shadow-sm sm:mb-10 sm:p-6">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">What this is</p>
+              <p className="mt-2 text-base font-semibold text-foreground sm:text-lg">
+                A done for you website with an easy editor that we set up for you.
+              </p>
+              <p className="mt-3 text-sm text-muted-foreground sm:text-base">Average launch time: 24 hours</p>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
               {[
-                { label: 'Affordable Setup', value: 'Start Small', color: 'text-primary' },
-                { label: 'Flexible Payment', value: 'Monthly Subscription', color: 'text-amber-500' },
-                { label: 'Design Support', value: 'Request Updates Anytime', color: 'text-blue-500' },
+                { label: 'Fast launch', value: '1 to 2 Days', color: 'text-primary' },
+                { label: 'Managed for you', value: 'Design + Hosting + Updates', color: 'text-amber-500' },
+                { label: 'Edit anytime', value: 'Text, Photos, Sections', color: 'text-blue-500' },
               ].map((stat) => (
                 <div
                   key={stat.label}
@@ -180,25 +187,25 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
                 How Much Does a <span className="text-primary">Business Website Cost</span> in the Philippines?
               </h2>
               <p className="mx-auto max-w-2xl text-muted-foreground text-sm sm:text-lg">
-                Most businesses need one clear answer: affordable setup, predictable monthly cost, and a fast launch. Here is the simple version.
+                Most businesses overpay ₱20,000 to ₱50,000 for a website. We do it for a small setup plus monthly.
               </p>
             </div>
             <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
               {[
                 {
                   title: 'Setup Cost',
-                  value: 'Start Small',
-                  desc: 'One-time setup to launch your website with your branding, content, and business details.'
+                  value: 'Small Setup Fee',
+                  desc: 'Launch with your business details, branding, and pages already put together for you.'
                 },
                 {
                   title: 'Monthly Cost',
-                  value: 'Predictable Plans',
-                  desc: 'Clear monthly pricing for hosting, maintenance, and ongoing support.'
+                  value: 'Monthly Plan',
+                  desc: 'Hosting, maintenance, and support stay bundled so you do not need to hire separately.'
                 },
                 {
                   title: 'Time to Launch',
-                  value: 'Days, Not Months',
-                  desc: 'Use ready templates and go live quickly without long development delays.'
+                  value: 'Average: 24 Hours',
+                  desc: 'Most sites can be prepared fast because we start from proven templates and set them up for you.'
                 },
               ].map((item) => (
                 <div key={item.title} className="rounded-2xl border border-border bg-muted/30 p-5 text-left">
@@ -210,12 +217,12 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
             </div>
 
             <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-border bg-background p-6 text-left">
-              <h3 className="text-lg font-bold text-foreground">What You Usually Need First</h3>
+              <h3 className="text-lg font-bold text-foreground">What You Actually Get</h3>
               <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                <li>1. A professional homepage and service pages</li>
-                <li>2. Fast mobile-friendly layout and custom domain support</li>
-                <li>3. Easy editing so your team can update content anytime</li>
-                <li>4. SEO-ready page titles, descriptions, and structure</li>
+                <li>1. A ready to launch business website without hiring a full web agency</li>
+                <li>2. Managed hosting, updates, and support under one monthly plan</li>
+                <li>3. An easy editor so you can change text, photos, and sections yourself</li>
+                <li>4. SEO ready pages built to help local customers find you online</li>
               </ul>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                 <Link
@@ -365,7 +372,6 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
                       }`}
                       sizes="(max-width: 640px) 85vw, (max-width: 1024px) 48vw, 31vw"
                     />
-                    <div className="absolute inset-0 bg-black/75 pointer-events-none" />
                   </div>
 
                   <div className="pt-4 space-y-2">

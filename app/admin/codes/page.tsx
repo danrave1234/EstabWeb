@@ -77,8 +77,8 @@ interface PromoCode {
 }
 
 const PLAN_LABELS: Record<string, string> = {
-  basic: "Basic",
-  pro: "Pro",
+  basic: "Starter",
+  pro: "Business",
   ecommerce: "Ecommerce",
   custom: "Custom",
 };
@@ -610,8 +610,8 @@ function PromoCodesWorkspace() {
                 <div>
                   <label className="text-sm font-medium mb-1.5 block">Plan</label>
                   <select className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={form.plan_id} onChange={(e) => setForm({ ...form, plan_id: e.target.value as any })}>
-                    <option value="basic">Basic</option>
-                    <option value="pro">Pro</option>
+                    <option value="basic">Starter</option>
+                    <option value="pro">Business</option>
                     <option value="ecommerce">Ecommerce</option>
                     <option value="custom">Custom</option>
                   </select>
@@ -654,8 +654,8 @@ function PromoCodesWorkspace() {
                 <div>
                   <label className="text-sm font-medium mb-1.5 block">Plan</label>
                   <select className="w-full px-4 py-2 bg-muted/50 border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" value={editingPromo.plan_id} onChange={(e) => setEditingPromo({ ...editingPromo, plan_id: e.target.value as any })}>
-                    <option value="basic">Basic</option>
-                    <option value="pro">Pro</option>
+                    <option value="basic">Starter</option>
+                    <option value="pro">Business</option>
                     <option value="ecommerce">Ecommerce</option>
                     <option value="custom">Custom</option>
                   </select>

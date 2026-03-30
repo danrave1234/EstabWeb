@@ -142,11 +142,33 @@ create table if not exists project_leads (
   id uuid primary key default gen_random_uuid(),
   project_id uuid references projects(id) on delete cascade,
   type text not null check (type in ('messenger', 'viber', 'call', 'form')),
+  page_slug text,
+  section_key text,
+  source text,
+  visitor_id text,
+  session_id uuid references project_sessions(id) on delete set null,
+  first_touch_source text,
+  first_touch_utm jsonb,
   metadata jsonb default '{}',
   status text not null default 'new' check (status in ('new', 'contacted', 'closed')),
   notes text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
+);
+
+-- Session-based analytics attribution
+create table if not exists project_sessions (
+  id uuid primary key,
+  project_id uuid not null references projects(id) on delete cascade,
+  visitor_id text,
+  started_at timestamptz not null default now(),
+  ended_at timestamptz,
+  source text,
+  medium text,
+  campaign text,
+  device text,
+  country text,
+  metadata jsonb default '{}'
 );
 
 -- PayMongo Links lookup
@@ -175,11 +197,15 @@ create table if not exists payments (
 create table if not exists project_events (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references projects(id) on delete cascade,
-  event_type text not null check (event_type in ('page_view', 'section_view', 'cta_click', 'lead_submit', 'lead_form', 'lead_call', 'lead_messenger', 'lead_viber')),
+  event_type text not null check (event_type in ('page_view', 'section_view', 'view_section', 'cta_click', 'click_cta', 'lead_submit', 'lead_form', 'lead_call', 'lead_messenger', 'lead_viber', 'map_interact', 'scroll_depth', 'scroll', 'click_map', 'form_start', 'form_submit', 'session_start', 'session_end')),
   page_slug text,
   section_key text,
   cta_id text,
   source text,
+  visitor_id text,
+  session_id uuid references project_sessions(id) on delete cascade,
+  event_id uuid,
+  funnel_step text,
   metadata jsonb,
   created_at timestamptz default now()
 );
@@ -209,14 +235,22 @@ create index if not exists change_requests_project_status_idx on change_requests
 create index if not exists project_leads_project_idx on project_leads(project_id);
 create index if not exists project_leads_type_idx on project_leads(project_id, type);
 create index if not exists project_leads_created_at_idx on project_leads(project_id, created_at desc);
+create index if not exists idx_project_leads_session_id on project_leads (session_id);
+create index if not exists idx_project_leads_source on project_leads (source);
 create index if not exists template_codes_status_idx on template_codes(status);
 create index if not exists code_redemptions_user_idx on code_redemptions(redeemed_by);
 create unique index if not exists paymongo_links_link_id_idx on paymongo_links(link_id);
 create index if not exists paymongo_links_project_idx on paymongo_links(project_id);
 create index if not exists payments_project_idx on payments(project_id);
 create index if not exists payments_created_at_idx on payments(created_at desc);
+create index if not exists idx_project_sessions_project_started on project_sessions (project_id, started_at desc);
+create index if not exists idx_project_sessions_visitor on project_sessions (visitor_id);
 create index if not exists idx_project_events_project_created on project_events (project_id, created_at desc);
 create index if not exists idx_project_events_type on project_events (event_type);
+create index if not exists idx_project_events_visitor_id on project_events (visitor_id);
+create index if not exists idx_project_events_session_id on project_events (session_id);
+create index if not exists idx_project_events_event_id on project_events (event_id);
+create index if not exists idx_project_events_funnel_step on project_events (funnel_step);
 create index if not exists audit_logs_action_idx on audit_logs(action);
 create index if not exists audit_logs_project_idx on audit_logs(project_id);
 create index if not exists audit_logs_created_idx on audit_logs(created_at desc);

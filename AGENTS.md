@@ -13,7 +13,7 @@
 **EstabWeb** is a template-based whitelabel website builder tailored for local businesses in the Philippines. 
 - **Business Model**: We create custom templates based on a potential client's business (logo, details), deploy them to a subdomain, and provide a redemption code.
 - **Client Features**: Code redemption, custom domain mapping, AI section editor (auto-review & edit), AI SEO optimization, and lead/analytics tracking.
-- **Subscriptions**: Basic, Pro, Ecommerce, Custom.
+- **Subscriptions**: Starter (`basic`), Business (`pro`), Ecommerce, Custom.
 
 *Note: For standard setup, schema, and routing architecture, refer to `README.md` and `docs/FEATURES.md`.*
 
@@ -60,6 +60,18 @@
 - **Rule**: AI operations must respect token limits and return cleanly formatted JSON that precisely matches the expected site config structure. Provide strict system prompts for the AI to prevent malformed config states.
 - **Schema rule**: keep AI-editable section fields centralized in `lib/ai/section-field-schema.ts` and reuse that map in both prompt generation (`app/api/ai/editor-command/route.ts`) and operation sanitization (`lib/utils/validateOperations.ts`) so accepted fields always match AI instructions.
 - **Draft sync rule**: AI editor requests should include the current client-side config snapshot (`currentConfig`) so generated operation positions reflect unsaved local edits. Before applying AI operations, sync the snapshot to `draft_config` first to avoid stale-position mismatches.
+
+### 4.1 Analytics Normalization (Client Value Layer)
+- Public analytics must work across different hero/section variants, so track both the raw block ID (`section_key`) and normalized metadata (`section_family`, `section_variant`, `section_label`, `section_goal`, `section_position`, `is_hero_section`).
+- **Interactivity rule**: not every hero/section is meant to have the same interaction behavior. Keep section interactivity metadata (`section_is_interactive`, `section_interaction_type`, `section_interaction_label`) centralized in `lib/analytics/section-insights.ts` and emitted through `components/shared/SiteBlockRenderer.tsx` so passive sections are judged by visibility/assists while interactive sections can also be judged by clicks and CTA behavior.
+- Shared normalization now lives in `lib/analytics/section-insights.ts` and is sourced from `lib/utils/block-registry.ts` metadata.
+- **Session rule**: client-facing analytics is now built on `session -> events -> attribution -> metrics`. Keep `project_sessions`, `project_events.session_id`, and `project_leads.session_id` aligned whenever analytics schema or ingestion changes.
+- **Ingestion rule**: public events are buffered client-side in `components/shared/Analytics.tsx` and sent in batches to `/api/track-event`; that route must keep session upserts and bulk event inserts in sync with `lib/analytics/server-ingest.ts` and `lib/analytics/event-schema.ts`.
+- **Versioning rule**: published analytics must be version-aware. Use the project `config_version` as the public `page_version_id`, and include `section_slot`, `section_variant`, `section_instance_id`, and `page_version_id` in public section events/leads so dashboard insights do not silently mix pre-publish and post-publish layouts.
+- **Rule**: when adding or renaming public-facing sections, keep `lib/analytics/section-insights.ts`, `components/shared/SiteBlockRenderer.tsx`, `hooks/useSectionTracking.ts`, `hooks/useClickMapTracking.ts`, `components/shared/Analytics.tsx`, and `app/(hub)/dashboard/analytics/page.tsx` aligned so analytics stays comparable across templates.
+- **Attention rule**: the simple heatmap-style feature is section attention, not replay. `hooks/useSectionTracking.ts` should summarize visible time only while the section is in view and the tab/window is active, then send `section_attention` with `visible_time_ms`, `visible_time_seconds`, and `max_visibility_ratio` so the dashboard can explain where visitors actually spent time.
+- **Dashboard rule**: client-facing analytics should prioritize business questions in plain language (`Which section leads to inquiries?`, `Where do people drop off?`, `Which page turns visits into leads?`) rather than raw `section_key` values or technical jargon.
+- **Replay rule**: session replay/rrweb recording is no longer part of the product. Keep analytics focused on event-based, business-facing reporting only; do not reintroduce replay capture, replay tables, or replay UI without updating docs and analytics architecture guidance together.
 
 ### 5. Premium UI & Aesthetics - Anti-AI Patterns (CRITICAL)
 - **Design Standard**: DO NOT follow generic AI design patterns. The UI and any new sections must look intentionally **human-made** and professional.
@@ -127,6 +139,8 @@ When a paid subscription lapses (payment failure or expiry), **two code paths** 
   - hub: `app/llms.txt/route.ts`, `app/llms-full.txt/route.ts`
   - tenant: `app/(sites)/[domain]/llms.txt/route.ts`, `app/(sites)/[domain]/llms-full.txt/route.ts`
 - Tenant llms generation logic is in `lib/seo/tenant-llms.ts` and `lib/seo/llms.ts`.
+- Tenant metadata defaults are normalized by `lib/seo/autoSeo.ts`; keep placeholder seeds like `Your Business Name`, `Your City`, and demo contact values out of emitted titles, descriptions, keywords, and schema.
+- Tenant favicon delivery is same-origin via `app/(sites)/[domain]/favicon.ico/route.ts`; when updating public branding metadata, keep `app/(sites)/[domain]/layout.tsx`, `app/(sites)/[domain]/page.tsx`, and `app/(sites)/[domain]/[slug]/page.tsx` aligned so crawlers always see `/favicon.ico` on the tenant host.
 - **Rule**: when adding, renaming, or removing public pages, keep sitemap and llms outputs aligned so crawlers and AI systems receive consistent URL inventories.
 
 ### 13. Site Status Lifecycle (Disable / Archive / Restore)

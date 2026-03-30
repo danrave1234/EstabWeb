@@ -1052,8 +1052,8 @@ export const DEFAULT_PRICING_TABLE = {
   subtitle: "Choose the plan that fits.",
   plans: [
     { name: "Free", price: "₱0", description: "Get started for free.", features: [{ text: "Core features", included: true }, { text: "Analytics", included: false }], buttonText: "Get Started", isPopular: false },
-    { name: "Basic", price: "₱499", description: "Standard business presence.", features: [{ text: "Everything in Free", included: true }, { text: "Analytics summary", included: true }, { text: "Custom Domain", included: true }], buttonText: "Choose Basic", isPopular: true },
-    { name: "Pro", price: "₱999", description: "Advanced analytics & SEO.", features: [{ text: "Everything in Basic", included: true }, { text: "Advanced Analytics", included: true }, { text: "SEO Audit", included: true }], buttonText: "Get Pro", isPopular: false },
+    { name: "Starter", price: "₱499", description: "Best for small businesses starting online.", features: [{ text: "Everything in Free", included: true }, { text: "Simple visitor summary", included: true }, { text: "Custom domain", included: true }], buttonText: "Choose Starter", isPopular: false },
+    { name: "Business", price: "₱999", description: "Best for growing businesses that want more customers.", features: [{ text: "Everything in Starter", included: true }, { text: "Deeper visitor insights", included: true }, { text: "Google visibility help", included: true }], buttonText: "Choose Business", isPopular: true },
   ],
 };
 
@@ -1071,7 +1071,7 @@ export const DEFAULT_PRICING_COMPARISON_TABLE = {
   ],
   plans: [
     { name: "Starter", level: "starter", price: { monthly: 15, yearly: 144 } },
-    { name: "Pro", level: "pro", popular: true, price: { monthly: 49, yearly: 470 } },
+    { name: "Business", level: "pro", popular: true, price: { monthly: 49, yearly: 470 } },
     { name: "Enterprise", level: "all", price: { monthly: 99, yearly: 990 } },
   ],
   defaultPlan: "pro",

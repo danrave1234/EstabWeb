@@ -1,5 +1,6 @@
 "use client"
 
+import NumberFlow from "@number-flow/react"
 import { useState } from "react"
 import { PlanId, BillingInterval } from "@/config/plans"
 import { CheckCircleIcon } from "lucide-react"
@@ -56,7 +57,7 @@ export default function PlanPicker({ projectId, initialPlansConfig, notice }: Pr
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {planIds.map((id) => {
                     const plan = PLANS[id]
-                    const isPro = id === 'pro'
+                    const isBusiness = id === 'pro'
                     const isComingSoon = id === "ecommerce" || Boolean((plan as any)?.comingSoon)
                     const recurring = interval === "yearly" ? (plan as any).yearlyAmount : plan.recurringAmount
 
@@ -66,14 +67,14 @@ export default function PlanPicker({ projectId, initialPlansConfig, notice }: Pr
                             className={`relative flex flex-col p-6 rounded-2xl border bg-card transition-all ${
                                 isComingSoon
                                     ? "border-amber-300 bg-amber-50/30"
-                                    : isPro
+                                    : isBusiness
                                         ? 'border-primary ring-1 ring-primary shadow-xl scale-105 z-10 hover:border-primary'
                                         : 'border-border shadow-sm hover:border-primary/50'
                             }`}
                         >
-                            {isPro && (
+                            {isBusiness && (
                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest rounded-full">
-                                    Most Popular
+                                    Most Recommended
                                 </div>
                             )}
                             {isComingSoon && (
@@ -88,8 +89,17 @@ export default function PlanPicker({ projectId, initialPlansConfig, notice }: Pr
                                     <span className="text-3xl font-black">₱{(plan.initialAmount / 100).toLocaleString()}</span>
                                     <span className="text-xs text-muted-foreground font-medium">Initial</span>
                                 </div>
-                                <p className="text-[10px] text-muted-foreground mt-1">
-                                    Then ₱{(recurring / 100).toLocaleString()} / {interval === "yearly" ? "year" : "month"}
+                                <p className="mt-1 flex items-baseline gap-1 text-[10px] text-muted-foreground">
+                                    <span>Then ₱</span>
+                                    <NumberFlow
+                                        value={recurring / 100}
+                                        format={{
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0,
+                                        }}
+                                        className="font-semibold text-foreground/90"
+                                    />
+                                    <span>/ {interval === "yearly" ? "year" : "month"}</span>
                                 </p>
                             </div>
 
@@ -112,13 +122,13 @@ export default function PlanPicker({ projectId, initialPlansConfig, notice }: Pr
                                         Soon Available
                                     </button>
                                     <p className="text-[10px] text-amber-700 text-center">
-                                        E-commerce upgrade is in development and not yet open for checkout.
+                                        Online store upgrade is in development and not yet open for checkout.
                                     </p>
                                 </div>
                             ) : (
                                 <Link
                                     href={`/subscribe/${projectId}?planId=${id}&interval=${interval}`}
-                                    className={`w-full py-2.5 rounded-xl text-center text-xs font-bold uppercase tracking-widest transition-all ${isPro ? 'bg-primary text-primary-foreground hover:opacity-90' : 'bg-muted hover:bg-muted-foreground/10 text-foreground'}`}
+                                    className={`w-full py-2.5 rounded-xl text-center text-xs font-bold uppercase tracking-widest transition-all ${isBusiness ? 'bg-primary text-primary-foreground hover:opacity-90' : 'bg-muted hover:bg-muted-foreground/10 text-foreground'}`}
                                 >
                                     Select {plan.label}
                                 </Link>

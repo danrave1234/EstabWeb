@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { headers } from "next/headers";
 import { sendLeadFormNotification } from "@/lib/email/lead-notification";
 import { trackLeadLimiter } from "@/lib/security/rate-limit";
+import { buildEventInsert, buildSessionUpsert } from "@/lib/analytics/server-ingest";
 
 const VALID_TYPES = ["messenger", "call", "form", "viber"] as const;
 type LeadType = (typeof VALID_TYPES)[number];
@@ -112,6 +113,26 @@ export async function POST(request: Request) {
     const supabase = createServiceClient();
 
     const geoMeta = { geo_city: city, geo_region: region, geo_country: country };
+    const userAgent = hdrs.get("user-agent");
+
+    if (session_id) {
+      const { error: sessionError } = await supabase.from("project_sessions").upsert(
+        buildSessionUpsert({
+          id: session_id,
+          project_id,
+          visitor_id,
+          source,
+          country,
+          userAgent,
+        }),
+        { onConflict: "id" },
+      );
+
+      if (sessionError) {
+        console.error("[track-lead] project_sessions upsert error:", sessionError.message);
+        return NextResponse.json({ error: "Failed to persist lead session" }, { status: 500 });
+      }
+    }
 
     // Insert into project_leads (CRM record)
     const { error: leadError } = await supabase.from("project_leads").insert({
@@ -134,31 +155,52 @@ export async function POST(request: Request) {
 
     // Also insert into project_events for funnel tracking
     const event_type = EVENT_TYPE_MAP[type];
-    const { error: eventError } = await supabase.from("project_events").insert({
-      project_id,
-      event_type,
-      page_slug:   page_slug   ?? null,
-      section_key: section_key ?? null,
-      cta_id:      null,
-      source:      source      ?? null,
-      visitor_id:  visitor_id  ?? null,
-      session_id:  session_id  ?? null,
-      funnel_step: "lead",
-      metadata: { ...(metadata ?? {}), ...geoMeta },
-    });
+    const { error: eventError } = await supabase.from("project_events").insert(
+      buildEventInsert(
+        {
+          type: event_type,
+          project_id,
+          page_slug: page_slug ?? null,
+          section_key: section_key ?? null,
+          source: source ?? null,
+          visitor_id: visitor_id ?? null,
+          session_id: session_id ?? null,
+          funnel_step: "lead",
+          metadata: metadata ?? {},
+        },
+        geoMeta,
+      ),
+    );
 
     if (eventError) {
       // Non-fatal: lead was already saved, just log
       console.error("[track-lead] project_events insert error:", eventError.message);
     }
 
-    if (type === "form") {
-      const { data: projectRow } = await supabase
-        .from("projects")
-        .select("current_config, subdomain, custom_domain")
-        .eq("id", project_id)
-        .maybeSingle();
+    const { data: projectRow } = await supabase
+      .from("projects")
+      .select("user_id, current_config, subdomain, custom_domain")
+      .eq("id", project_id)
+      .maybeSingle();
 
+    if (projectRow?.user_id) {
+      const config = projectRow.current_config as any;
+      const brandName = config?.brand?.name || config?.siteName || "Your Website";
+      
+      const { error: notifError } = await supabase.from("notifications").insert({
+        user_id: projectRow.user_id,
+        project_id,
+        type: "lead",
+        title: `New Lead: ${brandName}`,
+        message: `You received a new ${type} lead${source ? ` from ${source}` : ""}.`,
+        action_url: `/dashboard/analytics?project=${project_id}`,
+      });
+      if (notifError) {
+        console.error("[track-lead] Failed to insert notification:", notifError.message);
+      }
+    }
+
+    if (type === "form") {
       const config = projectRow?.current_config as any;
       const brandName = config?.brand?.name || config?.siteName || null;
       const domain = projectRow?.custom_domain || (projectRow?.subdomain ? `${projectRow.subdomain}.estabweb.com` : null);

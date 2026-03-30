@@ -54,26 +54,33 @@ export default function PricingClient() {
     ];
 
     const features: PricingFeature[] = [
-        { name: "Managed hosting included", included: "free" },
-        { name: "Subdomain access (name.site.ph)", included: "free" },
-        { name: "Single-page website (Home + legal pages)", included: "free" },
-        { name: "Industry-specific templates", included: "free" },
-        { name: "Mobile Responsive", included: "free" },
-        { name: "SSL Certificate", included: "free" },
-        { name: "Multi-page website support", included: "basic" },
-        { name: "Custom Domain connection", included: "basic" },
-        { name: "Basic Analytics summary", included: "basic" },
-        { name: "AI-Powered Content Editor", included: "basic" },
-        { name: "Priority Technical Support", included: "basic" },
-        { name: "1 Month Free Monthly Care", included: "basic" },
-        { name: "Advanced Conversion Analytics", included: "pro" },
-        { name: "Section Heatmaps", included: "pro" },
-        { name: "SEO Audit & Optimization", included: "pro" },
-        { name: "Priority Support", included: "pro" },
-        { name: "Product Inventory Management", included: "ecommerce" },
-        { name: "Online Payment Integration", included: "ecommerce" },
-        { name: "Order Tracking", included: "ecommerce" },
+        { name: "Launch with managed hosting included", included: "free" },
+        { name: "Get your own subdomain right away", included: "free" },
+        { name: "Start with a clean one page website", included: "free" },
+        { name: "Use a ready made business template", included: "free" },
+        { name: "Works well on mobile phones", included: "free" },
+        { name: "Website security certificate included", included: "free" },
+        { name: "Add more pages as your business grows", included: "basic" },
+        { name: "Use your own custom domain", included: "basic" },
+        { name: "See your website visits in one simple dashboard", included: "basic" },
+        { name: "Edit your website easily anytime", included: "basic" },
+        { name: "We help handle hosting and updates", included: "basic" },
+        { name: "1 month free monthly care included", included: "basic" },
+        { name: "Know which pages help bring inquiries", included: "pro" },
+        { name: "See where visitors spend attention before leaving", included: "pro" },
+        { name: "Help your business show on Google", included: "pro" },
+        { name: "Get faster support when you need changes", included: "pro" },
+        { name: "Sell products with inventory management", included: "ecommerce" },
+        { name: "Accept online payments", included: "ecommerce" },
+        { name: "Track customer orders", included: "ecommerce" },
     ];
+
+    const planSummaries: Record<string, string> = {
+        free: "For trying things out before you upgrade",
+        basic: "Best for small businesses starting online",
+        pro: "Best for growing businesses that want more customers",
+        ecommerce: "Best for selling products online",
+    };
 
     return (
         <>
@@ -83,20 +90,29 @@ export default function PricingClient() {
                         Transparent Pricing
                     </div>
                     <h1 className="text-xl lg:text-3xl font-black tracking-tight leading-tight">
-                        Simple Plans for <span className="text-primary">Local Growth.</span>
+                        Website Plans Built to <span className="text-primary">Bring in Customers</span>
                     </h1>
                     <p className="text-[10px] lg:text-sm text-muted-foreground leading-snug max-w-lg mx-auto">
-                        Simply create a project and apply a subscription to it. No hidden fees. A professional, high-performance website managed by experts.
+                        Pick the plan that fits your business stage. We build it, host it, and you can edit it anytime without tech skills.
                     </p>
                     <p className="text-[8px] lg:text-[9px] font-semibold text-muted-foreground/70">
-                        Free plan: single-page. Others: multi-page support.
+                        If your website brings just 1 to 2 customers per month, it can already pay for itself.
                     </p>
+                </div>
+
+                <div className="mt-5 grid w-full max-w-4xl grid-cols-2 gap-2 px-4 md:grid-cols-4 md:gap-3">
+                    {plans.map((plan) => (
+                        <div key={plan.level} className="rounded-2xl border border-border bg-muted/20 p-3 text-left md:p-4">
+                            <p className="text-[9px] font-black uppercase tracking-[0.14em] text-primary md:text-[10px] md:tracking-[0.18em]">{plan.name}</p>
+                            <p className="mt-1.5 text-xs font-semibold leading-snug text-foreground md:mt-2 md:text-sm">{planSummaries[plan.level] || "Built for your business"}</p>
+                        </div>
+                    ))}
                 </div>
 
                 <PricingTable 
                     plans={plans}
                     features={features}
-                    defaultPlan="basic"
+                    defaultPlan="pro"
                     onPlanSelect={(plan) => {
                         console.log("Selected plan:", plan);
                     }}
@@ -111,6 +127,11 @@ export default function PricingClient() {
                     containerClassName="py-4 lg:py-8"
                     buttonClassName="bg-primary hover:bg-primary/90 rounded-full font-bold text-white dark:text-black"
                 />
+
+                <div className="mt-4 w-full max-w-4xl rounded-[28px] border border-border bg-background p-5 text-center">
+                    <p className="text-sm font-semibold text-foreground">No contracts, cancel anytime. We also help you get set up.</p>
+                    <p className="mt-2 text-xs text-muted-foreground">Free is limited to a single page so you can try the platform without getting stuck in a long commitment.</p>
+                </div>
 
                 <div className="mt-0 p-5 rounded-[28px] border border-border max-w-3xl w-full flex flex-col md:flex-row items-center justify-between gap-6 bg-muted/30">
                     <div className="flex gap-4">

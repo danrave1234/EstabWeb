@@ -14,8 +14,8 @@ interface UpgradeButtonProps {
 
 const PLAN_LABELS: Record<string, string> = {
   free: "Free",
-  basic: "Basic",
-  pro: "Pro",
+  basic: "Starter",
+  pro: "Business",
   ecommerce: "Ecommerce",
   custom: "Custom",
 }

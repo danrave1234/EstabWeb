@@ -3,6 +3,7 @@
 
 const mockLeadsInsert = jest.fn()
 const mockEventsInsert = jest.fn()
+const mockSessionsUpsert = jest.fn()
 
 jest.mock("@/lib/email/lead-notification", () => ({
   sendLeadFormNotification: jest.fn(() => Promise.resolve()),
@@ -20,6 +21,7 @@ jest.mock("@/lib/supabase/service", () => ({
     from: jest.fn((table: string) => {
       if (table === "project_leads") return { insert: mockLeadsInsert }
       if (table === "project_events") return { insert: mockEventsInsert }
+      if (table === "project_sessions") return { upsert: mockSessionsUpsert }
       if (table === "projects")
         return {
           select: jest.fn(() => ({
@@ -107,6 +109,7 @@ describe("POST /api/track-lead", () => {
       POST = require("@/app/api/track-lead/route").POST
       mockLeadsInsert.mockResolvedValue({ error: null })
       mockEventsInsert.mockResolvedValue({ error: null })
+      mockSessionsUpsert.mockResolvedValue({ error: null })
 
       const res = await POST(makeRequest({ type, project_id: "proj-1", page_slug: "home", source: "organic" }))
       const json = await res.json()
@@ -129,6 +132,7 @@ describe("POST /api/track-lead", () => {
     POST = require("@/app/api/track-lead/route").POST
     mockLeadsInsert.mockResolvedValue({ error: null })
     mockEventsInsert.mockResolvedValue({ error: null })
+    mockSessionsUpsert.mockResolvedValue({ error: null })
 
     await POST(makeRequest({
       type: "call",
@@ -154,16 +158,19 @@ describe("POST /api/track-lead", () => {
     POST = require("@/app/api/track-lead/route").POST
     mockLeadsInsert.mockResolvedValue({ error: null })
     mockEventsInsert.mockResolvedValue({ error: null })
+    mockSessionsUpsert.mockResolvedValue({ error: null })
 
     await POST(makeRequest({ type: "form", project_id: "proj-1", visitor_id: "vis-1", session_id: "ses-1" }))
     expect(mockEventsInsert).toHaveBeenCalledWith(
       expect.objectContaining({ funnel_step: "lead", visitor_id: "vis-1", session_id: "ses-1" }),
     )
+    expect(mockSessionsUpsert).toHaveBeenCalled()
   })
 
   // --- DB errors ---
   it("returns 500 when project_leads insert fails", async () => {
     mockLeadsInsert.mockResolvedValue({ error: { message: "db error" } })
+    mockSessionsUpsert.mockResolvedValue({ error: null })
 
     const res = await POST(makeRequest({ type: "call", project_id: "proj-1" }))
     const json = await res.json()
@@ -174,6 +181,7 @@ describe("POST /api/track-lead", () => {
   it("still returns 200 when project_events insert fails (non-fatal)", async () => {
     mockLeadsInsert.mockResolvedValue({ error: null })
     mockEventsInsert.mockResolvedValue({ error: { message: "event error" } })
+    mockSessionsUpsert.mockResolvedValue({ error: null })
 
     const res = await POST(makeRequest({ type: "messenger", project_id: "proj-1" }))
     const json = await res.json()
@@ -194,6 +202,7 @@ describe("POST /api/track-lead", () => {
     POST = require("@/app/api/track-lead/route").POST
     mockLeadsInsert.mockResolvedValue({ error: null })
     mockEventsInsert.mockResolvedValue({ error: null })
+    mockSessionsUpsert.mockResolvedValue({ error: null })
 
     await POST(makeRequest({ type: "viber", project_id: "proj-1" }))
     expect(mockLeadsInsert).toHaveBeenCalledWith(

@@ -22,6 +22,7 @@ jest.mock("@/components/shared/Analytics", () => ({
 import { useScrollDepthTracking } from "@/hooks/useScrollDepthTracking"
 import { useClickMapTracking } from "@/hooks/useClickMapTracking"
 import { useSessionTracking } from "@/hooks/useSessionTracking"
+import { useSectionTracking } from "@/hooks/useSectionTracking"
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -196,6 +197,209 @@ describe("useClickMapTracking", () => {
     unmount()
     expect(removeSpy).toHaveBeenCalledWith("click", expect.any(Function))
     removeSpy.mockRestore()
+  })
+})
+
+// ─── useSectionTracking ───────────────────────────────────────────────────────
+
+describe("useSectionTracking", () => {
+  const observedTargets = new Set<Element>()
+  let observerCallback: IntersectionObserverCallback | null = null
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    observedTargets.clear()
+    observerCallback = null
+    sessionStorage.clear()
+    Object.defineProperty(document, "visibilityState", {
+      value: "visible",
+      configurable: true,
+    })
+    Object.defineProperty(document, "hasFocus", {
+      value: () => true,
+      configurable: true,
+    })
+
+    class MockIntersectionObserver {
+      constructor(callback: IntersectionObserverCallback) {
+        observerCallback = callback
+      }
+
+      observe(target: Element) {
+        observedTargets.add(target)
+      }
+
+      unobserve(target: Element) {
+        observedTargets.delete(target)
+      }
+
+      disconnect() {
+        observedTargets.clear()
+      }
+    }
+
+    Object.defineProperty(window, "IntersectionObserver", {
+      writable: true,
+      configurable: true,
+      value: MockIntersectionObserver,
+    })
+  })
+
+  it("does NOT fire if projectId is undefined", () => {
+    const section = document.createElement("section")
+    section.setAttribute("data-section", "gym--faq")
+    document.body.appendChild(section)
+
+    renderHook(() => useSectionTracking(undefined, "home"))
+
+    expect(observedTargets.size).toBe(0)
+    expect(mockTrackEvent).not.toHaveBeenCalled()
+
+    document.body.removeChild(section)
+  })
+
+  it("tracks a section view through the shared analytics helper", () => {
+    const section = document.createElement("section")
+    section.setAttribute("data-section", "gym--faq")
+    section.setAttribute("data-section-slot", "faq")
+    section.setAttribute("data-section-family", "faq")
+    section.setAttribute("data-section-variant", "gym--faq")
+    section.setAttribute("data-section-instance-id", "42:3:gym--faq")
+    section.setAttribute("data-page-version-id", "42")
+    section.setAttribute("data-section-label", "Gym FAQ")
+    section.setAttribute("data-section-goal", "trust")
+    document.body.appendChild(section)
+
+    renderHook(() => useSectionTracking("proj-1", "home"))
+
+    expect(observedTargets.has(section)).toBe(true)
+
+    act(() => {
+      observerCallback?.([
+        {
+          isIntersecting: true,
+          target: section,
+        } as IntersectionObserverEntry,
+      ], {} as IntersectionObserver)
+    })
+
+    expect(mockTrackEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "section_view",
+        project_id: "proj-1",
+        page_slug: "home",
+        section_key: "gym--faq",
+        metadata: expect.objectContaining({
+          section_slot: "faq",
+          section_family: "faq",
+          section_variant: "gym--faq",
+          section_instance_id: "42:3:gym--faq",
+          page_version_id: "42",
+          section_label: "Gym FAQ",
+          section_goal: "trust",
+          section_is_interactive: true,
+          section_interaction_type: "faq",
+          section_interaction_label: "Questions people expand",
+        }),
+      }),
+    )
+
+    document.body.removeChild(section)
+  })
+
+  it("tracks a section only once per browser session", () => {
+    const section = document.createElement("section")
+    section.setAttribute("data-section", "gym--faq")
+    document.body.appendChild(section)
+
+    const { rerender } = renderHook(
+      ({ slug }: { slug: string }) => useSectionTracking("proj-1", slug),
+      { initialProps: { slug: "home" } },
+    )
+
+    act(() => {
+      observerCallback?.([
+        {
+          isIntersecting: true,
+          target: section,
+        } as IntersectionObserverEntry,
+      ], {} as IntersectionObserver)
+    })
+
+    expect(mockTrackEvent).toHaveBeenCalledTimes(1)
+
+    rerender({ slug: "home" })
+
+    act(() => {
+      observerCallback?.([
+        {
+          isIntersecting: true,
+          target: section,
+        } as IntersectionObserverEntry,
+      ], {} as IntersectionObserver)
+    })
+
+    expect(mockTrackEvent).toHaveBeenCalledTimes(1)
+
+    document.body.removeChild(section)
+  })
+
+  it("tracks section attention only while the section is visible and the tab stays active", () => {
+    jest.useFakeTimers()
+
+    const section = document.createElement("section")
+    section.setAttribute("data-section", "gym--faq")
+    section.setAttribute("data-section-slot", "faq")
+    section.setAttribute("data-section-family", "faq")
+    section.setAttribute("data-section-variant", "gym--faq")
+    section.setAttribute("data-section-instance-id", "42:3:gym--faq")
+    section.setAttribute("data-page-version-id", "42")
+    document.body.appendChild(section)
+
+    renderHook(() => useSectionTracking("proj-1", "home"))
+
+    act(() => {
+      observerCallback?.([
+        {
+          isIntersecting: true,
+          intersectionRatio: 0.6,
+          target: section,
+        } as IntersectionObserverEntry,
+      ], {} as IntersectionObserver)
+    })
+
+    act(() => {
+      jest.advanceTimersByTime(1200)
+      Object.defineProperty(document, "visibilityState", {
+        value: "hidden",
+        configurable: true,
+      })
+      document.dispatchEvent(new Event("visibilitychange"))
+    })
+
+    const attentionCall = mockTrackEvent.mock.calls.find((call) => call[0].type === "section_attention")
+    expect(attentionCall?.[0]).toEqual(
+      expect.objectContaining({
+        type: "section_attention",
+        project_id: "proj-1",
+        page_slug: "home",
+        section_key: "gym--faq",
+        metadata: expect.objectContaining({
+          section_slot: "faq",
+          section_family: "faq",
+          section_variant: "gym--faq",
+          section_instance_id: "42:3:gym--faq",
+          page_version_id: "42",
+          visible_time_ms: expect.any(Number),
+          visible_time_seconds: expect.any(Number),
+          max_visibility_ratio: 0.6,
+        }),
+      }),
+    )
+    expect(attentionCall?.[0].metadata.visible_time_ms).toBeGreaterThanOrEqual(1000)
+
+    document.body.removeChild(section)
+    jest.useRealTimers()
   })
 })
 

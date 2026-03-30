@@ -1,25 +1,52 @@
 "use client";
 
 import Script from "next/script";
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import {
+  getSectionAnalyticsMeta,
+  getSectionAnalyticsMetaFromDataset,
+  sectionMetaToEventMetadata,
+} from "@/lib/analytics/section-insights";
+import {
+  type AnalyticsEventInput,
+  type AnalyticsEventType,
+  type FunnelStep,
+  canonicalizeAnalyticsEventType,
+  defaultFunnelStepForEvent,
+} from "@/lib/analytics/event-schema";
 
 // ---------------------------------------------------------------------------
 // Analytics Context — replaces window.PROJECT_ID global
 // ---------------------------------------------------------------------------
 
-const AnalyticsContext = createContext<string | undefined>(undefined);
+type AnalyticsContextValue = {
+  projectId?: string;
+  pageVersionId?: string;
+};
 
-function PageViewTrackerInner({ projectId }: { projectId?: string }) {
-  usePageViewTracker(projectId);
+const AnalyticsContext = createContext<AnalyticsContextValue>({});
+
+function PageViewTrackerInner({ projectId, pageVersionId }: { projectId?: string; pageVersionId?: string }) {
+  usePageViewTracker(projectId, pageVersionId);
+  return null;
+}
+function SectionTrackerInner({ projectId, pageVersionId }: { projectId?: string; pageVersionId?: string }) {
+  useSectionTracker(projectId, pageVersionId);
+  return null;
+}
+function SessionTrackerInner({ projectId }: { projectId?: string }) {
+  useSessionTracking(projectId);
   return null;
 }
 
 export function AnalyticsProvider({
   projectId,
+  pageVersionId,
   children,
 }: {
   projectId?: string;
+  pageVersionId?: string;
   children: React.ReactNode;
 }) {
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
@@ -27,14 +54,25 @@ export function AnalyticsProvider({
 
   // Expose projectId on window so plain (non-hook) trackLead() calls can read it
   useEffect(() => {
-    if (projectId && typeof window !== "undefined" && !isPreviewContext()) {
+    if (typeof window === "undefined" || isPreviewContext()) return;
+    if (projectId) {
       window.PROJECT_ID = projectId;
     }
-  }, [projectId]);
+    if (pageVersionId) {
+      window.PAGE_VERSION_ID = pageVersionId;
+    }
+  }, [projectId, pageVersionId]);
+
+  const contextValue = useMemo(
+    () => ({ projectId, pageVersionId }),
+    [projectId, pageVersionId]
+  );
 
   return (
-    <AnalyticsContext.Provider value={projectId}>
-      {!inPreview && <PageViewTrackerInner projectId={projectId} />}
+    <AnalyticsContext.Provider value={contextValue}>
+      {!inPreview && <PageViewTrackerInner projectId={projectId} pageVersionId={pageVersionId} />}
+      {!inPreview && <SectionTrackerInner projectId={projectId} pageVersionId={pageVersionId} />}
+      {!inPreview && <SessionTrackerInner projectId={projectId} />}
       {siteKey && (
         <Script
           src={`https://www.google.com/recaptcha/api.js?render=${siteKey}`}
@@ -47,7 +85,31 @@ export function AnalyticsProvider({
 }
 
 export function useProjectId() {
-  return useContext(AnalyticsContext);
+  return useContext(AnalyticsContext).projectId;
+}
+
+function resolvePageVersionId(explicitPageVersionId?: string) {
+  if (explicitPageVersionId) return explicitPageVersionId;
+  if (typeof window === "undefined") return undefined;
+  return window.PAGE_VERSION_ID;
+}
+
+function stringifyPageVersionId(value?: string) {
+  return value ?? undefined;
+}
+
+function buildSectionTrackingMetadata(
+  sectionMeta: ReturnType<typeof getSectionAnalyticsMetaFromDataset>,
+  dataset?: DOMStringMap,
+  extraMetadata?: Record<string, unknown>
+) {
+  return sectionMetaToEventMetadata(sectionMeta, {
+    ...extraMetadata,
+    section_slot:
+      dataset?.sectionSlot || sectionMeta?.sectionFamily || dataset?.sectionFamily || undefined,
+    section_instance_id: dataset?.sectionInstanceId || undefined,
+    page_version_id: dataset?.pageVersionId || resolvePageVersionId(),
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -84,6 +146,100 @@ export function getOrCreateSessionId(): string {
   } catch {
     return "";
   }
+}
+
+const EVENT_BUFFER_KEY = "__analytics_batch_queue"
+const MAX_BUFFER_SIZE = 10
+const FLUSH_INTERVAL_MS = 5000
+let flushTimer: number | null = null
+
+function getSessionAttribution() {
+  if (typeof window === "undefined") {
+    return {
+      source: "direct",
+      medium: null as string | null,
+      campaign: null as string | null,
+    }
+  }
+  const params = new URLSearchParams(window.location.search)
+  return {
+    source: params.get("utm_source") ?? resolveTrafficSource(),
+    medium: params.get("utm_medium"),
+    campaign: params.get("utm_campaign"),
+  }
+}
+
+function readBufferedEvents() {
+  if (typeof window === "undefined") return [] as Record<string, unknown>[]
+  try {
+    const raw = sessionStorage.getItem(EVENT_BUFFER_KEY)
+    return raw ? (JSON.parse(raw) as Record<string, unknown>[]) : []
+  } catch {
+    return []
+  }
+}
+
+function writeBufferedEvents(events: Record<string, unknown>[]) {
+  if (typeof window === "undefined") return
+  try {
+    if (events.length === 0) {
+      sessionStorage.removeItem(EVENT_BUFFER_KEY)
+      return
+    }
+    sessionStorage.setItem(EVENT_BUFFER_KEY, JSON.stringify(events))
+  } catch {
+    // ignore storage failures
+  }
+}
+
+function flushBufferedEvents() {
+  if (typeof window === "undefined") return
+  const projectId = window.PROJECT_ID
+  const events = readBufferedEvents()
+  if (!projectId || events.length === 0) return
+
+  writeBufferedEvents([])
+  if (flushTimer !== null) {
+    window.clearTimeout(flushTimer)
+    flushTimer = null
+  }
+
+  const attribution = getSessionAttribution()
+  const payload = JSON.stringify({
+    project_id: projectId,
+    session_id: getOrCreateSessionId(),
+    visitor_id: getOrCreateVisitorId(),
+    source: attribution.source,
+    medium: attribution.medium,
+    campaign: attribution.campaign,
+    events,
+  })
+
+  fetch("/api/track-event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: payload,
+    keepalive: true,
+  }).catch(() => {
+    writeBufferedEvents(events.concat(readBufferedEvents()))
+  })
+}
+
+function enqueueEvent(event: Record<string, unknown>) {
+  if (typeof window === "undefined") return
+  const buffered = readBufferedEvents()
+  buffered.push(event)
+  writeBufferedEvents(buffered)
+
+  if (buffered.length >= MAX_BUFFER_SIZE) {
+    flushBufferedEvents()
+    return
+  }
+
+  if (flushTimer !== null) return
+  flushTimer = window.setTimeout(() => {
+    flushBufferedEvents()
+  }, FLUSH_INTERVAL_MS)
 }
 
 // ---------------------------------------------------------------------------
@@ -143,24 +299,7 @@ export function resolveTrafficSource(): string {
 // ---------------------------------------------------------------------------
 // trackEvent – fire-and-forget event to /api/track-event
 // ---------------------------------------------------------------------------
-export type EventType =
-  | 'page_view'
-  | 'section_view'
-  | 'cta_click'
-  | 'lead_submit'
-  | 'lead_form'
-  | 'lead_call'
-  | 'lead_messenger'
-  | 'lead_viber'
-  | 'map_interact'
-  | 'scroll_depth'
-  | 'click_map'
-  | 'form_start'
-  | 'form_submit'
-  | 'session_start'
-  | 'session_end';
-
-export type FunnelStep = 'landing' | 'engaged' | 'cta' | 'lead';
+export type EventType = AnalyticsEventType;
 
 export function isPreviewContext(): boolean {
   if (typeof window === "undefined") return false;
@@ -171,51 +310,90 @@ export function isPreviewContext(): boolean {
   return params.get("preview") === "true";
 }
 
-export function trackEvent(payload: {
-  type: EventType;
-  project_id?: string;
-  page_slug?: string;
-  section_key?: string;
-  cta_id?: string;
-  source?: string;
-  funnel_step?: FunnelStep;
-  metadata?: Record<string, unknown>;
-}) {
+export function trackEvent(payload: AnalyticsEventInput) {
   if (typeof window === "undefined") return;
-  // Never track analytics inside the dashboard preview iframe
   if (isPreviewContext()) return;
   const resolvedProjectId = payload.project_id ?? window.PROJECT_ID;
   if (!resolvedProjectId) return;
 
-  const body = JSON.stringify({
-    ...payload,
-    project_id: resolvedProjectId,
-    source: payload.source ?? resolveTrafficSource(),
-    visitor_id: getOrCreateVisitorId(),
-    session_id: getOrCreateSessionId(),
-    event_id: crypto.randomUUID(),
-  });
+  window.PROJECT_ID = resolvedProjectId;
 
-  const sent =
-    typeof navigator.sendBeacon === "function" &&
-    navigator.sendBeacon(
-      "/api/track-event",
-      new Blob([body], { type: "application/json" })
-    );
-  if (!sent) {
-    fetch("/api/track-event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body,
-      keepalive: true,
-    }).catch(() => {});
-  }
+  const canonicalType = canonicalizeAnalyticsEventType(payload.type);
+  const pageVersionId =
+    typeof payload.metadata?.page_version_id === "string"
+      ? payload.metadata.page_version_id
+      : resolvePageVersionId();
+
+  enqueueEvent({
+    event_type: canonicalType,
+    timestamp: new Date().toISOString(),
+    page: payload.page_slug ? `/${payload.page_slug}` : window.location.pathname,
+    page_slug: payload.page_slug,
+    element_id: payload.cta_id ?? payload.section_key,
+    section_key: payload.section_key,
+    cta_id: payload.cta_id,
+    funnel_step: payload.funnel_step ?? defaultFunnelStepForEvent(canonicalType),
+    metadata: {
+      ...(payload.metadata ?? {}),
+      page_version_id: stringifyPageVersionId(pageVersionId),
+    },
+  });
+}
+
+export function initializeAnalyticsSession(projectId?: string) {
+  if (typeof window === "undefined") return;
+  if (isPreviewContext()) return;
+  const resolvedProjectId = projectId ?? window.PROJECT_ID;
+  if (!resolvedProjectId) return;
+
+  window.PROJECT_ID = resolvedProjectId;
+  const sessionId = getOrCreateSessionId();
+  const visitorId = getOrCreateVisitorId();
+  const attribution = getSessionAttribution();
+
+  fetch("/api/track-event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      project_id: resolvedProjectId,
+      session_id: sessionId,
+      visitor_id: visitorId,
+      source: attribution.source,
+      medium: attribution.medium,
+      campaign: attribution.campaign,
+      started_at: new Date().toISOString(),
+      events: [],
+    }),
+    keepalive: true,
+  }).catch(() => {});
+}
+
+export function useSessionTracking(projectId?: string) {
+  useEffect(() => {
+    if (!projectId) return;
+    initializeAnalyticsSession(projectId);
+
+    const flushBeforeUnload = () => {
+      trackEvent({
+        type: "session_end",
+        project_id: projectId,
+        metadata: { ended_at: new Date().toISOString() },
+      });
+      flushBufferedEvents();
+    };
+
+    window.addEventListener("beforeunload", flushBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", flushBeforeUnload);
+      flushBufferedEvents();
+    };
+  }, [projectId]);
 }
 
 // ---------------------------------------------------------------------------
 // usePageViewTracker – call inside a client component to track page views
 // ---------------------------------------------------------------------------
-export function usePageViewTracker(projectId?: string) {
+export function usePageViewTracker(projectId?: string, pageVersionId?: string) {
   const pathname = usePathname();
   const tracked = useRef<string | null>(null);
   useEffect(() => {
@@ -232,14 +410,104 @@ export function usePageViewTracker(projectId?: string) {
       project_id: projectId,
       page_slug: slug,
       funnel_step: "landing",
+      metadata: {
+        page_version_id: stringifyPageVersionId(resolvePageVersionId(pageVersionId)),
+      },
     });
-  }, [pathname, projectId]);
+  }, [pathname, projectId, pageVersionId]);
+}
+
+// ---------------------------------------------------------------------------
+// useSectionTracker — IntersectionObserver for section_view + click delegation
+// for cta_click. Call once inside the public site layout client component.
+// ---------------------------------------------------------------------------
+export function useSectionTracker(projectId?: string, pageVersionId?: string) {
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (isPreviewContext()) return;
+    const resolvedProjectId = projectId ?? window.PROJECT_ID;
+    if (!resolvedProjectId) return;
+
+    const viewedSections = new Set<string>();
+
+    // IntersectionObserver — fires section_view once per section per session
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target as HTMLElement;
+          const sectionKey = el.dataset.section || el.dataset.sectionId;
+          const sectionInstanceId = el.dataset.sectionInstanceId || sectionKey;
+          if (!sectionKey || viewedSections.has(sectionInstanceId)) return;
+          const sectionMeta = getSectionAnalyticsMetaFromDataset(el.dataset);
+          viewedSections.add(sectionInstanceId);
+          trackEvent({
+            type: 'section_view',
+            project_id: resolvedProjectId,
+            section_key: sectionKey,
+            metadata: buildSectionTrackingMetadata(sectionMeta, el.dataset, {
+              page_version_id: stringifyPageVersionId(resolvePageVersionId(pageVersionId)),
+            }),
+          });
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    const observe = () => {
+      document.querySelectorAll<HTMLElement>('[data-section]').forEach((el) => {
+        observer.observe(el);
+      });
+    };
+
+    observe();
+    // Re-observe after a short delay in case sections mount late
+    const t = setTimeout(observe, 1500);
+
+    // Click delegation — fires cta_click when a button/link inside a section is clicked
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const clickable = target.closest('a, button, [role="button"]') as HTMLElement | null;
+      if (!clickable) return;
+      const section = clickable.closest<HTMLElement>('[data-section]');
+      if (!section) return;
+      const sectionKey = section.dataset.section || section.dataset.sectionId;
+      if (!sectionKey) return;
+      const sectionMeta = getSectionAnalyticsMetaFromDataset(section.dataset);
+      const label =
+        clickable.getAttribute('aria-label') ||
+        (clickable as HTMLAnchorElement).innerText?.trim().slice(0, 60) ||
+        undefined;
+      const ctaRole = sectionMeta?.isHero
+        ? clickable.tagName.toLowerCase() === 'button' || clickable.getAttribute('role') === 'button'
+          ? 'hero_primary'
+          : 'hero_secondary'
+        : 'section';
+      trackEvent({
+        type: 'cta_click',
+        project_id: resolvedProjectId,
+        section_key: sectionKey,
+        cta_id: label,
+        metadata: buildSectionTrackingMetadata(sectionMeta, section.dataset, {
+          cta_role: ctaRole,
+          page_version_id: stringifyPageVersionId(resolvePageVersionId(pageVersionId)),
+        }),
+      });
+    };
+
+    document.addEventListener('click', handleClick, { capture: true });
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(t);
+      document.removeEventListener('click', handleClick, { capture: true });
+    };
+  }, [projectId, pageVersionId]);
 }
 
 // ---------------------------------------------------------------------------
 // Google Analytics (GA4)
 // ---------------------------------------------------------------------------
-
 export function GoogleAnalytics({ id }: { id: string }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -354,6 +622,9 @@ function buildLeadTrackPayload(
 
   const firstTouch = getOrCreateFirstTouch();
 
+  const sectionMeta = sectionKey ? getSectionAnalyticsMeta(sectionKey) : null;
+  const pageVersionId = resolvePageVersionId();
+
   return {
     type,
     project_id: resolvedProjectId,
@@ -370,8 +641,10 @@ function buildLeadTrackPayload(
       path: window.location.pathname,
       referrer: document.referrer || undefined,
       ua: navigator.userAgent,
+      page_version_id: stringifyPageVersionId(pageVersionId),
       ...utmFields,
       ...extraMetadata,
+      ...sectionMetaToEventMetadata(sectionMeta),
     },
   };
 }
@@ -486,6 +759,7 @@ declare global {
     dataLayer: any[];
     fbq: (...args: any[]) => void;
     PROJECT_ID?: string; // kept for backward-compat; prefer AnalyticsContext
+    PAGE_VERSION_ID?: string;
     grecaptcha: {
       ready: (cb: () => void) => void;
       execute: (siteKey: string, options: { action: string }) => Promise<string>;

@@ -35,7 +35,7 @@ jest.mock("@/lib/supabase/service", () => ({
 
 const MOCK_PLANS = {
   basic: {
-    name: "Basic",
+    name: "Starter",
     initialAmount: 150000,
     recurringAmount: 49900,
     yearlyAmount: 548900,
@@ -44,7 +44,7 @@ const MOCK_PLANS = {
     publishLimitDaily: 1,
   },
   pro: {
-    name: "Pro",
+    name: "Business",
     initialAmount: 250000,
     recurringAmount: 99900,
     yearlyAmount: 1098900,
@@ -60,7 +60,7 @@ jest.mock("@/lib/plans-config-server", () => ({
 
 jest.mock("@/lib/plans-config", () => ({
   resolveAmountFromPlans: jest.fn().mockReturnValue(49900),
-  resolveDescriptionFromPlans: jest.fn().mockReturnValue("Basic Monthly"),
+  resolveDescriptionFromPlans: jest.fn().mockReturnValue("Starter Monthly"),
 }))
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

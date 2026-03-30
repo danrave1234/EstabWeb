@@ -27,8 +27,8 @@ interface AppliedPromo {
 }
 
 const PLAN_LABELS: Record<string, string> = {
-  basic: "Basic",
-  pro: "Pro",
+  basic: "Starter",
+  pro: "Business",
   ecommerce: "Ecommerce",
   custom: "Custom",
 }

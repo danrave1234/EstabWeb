@@ -1,7 +1,25 @@
 import { PLANS as DEFAULT_PLANS, BillingInterval } from "@/config/plans"
 
+export function normalizePlansConfig(rawPlans: any) {
+    if (!rawPlans || typeof rawPlans !== "object") return DEFAULT_PLANS
+
+    const normalizedPlans = { ...rawPlans }
+
+    for (const [planId, defaultPlan] of Object.entries(DEFAULT_PLANS)) {
+        normalizedPlans[planId] = {
+            ...defaultPlan,
+            ...(rawPlans[planId] || {}),
+            label: defaultPlan.label,
+            name: defaultPlan.name,
+        }
+    }
+
+    return normalizedPlans
+}
+
 export function resolvePlan(PLANS: any, id: string) {
-    return (PLANS && (PLANS[id] || PLANS.basic))
+    const normalizedPlans = normalizePlansConfig(PLANS)
+    return (normalizedPlans && (normalizedPlans[id] || normalizedPlans.basic))
         || DEFAULT_PLANS[id as keyof typeof DEFAULT_PLANS]
         || DEFAULT_PLANS.basic
 }

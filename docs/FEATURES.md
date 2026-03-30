@@ -63,6 +63,12 @@ This document describes every major feature of the EstabWeb platform: what it do
 
 EstabWeb is a **multi-tenant SaaS platform** where a single Next.js application serves three distinct audiences from one codebase:
 
+### Subscription label note
+
+- Stored plan IDs stay `free`, `basic`, `pro`, `ecommerce`, and `custom` in the database and payment metadata.
+- User-facing pricing labels are `Free`, `Starter` (`basic`), `Business` (`pro`), `E-commerce`, and `Custom`.
+- When pricing copy or plan positioning changes, keep `config/plans.ts`, pricing hub UI, admin plan labels, payment descriptions, tests, and docs synchronized.
+
 | Audience | Entry Point | Route Group |
 |---|---|---|
 | Platform Admin | `estabweb.com/admin` or `admin.estabweb.com` | `app/admin/` |
@@ -379,12 +385,12 @@ The following paths are never redirected to subdomains on the root domain:
 
 ### 5.8 Analytics Dashboard
 
-**File:** `app/(hub)/dashboard/analytics/page.tsx`
-**API:** `app/api/track-lead/route.ts`
-**Table:** `project_leads`
+**Files:** `app/(hub)/dashboard/analytics/page.tsx`, `components/shared/Analytics.tsx`, `components/shared/SiteBlockRenderer.tsx`, `hooks/useSectionTracking.ts`, `hooks/useClickMapTracking.ts`, `lib/analytics/section-insights.ts`
+**APIs:** `app/api/track-lead/route.ts`, `app/api/track-event/route.ts`
+**Tables:** `project_leads`, `project_events`
 
 #### What it does
-Provides the client with a real-time view of all lead interactions captured from their public site — calls, form submissions, Messenger clicks, and Viber clicks — displayed as summary cards, a proportional breakdown bar, and a chronological activity feed.
+Provides the client with a real-time view of traffic, leads, and section performance from their public site. The dashboard combines raw event tracking with normalized section metadata so businesses can understand which parts of their site are actually driving leads even when every site layout is different.
 
 #### How leads are captured
 Every interactive CTA block on the public site (e.g., `FloatingCTA`, `MessengerStickyCTA`, `ContactForm`, `FreeConsultationForm`) fires a `POST /api/track-lead` request when a visitor interacts with it.
@@ -404,26 +410,55 @@ Every interactive CTA block on the public site (e.g., `FloatingCTA`, `MessengerS
 }
 ```
 
+Lead metadata can now include normalized section context (for example `section_family`, `section_slot`, `section_variant`, `section_instance_id`, `section_goal`, `section_position`, `is_hero_section`, `page_version_id`) and session attribution (`session_id`, `source`) so downstream analytics can credit the correct business section and visit, not just the raw block ID.
+
+#### How behavior events are captured
+- Analytics follows `session -> events -> attribution -> metrics`.
+- `components/shared/Analytics.tsx` initializes the session/visitor context, buffers public events, and sends batched payloads to `/api/track-event`.
+- `page_view`, CTA clicks, scroll depth, form starts, and session lifecycle events are tracked through `components/shared/Analytics.tsx`.
+- One-time section impressions are tracked from `hooks/useSectionTracking.ts`.
+- The simple heatmap-style layer also comes from `hooks/useSectionTracking.ts`, which summarizes `section_attention` only while the section is visibly on screen and the tab/window is active.
+- Click-map events are tracked from `hooks/useClickMapTracking.ts`.
+- `components/shared/SiteBlockRenderer.tsx` emits normalized section `data-*` attributes for every rendered public block.
+- `lib/analytics/section-insights.ts` derives analytics metadata from `lib/utils/block-registry.ts` so reports stay comparable across different hero/section variants.
+- The same section metadata now includes `section_is_interactive`, `section_interaction_type`, and `section_interaction_label` so passive sections are evaluated mainly by visibility/assists while CTA/form-heavy sections can also be evaluated by clicks and engagement.
+- Published public pages expose the current project `config_version` as `page_version_id`, and section events/leads reuse that version boundary so analytics can isolate the latest live layout instead of mixing pre-publish and post-publish behavior.
+
 **API logic (`/api/track-lead`):**
 1. Validates `type` is one of the four allowed values.
 2. Validates `project_id` is present.
-3. Inserts a row into `project_leads` with `{ project_id, type, metadata }`.
+3. Upserts the related `project_sessions` row when a public `session_id` is provided.
+4. Inserts a row into `project_leads` with lead type, session/source attribution, and metadata.
+5. Mirrors the lead as a `lead_*` event in `project_events` for funnel/source/section reporting.
+5. No auth required — public endpoint (visitors are not logged in).
+
+**API logic (`/api/track-event`):**
+1. Validates the incoming event type against the public analytics allowlist.
+2. Validates `project_id` is present.
+3. Accepts both legacy single-event payloads and batched `events[]` payloads.
+4. Upserts the related `project_sessions` row when `session_id` is present.
+5. Bulk-inserts rows into `project_events` together with section metadata, stable section identity (`section_slot`, `section_instance_id`), `page_version_id`, traffic source, visitor/session IDs, funnel context, and section attention metrics such as `visible_time_ms` / `max_visibility_ratio`.
 4. No auth required — public endpoint (visitors are not logged in).
 
 #### Analytics page logic
 1. Authenticates the client via Supabase session — redirects to `/login` if unauthenticated.
 2. Requires `?projectId=<uuid>` query param — redirects to `/dashboard` if missing.
 3. Verifies the project belongs to the authenticated user (`client_id = user.id`).
-4. Fetches all rows from `project_leads` for the project, ordered by `created_at DESC`.
-5. Computes counts per type client-side from the fetched array.
+4. Fetches current and comparison-period rows from `project_events` and `project_leads` for the selected project.
+5. Computes client-facing summaries locally from session-attributed visits: traffic KPIs, funnel steps, page conversion, traffic-source conversion, section-to-inquiry attribution, and which sections held visitor attention longest.
+6. Filters section/page insight cards to the latest available `page_version_id` when versioned data exists, preventing old published layouts from being blended into current recommendations.
+7. Uses normalized section metadata so reports stay comparable across variants while still explaining results in plain language for business owners.
+8. Distinguishes interactive versus view-only sections in the dashboard so businesses are not told to optimize clicks on sections that are mainly informational.
 
 #### Display
 
 | UI Element | Description |
 |---|---|
-| **Summary Cards (4)** | Total Leads, Calls, Form Submissions, Messages — each with icon, count, and color-coded background |
-| **Lead Breakdown Bar** | Horizontal progress bars showing each type's share of total leads (only types with >0 shown) |
-| **Recent Activity Table** | Last 50 leads — icon, contact name/email/phone, traffic source (UTM or referrer hostname), type badge, date |
+| **Summary Cards** | Visitors, leads, conversion rate, top source, and comparative trend deltas |
+| **Lead Breakdown Bar** | Horizontal progress bars showing each lead type's share of total leads |
+| **Source & Funnel Panels** | Traffic-source performance, lead funnel progression, and conversion leakage |
+| **Section Performance** | Which sections were seen most, held attention longest, and most often turned visits into inquiries |
+| **Recent Activity Table** | Paginated leads with contact info, source context, type badge, and date |
 | **Empty State** | Shown when no leads exist yet, with instructional copy |
 
 #### Traffic source resolution
@@ -682,7 +717,8 @@ SiteTemplate
 - Description: `seo.description` -> `hero.subtitle` -> `contact.tagline` -> fallback string
 - Keywords: `seo.keywords` array, or auto-built from brand name, theme, hero text (deduped, max 12)
 - OG image: `brand.logoUrl`
-- Favicon: `brand.favicon` -> `brand.logoUrl` -> `/Logo.png`
+- Placeholder SEO/contact seeds such as `Your Business Name`, `Your City`, `contact@yourbusiness.com`, and demo addresses are stripped before metadata/JSON-LD is emitted.
+- Favicon metadata points to tenant-host `/favicon.ico`; the route `app/(sites)/[domain]/favicon.ico/route.ts` proxies `brand.favicon` or `brand.logoUrl` and falls back to `/Logo.png`.
 - `metadataBase` is set to `https://{host}` so relative URLs resolve correctly per domain.
 - The site layout injects linked `WebSite` + `Organization` JSON-LD for stronger entity clarity in AI and search systems.
 

@@ -34,7 +34,7 @@ const DEFAULT_PLANS: PricingPlan[] = [
     setupPrice: 0,
   },
   {
-    name: "Pro",
+    name: "Business",
     price: { monthly: 49, yearly: 470 },
     level: "pro",
     popular: true,

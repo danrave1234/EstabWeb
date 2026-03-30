@@ -114,8 +114,8 @@ export default function PlansSettingsForm({ initialConfig }: PlansSettingsFormPr
 
                 <div className="space-y-6">
                     {renderPlanInputs('free', 'Free Plan')}
-                    {renderPlanInputs('basic', 'Basic Plan')}
-                    {renderPlanInputs('pro', 'Pro Plan')}
+                    {renderPlanInputs('basic', 'Starter Plan')}
+                    {renderPlanInputs('pro', 'Business Plan')}
                     {renderPlanInputs('ecommerce', 'E-Commerce Plan')}
                 </div>
 

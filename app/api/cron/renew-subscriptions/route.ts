@@ -33,7 +33,7 @@ export async function GET(req: Request) {
 
   const { data: projects, error } = await supabase
     .from('projects')
-    .select('id, subdomain, subscription_plan_id, subscription_interval, subscription_ends_at, renewal_link_created_at')
+    .select('id, user_id, subdomain, subscription_plan_id, subscription_interval, subscription_ends_at, renewal_link_created_at')
     .eq('auto_renew', true)
     .eq('subscription_status', 'active')
     .lte('subscription_ends_at', cutoff.toISOString())
@@ -123,6 +123,17 @@ export async function GET(req: Request) {
         plan_id: activePlanId,
       })
 
+      if (proj.user_id) {
+        await supabase.from('notifications').insert({
+          user_id: proj.user_id,
+          project_id: proj.id,
+          type: 'subscription',
+          title: 'Subscription Renewing Soon',
+          message: `Your subscription for ${proj.subdomain} will renew soon. A checkout link has been generated.`,
+          action_url: `/dashboard/billing`,
+        })
+      }
+
       results.push({ projectId: proj.id, status: 'ok', checkoutUrl })
     } catch (e: any) {
       console.error(`[cron/renew-subscriptions] Exception for project ${proj.id}:`, e)
@@ -138,7 +149,7 @@ export async function GET(req: Request) {
   const now = new Date().toISOString()
   const { data: expiredProjects, error: expiredError } = await supabase
     .from('projects')
-    .select('id, subdomain, custom_domain, subscription_status, subscription_ends_at, trial_ends_at')
+    .select('id, user_id, subdomain, custom_domain, subscription_status, subscription_ends_at, trial_ends_at')
     .in('subscription_status', ['active', 'trial', 'expired'])
     .or(`subscription_ends_at.lt.${now},trial_ends_at.lt.${now}`)
 
@@ -188,6 +199,16 @@ export async function GET(req: Request) {
           downgradeResults.push({ projectId: proj.id, status: 'error', error: downgradeError.message })
         } else {
           console.log(`[cron/renew-subscriptions] Downgraded project ${proj.id} (${proj.subdomain}) to free`)
+          if (proj.user_id) {
+            await supabase.from('notifications').insert({
+              user_id: proj.user_id,
+              project_id: proj.id,
+              type: 'subscription',
+              title: 'Subscription Expired',
+              message: `Your subscription for ${proj.subdomain} has expired. Your plan has been downgraded to free.`,
+              action_url: `/dashboard/billing`,
+            })
+          }
           downgradeResults.push({ projectId: proj.id, status: 'downgraded', domain: proj.custom_domain || undefined })
         }
       } catch (e: any) {

@@ -4,12 +4,13 @@ import Link from 'next/link'
 import {
   BarChart3, Phone, MessageSquare, FormInput, ChevronLeft,
   TrendingUp, MousePointerClick, Globe, Users, Lock, Sparkles,
-  MapPin, Download, Shield, Activity, Repeat2, ArrowRight,
-  Play, Eye,
+  Download, Shield, Activity, Repeat2, ArrowRight, ChevronDown,
+  Eye,
 } from 'lucide-react'
-import SeoAuditPanel from '@/components/dashboard/SeoAuditPanel'
 import LeadRow from '@/components/dashboard/LeadRow'
-import { isAnalyticsAllowed, hasAdvancedAnalytics, getPlanType } from '@/lib/subscription'
+import SectionAttentionBreakdown from '@/components/dashboard/SectionAttentionBreakdown'
+import { isAnalyticsAllowed, hasAdvancedAnalytics } from '@/lib/subscription'
+import { readSectionMetaFromEvent } from '@/lib/analytics/section-insights'
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -26,14 +27,99 @@ type ProjectEvent = {
   created_at: string
 }
 
+type ProjectLead = {
+  id: string
+  session_id: string | null
+  source: string | null
+  page_slug: string | null
+  section_key: string | null
+  metadata: Record<string, any> | null
+  created_at: string
+}
+
 type PageStat = { page_slug: string; views: number; leads: number; conversion_rate: number }
-type SectionStat = {
-  section_key: string; sectionViews: number; clicks: number; leads: number
-  viewRate: number; conversionRate: number; rank: number
+type SectionPerformanceStat = {
+  section_key: string
+  section_slot: string
+  section_label: string
+  section_family: string
+  section_variant: string
+  section_goal: string
+  isInteractive: boolean
+  interactionType: string
+  interactionLabel: string
+  sectionViews: number
+  attentiveSessions: number
+  totalAttentionMs: number
+  avgAttentionMs: number
+  avgAttentionSeconds: number
+  attentionReachRate: number
+  clicks: number
+  leads: number
+  assistedLeads: number
+  viewRate: number
+  clickRate: number
+  conversionRate: number
+  assistedRate: number
+  confidenceLabel: string
+  confidenceTone: string
+  rank: number
+}
+
+function getPageVersionId(metadata?: Record<string, any> | null) {
+  return typeof metadata?.page_version_id === 'string' && metadata.page_version_id.trim().length > 0
+    ? metadata.page_version_id
+    : null
+}
+
+function getLatestPageVersionId(events: ProjectEvent[], leads: ProjectLead[]) {
+  const versions = [
+    ...events.map((event) => getPageVersionId(event.metadata)),
+    ...leads.map((lead) => getPageVersionId(lead.metadata)),
+  ].filter(Boolean) as string[]
+
+  if (versions.length === 0) return null
+
+  return versions.reduce((latest, current) => {
+    const latestNum = Number(latest)
+    const currentNum = Number(current)
+    if (Number.isFinite(latestNum) && Number.isFinite(currentNum)) {
+      return currentNum > latestNum ? current : latest
+    }
+    return current > latest ? current : latest
+  })
+}
+
+function filterByLatestVersion(events: ProjectEvent[], leads: ProjectLead[]) {
+  const latestPageVersionId = getLatestPageVersionId(events, leads)
+  if (!latestPageVersionId) {
+    return { events, leads, latestPageVersionId: null }
+  }
+
+  return {
+    latestPageVersionId,
+    events: events.filter((event) => {
+      const versionId = getPageVersionId(event.metadata)
+      return versionId === null || versionId === latestPageVersionId
+    }),
+    leads: leads.filter((lead) => {
+      const versionId = getPageVersionId(lead.metadata)
+      return versionId === null || versionId === latestPageVersionId
+    }),
+  }
 }
 type SourceStat = { source: string; views: number; leads: number; conversion_rate: number }
-type FunnelStat = { step: string; label: string; count: number; pct: number; dropPct: number }
-type SessionReplayStat = { session_id: string; visitor_id: string | null; page_slug: string | null; duration_ms: number | null; started_at: string }
+type FunnelStat = { step: string; label: string; count: number; pct: number; dropPct: number; summary: string }
+type SessionSummary = {
+  sessionId: string
+  pagesViewed: Set<string>
+  sectionsViewed: Set<string>
+  maxScrollDepth: number
+  totalAttentionMs: number
+  ctaClicked: boolean
+  converted: boolean
+}
+type Recommendation = { title: string; detail: string }
 
 const STATUS_LABELS = { all: 'All', new: 'New', contacted: 'Contacted', closed: 'Closed' } as const
 type FilterStatus = keyof typeof STATUS_LABELS
@@ -49,83 +135,312 @@ function computeQualityScore(lead: Record<string, any>): number {
   return score
 }
 
-function computePageStats(events: ProjectEvent[]): PageStat[] {
-  const map = new Map<string, { views: number; leads: number }>()
+function computePageStats(events: ProjectEvent[], leads: ProjectLead[]): PageStat[] {
+  const map = new Map<string, { visits: Set<string>; leads: Set<string> }>()
   for (const e of events) {
+    if (e.event_type !== 'page_view' || !e.session_id) continue
     const slug = e.page_slug ?? ''
-    if (!map.has(slug)) map.set(slug, { views: 0, leads: 0 })
-    const s = map.get(slug)!
-    if (e.event_type === 'page_view') s.views++
-    if (e.event_type.startsWith('lead_')) s.leads++
+    if (!map.has(slug)) map.set(slug, { visits: new Set<string>(), leads: new Set<string>() })
+    map.get(slug)!.visits.add(e.session_id)
   }
+
+  for (const lead of leads) {
+    if (!lead.session_id) continue
+    const slug = lead.page_slug ?? ''
+    if (!map.has(slug)) map.set(slug, { visits: new Set<string>(), leads: new Set<string>() })
+    map.get(slug)!.leads.add(lead.session_id)
+  }
+
   return Array.from(map.entries())
-    .map(([page_slug, s]) => ({ page_slug: page_slug || '(home)', views: s.views, leads: s.leads, conversion_rate: s.views > 0 ? s.leads / s.views : 0 }))
+    .map(([page_slug, s]) => {
+      const views = s.visits.size
+      const leadCount = s.leads.size
+      return { page_slug: page_slug || '(home)', views, leads: leadCount, conversion_rate: views > 0 ? leadCount / views : 0 }
+    })
     .sort((a, b) => b.views - a.views)
 }
 
-function computeSectionStats(events: ProjectEvent[], totalVisitors: number): SectionStat[] {
-  const map = new Map<string, { uniqueVisitors: Set<string>; clicks: number; leads: number }>()
+function computeSectionPerformanceStats(events: ProjectEvent[], leads: ProjectLead[], totalSessions: number): SectionPerformanceStat[] {
+  const convertedSessions = new Set(leads.map((lead) => lead.session_id).filter(Boolean) as string[])
+  const sessionSections = new Map<string, Set<string>>()
+  const map = new Map<string, {
+    section_slot: string
+    section_label: string
+    section_family: string
+    section_variant: string
+    section_goal: string
+    isInteractive: boolean
+    interactionType: string
+    interactionLabel: string
+    viewers: Set<string>
+    attentiveSessions: Set<string>
+    totalAttentionMs: number
+    clickers: Set<string>
+    leads: Set<string>
+  }>()
+
   for (const e of events) {
-    if (!['section_view', 'cta_click', 'lead_form', 'lead_call', 'lead_messenger', 'lead_viber', 'map_interact'].includes(e.event_type)) continue
-    const key = e.section_key ?? '(unknown)'
-    if (!map.has(key)) map.set(key, { uniqueVisitors: new Set(), clicks: 0, leads: 0 })
-    const s = map.get(key)!
-    if (e.event_type === 'section_view') {
-      const vid = e.visitor_id || e.session_id
-      if (vid) s.uniqueVisitors.add(vid)
+    const sessionId = e.session_id
+    const meta = readSectionMetaFromEvent(e.section_key, e.metadata)
+
+    if (!meta) continue
+
+    const sectionSlot = typeof e.metadata?.section_slot === 'string' ? e.metadata.section_slot : meta.sectionFamily
+    const groupingKey = sectionSlot
+
+    if (!map.has(groupingKey)) {
+      map.set(groupingKey, {
+        section_slot: sectionSlot,
+        section_label: meta.sectionLabel,
+        section_family: meta.sectionFamily,
+        section_variant: meta.sectionVariant,
+        section_goal: meta.sectionGoal,
+        isInteractive: meta.isInteractive,
+        interactionType: meta.interactionType,
+        interactionLabel: meta.interactionLabel,
+        viewers: new Set<string>(),
+        attentiveSessions: new Set<string>(),
+        totalAttentionMs: 0,
+        clickers: new Set<string>(),
+        leads: new Set<string>(),
+      })
     }
-    if (e.event_type === 'cta_click') s.clicks++
-    if (e.event_type.startsWith('lead_')) s.leads++
+
+    const stat = map.get(groupingKey)!
+    if (e.event_type === 'section_view' && sessionId) {
+      stat.viewers.add(sessionId)
+      if (!sessionSections.has(sessionId)) sessionSections.set(sessionId, new Set())
+      sessionSections.get(sessionId)!.add(groupingKey)
+    }
+    if (e.event_type === 'section_attention' && sessionId) {
+      stat.attentiveSessions.add(sessionId)
+      const visibleMs = Number(e.metadata?.visible_time_ms ?? 0)
+      if (Number.isFinite(visibleMs) && visibleMs > 0) stat.totalAttentionMs += visibleMs
+    }
+    if (e.event_type === 'cta_click' && sessionId) stat.clickers.add(sessionId)
   }
-  const rows = Array.from(map.entries()).map(([section_key, s], i) => {
-    const sectionViews = s.uniqueVisitors.size
-    const viewRate = totalVisitors > 0 ? Math.min(sectionViews / totalVisitors, 1) : 0
-    const conversionRate = sectionViews > 0 ? s.leads / sectionViews : 0
-    return { section_key, sectionViews, clicks: s.clicks, leads: s.leads, viewRate, conversionRate, rank: i + 1 }
+
+  for (const sessionId of convertedSessions) {
+    const sections = sessionSections.get(sessionId)
+    if (!sections) continue
+    for (const sectionKey of sections) {
+      map.get(sectionKey)?.leads.add(sessionId)
+    }
+  }
+
+  const rows = Array.from(map.entries()).map(([section_key, stat], index) => {
+    const sectionViews = stat.viewers.size
+    const attentiveSessions = stat.attentiveSessions.size
+    const totalAttentionMs = stat.totalAttentionMs
+    const avgAttentionMs = attentiveSessions > 0 ? totalAttentionMs / attentiveSessions : 0
+    const avgAttentionSeconds = avgAttentionMs / 1000
+    const clicks = stat.clickers.size
+    const leads = stat.leads.size
+    const assistedLeads = leads
+    const viewRate = totalSessions > 0 ? Math.min(sectionViews / totalSessions, 1) : 0
+    const attentionReachRate = totalSessions > 0 ? Math.min(attentiveSessions / totalSessions, 1) : 0
+    const clickRate = sectionViews > 0 ? clicks / sectionViews : 0
+    const conversionRate = sectionViews > 0 ? leads / sectionViews : 0
+    const assistedRate = conversionRate
+    const { label: confidenceLabel, tone: confidenceTone } = getConfidence(sectionViews)
+
+    return {
+      section_key,
+      section_slot: stat.section_slot,
+      section_label: stat.section_label,
+      section_family: stat.section_family,
+      section_variant: stat.section_variant,
+      section_goal: stat.section_goal,
+      isInteractive: stat.isInteractive,
+      interactionType: stat.interactionType,
+      interactionLabel: stat.interactionLabel,
+      sectionViews,
+      attentiveSessions,
+      totalAttentionMs,
+      avgAttentionMs,
+      avgAttentionSeconds,
+      attentionReachRate,
+      clicks,
+      leads,
+      assistedLeads,
+      viewRate,
+      clickRate,
+      conversionRate,
+      assistedRate,
+      confidenceLabel,
+      confidenceTone,
+      rank: index + 1,
+    }
   })
-  rows.sort((a, b) => b.sectionViews - a.sectionViews)
-  rows.forEach((r, i) => { r.rank = i + 1 })
+
+  rows.sort((a, b) => {
+    if (b.leads !== a.leads) return b.leads - a.leads
+    if (b.clicks !== a.clicks) return b.clicks - a.clicks
+    return b.sectionViews - a.sectionViews
+  })
+  rows.forEach((row, index) => { row.rank = index + 1 })
   return rows
 }
 
-function computeSourceStats(events: ProjectEvent[]): SourceStat[] {
-  const map = new Map<string, { views: number; leads: number }>()
-  for (const e of events) {
-    const src = e.source ?? 'direct'
-    if (!map.has(src)) map.set(src, { views: 0, leads: 0 })
-    const s = map.get(src)!
-    if (e.event_type === 'page_view') s.views++
-    if (e.event_type.startsWith('lead_')) s.leads++
+function computeSessionSummaries(events: ProjectEvent[], leads: ProjectLead[]): SessionSummary[] {
+  const convertedSessions = new Set(leads.map((lead) => lead.session_id).filter(Boolean) as string[])
+  const map = new Map<string, SessionSummary>()
+
+  for (const event of events) {
+    const sessionId = event.session_id
+    if (!sessionId) continue
+
+    if (!map.has(sessionId)) {
+      map.set(sessionId, {
+        sessionId,
+        pagesViewed: new Set<string>(),
+        sectionsViewed: new Set<string>(),
+        maxScrollDepth: 0,
+        totalAttentionMs: 0,
+        ctaClicked: false,
+        converted: false,
+      })
+    }
+
+    const summary = map.get(sessionId)!
+    if (event.page_slug) summary.pagesViewed.add(event.page_slug)
+    if (event.event_type === 'section_view') {
+      const slot = typeof event.metadata?.section_slot === 'string' ? event.metadata.section_slot : event.section_key
+      if (slot) summary.sectionsViewed.add(slot)
+    }
+    if (event.event_type === 'cta_click') summary.ctaClicked = true
+    if (event.event_type === 'scroll_depth') {
+      const depth = Number(event.metadata?.depth_percent ?? 0)
+      if (Number.isFinite(depth)) summary.maxScrollDepth = Math.max(summary.maxScrollDepth, depth)
+    }
+    if (event.event_type === 'section_attention') {
+      const visibleMs = Number(event.metadata?.visible_time_ms ?? 0)
+      if (Number.isFinite(visibleMs) && visibleMs > 0) summary.totalAttentionMs += visibleMs
+    }
+    if (event.event_type === 'form_submit' || event.event_type === 'lead_form' || event.event_type === 'lead_submit') {
+      summary.converted = true
+    }
   }
+
+  for (const sessionId of convertedSessions) {
+    const summary = map.get(sessionId)
+    if (summary) summary.converted = true
+  }
+
+  return Array.from(map.values())
+}
+
+function computeSourceStats(events: ProjectEvent[], leads: ProjectLead[]): SourceStat[] {
+  const map = new Map<string, { visits: Set<string>; leads: Set<string> }>()
+  for (const e of events) {
+    if (e.event_type !== 'page_view' || !e.session_id) continue
+    const src = e.source ?? 'direct'
+    if (!map.has(src)) map.set(src, { visits: new Set<string>(), leads: new Set<string>() })
+    map.get(src)!.visits.add(e.session_id)
+  }
+
+  for (const lead of leads) {
+    if (!lead.session_id) continue
+    const src = lead.source ?? 'direct'
+    if (!map.has(src)) map.set(src, { visits: new Set<string>(), leads: new Set<string>() })
+    map.get(src)!.leads.add(lead.session_id)
+  }
+
   return Array.from(map.entries())
-    .map(([source, s]) => ({ source, views: s.views, leads: s.leads, conversion_rate: s.views > 0 ? s.leads / s.views : 0 }))
+    .map(([source, s]) => {
+      const views = s.visits.size
+      const leadCount = s.leads.size
+      return { source, views, leads: leadCount, conversion_rate: views > 0 ? leadCount / views : 0 }
+    })
     .sort((a, b) => b.views - a.views)
 }
 
-function computeFunnelStats(events: ProjectEvent[]): FunnelStat[] {
-  const pageViews = new Set<string>()
-  const ctaClicks = new Set<string>()
-  const formSubmits = new Set<string>()
-
-  for (const e of events) {
-    const id = e.visitor_id || e.session_id
-    if (!id) continue
-    if (e.event_type === 'page_view') pageViews.add(id)
-    if (e.event_type === 'cta_click') ctaClicks.add(id)
-    if (e.event_type === 'form_submit' || e.event_type === 'lead_form' || e.event_type === 'lead_submit') formSubmits.add(id)
-  }
-
-  const base = pageViews.size || 1
+function computeFunnelStats(sessions: SessionSummary[], keySectionLabel: string, keySectionKey?: string): FunnelStat[] {
+  const total = sessions.length
+  const keySectionSessions = sessions.filter((session) => keySectionKey && session.sectionsViewed.has(keySectionKey)).length
+  const ctaClicks = sessions.filter((session) => session.ctaClicked).length
+  const formSubmits = sessions.filter((session) => session.converted).length
+  const base = total || 1
   const steps = [
-    { step: 'page_view',    label: 'Page View',    count: pageViews.size },
-    { step: 'cta_click',    label: 'CTA Click',    count: ctaClicks.size },
-    { step: 'form_submit',  label: 'Form Submit',  count: formSubmits.size },
+    { step: 'visit', label: 'Visits', count: total, summary: `${total.toLocaleString()} visits landed on your site.` },
+    { step: 'key_section', label: `Reached ${keySectionLabel}`, count: keySectionSessions, summary: `${keySectionSessions.toLocaleString()} sessions reached this key section.` },
+    { step: 'cta_click', label: 'Clicked a contact button', count: ctaClicks, summary: `${ctaClicks.toLocaleString()} sessions clicked a call-to-action.` },
+    { step: 'form_submit', label: 'Sent an inquiry', count: formSubmits, summary: `${formSubmits.toLocaleString()} sessions turned into inquiries.` },
   ]
   return steps.map((s, i) => {
     const prev = i === 0 ? base : (steps[i - 1].count || 1)
     const dropPct = i === 0 ? 0 : Math.round((1 - s.count / prev) * 100)
     return { ...s, pct: s.count / base, dropPct }
   })
+}
+
+function getConfidence(sampleSize: number) {
+  if (sampleSize < 30) return { label: 'Low', tone: 'text-amber-600' }
+  if (sampleSize < 100) return { label: 'Medium', tone: 'text-sky-600' }
+  return { label: 'High', tone: 'text-emerald-600' }
+}
+
+function computeRecommendations(params: {
+  totalSessions: number
+  topSectionDriver?: SectionPerformanceStat
+  funnelStats: FunnelStat[]
+  mostAttentionSection?: SectionPerformanceStat
+}): Recommendation[] {
+  const recommendations: Recommendation[] = []
+  const { totalSessions, topSectionDriver, funnelStats, mostAttentionSection } = params
+  const ctaStep = funnelStats.find((step) => step.step === 'cta_click')
+  const submitStep = funnelStats.find((step) => step.step === 'form_submit')
+
+  if (
+    topSectionDriver &&
+    topSectionDriver.isInteractive &&
+    topSectionDriver.sectionViews >= Math.max(5, Math.round(totalSessions * 0.4)) &&
+    topSectionDriver.clickRate < 0.15
+  ) {
+    recommendations.push({
+      title: `${topSectionDriver.section_label} gets seen but does not spark action`,
+      detail: 'Visitors are reaching this section, but very few click after seeing it. Strengthen the headline, offer, or button in this area.',
+    })
+  }
+
+  if (ctaStep && submitStep && ctaStep.count >= 5) {
+    const completionRate = ctaStep.count > 0 ? submitStep.count / ctaStep.count : 0
+    if (completionRate < 0.35) {
+      recommendations.push({
+        title: 'People click, but too many stop before sending an inquiry',
+        detail: 'Your call-to-action is doing its job, but the contact step may feel too long, unclear, or broken. Check the form length, required fields, and mobile usability.',
+      })
+    }
+  }
+
+  const keySectionStep = funnelStats.find((step) => step.step === 'key_section')
+  if (keySectionStep && totalSessions >= 5 && keySectionStep.pct < 0.5) {
+    recommendations.push({
+      title: 'Too few visitors reach your main decision-making section',
+      detail: 'Consider moving your most important proof, offer, or contact prompt higher on the page so more visitors actually see it.',
+    })
+  }
+
+  if (
+    mostAttentionSection &&
+    mostAttentionSection.attentiveSessions >= Math.max(5, Math.round(totalSessions * 0.3)) &&
+    mostAttentionSection.isInteractive &&
+    mostAttentionSection.clickRate < 0.12
+  ) {
+    recommendations.push({
+      title: `${mostAttentionSection.section_label} keeps attention but still needs a stronger next step`,
+      detail: 'People are spending time in this section, but not many move forward from it. Tighten the message and make the next action more obvious.',
+    })
+  }
+
+  if (recommendations.length === 0) {
+    recommendations.push({
+      title: 'Your analytics is collecting useful journey data',
+      detail: 'Keep driving more visits so the confidence level grows. Once you reach a bigger sample, these recommendations will become more specific.',
+    })
+  }
+
+  return recommendations.slice(0, 3)
 }
 
 function computeUniqueSessions(events: ProjectEvent[]): number {
@@ -145,6 +460,12 @@ function fmt(rate: number, denominator?: number) {
   return (rate * 100).toFixed(1) + '%'
 }
 
+function formatAttentionSeconds(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return '0s'
+  if (seconds >= 10) return `${seconds.toFixed(0)}s`
+  return `${seconds.toFixed(1)}s`
+}
+
 function trendArrow(current: number, previous: number): { symbol: string; color: string } | null {
   if (previous === 0) return null
   const delta = ((current - previous) / previous) * 100
@@ -152,13 +473,6 @@ function trendArrow(current: number, previous: number): { symbol: string; color:
   return delta > 0
     ? { symbol: `↑ ${Math.round(delta)}%`, color: 'text-emerald-500' }
     : { symbol: `↓ ${Math.abs(Math.round(delta))}%`, color: 'text-red-500' }
-}
-
-function fmtDuration(ms: number | null): string {
-  if (!ms) return '—'
-  const s = Math.round(ms / 1000)
-  if (s < 60) return `${s}s`
-  return `${Math.floor(s / 60)}m ${s % 60}s`
 }
 
 export default async function AnalyticsPage({
@@ -189,7 +503,8 @@ export default async function AnalyticsPage({
   if (projectError) console.error('[analytics] project fetch error:', projectError.message)
   if (!project) redirect('/dashboard')
 
-  const activeTab = sp.tab ?? 'leads'
+  const requestedTab = sp.tab ?? 'leads'
+  const activeTab = requestedTab === 'seo' ? 'analytics' : requestedTab
   const filterStatus = (sp.status ?? 'all') as FilterStatus
   const dateRange = sp.range ?? '30d'
   const currentPage = parseInt(sp.page ?? '1', 10)
@@ -197,7 +512,7 @@ export default async function AnalyticsPage({
 
   const analyticsAllowed = isAnalyticsAllowed(project)
   const advancedAllowed = hasAdvancedAnalytics(project)
-  const planType = getPlanType(project)
+  const showAllSections = sp.showAllSections === '1'
 
   // Date range filter
   let rangeStart: string | null = null
@@ -214,7 +529,7 @@ export default async function AnalyticsPage({
     .order('created_at', { ascending: false })
   if (rangeStart) leadsQuery = leadsQuery.gte('created_at', rangeStart)
   const { data: allLeadsRaw = [] } = await leadsQuery
-  const allLeads = allLeadsRaw ?? []
+  const allLeads = (allLeadsRaw ?? []) as ProjectLead[]
 
   // Fetch events (exclude preview)
   let eventsQuery = supabase
@@ -244,24 +559,15 @@ export default async function AnalyticsPage({
     prevEvents = (prevRaw ?? []) as ProjectEvent[]
   }
 
-  // Fetch session replays
-  let replaysQuery = supabase
-    .from('session_replays')
-    .select('session_id, visitor_id, page_slug, duration_ms, started_at')
-    .eq('project_id', project.id)
-    .order('started_at', { ascending: false })
-    .limit(50)
-  if (rangeStart) replaysQuery = replaysQuery.gte('started_at', rangeStart)
-  const { data: replaysRaw = [], error: replaysError } = await replaysQuery
-  if (replaysError) console.warn('[analytics] replays fetch error (RLS?):', replaysError.message)
-  const replays = replaysRaw ?? []
-
-  const events = allEvents as ProjectEvent[]
+  const { events, leads, latestPageVersionId } = filterByLatestVersion(
+    (allEvents ?? []) as ProjectEvent[],
+    allLeads,
+  )
 
   // Compute stats
-  const totalLeads = (allLeads as any[]).length
-  const qualityLeads = (allLeads as any[]).filter((l: any) => computeQualityScore(l) >= 3).length
-  const botLeads = (allLeads as any[]).filter((l: any) => computeQualityScore(l) === 0).length
+  const totalLeads = leads.length
+  const qualityLeads = leads.filter((lead) => computeQualityScore(lead) >= 3).length
+  const botLeads = leads.filter((lead) => computeQualityScore(lead) === 0).length
 
   const totalSessions = computeUniqueSessions(events)
   const totalUniqueVisitors = new Set(events.filter(e => e.visitor_id).map(e => e.visitor_id!)).size
@@ -277,13 +583,39 @@ export default async function AnalyticsPage({
   const sessionTrend = trendArrow(totalSessions, prevSessions)
   const leadTrend = trendArrow(totalLeads, prevLeads)
   const convTrend = trendArrow(conversionRate, prevConvRate)
-  const FUNNEL_MIN_SESSIONS = 10
+  const sessionSummaries = computeSessionSummaries(events, leads)
 
-  const pageStats = computePageStats(events)
-  const sectionStats = computeSectionStats(events, totalUniqueVisitors)
-  const sourceStats = computeSourceStats(events)
-  const funnelStats = computeFunnelStats(events)
+  const pageStats = computePageStats(events, leads)
+  const sectionPerformanceStats = computeSectionPerformanceStats(events, leads, totalSessions)
+  const sourceStats = computeSourceStats(events, leads)
+  const keySection = sectionPerformanceStats[0]
+  const funnelStats = computeFunnelStats(sessionSummaries, keySection?.section_label ?? 'your key section', keySection?.section_key)
   const topSource = computeTopSource(sourceStats)
+  const topSectionDriver = sectionPerformanceStats[0]
+  const mostAttentionSection = [...sectionPerformanceStats].sort((left, right) => {
+    if (right.avgAttentionMs !== left.avgAttentionMs) return right.avgAttentionMs - left.avgAttentionMs
+    return right.attentiveSessions - left.attentiveSessions
+  })[0]
+  const visibleSectionPerformanceStats = showAllSections
+    ? sectionPerformanceStats
+    : sectionPerformanceStats.slice(0, 8)
+  const busiestPage = pageStats[0]
+  const topLeadPage = [...pageStats]
+    .sort((left, right) => {
+      if (right.leads !== left.leads) return right.leads - left.leads
+      return right.views - left.views
+    })[0]
+  const attentionSectionStats = [...sectionPerformanceStats].sort((left, right) => {
+    if (right.avgAttentionMs !== left.avgAttentionMs) return right.avgAttentionMs - left.avgAttentionMs
+    return right.attentiveSessions - left.attentiveSessions
+  })
+  const visibleAttentionSectionStats = showAllSections
+    ? attentionSectionStats
+    : attentionSectionStats.slice(0, 8)
+  const hasExtraSectionRows = sectionPerformanceStats.length > 8
+  const hasExtraAttentionRows = attentionSectionStats.length > 8
+  const funnelConfidence = getConfidence(totalSessions)
+  const recommendations = computeRecommendations({ totalSessions, topSectionDriver, funnelStats, mostAttentionSection })
 
   // Returning visitors
   const visitorSessionMap = new Map<string, Set<string>>()
@@ -295,12 +627,10 @@ export default async function AnalyticsPage({
   const returningVisitors = Array.from(visitorSessionMap.values()).filter(s => s.size > 1).length
 
   // Filter leads
-  const filteredLeads = (allLeads as any[]).filter((l: any) => filterStatus === 'all' || l.status === filterStatus)
+  const filteredLeads = leads.filter((lead: any) => filterStatus === 'all' || lead.status === filterStatus)
   const totalFilteredLeads = filteredLeads.length
   const totalPages = Math.ceil(totalFilteredLeads / LEADS_PER_PAGE)
   const paginatedLeads = filteredLeads.slice((currentPage - 1) * LEADS_PER_PAGE, currentPage * LEADS_PER_PAGE)
-
-  const isAdmin = profile?.role === 'admin' || profile?.role === 'sub_admin'
 
   function buildUrl(params: Record<string, string>) {
     const base: Record<string, string> = { tab: activeTab, status: filterStatus, range: dateRange, page: String(currentPage) }
@@ -309,81 +639,105 @@ export default async function AnalyticsPage({
     return `/dashboard/analytics?${new URLSearchParams(base).toString()}`
   }
 
+  const sectionToggleHref = buildUrl({ showAllSections: showAllSections ? '0' : '1', page: '1' })
+  const sectionToggleLabel = showAllSections ? 'Show fewer sections' : 'View all sections'
+  const pageShellClass = 'min-h-screen bg-background'
+  const pageWidthClass = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
+  const panelClass = 'rounded-3xl border border-border/70 bg-card shadow-sm'
+  const metricCardClass = 'rounded-2xl border border-border/70 bg-card p-4 sm:p-5 shadow-sm'
+  const softCardClass = 'rounded-2xl border border-border/70 bg-card p-5 shadow-sm'
+  const insetCardClass = 'rounded-2xl border border-border/60 bg-muted/20 p-4'
+  const pillButtonClass = 'inline-flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-semibold transition-all'
+  const secondaryButtonClass = `${pillButtonClass} border-border/70 bg-background text-foreground hover:bg-muted/50`
+
   return (
-    <div className="min-h-screen bg-muted/20">
-      {/* Header */}
-      <div className="border-b bg-card">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
-              <ChevronLeft className="w-5 h-5" />
-            </Link>
-            <div>
-              <h1 className="text-lg font-semibold">Leads &amp; Analytics</h1>
-              <p className="text-sm text-muted-foreground">{project.subdomain}</p>
+    <div className={pageShellClass}>
+      <div className={`${pageWidthClass} py-6 sm:py-10 space-y-6`}>
+        <div className={`${panelClass} p-4 sm:p-6`}>
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <Link href="/dashboard" className="mt-1 rounded-xl border border-border/70 bg-background p-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/50">
+                  <ChevronLeft className="w-5 h-5" />
+                </Link>
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-primary/80">Client dashboard</p>
+                  <h1 className="mt-1 text-2xl sm:text-4xl font-black tracking-tight text-foreground">Leads &amp; Analytics</h1>
+                  <p className="mt-1 text-sm sm:text-base font-medium text-muted-foreground">
+                    Track what people do on your site and how those visits turn into inquiries for {project.subdomain}.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                {(['7d', '30d', '90d', 'all'] as const).map(r => (
+                  <Link
+                    key={r}
+                    href={buildUrl({ range: r, page: '1' })}
+                    className={`${pillButtonClass} ${dateRange === r
+                      ? 'border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/15'
+                      : 'border-border/70 bg-background text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                      }`}
+                  >
+                    {RANGE_LABELS[r]}
+                  </Link>
+                ))}
+                <Link
+                  href={`/api/leads/export?project_id=${project.id}${rangeStart ? `&from=${rangeStart}` : ''}`}
+                  className={`${pillButtonClass} border-border/70 bg-background text-foreground hover:bg-muted/50`}
+                >
+                  <Download className="w-4 h-4" />
+                  Export CSV
+                </Link>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 rounded-2xl border border-border/70 bg-muted/30 p-1.5">
+              {[
+                { id: 'leads', label: 'Leads CRM', icon: FormInput },
+                { id: 'analytics', label: 'Site Analytics', icon: BarChart3 },
+              ].map(({ id, label, icon: Icon }) => (
+                <Link
+                  key={id}
+                  href={buildUrl({ tab: id, page: '1' })}
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${activeTab === id
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-background/70'
+                    }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </Link>
+              ))}
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Date range */}
-            {(['7d', '30d', '90d', 'all'] as const).map(r => (
-              <Link key={r} href={buildUrl({ range: r, page: '1' })}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${dateRange === r ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}>
-                {RANGE_LABELS[r]}
-              </Link>
-            ))}
-            {/* CSV export */}
-            <Link href={`/api/leads/export?project_id=${project.id}${rangeStart ? `&from=${rangeStart}` : ''}`}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors">
-              <Download className="w-4 h-4" />
-              Export CSV
-            </Link>
-          </div>
         </div>
-
-        {/* Tabs */}
-        <div className="max-w-6xl mx-auto px-4 flex gap-1 border-t">
-          {[
-            { id: 'leads', label: 'Leads CRM', icon: FormInput },
-            { id: 'analytics', label: 'Site Analytics', icon: BarChart3 },
-            { id: 'replays', label: 'Session Replays', icon: Play },
-            { id: 'seo', label: 'SEO Audit', icon: Globe },
-          ].map(({ id, label, icon: Icon }) => (
-            <Link key={id} href={buildUrl({ tab: id, page: '1' })}
-              className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
-              <Icon className="w-4 h-4" />
-              {label}
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
 
         {/* ── TOP METRIC CARDS (always visible) ── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-card border rounded-lg p-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className={metricCardClass}>
             <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
               <Activity className="w-4 h-4" />
-              Sessions
+              Visits
             </div>
             <div className="text-2xl font-bold">{totalSessions.toLocaleString()}</div>
             <div className="flex items-center justify-between mt-1">
-              <span className="text-xs text-muted-foreground">{totalUniqueVisitors} unique visitors</span>
+              <span className="text-xs text-muted-foreground">{totalUniqueVisitors} people visited</span>
               {sessionTrend && <span className={`text-xs font-medium ${sessionTrend.color}`}>{sessionTrend.symbol}</span>}
             </div>
           </div>
-          <div className="bg-card border rounded-lg p-4">
+          <div className={metricCardClass}>
             <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
               <TrendingUp className="w-4 h-4" />
-              Conversion Rate
+              Visitor-to-lead rate
             </div>
             <div className="text-2xl font-bold">{totalPageViews > 0 ? fmt(conversionRate) : '—'}</div>
             <div className="flex items-center justify-between mt-1">
-              <span className="text-xs text-muted-foreground">{totalPageViews} page views</span>
+              <span className="text-xs text-muted-foreground">Based on {totalPageViews} page views</span>
               {convTrend && <span className={`text-xs font-medium ${convTrend.color}`}>{convTrend.symbol}</span>}
             </div>
           </div>
-          <div className="bg-card border rounded-lg p-4">
+          <div className={metricCardClass}>
             <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
               <Users className="w-4 h-4" />
               Total Leads
@@ -394,13 +748,13 @@ export default async function AnalyticsPage({
               {leadTrend && <span className={`text-xs font-medium ${leadTrend.color}`}>{leadTrend.symbol}</span>}
             </div>
           </div>
-          <div className="bg-card border rounded-lg p-4">
+          <div className={metricCardClass}>
             <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
               <Globe className="w-4 h-4" />
-              Top Source
+              Main traffic source
             </div>
             <div className="text-2xl font-bold truncate">{topSource}</div>
-            <div className="text-xs text-muted-foreground mt-1">{returningVisitors} returning visitors</div>
+            <div className="text-xs text-muted-foreground mt-1">{returningVisitors} people came back more than once</div>
           </div>
         </div>
 
@@ -408,7 +762,7 @@ export default async function AnalyticsPage({
         {activeTab === 'leads' && (
           <div className="space-y-4">
             {botLeads > 0 && (
-              <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 text-yellow-700 dark:text-yellow-400 rounded-lg px-4 py-3 text-sm">
+              <div className="flex items-center gap-2 rounded-2xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-400 shadow-sm">
                 <Shield className="w-4 h-4 shrink-0" />
                 <span>{botLeads} lead{botLeads !== 1 ? 's' : ''} flagged as low-quality (score 0) — possible bot submissions.</span>
               </div>
@@ -418,7 +772,10 @@ export default async function AnalyticsPage({
             <div className="flex items-center gap-2 flex-wrap">
               {(Object.keys(STATUS_LABELS) as FilterStatus[]).map(s => (
                 <Link key={s} href={buildUrl({ status: s, page: '1' })}
-                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${filterStatus === s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}>
+                  className={`${pillButtonClass} ${filterStatus === s
+                    ? 'border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/15'
+                    : 'border-border/70 bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                    }`}>
                   {STATUS_LABELS[s]}
                   {s === 'all' && <span className="ml-1.5 text-xs opacity-70">{totalLeads}</span>}
                 </Link>
@@ -427,7 +784,7 @@ export default async function AnalyticsPage({
 
             {/* Lead type breakdown */}
             {totalLeads > 0 && (
-              <div className="bg-card border rounded-lg p-4">
+              <div className={softCardClass}>
                 <p className="text-sm font-medium mb-3">Lead Breakdown</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
@@ -438,7 +795,7 @@ export default async function AnalyticsPage({
                   ].map(({ type, label, icon: Icon }) => {
                     const count = (allLeads as any[]).filter((l: any) => l.type === type).length
                     return (
-                      <div key={type} className="bg-muted/40 rounded-lg px-4 py-3 flex flex-col gap-1">
+                      <div key={type} className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 flex flex-col gap-1">
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           <Icon className="w-3.5 h-3.5" />
                           <span>{label}</span>
@@ -453,13 +810,13 @@ export default async function AnalyticsPage({
 
             {/* Leads list */}
             {paginatedLeads.length === 0 ? (
-              <div className="bg-card border rounded-lg p-12 text-center text-muted-foreground">
+              <div className="rounded-3xl border border-border/70 bg-card p-12 text-center text-muted-foreground shadow-sm">
                 <Users className="w-8 h-8 mx-auto mb-3 opacity-40" />
                 <p className="font-medium">No leads yet</p>
                 <p className="text-sm mt-1">Leads from your contact forms will appear here.</p>
               </div>
             ) : (
-              <div className="bg-card border rounded-lg divide-y">
+              <div className="rounded-3xl border border-border/70 bg-card divide-y shadow-sm overflow-hidden">
                 {paginatedLeads.map((lead: any) => (
                   <LeadRow key={lead.id} lead={lead} />
                 ))}
@@ -474,12 +831,12 @@ export default async function AnalyticsPage({
                 </span>
                 <div className="flex gap-2">
                   {currentPage > 1 && (
-                    <Link href={buildUrl({ page: String(currentPage - 1) })} className="px-3 py-1.5 rounded bg-muted text-muted-foreground hover:bg-muted/80 transition-colors">
+                    <Link href={buildUrl({ page: String(currentPage - 1) })} className={secondaryButtonClass}>
                       Previous
                     </Link>
                   )}
                   {currentPage < totalPages && (
-                    <Link href={buildUrl({ page: String(currentPage + 1) })} className="px-3 py-1.5 rounded bg-muted text-muted-foreground hover:bg-muted/80 transition-colors">
+                    <Link href={buildUrl({ page: String(currentPage + 1) })} className={secondaryButtonClass}>
                       Next
                     </Link>
                   )}
@@ -492,46 +849,99 @@ export default async function AnalyticsPage({
         {/* ── ANALYTICS TAB ── */}
         {activeTab === 'analytics' && (
           !analyticsAllowed ? (
-            <div className="bg-card border rounded-lg p-12 text-center">
+            <div className="rounded-3xl border border-border/70 bg-card p-12 text-center shadow-sm">
               <Lock className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
               <p className="font-semibold text-lg mb-1">Analytics Locked</p>
               <p className="text-muted-foreground text-sm mb-4">Upgrade to a paid plan to unlock full site analytics.</p>
-              <Link href="/pricing" className="inline-flex items-center gap-2 px-4 py-2 rounded bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
+              <Link href="/pricing" className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/15 transition-opacity hover:opacity-90">
                 <Sparkles className="w-4 h-4" /> Upgrade Plan
               </Link>
             </div>
           ) : (
             <div className="space-y-6">
 
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className={softCardClass}>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                    <MousePointerClick className="w-4 h-4 text-primary" />
+                    Section bringing the most inquiries
+                  </div>
+                  <div className="text-lg font-semibold">
+                    {topSectionDriver ? topSectionDriver.section_label : 'No section data yet'}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {topSectionDriver
+                      ? `${topSectionDriver.assistedLeads} visits that saw this section ended up contacting you.`
+                      : 'Once people start exploring your site, this card will show which part of the page helps turn visits into inquiries.'}
+                  </p>
+                </div>
+                <div className={softCardClass}>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                    <Eye className="w-4 h-4 text-primary" />
+                    Most visited page
+                  </div>
+                  <div className="text-lg font-semibold">
+                    {busiestPage ? busiestPage.page_slug : 'No page data yet'}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {busiestPage
+                      ? `${busiestPage.views} visits in this time range.`
+                      : 'As people browse your site, the busiest page will appear here.'}
+                  </p>
+                </div>
+                <div className={softCardClass}>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                    <Users className="w-4 h-4 text-primary" />
+                    Page turning visits into inquiries
+                  </div>
+                  <div className="text-lg font-semibold">
+                    {topLeadPage ? topLeadPage.page_slug : 'No lead pattern yet'}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {topLeadPage
+                      ? `${topLeadPage.leads} visits from this page turned into inquiries.`
+                      : 'Once leads start coming in, the page helping the most will show here.'}
+                  </p>
+                </div>
+              </div>
+
               {/* Real Conversion Funnel */}
-              <div className="bg-card border rounded-lg p-5">
-                <h2 className="font-semibold mb-4 flex items-center gap-2">
+              <div className={softCardClass}>
+                <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
+                  <h2 className="font-semibold flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-primary" />
-                  Conversion Funnel
-                </h2>
-                {totalSessions < FUNNEL_MIN_SESSIONS ? (
-                  <p className="text-sm text-muted-foreground">Not enough data yet — funnel requires at least {FUNNEL_MIN_SESSIONS} sessions (currently {totalSessions}).</p>
-                ) : funnelStats[0].count === 0 ? (
-                  <p className="text-sm text-muted-foreground">No page view data yet — funnel will populate as visitors arrive.</p>
-                ) : (
-                  <div className="space-y-2">
+                  How visitors move toward contacting you
+                  </h2>
+                  <div className="text-sm text-muted-foreground">
+                    Confidence: <span className={`font-medium ${funnelConfidence.tone}`}>{funnelConfidence.label}</span>
+                    {totalSessions < 30 && <span> (sample size &lt; 30)</span>}
+                  </div>
+                </div>
+              {funnelStats[0].count === 0 ? (
+                <p className="text-sm text-muted-foreground">No visitor journey data yet — this will fill in as people browse your site.</p>
+              ) : (
+                  <div className="space-y-4">
                     {funnelStats.map((step, i) => (
                       <div key={step.step}>
-                        <div className="flex items-center justify-between text-sm mb-1">
-                          <span className="font-medium">{step.label}</span>
-                          <span className="text-muted-foreground">{step.count.toLocaleString()} visitors ({funnelStats[0].count > 0 ? fmt(step.pct, funnelStats[0].count) : '—'})</span>
+                        <div className="flex items-center justify-between text-sm mb-1 gap-3">
+                          <span className="font-medium">{step.count.toLocaleString()} {step.label.toLowerCase()}</span>
+                          <span className="text-muted-foreground">{funnelStats[0].count > 0 ? fmt(step.pct, funnelStats[0].count) : '—'}</span>
                         </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-3 rounded-full bg-muted overflow-hidden">
                           <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${Math.max(step.pct * 100, 0.5)}%` }} />
                         </div>
+                        <div className="text-xs text-muted-foreground mt-1">{step.summary}</div>
                         {i < funnelStats.length - 1 && step.dropPct > 0 && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1 ml-1">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-2 ml-1">
                             <ArrowRight className="w-3 h-3" />
-                            {step.dropPct}% dropped off
+                            {step.dropPct}% did not continue to the next step
                           </div>
                         )}
                       </div>
                     ))}
+                    <div className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+                      Biggest drop-off: <span className="font-medium text-foreground">{[...funnelStats].slice(1).sort((a, b) => b.dropPct - a.dropPct)[0]?.dropPct ?? 0}% before the next step</span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -539,22 +949,22 @@ export default async function AnalyticsPage({
               {/* Top Pages + Traffic Sources side by side */}
               <div className="grid md:grid-cols-2 gap-4">
                 {/* Top Pages */}
-                <div className="bg-card border rounded-lg p-5">
+                <div className={softCardClass}>
                   <h2 className="font-semibold mb-4 flex items-center gap-2">
                     <Eye className="w-4 h-4 text-primary" />
-                    Top Pages
+                    Pages people visit most
                   </h2>
                   {pageStats.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No page views yet.</p>
                   ) : (
                     <div className="space-y-1">
-                      <div className="grid grid-cols-4 text-xs text-muted-foreground font-medium pb-2 border-b">
+                      <div className="grid grid-cols-4 border-b border-border/60 pb-2 text-xs font-medium text-muted-foreground">
                         <span className="col-span-2">Page</span>
-                        <span className="text-right">Views</span>
-                        <span className="text-right">Conv %</span>
+                        <span className="text-right">Visits</span>
+                        <span className="text-right">Inquiry %</span>
                       </div>
                       {pageStats.slice(0, 8).map(p => (
-                        <div key={p.page_slug} className="grid grid-cols-4 text-sm py-1.5 border-b border-muted/50 last:border-0">
+                        <div key={p.page_slug} className="grid grid-cols-4 border-b border-muted/50 py-2 last:border-0 text-sm">
                           <span className="col-span-2 truncate text-muted-foreground font-mono text-xs">{p.page_slug}</span>
                           <span className="text-right font-medium">{p.views}</span>
                           <span className="text-right text-muted-foreground">{fmt(p.conversion_rate, p.views)}</span>
@@ -565,22 +975,22 @@ export default async function AnalyticsPage({
                 </div>
 
                 {/* Traffic Sources */}
-                <div className="bg-card border rounded-lg p-5">
+                <div className={softCardClass}>
                   <h2 className="font-semibold mb-4 flex items-center gap-2">
                     <Globe className="w-4 h-4 text-primary" />
-                    Traffic Sources
+                    Where your traffic comes from
                   </h2>
                   {sourceStats.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No traffic data yet.</p>
                   ) : (
                     <div className="space-y-1">
-                      <div className="grid grid-cols-4 text-xs text-muted-foreground font-medium pb-2 border-b">
+                      <div className="grid grid-cols-4 border-b border-border/60 pb-2 text-xs font-medium text-muted-foreground">
                         <span className="col-span-2">Source</span>
-                        <span className="text-right">Views</span>
-                        <span className="text-right">Leads</span>
+                        <span className="text-right">Visits</span>
+                        <span className="text-right">Inquiries</span>
                       </div>
                       {sourceStats.slice(0, 8).map(s => (
-                        <div key={s.source} className="grid grid-cols-4 text-sm py-1.5 border-b border-muted/50 last:border-0">
+                        <div key={s.source} className="grid grid-cols-4 border-b border-muted/50 py-2 last:border-0 text-sm">
                           <span className="col-span-2 truncate text-muted-foreground">{s.source}</span>
                           <span className="text-right font-medium">{s.views}</span>
                           <span className="text-right text-muted-foreground">{s.leads}</span>
@@ -591,50 +1001,168 @@ export default async function AnalyticsPage({
                 </div>
               </div>
 
-              {/* Section Heatmap */}
-              {advancedAllowed && sectionStats.length > 0 && (
-                <div className="bg-card border rounded-lg p-5">
-                  <h2 className="font-semibold mb-4 flex items-center gap-2">
-                    <MousePointerClick className="w-4 h-4 text-primary" />
-                    Section Engagement
-                  </h2>
-                  <div className="space-y-1">
-                    <div className="grid grid-cols-5 text-xs text-muted-foreground font-medium pb-2 border-b">
-                      <span className="col-span-2">Section</span>
-                      <span className="text-right">Reach</span>
-                      <span className="text-right">Clicks</span>
-                      <span className="text-right">Conv %</span>
+              <div className={softCardClass}>
+                <h2 className="font-semibold mb-1 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  What to improve next
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Simple suggestions based on what visitors are doing on your site.
+                </p>
+                <div className="space-y-3">
+                  {recommendations.map((item) => (
+                    <div key={item.title} className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-3">
+                      <div className="font-medium">{item.title}</div>
+                      <div className="text-sm text-muted-foreground mt-1">{item.detail}</div>
                     </div>
-                    {sectionStats.slice(0, 12).map(s => (
-                      <div key={s.section_key} className="grid grid-cols-5 text-sm py-1.5 border-b border-muted/50 last:border-0">
-                        <span className="col-span-2 truncate text-muted-foreground font-mono text-xs">{s.section_key}</span>
-                        <span className="text-right font-medium">{fmt(s.viewRate, totalUniqueVisitors)}</span>
-                        <span className="text-right text-muted-foreground">{s.clicks}</span>
-                        <span className="text-right text-muted-foreground">{fmt(s.conversionRate, s.sectionViews)}</span>
+                  ))}
+                </div>
+              </div>
+
+              {mostAttentionSection && (
+                <div className={softCardClass}>
+                  <h2 className="font-semibold mb-1 flex items-center gap-2">
+                    <Eye className="w-4 h-4 text-primary" />
+                    Where people spend the most time
+                  </h2>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    A simple heatmap-style view based on how long each part of your site stayed on screen while the page was actually in view.
+                  </p>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className={insetCardClass}>
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Top attention section</div>
+                      <div className="mt-2 text-lg font-semibold">{mostAttentionSection.section_label}</div>
+                      <div className="mt-1 text-sm text-muted-foreground">
+                        Visitors who stayed here spent about {formatAttentionSeconds(mostAttentionSection.avgAttentionSeconds)} on average.
                       </div>
-                    ))}
+                    </div>
+                    <div className={insetCardClass}>
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Sessions that truly viewed it</div>
+                      <div className="mt-2 text-2xl font-bold">{mostAttentionSection.attentiveSessions}</div>
+                      <div className="mt-1 text-sm text-muted-foreground">
+                        {fmt(mostAttentionSection.attentionReachRate, totalSessions)} of visits kept this section in view long enough to count as attention.
+                      </div>
+                    </div>
+                    <div className={insetCardClass}>
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Total visible time</div>
+                      <div className="mt-2 text-2xl font-bold">{formatAttentionSeconds(mostAttentionSection.totalAttentionMs / 1000)}</div>
+                      <div className="mt-1 text-sm text-muted-foreground">
+                        Counted only while the tab was visible and focused.
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-5 rounded-2xl border border-border/60 bg-background/70">
+                    <SectionAttentionBreakdown
+                      sections={visibleAttentionSectionStats.map((section) => ({
+                        section_key: section.section_key,
+                        section_label: section.section_label,
+                        viewRateText: fmt(section.viewRate, totalSessions),
+                        sectionViews: section.sectionViews,
+                        attentiveSessions: section.attentiveSessions,
+                        avgAttentionText: formatAttentionSeconds(section.avgAttentionSeconds),
+                        totalAttentionText: formatAttentionSeconds(section.totalAttentionMs / 1000),
+                      }))}
+                      totalTrackedSections={attentionSectionStats.length}
+                      visibleTrackedSections={visibleAttentionSectionStats.length}
+                      hasExtraAttentionRows={hasExtraAttentionRows}
+                      sectionToggleHref={sectionToggleHref}
+                      sectionToggleLabel={sectionToggleLabel}
+                      sectionToggleExpanded={showAllSections}
+                      secondaryButtonClass={secondaryButtonClass}
+                    />
                   </div>
                 </div>
               )}
 
+              {/* Section Heatmap */}
+              {sectionPerformanceStats.length > 0 && (
+                <div className={softCardClass}>
+                  <h2 className="font-semibold mb-1 flex items-center gap-2">
+                    <MousePointerClick className="w-4 h-4 text-primary" />
+                    Which sections lead to inquiries
+                  </h2>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    This shows which parts of your site people noticed, spent time on, and saw before they decided to contact you.
+                  </p>
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-1 gap-2 border-b border-border/60 pb-2 text-xs font-medium text-muted-foreground md:grid-cols-12">
+                      <span className="md:col-span-4">Section</span>
+                      <span className="md:col-span-4">What happened</span>
+                      <span className="md:col-span-2 text-left md:text-right">Attention</span>
+                      <span className="md:col-span-2 text-left md:text-right">Confidence</span>
+                    </div>
+                    {visibleSectionPerformanceStats.map(s => (
+                      <div key={s.section_key} className="grid grid-cols-1 gap-2 border-b border-muted/50 py-3 text-sm last:border-0 md:grid-cols-12 md:items-start">
+                        <div className="md:col-span-4 min-w-0">
+                          <div className="truncate font-medium">{s.section_label}</div>
+                          <div className="truncate text-[11px] text-muted-foreground">
+                            Seen by {s.sectionViews} sessions
+                          </div>
+                          <div className="truncate text-[11px] text-muted-foreground">
+                            {s.isInteractive ? `Main interaction: ${s.interactionLabel}` : 'This is mainly a view-only section'}
+                          </div>
+                        </div>
+                        <div className="md:col-span-4 min-w-0">
+                          <div className="text-muted-foreground">
+                            Seen by {s.sectionViews} sessions → {s.assistedLeads} converted ({fmt(s.assistedRate, s.sectionViews)})
+                          </div>
+                          <div className="text-[11px] text-muted-foreground mt-1">
+                            {fmt(s.viewRate, totalSessions)} of all visits reached this section.
+                          </div>
+                        </div>
+                        <div className="md:col-span-2 md:text-right text-muted-foreground">
+                          <div>{s.attentiveSessions} attentive sessions</div>
+                          <div className="text-[11px] text-muted-foreground mt-1">
+                            Avg. {formatAttentionSeconds(s.avgAttentionSeconds)} on screen
+                          </div>
+                        </div>
+                        <div className="md:col-span-2 md:text-right">
+                          <span className={`font-medium ${s.confidenceTone}`}>Confidence: {s.confidenceLabel}</span>
+                          {s.sectionViews < 30 && <div className="text-[11px] text-muted-foreground">sample size &lt; 30</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {hasExtraSectionRows && (
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-muted/50 pt-4">
+                      <p className="text-xs text-muted-foreground">
+                        Showing {visibleSectionPerformanceStats.length} of {sectionPerformanceStats.length} tracked sections.
+                      </p>
+                      <Link
+                        href={sectionToggleHref}
+                        className={secondaryButtonClass}
+                      >
+                        {sectionToggleLabel}
+                        <ArrowRight className={`h-4 w-4 transition-transform ${showAllSections ? 'rotate-180' : ''}`} />
+                      </Link>
+                    </div>
+                  )}
+                  {!advancedAllowed && (
+                    <p className="text-xs text-muted-foreground mt-4">
+                      This simplified section view is available here so you can quickly see what content helps inquiries. Advanced analytics plans can still expand on this foundation later.
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Returning Visitors */}
-              <div className="bg-card border rounded-lg p-5">
+              <div className={softCardClass}>
                 <h2 className="font-semibold mb-4 flex items-center gap-2">
                   <Repeat2 className="w-4 h-4 text-primary" />
-                  Visitor Loyalty
+                  Repeat visitors
                 </h2>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <div className="text-2xl font-bold">{totalUniqueVisitors}</div>
-                    <div className="text-xs text-muted-foreground mt-1">Unique Visitors</div>
+                    <div className="text-xs text-muted-foreground mt-1">People visited</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold">{returningVisitors}</div>
-                    <div className="text-xs text-muted-foreground mt-1">Returning</div>
+                    <div className="text-xs text-muted-foreground mt-1">Came back</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold">{totalUniqueVisitors > 0 ? fmt(returningVisitors / totalUniqueVisitors, totalUniqueVisitors) : '—'}</div>
-                    <div className="text-xs text-muted-foreground mt-1">Return Rate</div>
+                    <div className="text-xs text-muted-foreground mt-1">Return rate</div>
                   </div>
                 </div>
               </div>
@@ -642,61 +1170,6 @@ export default async function AnalyticsPage({
           )
         )}
 
-        {/* ── SESSION REPLAYS TAB ── */}
-        {activeTab === 'replays' && (
-          !advancedAllowed ? (
-            <div className="bg-card border rounded-lg p-12 text-center">
-              <Lock className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
-              <p className="font-semibold text-lg mb-1">Session Replays — Pro Feature</p>
-              <p className="text-muted-foreground text-sm mb-4">Upgrade to Pro or higher to watch visitor session recordings.</p>
-              <Link href="/pricing" className="inline-flex items-center gap-2 px-4 py-2 rounded bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
-                <Sparkles className="w-4 h-4" /> Upgrade Plan
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="bg-card border rounded-lg p-5">
-                <h2 className="font-semibold mb-4 flex items-center gap-2">
-                  <Play className="w-4 h-4 text-primary" />
-                  Recent Sessions
-                  <span className="ml-auto text-xs text-muted-foreground font-normal">{(replays as any[]).length} recorded</span>
-                </h2>
-                {(replays as any[]).length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Play className="w-8 h-8 mx-auto mb-3 opacity-40" />
-                    <p className="font-medium">No session recordings yet</p>
-                    <p className="text-sm mt-1">Recordings will appear here as visitors browse your site.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    <div className="grid grid-cols-4 text-xs text-muted-foreground font-medium pb-2 border-b">
-                      <span className="col-span-2">Session</span>
-                      <span className="text-right">Duration</span>
-                      <span className="text-right">Date</span>
-                    </div>
-                    {(replays as SessionReplayStat[]).map(r => (
-                      <div key={r.session_id} className="grid grid-cols-4 text-sm py-2 border-b border-muted/50 last:border-0 items-center">
-                        <div className="col-span-2">
-                          <div className="font-mono text-xs text-muted-foreground truncate">{r.session_id.slice(0, 16)}…</div>
-                          <div className="text-xs text-muted-foreground/60 truncate">{r.page_slug || '/'}</div>
-                        </div>
-                        <span className="text-right text-muted-foreground">{fmtDuration(r.duration_ms)}</span>
-                        <span className="text-right text-muted-foreground text-xs">
-                          {new Date(r.started_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )
-        )}
-
-        {/* ── SEO AUDIT TAB ── */}
-        {activeTab === 'seo' && (
-          <SeoAuditPanel config={{}} />
-        )}
       </div>
     </div>
   )

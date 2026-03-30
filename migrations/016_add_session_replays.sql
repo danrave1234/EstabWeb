@@ -19,6 +19,8 @@ CREATE INDEX IF NOT EXISTS idx_session_replays_started_at ON session_replays(sta
 ALTER TABLE session_replays ENABLE ROW LEVEL SECURITY;
 
 -- Service role has full access (used by API routes)
+DROP POLICY IF EXISTS "service_role_all_session_replays" ON session_replays;
+
 CREATE POLICY "service_role_all_session_replays"
   ON session_replays FOR ALL
   TO service_role
