@@ -4,11 +4,12 @@ import { headers } from "next/headers";
 import { sendLeadFormNotification } from "@/lib/email/lead-notification";
 import { trackLeadLimiter } from "@/lib/security/rate-limit";
 import { buildEventInsert, buildSessionUpsert } from "@/lib/analytics/server-ingest";
+import type { AnalyticsEventType } from "@/lib/analytics/event-schema";
 
 const VALID_TYPES = ["messenger", "call", "form", "viber"] as const;
 type LeadType = (typeof VALID_TYPES)[number];
 
-const EVENT_TYPE_MAP: Record<LeadType, string> = {
+const EVENT_TYPE_MAP: Record<LeadType, AnalyticsEventType> = {
   form:      "lead_form",
   call:      "lead_call",
   messenger: "lead_messenger",

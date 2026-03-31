@@ -14,7 +14,7 @@ type SectionDatasetLike = Partial<
     | "sectionPurpose"
     | "sectionGoal"
     | "sectionPosition"
-    | "sectionIsHero",
+    | "sectionIsHero"
     | "sectionIsInteractive"
     | "sectionInteractionType"
     | "sectionInteractionLabel",

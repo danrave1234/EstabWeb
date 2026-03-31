@@ -112,7 +112,7 @@ export function useSectionTracking(projectId?: string, pageSlug?: string) {
           const sectionMeta = getSectionAnalyticsMetaFromDataset(element.dataset)
           const pageVersionId = element.dataset.pageVersionId || (typeof window !== "undefined" ? window.PAGE_VERSION_ID : undefined)
           const metadata = sectionMetaToEventMetadata(sectionMeta, {
-            section_slot: element.dataset.sectionSlot || sectionMeta.sectionSlot,
+            section_slot: element.dataset.sectionSlot || sectionMeta?.sectionSlot,
             section_instance_id: element.dataset.sectionInstanceId || undefined,
             page_version_id: pageVersionId,
           })
@@ -189,7 +189,7 @@ export function useSectionTracking(projectId?: string, pageSlug?: string) {
         sectionKey: section,
         pageVersionId,
         metadata: sectionMetaToEventMetadata(sectionMeta, {
-          section_slot: element.dataset.sectionSlot || sectionMeta.sectionSlot,
+          section_slot: element.dataset.sectionSlot || sectionMeta?.sectionSlot,
           section_instance_id: element.dataset.sectionInstanceId || undefined,
           page_version_id: pageVersionId,
         }),

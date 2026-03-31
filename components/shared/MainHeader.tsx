@@ -34,9 +34,9 @@ interface MainHeaderProps {
 export default function MainHeader({ initialUser, variant, userEmail, role }: MainHeaderProps) {
   const { user, loading } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = React.useState(false)
-  const userMenuRef = useClickOutside(() => setUserMenuOpen(false))
+  const userMenuRef = useClickOutside<HTMLDivElement>(() => setUserMenuOpen(false))
   const [mobileOpen, setMobileOpen] = React.useState(false)
-  const mobileMenuRef = useClickOutside(() => setMobileOpen(false))
+  const mobileMenuRef = useClickOutside<HTMLDivElement>(() => setMobileOpen(false))
   const [scrolled, setScrolled] = React.useState(false)
   const pathname = usePathname()
   const desktopNavId = "main-header-desktop-nav"

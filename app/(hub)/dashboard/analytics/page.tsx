@@ -478,7 +478,7 @@ function trendArrow(current: number, previous: number): { symbol: string; color:
 export default async function AnalyticsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; status?: string; range?: string; page?: string; projectId?: string }>
+  searchParams: Promise<{ tab?: string; status?: string; range?: string; page?: string; projectId?: string; showAllSections?: string }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

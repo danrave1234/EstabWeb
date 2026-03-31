@@ -437,7 +437,7 @@ export function useSectionTracker(projectId?: string, pageVersionId?: string) {
           if (!entry.isIntersecting) return;
           const el = entry.target as HTMLElement;
           const sectionKey = el.dataset.section || el.dataset.sectionId;
-          const sectionInstanceId = el.dataset.sectionInstanceId || sectionKey;
+          const sectionInstanceId = el.dataset.sectionInstanceId || sectionKey || '';
           if (!sectionKey || viewedSections.has(sectionInstanceId)) return;
           const sectionMeta = getSectionAnalyticsMetaFromDataset(el.dataset);
           viewedSections.add(sectionInstanceId);

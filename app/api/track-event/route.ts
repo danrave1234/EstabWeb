@@ -20,6 +20,7 @@ type BatchEventPayload = {
 type LegacyEventPayload = {
   type: AnalyticsEventType
   project_id: string
+  timestamp?: string
   page_slug?: string
   section_key?: string
   cta_id?: string
