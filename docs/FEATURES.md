@@ -427,10 +427,11 @@ Lead metadata can now include normalized section context (for example `section_f
 **API logic (`/api/track-lead`):**
 1. Validates `type` is one of the four allowed values.
 2. Validates `project_id` is present.
-3. Upserts the related `project_sessions` row when a public `session_id` is provided.
-4. Inserts a row into `project_leads` with lead type, session/source attribution, and metadata.
-5. Mirrors the lead as a `lead_*` event in `project_events` for funnel/source/section reporting.
-5. No auth required — public endpoint (visitors are not logged in).
+3. For public tenant forms, reCAPTCHA is optional because the shared hub site key is not valid for every client custom domain/subdomain; when a token is present it is still verified, otherwise spam protection falls back to rate limiting + honeypot.
+4. Upserts the related `project_sessions` row when a public `session_id` is provided.
+5. Inserts a row into `project_leads` with lead type, session/source attribution, and metadata.
+6. Mirrors the lead as a `lead_*` event in `project_events` for funnel/source/section reporting.
+7. No auth required — public endpoint (visitors are not logged in).
 
 **API logic (`/api/track-event`):**
 1. Validates the incoming event type against the public analytics allowlist.
@@ -916,6 +917,7 @@ All API routes are under `app/api/` and use Next.js Route Handlers.
 - `POST /api/ai/populate-template` also accepts optional `businessPageUrl` to extract public page metadata (logo/cover/contact hints) from social profiles or business websites and apply them into template config. It uses a hint-based fallback for restricted social scrapers (Facebook, etc.) to trigger a mandatory web search for official branding (colors, names, logos).
 - `POST /api/ai/populate-template` enforces strict branding accuracy (e.g., matching known brand colors to closest themes) and logic-based section sequencing (Hero -> Services -> Social Proof -> Contact).
 - `POST /api/ai/populate-template` also accepts optional `businessImageDataUrl` (uploaded screenshot/logo) for multimodal extraction fallback when direct page scraping is unavailable.
+- `/admin/template` shows a compact activity log while full-template generation is running so admins can see the research, AI generation, and image-preparation stages before the editor applies the result.
 - `GET /api/cron/cleanup-template-drafts` -> daily cleanup of expired drafts and draft-owned uploaded image assets.
 
 **`GET /api/config?projectId=xxx&preview=true`**

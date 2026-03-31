@@ -17,6 +17,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
+const normalizeText = (value: unknown) => (typeof value === "string" ? value.trim() : "");
+
 export interface ContactInfoItem {
   id: string;
   label: string;
@@ -90,6 +92,66 @@ export function AgencyContact({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const infoItemKeyCounts = infoItems.reduce<Record<string, number>>((counts, item) => {
+    const normalizedId = normalizeText(item.id);
+    const fallbackIdentifier = [
+      normalizeText(item.label),
+      normalizeText(item.value),
+      normalizeText(item.icon),
+      normalizeText(item.href),
+    ]
+      .filter(Boolean)
+      .join("-");
+    const itemIdentifier = normalizedId || fallbackIdentifier || "contact-info";
+
+    counts[itemIdentifier] = (counts[itemIdentifier] ?? 0) + 1;
+    return counts;
+  }, {});
+
+  const socialKeyCounts = socials.reduce<Record<string, number>>((counts, social) => {
+    const normalizedId = normalizeText(social.id);
+    const fallbackIdentifier = [normalizeText(social.platform), normalizeText(social.href)]
+      .filter(Boolean)
+      .join("-");
+    const socialIdentifier = normalizedId || fallbackIdentifier || "social";
+
+    counts[socialIdentifier] = (counts[socialIdentifier] ?? 0) + 1;
+    return counts;
+  }, {});
+
+  const getInfoItemKey = (item: ContactInfoItem, index: number) => {
+    const normalizedId = normalizeText(item.id);
+    const fallbackIdentifier = [
+      normalizeText(item.label),
+      normalizeText(item.value),
+      normalizeText(item.icon),
+      normalizeText(item.href),
+    ]
+      .filter(Boolean)
+      .join("-");
+    const itemIdentifier = normalizedId || fallbackIdentifier || "contact-info";
+
+    if (infoItemKeyCounts[itemIdentifier] === 1) {
+      return itemIdentifier;
+    }
+
+    return `${itemIdentifier}-${index}`;
+  };
+
+  const getSocialKey = (social: SocialLink, index: number) => {
+    const normalizedId = normalizeText(social.id);
+    const fallbackIdentifier = [normalizeText(social.platform), normalizeText(social.href)]
+      .filter(Boolean)
+      .join("-");
+    const socialIdentifier = normalizedId || fallbackIdentifier || "social";
+
+    if (socialKeyCounts[socialIdentifier] === 1) {
+      return socialIdentifier;
+    }
+
+    return `${socialIdentifier}-${index}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
@@ -160,7 +222,7 @@ export function AgencyContact({
                     const Icon = ICON_MAP[item.icon || "mail"] || Mail;
                     return (
                       <motion.div
-                        key={item.id}
+                        key={getInfoItemKey(item, index)}
                         initial={{ opacity: 0, x: -20 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
@@ -189,11 +251,11 @@ export function AgencyContact({
 
               {socials.length > 0 && (
                 <div className="flex items-center gap-4 pt-4">
-                  {socials.map((social) => {
+                  {socials.map((social, index) => {
                     const Icon = SOCIAL_ICONS[social.platform.toLowerCase()] || Instagram;
                     return (
                       <a
-                        key={social.id}
+                        key={getSocialKey(social, index)}
                         href={social.href}
                         className="size-12 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300"
                         aria-label={social.platform}

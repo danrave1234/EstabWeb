@@ -71,7 +71,7 @@ export function GalleryGridBlock({
 
   const categories = [
     "All",
-    ...new Set(images.map((img) => img.category)),
+    ...new Set(images.map((img) => img.category).filter(cat => (cat || '').trim().toLowerCase() !== "all")),
   ];
 
   const filteredImages =
@@ -135,7 +135,7 @@ export function GalleryGridBlock({
           </Badge>
           <h2
             id="gallery-heading"
-            className="mb-4 break-words text-4xl font-bold tracking-tight"
+            className="mb-4 break-words text-4xl font-bold tracking-tight text-foreground"
           >
             {title}
           </h2>

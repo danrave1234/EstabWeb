@@ -93,9 +93,7 @@ export function resolveTenantRoute(input: ResolveTenantRouteInput): TenantRouteD
   if (!isDevHost && !isStagingHost && !isVercelPreview && isRoot && url.pathname !== "/") {
     const segments = url.pathname.replace(/^\/|\/$/g, "").split("/").filter(Boolean)
     const segment = segments[0]?.toLowerCase()
-    const isSingleSegmentPath = segments.length === 1
     if (
-      isSingleSegmentPath &&
       segment &&
       !RESERVED_ROOT_PATHS.includes(segment) &&
       !segment.includes(".")

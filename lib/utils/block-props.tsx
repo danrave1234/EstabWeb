@@ -1079,7 +1079,6 @@ export function renderSection(sectionId: string, data: any, brand: any, theme: s
       );
       break;
     case "gallery":
-    case "gallery--grid":
       sectionContent = (
         <PhotoGalleryGrid
           key={key}

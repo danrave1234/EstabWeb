@@ -7,9 +7,19 @@ import { Settings, X, ChevronRight, ChevronLeft, Download, Moon, Sun, Type, Layo
 import { GENRE_PRESETS, GENRE_LABELS } from "@/config/presets";
 import { formatSectionLabel, sectionIdToKey, COLOR_THEME_SWATCHES, TYPOGRAPHY_OPTIONS as GLOBAL_TYPOGRAPHY_OPTIONS } from "@/config/dashboard-config";
 import { BLOCK_REGISTRY } from "@/lib/utils/block-registry";
+import {
+  TEMPLATE_GENERATION_ACTIVITY_STORAGE_KEY,
+  buildTemplateGenerationSummary,
+  completeTemplateGenerationLogEntries,
+  createTemplateGenerationLogEntries,
+  failTemplateGenerationLogEntries,
+  setActiveTemplateGenerationLogEntry,
+  type TemplateGenerationLogEntry,
+} from "@/lib/utils/template-generation-activity";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/Dialog";
 import ImageUpload from "./ImageUpload";
+import TemplateGenerationActivityLog from "./TemplateGenerationActivityLog";
 
 const SECTIONS = [
   { id: "hero-emergency", label: "Emergency Hero" },
@@ -234,10 +244,42 @@ export default function SiteEditorSidebar() {
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [aiUseSearch, setAiUseSearch] = useState(true);
   const [aiSources, setAiSources] = useState<string[]>([]);
+  const [aiGenerationLogs, setAiGenerationLogs] = useState<TemplateGenerationLogEntry[]>([]);
+  const [aiGenerationSummary, setAiGenerationSummary] = useState<string[]>([]);
+  const [aiGenerationError, setAiGenerationError] = useState("");
   const [draftLabel, setDraftLabel] = useState("");
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [loadingDraftId, setLoadingDraftId] = useState<string | null>(null);
   const [deletingDraftId, setDeletingDraftId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const savedActivity = window.sessionStorage.getItem(TEMPLATE_GENERATION_ACTIVITY_STORAGE_KEY);
+    if (!savedActivity) return;
+
+    window.sessionStorage.removeItem(TEMPLATE_GENERATION_ACTIVITY_STORAGE_KEY);
+
+    try {
+      const parsed = JSON.parse(savedActivity) as {
+        entries?: TemplateGenerationLogEntry[];
+        summary?: string[];
+        errorMessage?: string;
+      };
+
+      if (Array.isArray(parsed.entries)) {
+        setAiGenerationLogs(parsed.entries);
+      }
+      if (Array.isArray(parsed.summary)) {
+        setAiGenerationSummary(parsed.summary.filter((item): item is string => typeof item === "string" && item.trim().length > 0));
+      }
+      if (typeof parsed.errorMessage === "string") {
+        setAiGenerationError(parsed.errorMessage);
+      }
+    } catch {
+      // Ignore malformed session data.
+    }
+  }, []);
 
   const updateData = async (newData: any) => {
     setData(newData);
@@ -540,7 +582,33 @@ export default function SiteEditorSidebar() {
                     <button
                       disabled={isAiGenerating || !canRunAiTemplate}
                       onClick={async () => {
+                        const templateActivitySeed = createTemplateGenerationLogEntries({
+                          useSearch: aiUseSearch,
+                          businessPageUrl,
+                          businessImageName,
+                        });
+                        let activeActivityIndex = 0;
+                        let activityTimer: ReturnType<typeof setInterval> | null = null;
+
                         setIsAiGenerating(true);
+                        setAiSources([]);
+                        setAiGenerationError("");
+                        setAiGenerationSummary([]);
+                        setAiGenerationLogs(templateActivitySeed);
+
+                        if (typeof window !== "undefined") {
+                          window.sessionStorage.removeItem(TEMPLATE_GENERATION_ACTIVITY_STORAGE_KEY);
+                          activityTimer = setInterval(() => {
+                            activeActivityIndex = Math.min(activeActivityIndex + 1, templateActivitySeed.length - 1);
+                            setAiGenerationLogs((current) =>
+                              setActiveTemplateGenerationLogEntry(
+                                current.length > 0 ? current : templateActivitySeed,
+                                activeActivityIndex,
+                              ),
+                            );
+                          }, 1400);
+                        }
+
                         try {
                           const res = await fetch('/api/ai/populate-template', {
                             method: 'POST',
@@ -554,9 +622,9 @@ export default function SiteEditorSidebar() {
                                 activeSections: data.activeSections || [],
                               },
                               options: {
-                                themes: BLOCK_REGISTRY.filter(b => b.sectionType === 'hero' && !b.legacy).map((item) => ({ 
-                                  id: item.id, 
-                                  label: item.label || formatSectionLabel(item.id) 
+                                themes: Array.from(new Set(Object.values(GENRE_PRESETS).map(p => p.theme))).map((themeId) => ({
+                                  id: themeId,
+                                  label: themeId.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
                                 })),
                                 colorThemes: Object.keys(COLOR_THEME_SWATCHES).map((id) => {
                                   const local = COLOR_THEMES.find(t => t.value === id);
@@ -587,7 +655,7 @@ export default function SiteEditorSidebar() {
                             })
                           });
                           const result = await res.json();
-                          if (result.error) throw new Error(result.error);
+                          if (!res.ok || result.error) throw new Error(result.error || 'Failed to populate template');
 
                           const newData = { ...data };
                           if (!newData.brand) newData.brand = {};
@@ -612,24 +680,25 @@ export default function SiteEditorSidebar() {
                           }
 
                           if (result.theme) {
-                            const selectedTheme = BLOCK_REGISTRY.find(b => b.id === result.theme || b.variant === result.theme);
-                            if (selectedTheme) {
-                              newData.theme = selectedTheme.variant || selectedTheme.id;
-                              // Ensure this hero is in activeSections if not already
-                              const hasSelectedHero = newData.activeSections.includes(selectedTheme.id);
-                              if (!hasSelectedHero) {
-                                const heroIndex = newData.activeSections.findIndex((id: string) => id === 'hero' || id.startsWith('hero--'));
-                                if (heroIndex >= 0) {
-                                  newData.activeSections[heroIndex] = selectedTheme.id;
-                                } else {
-                                  newData.activeSections.unshift(selectedTheme.id);
-                                }
-                              }
-                            } else {
-                              newData.theme = result.theme;
-                            }
+                            newData.theme = result.theme;
                           }
                           setAiSources(Array.isArray(result.sources) ? result.sources : []);
+                          const completedActivity = completeTemplateGenerationLogEntries(templateActivitySeed);
+                          const activitySummary = buildTemplateGenerationSummary(result, {
+                            useSearch: aiUseSearch,
+                            businessPageUrl,
+                            businessImageName,
+                          });
+                          setAiGenerationLogs(completedActivity);
+                          setAiGenerationSummary(activitySummary);
+                          setAiGenerationError("");
+
+                          if (typeof window !== "undefined") {
+                            window.sessionStorage.setItem(
+                              TEMPLATE_GENERATION_ACTIVITY_STORAGE_KEY,
+                              JSON.stringify({ entries: completedActivity, summary: activitySummary }),
+                            );
+                          }
 
                           if (result.sectionsData && typeof result.sectionsData === 'object') {
                             Object.entries(result.sectionsData).forEach(([key, value]) => {
@@ -645,8 +714,16 @@ export default function SiteEditorSidebar() {
                         } catch (err: any) {
                           console.error(err);
                           setAiSources([]);
+                          setAiGenerationSummary([]);
+                          setAiGenerationError(err?.message || 'Failed to populate template');
+                          setAiGenerationLogs((current) =>
+                            failTemplateGenerationLogEntries(current.length > 0 ? current : templateActivitySeed),
+                          );
                           toast.error(err?.message || 'Failed to populate template');
                         } finally {
+                          if (activityTimer) {
+                            clearInterval(activityTimer);
+                          }
                           setIsAiGenerating(false);
                         }
                       }}
@@ -655,6 +732,13 @@ export default function SiteEditorSidebar() {
                       {isAiGenerating ? <Wand2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
                       {isAiGenerating ? "Generating..." : "Generate Full Template"}
                     </button>
+
+                    <TemplateGenerationActivityLog
+                      entries={aiGenerationLogs}
+                      summary={aiGenerationSummary}
+                      errorMessage={aiGenerationError}
+                      isRunning={isAiGenerating}
+                    />
 
                     <div className="flex items-center gap-2">
                       <input

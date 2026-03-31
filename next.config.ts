@@ -37,6 +37,18 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "placehold.co",
+      },
+      {
+        protocol: "https",
+        hostname: "via.placeholder.com",
+      },
+      {
+        protocol: "https",
+        hostname: "img.motodeal.com.ph",
+      },
+      {
+        protocol: "https",
         hostname: "*.googleusercontent.com",
       },
     ],

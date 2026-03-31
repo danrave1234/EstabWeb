@@ -25,6 +25,10 @@ type SimpleFooterProps = {
   cookieLabel?: string;
 };
 
+function normalizeNavigationField(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
 export default function SimpleFooter({
   brandName,
   logoUrl,
@@ -49,6 +53,22 @@ export default function SimpleFooter({
     .toUpperCase();
 
   const phoneHref = contact.phone.replace(/\s/g, "");
+
+  const getNavigationKey = (item: { name: string; href: string }, index: number) => {
+    const normalizedName = normalizeNavigationField(item?.name);
+    const normalizedHref = normalizeNavigationField(item?.href);
+    return normalizedHref || normalizedName
+      ? `${normalizedHref || "link"}-${normalizedName || index}`
+      : `footer-link-${index}`;
+  };
+
+  const normalizedNavigation = Array.isArray(navigation)
+    ? navigation.map((item) => ({
+        ...item,
+        name: normalizeNavigationField(item?.name),
+        href: normalizeNavigationField(item?.href),
+      }))
+    : [];
 
   return (
     <footer className="w-full border-t border-border bg-background/95">
@@ -89,9 +109,9 @@ export default function SimpleFooter({
               {tagline}
             </p>
             <nav aria-label="Footer" className="flex flex-wrap justify-center gap-x-6 gap-y-2 md:justify-start">
-              {navigation?.map((item) => (
+              {normalizedNavigation.map((item, index) => (
                 <a
-                  key={item.href}
+                  key={getNavigationKey(item, index)}
                   href={item.href}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >

@@ -99,11 +99,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing project_id" }, { status: 400 });
     }
 
-    // reCAPTCHA v3 verification (only for form leads when secret key is configured)
-    if (type === "form" && process.env.RECAPTCHA_SECRET_KEY) {
-      if (!recaptchaToken) {
-        return NextResponse.json({ error: "Missing verification token" }, { status: 400 });
-      }
+    // reCAPTCHA v3 verification is optional for public tenant forms because
+    // client sites can run on custom domains/subdomains that are not allowed by
+    // the hub reCAPTCHA site key. When a token is present, still verify it.
+    if (type === "form" && process.env.RECAPTCHA_SECRET_KEY && recaptchaToken) {
       const isHuman = await verifyRecaptcha(recaptchaToken);
       if (!isHuman) {
         return NextResponse.json({ error: "Bot detected" }, { status: 403 });

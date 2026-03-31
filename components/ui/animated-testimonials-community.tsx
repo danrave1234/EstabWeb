@@ -6,6 +6,18 @@ import { Quote, Star } from "lucide-react"
 import { type Variants, motion, useAnimation, useInView } from "framer-motion"
 import { useEffect, useRef, useState } from "react"
 
+const normalizeKeyPart = (value: unknown) => {
+  if (typeof value === "string") {
+    return value.trim()
+  }
+
+  if (typeof value === "number") {
+    return String(value)
+  }
+
+  return ""
+}
+
 export interface CommunityTestimonial {
   id: number
   name: string
@@ -38,6 +50,62 @@ export function AnimatedTestimonialsCommunity({
   className,
 }: AnimatedTestimonialsCommunityProps) {
   const [activeIndex, setActiveIndex] = useState(0)
+
+  const testimonialKeyCounts = testimonials.reduce<Record<string, number>>((counts, testimonial) => {
+    const normalizedId = normalizeKeyPart(testimonial.id)
+    const fallbackIdentifier = [
+      normalizeKeyPart(testimonial.name),
+      normalizeKeyPart(testimonial.role),
+      normalizeKeyPart(testimonial.company),
+      normalizeKeyPart(testimonial.content),
+      normalizeKeyPart(testimonial.avatar),
+      normalizeKeyPart(testimonial.rating),
+    ]
+      .filter(Boolean)
+      .join("-")
+    const testimonialIdentifier = normalizedId || fallbackIdentifier || "testimonial"
+
+    counts[testimonialIdentifier] = (counts[testimonialIdentifier] ?? 0) + 1
+    return counts
+  }, {})
+
+  const trustedCompanyKeyCounts = trustedCompanies.reduce<Record<string, number>>((counts, company) => {
+    const normalizedCompany = normalizeKeyPart(company)
+    const companyIdentifier = normalizedCompany || "company"
+
+    counts[companyIdentifier] = (counts[companyIdentifier] ?? 0) + 1
+    return counts
+  }, {})
+
+  const getTestimonialKey = (testimonial: CommunityTestimonial, index: number) => {
+    const normalizedId = normalizeKeyPart(testimonial.id)
+    const fallbackParts = [
+      normalizeKeyPart(testimonial.name),
+      normalizeKeyPart(testimonial.role),
+      normalizeKeyPart(testimonial.company),
+      normalizeKeyPart(testimonial.content),
+      normalizeKeyPart(testimonial.avatar),
+      normalizeKeyPart(testimonial.rating),
+    ].filter(Boolean)
+    const testimonialIdentifier = normalizedId || fallbackParts.join("-") || "testimonial"
+
+    if (testimonialKeyCounts[testimonialIdentifier] === 1) {
+      return testimonialIdentifier
+    }
+
+    return `${testimonialIdentifier}-${index}`
+  }
+
+  const getTrustedCompanyKey = (company: string, index: number) => {
+    const normalizedCompany = normalizeKeyPart(company)
+    const companyIdentifier = normalizedCompany || "company"
+
+    if (trustedCompanyKeyCounts[companyIdentifier] === 1) {
+      return companyIdentifier
+    }
+
+    return `${companyIdentifier}-${index}`
+  }
 
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
@@ -87,17 +155,17 @@ export function AnimatedTestimonialsCommunity({
   }
 
   return (
-    <section ref={sectionRef} id="testimonials" className={`py-24 overflow-hidden bg-muted/30 ${className || ""}`}>
-      <div className="px-4 md:px-6">
+    <section ref={sectionRef} id="testimonials" className={`overflow-hidden bg-background py-24 text-foreground ${className || ""}`}>
+      <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
         <motion.div
           initial="hidden"
           animate={controls}
           variants={containerVariants}
-          className="grid grid-cols-1 gap-16 w-full md:grid-cols-2 lg:gap-24"
+          className="grid w-full grid-cols-1 items-center gap-12 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-20"
         >
           {/* Left side: Heading and navigation */}
           <motion.div variants={itemVariants} className="flex flex-col justify-center">
-            <div className="space-y-6">
+            <div className="mx-auto w-full max-w-xl space-y-6 md:mx-0">
               {badgeText && (
                 <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary">
                   <Star className="mr-1 h-3.5 w-3.5 fill-primary" />
@@ -125,10 +193,10 @@ export function AnimatedTestimonialsCommunity({
           </motion.div>
 
           {/* Right side: Testimonial cards */}
-          <motion.div variants={itemVariants} className="relative h-full min-h-[320px] md:mr-10 md:min-h-[400px]">
+          <motion.div variants={itemVariants} className="relative mx-auto h-full min-h-[320px] w-full max-w-2xl md:min-h-[400px]">
             {testimonials.map((testimonial, index) => (
               <motion.div
-                key={testimonial.id}
+                key={getTestimonialKey(testimonial, index)}
                 className="absolute inset-0"
                 initial={{ opacity: 0, x: 100 }}
                 animate={{
@@ -139,7 +207,7 @@ export function AnimatedTestimonialsCommunity({
                 transition={{ duration: 0.5, ease: "easeInOut" }}
                 style={{ zIndex: activeIndex === index ? 10 : 0 }}
               >
-                <div className="bg-card border shadow-lg rounded-xl p-8 h-full min-w-0 flex flex-col">
+                <div className="flex h-full min-w-0 flex-col rounded-xl border border-border bg-card p-8 shadow-sm">
                   <div className="mb-6 flex gap-2">
                     {Array(testimonial.rating)
                       .fill(0)
@@ -181,9 +249,9 @@ export function AnimatedTestimonialsCommunity({
         {trustedCompanies.length > 0 && (
           <motion.div variants={itemVariants} initial="hidden" animate={controls} className="mt-24 text-center">
             <h3 className="mb-8 break-words text-sm font-medium text-muted-foreground">{trustedCompaniesTitle}</h3>
-            <div className="flex flex-wrap justify-center gap-x-12 gap-y-8">
-              {trustedCompanies.map((company) => (
-                <div key={company} className="break-words text-2xl font-semibold text-muted-foreground/50">
+            <div className="flex flex-wrap justify-center gap-x-12 gap-y-8 text-foreground/60">
+              {trustedCompanies.map((company, index) => (
+                <div key={getTrustedCompanyKey(company, index)} className="break-words text-2xl font-semibold text-muted-foreground">
                   {company}
                 </div>
               ))}

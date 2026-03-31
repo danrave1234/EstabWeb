@@ -60,6 +60,7 @@ EstabWeb is a multi-tenant SaaS platform for generating and managing industry-op
 - It now injects structured design-system context into the AI prompt (preset blueprints, section labels/config keys, hero/theme labels, color swatches, typography metadata, and dark/light mode hints) so selections follow real preset patterns instead of random combinations.
 - It accepts optional `businessPageUrl` (e.g., Facebook page URL) and extracts public page signals (logo/cover/contact hints) to reduce manual asset setup.
 - It also accepts optional `businessImageDataUrl` (uploaded screenshot/logo) so AI can extract business details when page scraping is blocked.
+- `/admin/template` now shows a compact live activity log during full-template generation so admins can see when the builder is researching public context, generating sections/copy, and preparing assets.
 - Model/env controls:
   - `GEMINI_TEMPLATE_MODEL` (default: `gemini-2.5-flash`)
   - `GEMINI_TEMPLATE_USE_SEARCH` (default: `true`)
@@ -199,6 +200,12 @@ The platform now ships GEO-focused discoverability defaults for both the hub dom
   - `GEO_CRAWLER_POLICY_MODE=training-restricted`
 
 When updating public routes or page labels, keep `sitemap.xml` and llms outputs in sync.
+
+## Public Lead Tracking & reCAPTCHA
+
+- Hub auth flows such as `/login` may still use the shared `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`.
+- Public tenant sites (`app/(sites)/[domain]`) must not auto-load the shared reCAPTCHA script, because client subdomains and custom domains can fail with `Invalid domain for site key` unless every tenant host is registered with Google.
+- `components/shared/Analytics.tsx` and `app/api/track-lead/route.ts` therefore treat tenant lead protection as `rate limiting + honeypot` by default, and only verify reCAPTCHA when a valid token is actually supplied by a tenant-safe key.
 
 ## AI Custom HTML Section (Prototype)
 

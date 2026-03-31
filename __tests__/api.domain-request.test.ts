@@ -23,6 +23,7 @@ const mockProjectSingle = jest.fn()
 const mockExistingSingle = jest.fn()
 const mockUpdate = jest.fn()
 const mockAddDomainToVercel = jest.fn()
+const mockAuditInsert = jest.fn()
 
 jest.mock('@/lib/supabase/server', () => ({
   createClient: jest.fn(() => ({
@@ -40,6 +41,11 @@ jest.mock('@/lib/supabase/server', () => ({
           update: jest.fn(() => ({
             eq: jest.fn(() => mockUpdate()),
           })),
+        }
+      }
+      if (table === 'audit_logs') {
+        return {
+          insert: mockAuditInsert,
         }
       }
       return {}
@@ -61,6 +67,7 @@ describe('POST /api/domain/request', () => {
     jest.resetModules()
     POST = require('@/app/api/domain/request/route').POST
     mockAddDomainToVercel.mockResolvedValue({ ok: true, domain: 'myrestaurant.com' })
+    mockAuditInsert.mockResolvedValue({ error: null })
   })
 
   it('returns 401 when user is not authenticated', async () => {
@@ -106,7 +113,7 @@ describe('POST /api/domain/request', () => {
   it('strips https:// prefix before validating domain', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
     mockProjectSingle.mockResolvedValue({
-      data: { id: 'proj-1', client_id: 'user-1', custom_domain: null },
+      data: { id: 'proj-1', client_id: 'user-1', custom_domain: null, subscription_status: 'active', subscription_plan_id: 'pro' },
       error: null,
     })
     mockExistingSingle.mockResolvedValue({ data: null, error: null })
@@ -147,7 +154,7 @@ describe('POST /api/domain/request', () => {
   it('returns 409 when domain is already used by another project', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
     mockProjectSingle.mockResolvedValue({
-      data: { id: 'proj-1', client_id: 'user-1', custom_domain: null },
+      data: { id: 'proj-1', client_id: 'user-1', custom_domain: null, subscription_status: 'active', subscription_plan_id: 'pro' },
       error: null,
     })
     mockExistingSingle.mockResolvedValue({ data: { id: 'proj-other' }, error: null })
@@ -162,7 +169,7 @@ describe('POST /api/domain/request', () => {
   it('returns 200 and immediately updates the project domain on success', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
     mockProjectSingle.mockResolvedValue({
-      data: { id: 'proj-1', client_id: 'user-1', custom_domain: null },
+      data: { id: 'proj-1', client_id: 'user-1', custom_domain: null, subscription_status: 'active', subscription_plan_id: 'pro' },
       error: null,
     })
     mockExistingSingle.mockResolvedValue({ data: null, error: null })
@@ -181,7 +188,7 @@ describe('POST /api/domain/request', () => {
   it('returns 500 when project update fails', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
     mockProjectSingle.mockResolvedValue({
-      data: { id: 'proj-1', client_id: 'user-1', custom_domain: null },
+      data: { id: 'proj-1', client_id: 'user-1', custom_domain: null, subscription_status: 'active', subscription_plan_id: 'pro' },
       error: null,
     })
     mockExistingSingle.mockResolvedValue({ data: null, error: null })
@@ -197,7 +204,7 @@ describe('POST /api/domain/request', () => {
   it('returns 200 even when Vercel registration fails', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
     mockProjectSingle.mockResolvedValue({
-      data: { id: 'proj-1', client_id: 'user-1', custom_domain: null },
+      data: { id: 'proj-1', client_id: 'user-1', custom_domain: null, subscription_status: 'active', subscription_plan_id: 'pro' },
       error: null,
     })
     mockExistingSingle.mockResolvedValue({ data: null, error: null })

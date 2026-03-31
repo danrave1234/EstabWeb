@@ -129,7 +129,7 @@ export default function ContactVisual({
             <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
             
             <div className="relative z-10">
-              <h3 className="text-2xl font-bold text-gray-900 mb-8">{formHeading}</h3>
+              <h3 className="text-2xl font-bold text-foreground mb-8">{formHeading}</h3>
               
               <form onSubmit={handleSubmit} onFocus={handleFormFocus} className="space-y-6">
                 <div className="space-y-2">
@@ -137,7 +137,7 @@ export default function ContactVisual({
                     type="text"
                     required
                     placeholder="Full Name"
-                    className="w-full bg-gray-50 border-transparent rounded-xl p-4 text-gray-900 focus:ring-2 focus:ring-primary focus:bg-white outline-none transition-all"
+                    className="w-full bg-muted border-transparent rounded-xl p-4 text-foreground focus:ring-2 focus:ring-primary focus:bg-background outline-none transition-all"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                   />
@@ -147,7 +147,7 @@ export default function ContactVisual({
                     type="email"
                     required
                     placeholder="Email Address"
-                    className="w-full bg-gray-50 border-transparent rounded-xl p-4 text-gray-900 focus:ring-2 focus:ring-primary focus:bg-white outline-none transition-all"
+                    className="w-full bg-muted border-transparent rounded-xl p-4 text-foreground focus:ring-2 focus:ring-primary focus:bg-background outline-none transition-all"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                   />
@@ -157,7 +157,7 @@ export default function ContactVisual({
                     required
                     rows={4}
                     placeholder="Tell us about your project or needs"
-                    className="w-full bg-gray-50 border-transparent rounded-xl p-4 text-gray-900 focus:ring-2 focus:ring-primary focus:bg-white outline-none transition-all resize-none"
+                    className="w-full bg-muted border-transparent rounded-xl p-4 text-foreground focus:ring-2 focus:ring-primary focus:bg-background outline-none transition-all resize-none"
                     value={formData.message}
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
                   />

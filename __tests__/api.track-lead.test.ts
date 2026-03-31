@@ -213,16 +213,19 @@ describe("POST /api/track-lead", () => {
   })
 
   // --- reCAPTCHA ---
-  it("returns 400 for form lead when reCAPTCHA key is set but token is missing", async () => {
+  it("accepts form leads without a reCAPTCHA token when the public tenant site does not load reCAPTCHA", async () => {
     process.env.RECAPTCHA_SECRET_KEY = "test-secret"
     jest.resetModules()
     mockHeaders.mockReturnValue(makeHeaderMap())
     POST = require("@/app/api/track-lead/route").POST
+    mockLeadsInsert.mockResolvedValue({ error: null })
+    mockEventsInsert.mockResolvedValue({ error: null })
+    mockSessionsUpsert.mockResolvedValue({ error: null })
 
     const res = await POST(makeRequest({ type: "form", project_id: "proj-1" }))
     const json = await res.json()
-    expect(res.status).toBe(400)
-    expect(json.error).toMatch(/missing verification token/i)
+    expect(res.status).toBe(200)
+    expect(json.success).toBe(true)
   })
 
   it("skips reCAPTCHA check for non-form lead types even when key is set", async () => {

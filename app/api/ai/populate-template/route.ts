@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GENRE_LABELS, GENRE_PRESETS } from "@/config/presets";
 import { COLOR_THEME_SWATCHES, formatSectionLabel, sectionIdToKey, TYPOGRAPHY_OPTIONS } from "@/config/dashboard-config";
-import { scrapeUrlWithApify } from "@/lib/utils/scraper";
+import { scrapeUrlWithApify, type ScrapedData } from "@/lib/utils/scraper";
 import { SECTION_FIELD_SCHEMA } from "@/lib/ai/section-field-schema";
+import { BLOCK_REGISTRY } from "@/lib/utils/block-registry";
 import { rateLimit, getClientIp, RATE_LIMIT_PRESETS } from "@/lib/security/rate-limit";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const TEMPLATE_AI_MODEL = process.env.GEMINI_TEMPLATE_MODEL?.trim() || "gemini-1.5-flash";
 const TEMPLATE_AI_USE_SEARCH_DEFAULT = (process.env.GEMINI_TEMPLATE_USE_SEARCH ?? "true").toLowerCase() !== "false";
+const BROWSER_LIKE_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
 
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${TEMPLATE_AI_MODEL}:generateContent`;
 
@@ -105,10 +107,57 @@ function parseAiJson(rawText: string): PopulateTemplateRawResponse {
                 return JSON.parse(cleaned.slice(start, end + 1));
             } catch (innerError) {
                 console.error("AI JSON inner parse error:", innerError);
-                console.error("Attempted to parse block:", cleaned.slice(start, end + 1));
             }
         }
-        console.error("AI returned non-JSON text or malformed JSON. Raw text preview:", rawText.slice(0, 500));
+        
+        // Final fallback: attempt to repair truncated JSON
+        try {
+            if (start >= 0) {
+                let partial = cleaned.slice(start);
+                // Remove trailing comma, or incomplete keys
+                partial = partial.replace(/,\s*$/, '').replace(/,\s*\}/g, '}').replace(/,\s*\]/g, ']');
+                
+                // Count unclosed braces and brackets
+                let openBraces = 0;
+                let openBrackets = 0;
+                let inString = false;
+                let escapeNext = false;
+                
+                for (let i = 0; i < partial.length; i++) {
+                    const char = partial[i];
+                    if (escapeNext) {
+                        escapeNext = false;
+                        continue;
+                    }
+                    if (char === '\\') {
+                        escapeNext = true;
+                        continue;
+                    }
+                    if (char === '"') {
+                        inString = !inString;
+                        continue;
+                    }
+                    if (!inString) {
+                        if (char === '{') openBraces++;
+                        if (char === '}') openBraces--;
+                        if (char === '[') openBrackets++;
+                        if (char === ']') openBrackets--;
+                    }
+                }
+                
+                if (inString) partial += '"';
+                while (openBrackets > 0) { partial += ']'; openBrackets--; }
+                while (openBraces > 0) { partial += '}'; openBraces--; }
+                
+                return JSON.parse(partial);
+            }
+        } catch (e) {
+            console.error("AI JSON repair failed:", e);
+        }
+
+        console.error("AI returned non-JSON text or malformed JSON.");
+        console.error("Raw text preview (START):", rawText.slice(0, 300));
+        console.error("Raw text preview (END):", rawText.slice(-300));
         throw new Error("Model did not return JSON");
     }
 }
@@ -123,6 +172,57 @@ function toStringArray(value: unknown): string[] {
 
 function unique(values: string[]): string[] {
     return Array.from(new Set(values));
+}
+
+function mergeUniqueStrings(...groups: Array<string[] | undefined>): string[] {
+    return unique(
+        groups
+            .flatMap((group) => group || [])
+            .map((value) => normalizeWhitespace(value || ""))
+            .filter(Boolean)
+    );
+}
+
+function mergeRecentPosts(...groups: Array<ScrapedData["recentPosts"] | undefined>) {
+    const seen = new Set<string>();
+    const merged: Array<{ text: string; imageUrl: string }> = [];
+
+    for (const group of groups) {
+        for (const entry of group || []) {
+            const text = normalizeWhitespace(entry?.text || "");
+            const imageUrl = sanitizeHttpUrl(entry?.imageUrl) || "";
+            if (!text && !imageUrl) continue;
+
+            const key = `${text}__${imageUrl}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            merged.push({ text, imageUrl });
+        }
+    }
+
+    return merged;
+}
+
+function mergeScrapedDataIntoPageSignals(
+    currentSignals: PageSignals | null,
+    scraped: ScrapedData,
+    sourceUrl: string
+): PageSignals {
+    return {
+        sourceUrl: currentSignals?.sourceUrl || sourceUrl,
+        title: scraped.title || currentSignals?.title || "",
+        description: scraped.description || currentSignals?.description || scraped.text.slice(0, 200),
+        logoUrl: sanitizeHttpUrl(scraped.logoUrl) || currentSignals?.logoUrl || "",
+        heroImageUrl: sanitizeHttpUrl(scraped.heroImageUrl) || currentSignals?.heroImageUrl || "",
+        email: scraped.email || currentSignals?.email || "",
+        phone: scraped.phone || currentSignals?.phone || "",
+        location: scraped.location || currentSignals?.location || "",
+        about: scraped.about || currentSignals?.about || "",
+        categories: mergeUniqueStrings(scraped.categories, currentSignals?.categories),
+        website: scraped.website || currentSignals?.website || "",
+        recentPosts: mergeRecentPosts(currentSignals?.recentPosts, scraped.recentPosts),
+        pagePhotos: mergeUniqueStrings(currentSignals?.pagePhotos, scraped.pagePhotos),
+    };
 }
 
 function humanizeToken(value: string): string {
@@ -321,6 +421,269 @@ function sanitizeHttpUrl(value: unknown): string {
     }
 }
 
+function isImageFieldPath(fieldPath: string): boolean {
+    const segments = fieldPath.split(".");
+    const leaf = segments[segments.length - 1]?.replace(/\[\]$/g, "").toLowerCase() || "";
+    if (
+        [
+            "image",
+            "imageurl",
+            "backgroundimage",
+            "beforeimage",
+            "afterimage",
+            "beforeimageurl",
+            "afterimageurl",
+            "singleimageurl",
+            "avatar",
+            "image1",
+            "image2",
+            "image3",
+            "imagedark",
+            "imagelight",
+        ].includes(leaf)
+    ) {
+        return true;
+    }
+
+    if (leaf === "src") {
+        return segments.some((segment) => {
+            const normalized = segment.replace(/\[\]$/g, "").toLowerCase();
+            return normalized.includes("avatar") || normalized.includes("testimonial") || normalized.includes("team");
+        });
+    }
+
+    if (leaf === "url") {
+        return segments.some((segment) => segment.replace(/\[\]$/g, "").toLowerCase() === "images");
+    }
+
+    return false;
+}
+
+function buildRotatingImagePicker(imageUrls: string[]): () => string {
+    const pool = unique(imageUrls.map((url) => sanitizeHttpUrl(url)).filter(Boolean));
+    let index = 0;
+
+    return () => {
+        if (pool.length === 0) return "";
+        const selected = pool[index % pool.length];
+        index += 1;
+        return selected;
+    };
+}
+
+async function hostImageAtPath(
+    target: Record<string, any>,
+    fieldPath: string,
+    ensureHostedImageUrl: (url: string) => Promise<string>
+): Promise<void> {
+    const segments = fieldPath.split(".");
+
+    const visit = async (container: any, segmentIndex: number): Promise<void> => {
+        if (!container || typeof container !== "object") return;
+
+        const rawSegment = segments[segmentIndex];
+        const isArraySegment = rawSegment.endsWith("[]");
+        const key = isArraySegment ? rawSegment.slice(0, -2) : rawSegment;
+        const isLastSegment = segmentIndex === segments.length - 1;
+
+        if (isArraySegment) {
+            const arrayValue = Array.isArray(container[key]) ? container[key] : [];
+            if (arrayValue.length === 0) return;
+            await Promise.all(arrayValue.map((entry) => visit(entry, segmentIndex + 1)));
+            return;
+        }
+
+        if (isLastSegment) {
+            const existing = sanitizeHttpUrl(container[key]);
+            if (!existing) return;
+            container[key] = await ensureHostedImageUrl(existing);
+            return;
+        }
+
+        await visit(container[key], segmentIndex + 1);
+    };
+
+    await visit(target, 0);
+}
+
+function setMissingImageAtPath(
+    target: Record<string, any>,
+    fieldPath: string,
+    nextImage: () => string,
+    fallbackImage: string,
+    replaceableImages: Set<string> = new Set(),
+    isHeroLogo: boolean = false
+): void {
+    const segments = fieldPath.split(".");
+
+    const visit = (container: any, segmentIndex: number): void => {
+        if (!container || typeof container !== "object") return;
+
+        const rawSegment = segments[segmentIndex];
+        const isArraySegment = rawSegment.endsWith("[]");
+        const key = isArraySegment ? rawSegment.slice(0, -2) : rawSegment;
+        const isLastSegment = segmentIndex === segments.length - 1;
+
+        if (isArraySegment) {
+            const arrayValue = Array.isArray(container[key]) ? container[key] : [];
+            if (arrayValue.length === 0) return;
+            arrayValue.forEach((entry) => visit(entry, segmentIndex + 1));
+            return;
+        }
+
+        if (isLastSegment) {
+            const existing = sanitizeHttpUrl(container[key]);
+            
+            // Re-evaluate what is considered a placeholder
+            const isPlaceholder = !existing || 
+                (existing && (
+                    replaceableImages.has(existing) || 
+                    existing.includes('example.com') || 
+                    existing.includes('placeholder') ||
+                    existing.includes('dummyimage') ||
+                    existing.includes('unsplash') // common AI hallucinations
+                ));
+            
+            if (existing && !isPlaceholder) {
+                container[key] = existing;
+                return;
+            }
+
+            const replacement = nextImage();
+            if (replacement) {
+                container[key] = replacement;
+            } else if (fallbackImage && (isPlaceholder || isHeroLogo)) {
+                // if we are explicitly replacing a hero or logo, or we literally have no images left
+                container[key] = fallbackImage;
+            } else if (!existing) {
+               container[key] = fallbackImage;
+            }
+            return;
+        }
+
+        if (!container[key] || typeof container[key] !== "object") {
+            container[key] = {};
+        }
+
+        visit(container[key], segmentIndex + 1);
+    };
+
+    visit(target, 0);
+}
+
+function normalizeGalleryGridData(sectionData: Record<string, any>, photoUrls: string[], postTexts: string[]): Record<string, any> {
+    const existingImages = Array.isArray(sectionData.images) && sectionData.images.length > 0
+        ? sectionData.images
+        : Array.isArray(sectionData.items) && sectionData.items.length > 0
+            ? sectionData.items.map((item: any, index: number) => ({
+                id: item?.id ?? String(index + 1),
+                url: sanitizeHttpUrl(item?.url) || sanitizeHttpUrl(item?.src) || sanitizeHttpUrl(item?.image),
+                title:
+                    typeof item?.title === "string" && item.title.trim()
+                        ? item.title
+                        : typeof item?.alt === "string" && item.alt.trim()
+                            ? item.alt
+                            : postTexts[index]?.slice(0, 80) || `Photo ${index + 1}`,
+                category:
+                    typeof item?.category === "string" && item.category.trim()
+                        ? item.category
+                        : "All",
+            }))
+            : [];
+
+    if (photoUrls.length === 0) {
+        if (existingImages.length > 0) {
+            sectionData.images = existingImages;
+            delete sectionData.items;
+        }
+        return sectionData;
+    }
+
+    // Always prefer the actual scraped photos over whatever placeholders the AI/preset generated
+    sectionData.title = typeof sectionData.title === "string" && sectionData.title.trim() ? sectionData.title : "Our Gallery";
+    sectionData.images = photoUrls.slice(0, 9).map((url, index) => ({
+        id: String(index + 1),
+        url,
+        title: postTexts[index]?.slice(0, 80) || `Photo ${index + 1}`,
+        category: "All",
+    }));
+    delete sectionData.items;
+    return sectionData;
+}
+
+function normalizeGalleryCarouselData(sectionData: Record<string, any>, photoUrls: string[], postTexts: string[]): Record<string, any> {
+    const existingItems = Array.isArray(sectionData.items) && sectionData.items.length > 0
+        ? sectionData.items.map((item: any, index: number) => ({
+            ...item,
+            id: item?.id ?? String(index + 1),
+            image: sanitizeHttpUrl(item?.image) || sanitizeHttpUrl(item?.src) || sanitizeHttpUrl(item?.url),
+            title:
+                typeof item?.title === "string" && item.title.trim()
+                    ? item.title
+                    : postTexts[index]?.slice(0, 60) || `Project ${index + 1}`,
+            description:
+                typeof item?.description === "string"
+                    ? item.description
+                    : postTexts[index]?.slice(0, 120) || "",
+        }))
+        : [];
+
+    if (photoUrls.length === 0) {
+        if (existingItems.length > 0) {
+            sectionData.items = existingItems;
+        }
+        return sectionData;
+    }
+
+    // Always prefer the actual scraped photos over whatever placeholders the AI/preset generated
+    sectionData.title = typeof sectionData.title === "string" && sectionData.title.trim() ? sectionData.title : "Our Work";
+    sectionData.items = photoUrls.slice(0, 6).map((url, index) => ({
+        id: String(index + 1),
+        image: url,
+        title: postTexts[index]?.slice(0, 60) || `Project ${index + 1}`,
+        description: postTexts[index]?.slice(0, 120) || "",
+    }));
+    return sectionData;
+}
+
+function hydrateSectionImages(
+    sectionId: string,
+    sectionData: unknown,
+    photoUrls: string[],
+    fallbackImages: string[],
+    postTexts: string[]
+): Record<string, any> {
+    let hydrated = typeof sectionData === "object" && sectionData !== null ? { ...(sectionData as Record<string, any>) } : {};
+    const fallbackImageSet = new Set(fallbackImages.map((url) => sanitizeHttpUrl(url)).filter(Boolean));
+    const preferredPhotoUrls = unique(
+        photoUrls
+            .map((url) => sanitizeHttpUrl(url))
+            .filter((url) => Boolean(url) && !fallbackImageSet.has(url))
+    );
+
+    if (sectionId === "gallery--grid") {
+        hydrated = normalizeGalleryGridData(hydrated, preferredPhotoUrls, postTexts);
+    } else if (sectionId === "gallery--carousel") {
+        hydrated = normalizeGalleryCarouselData(hydrated, preferredPhotoUrls, postTexts);
+    }
+
+    const nextImage = buildRotatingImagePicker(preferredPhotoUrls);
+    const fallbackImage = sanitizeHttpUrl(fallbackImages[0]) || "";
+    const imageFieldPaths = (SECTION_FIELD_SCHEMA[sectionId] || []).filter((fieldPath) => isImageFieldPath(fieldPath));
+    
+        const isHeroOrLogo = sectionId.startsWith("hero") || sectionId === "navigation";
+        
+        // Pass the ENTIRE fallback image set (including hero/logo) as replaceable IF it's not a hero/logo section.
+        // This stops the cover photo from being used in random services blocks.
+        const replaceableImages = !isHeroOrLogo ? fallbackImageSet : new Set<string>();
+
+        for (const fieldPath of imageFieldPaths) {
+            setMissingImageAtPath(hydrated, fieldPath, nextImage, fallbackImage, replaceableImages, isHeroOrLogo);
+        }
+
+    return hydrated;
+}
+
 function looksLikeImageUrl(url: string): boolean {
     if (!url) return false;
     const lower = url.toLowerCase();
@@ -333,6 +696,31 @@ function looksLikeImageUrl(url: string): boolean {
         lower.includes("image") ||
         lower.includes("photo")
     );
+}
+
+function buildRemoteImageFetchHeaders(imageUrl: string, sourceUrl?: string): HeadersInit {
+    const sanitizedImageUrl = sanitizeHttpUrl(imageUrl);
+    const sanitizedSourceUrl = sanitizeHttpUrl(sourceUrl);
+    const isFacebookHostedImage = /(?:^|\/\/)(?:[^./]+\.)?(?:fbcdn|facebook)\./i.test(sanitizedImageUrl);
+
+    const headers: Record<string, string> = {
+        "User-Agent": BROWSER_LIKE_USER_AGENT,
+        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache",
+    };
+
+    if (isFacebookHostedImage) {
+        headers["Sec-Fetch-Dest"] = "image";
+        headers["Sec-Fetch-Mode"] = "no-cors";
+        headers["Sec-Fetch-Site"] = "cross-site";
+        headers["Referer"] = sanitizedSourceUrl && /facebook\.com/i.test(sanitizedSourceUrl)
+            ? sanitizedSourceUrl
+            : "https://www.facebook.com/";
+    }
+
+    return headers;
 }
 
 function stripTags(value: string): string {
@@ -380,7 +768,11 @@ interface PageSignals {
     email: string;
     phone: string;
     location: string;
+    about?: string;
+    categories?: string[];
+    website?: string;
     recentPosts?: { text: string; imageUrl: string }[];
+    pagePhotos?: string[];
 }
 
 async function extractPageSignals(sourceUrl: string): Promise<PageSignals | null> {
@@ -396,7 +788,7 @@ async function extractPageSignals(sourceUrl: string): Promise<PageSignals | null
         const res = await fetch(url, {
             method: "GET",
             headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+                "User-Agent": BROWSER_LIKE_USER_AGENT,
                 "Accept-Language": "en-US,en;q=0.9",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
                 "Cache-Control": "no-cache",
@@ -507,11 +899,28 @@ export async function POST(req: NextRequest) {
     const typographyLookup = new Map(TYPOGRAPHY_OPTIONS.map((item) => [item.value, item]));
     const allowedSectionSet = new Set(sectionIds);
 
-    const sectionContext = sectionIds.map((id) => ({
-        id,
-        label: sectionLabelLookup.get(id) || formatSectionLabel(id),
-        configKey: sectionIdToKey(id),
-    }));
+    const blockRegistryMap = new Map(BLOCK_REGISTRY.filter(b => !b.legacy).map(b => [b.id, b]));
+
+    const sectionContext = sectionIds.map((id) => {
+        const block = blockRegistryMap.get(id);
+        return {
+            id,
+            label: sectionLabelLookup.get(id) || block?.label || formatSectionLabel(id),
+            configKey: sectionIdToKey(id),
+            purpose: block?.purpose || "",
+            sectionType: block?.sectionType || id.split("--")[0],
+            visualDescription: block?.visualDescription || "",
+        };
+    });
+
+    // Group sections by sectionType for clearer AI decision-making.
+    // Each group shows the AI: "for this slot, pick ONE of these variants."
+    const sectionsByType: Record<string, { id: string; label: string; purpose: string; visualDescription: string; configKey: string }[]> = {};
+    for (const s of sectionContext) {
+        const type = s.sectionType;
+        if (!sectionsByType[type]) sectionsByType[type] = [];
+        sectionsByType[type].push({ id: s.id, label: s.label, purpose: s.purpose, visualDescription: s.visualDescription, configKey: s.configKey });
+    }
 
     const colorThemeContext = colorThemes.map((id) => {
         const swatches = COLOR_THEME_SWATCHES[id];
@@ -565,79 +974,93 @@ export async function POST(req: NextRequest) {
         const apifyData = await scrapeUrlWithApify(businessPageUrl);
         if (apifyData) {
             scrapedText = apifyData.text;
-            if (!pageSignals) {
-                pageSignals = {
-                    sourceUrl: businessPageUrl,
-                    title: apifyData.title || "",
-                    description: apifyData.description || apifyData.text.slice(0, 200),
-                    logoUrl: apifyData.logoUrl || "",
-                    heroImageUrl: apifyData.heroImageUrl || "",
-                    email: apifyData.email || "",
-                    phone: apifyData.phone || "",
-                    location: apifyData.location || "",
-                    recentPosts: apifyData.recentPosts || [],
-                };
-            } else {
-                pageSignals.logoUrl = apifyData.logoUrl || pageSignals.logoUrl;
-                pageSignals.heroImageUrl = apifyData.heroImageUrl || pageSignals.heroImageUrl;
-                pageSignals.email = apifyData.email || pageSignals.email;
-                pageSignals.phone = apifyData.phone || pageSignals.phone;
-                pageSignals.location = apifyData.location || pageSignals.location;
-                pageSignals.recentPosts = apifyData.recentPosts || [];
-            }
+            pageSignals = mergeScrapedDataIntoPageSignals(pageSignals, apifyData, businessPageUrl);
         }
     }
 
     const inlineImages: Array<{ mimeType: string; data: string }> = [];
     if (inlineImage) inlineImages.push(inlineImage);
 
-    // Fetch scraped images, upload to our own bucket to prevent CDN expiration, and append to parts array.
-    if (pageSignals?.logoUrl || pageSignals?.heroImageUrl) {
+    const assetUploadCache = new Map<string, Promise<string>>();
+    const hostedImageUrls = new Set<string>();
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || '';
+    const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || '';
+
+    let uploadAndGetPublicUrl: ((imgUrl: string, includeInline?: boolean) => Promise<string>) | null = null;
+
+    if (supabaseUrl && supabaseServiceRoleKey) {
         const { createClient } = await import('@supabase/supabase-js');
-        const supabaseAdmin = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-        );
+        const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-        const uploadAndGetPublicUrl = async (imgUrl: string): Promise<string | null> => {
-            if (!imgUrl) return null;
-            try {
-                const imgRes = await fetch(imgUrl);
-                if (!imgRes.ok) return null;
-                const contentType = imgRes.headers.get('content-type') || 'image/jpeg';
-                if (!contentType.startsWith('image/')) return null;
-                const arrayBuffer = await imgRes.arrayBuffer();
-                
-                // Upload to site-assets bucket
-                const ext = contentType.split('/').pop()?.replace(/x-/g, '') || 'jpg';
-                const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${ext}`;
-                
-                const { error } = await supabaseAdmin.storage
-                    .from('site-assets')
-                    .upload(fileName, arrayBuffer, {
-                        contentType: contentType,
-                        upsert: false
-                    });
-                    
-                if (error) {
-                    console.error('Failed to upload scraped image to Supabase:', error);
-                    return null; // Fallback to failing uploading but still inline image
-                }
+        uploadAndGetPublicUrl = async (imgUrl: string, includeInline = true): Promise<string> => {
+            const sanitizedUrl = sanitizeHttpUrl(imgUrl);
+            if (!sanitizedUrl) return '';
+            if (hostedImageUrls.has(sanitizedUrl)) return sanitizedUrl;
 
-                const { data: { publicUrl } } = supabaseAdmin.storage.from('site-assets').getPublicUrl(fileName);
-                
-                // Add to inline_data for Gemini
-                const base64Data = Buffer.from(arrayBuffer).toString('base64');
-                if (base64Data.length < 5_500_000) {
-                    inlineImages.push({ mimeType: contentType, data: base64Data });
-                }
-                
-                return publicUrl;
-            } catch (e) {
-                console.error('Failed to process scraped image:', e);
-                return null;
+            const cachedUpload = assetUploadCache.get(sanitizedUrl);
+            if (cachedUpload) {
+                return cachedUpload;
             }
+
+            const uploadPromise = (async () => {
+                try {
+                    const imgRes = await fetch(sanitizedUrl, {
+                        headers: buildRemoteImageFetchHeaders(sanitizedUrl, businessPageUrl),
+                    });
+                    if (!imgRes.ok) return sanitizedUrl;
+                    const contentType = imgRes.headers.get('content-type') || 'image/jpeg';
+                    if (!contentType.startsWith('image/')) return sanitizedUrl;
+                    const arrayBuffer = await imgRes.arrayBuffer();
+
+                    // Upload to site-assets bucket
+                    const ext = contentType.split('/').pop()?.replace(/x-/g, '') || 'jpg';
+                    const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${ext}`;
+
+                    const { error } = await supabaseAdmin.storage
+                        .from('site-assets')
+                        .upload(fileName, arrayBuffer, {
+                            contentType,
+                            upsert: false,
+                        });
+
+                    if (error) {
+                        console.error('Failed to upload scraped image to Supabase:', error);
+                        return sanitizedUrl;
+                    }
+
+                    const { data: { publicUrl } } = supabaseAdmin.storage.from('site-assets').getPublicUrl(fileName);
+                    const hostedUrl = sanitizeHttpUrl(publicUrl) || sanitizedUrl;
+                    hostedImageUrls.add(hostedUrl);
+
+                    if (includeInline) {
+                        const base64Data = Buffer.from(arrayBuffer).toString('base64');
+                        if (base64Data.length < 5_500_000) {
+                            inlineImages.push({ mimeType: contentType, data: base64Data });
+                        }
+                    }
+
+                    return hostedUrl;
+                } catch (e) {
+                    console.error('Failed to process scraped image:', e);
+                    return sanitizedUrl;
+                }
+            })();
+
+            assetUploadCache.set(sanitizedUrl, uploadPromise);
+            return uploadPromise;
         };
+    }
+
+    const ensureHostedImageUrl = async (imgUrl: string, includeInline = false): Promise<string> => {
+        const sanitizedUrl = sanitizeHttpUrl(imgUrl);
+        if (!sanitizedUrl) return '';
+        if (hostedImageUrls.has(sanitizedUrl)) return sanitizedUrl;
+        if (!uploadAndGetPublicUrl) return sanitizedUrl;
+        return uploadAndGetPublicUrl(sanitizedUrl, includeInline);
+    };
+
+    // Fetch scraped images, upload to our own bucket to prevent CDN expiration, and append to parts array.
+    if (uploadAndGetPublicUrl && (pageSignals?.logoUrl || pageSignals?.heroImageUrl)) {
 
         const [newLogoUrl, newHeroUrl] = await Promise.all([
             uploadAndGetPublicUrl(pageSignals.logoUrl),
@@ -655,12 +1078,48 @@ export async function POST(req: NextRequest) {
             const uploadedPosts = await Promise.all(
                 pageSignals.recentPosts.map(async (post: any) => {
                     if (!post.imageUrl) return post;
-                    // For posts, we don't inline them to Gemini context window limit, just upload.
                     const newUrl = await uploadAndGetPublicUrl(post.imageUrl);
                     return { ...post, imageUrl: newUrl || post.imageUrl };
                 })
             );
             pageSignals.recentPosts = uploadedPosts;
+        }
+
+        // Inline the first 5 post/page photos into Gemini vision context so it can
+        // visually analyze them for gallery, services, and team sections.
+        const photoUrlsToInline = [
+            ...(pageSignals.recentPosts || []).filter((p: any) => p.imageUrl).map((p: any) => p.imageUrl),
+            ...(pageSignals.pagePhotos || []),
+        ].filter(Boolean);
+
+        const uniquePhotoUrls = Array.from(new Set(photoUrlsToInline)).slice(0, 5);
+        for (const photoUrl of uniquePhotoUrls) {
+            try {
+                const imgRes = await fetch(photoUrl, {
+                    headers: buildRemoteImageFetchHeaders(photoUrl, businessPageUrl),
+                });
+                if (!imgRes.ok) continue;
+                const ct = imgRes.headers.get('content-type') || 'image/jpeg';
+                if (!ct.startsWith('image/')) continue;
+                const buf = await imgRes.arrayBuffer();
+                const b64 = Buffer.from(buf).toString('base64');
+                if (b64.length < 5_500_000) {
+                    inlineImages.push({ mimeType: ct, data: b64 });
+                }
+            } catch {
+                // skip failed photo
+            }
+        }
+
+        // Upload pagePhotos to Supabase for stable URLs
+        if (pageSignals.pagePhotos && pageSignals.pagePhotos.length > 0) {
+            const uploadedPhotos = await Promise.all(
+                pageSignals.pagePhotos.map(async (photoUrl: string) => {
+                    const newUrl = await uploadAndGetPublicUrl(photoUrl);
+                    return newUrl || photoUrl;
+                })
+            );
+            pageSignals.pagePhotos = uploadedPhotos.filter(Boolean);
         }
     }
 
@@ -683,7 +1142,7 @@ ${JSON.stringify(
             typographyStyles: typographyContext,
             headerStyles,
             footerStyles,
-            sections: sectionContext,
+            sectionsByType,
             presetBlueprints: presetContext,
             sectionFieldSchema: SECTION_FIELD_SCHEMA,
         },
@@ -703,13 +1162,38 @@ If details are missing after search, infer professional defaults only for market
 
 Selection strategy (must follow):
 1. Infer the business type and positioning from prompt + signals + search.
-2. MATCH BRAND COLORS: Analyze search results AND any provided images/photos to determine the dominant brand color. Look specifically at the logo picture if available. Match the color to the closest "colorTheme" from the provided list.
-   CRITICAL: If the brand is well-known (e.g., "Anytime Fitness"), you MUST use its iconic colors (e.g., Purple).
-3. Choose the closest preset from "presetBlueprints" as baseline, but OVERRIDE its theme/color/typography/sections if business evidence requires a better match.
-4. Ensure darkMode aligns with the chosen color theme's "recommendedMode" unless there is strong style evidence to override.
-5. FULLY UTILIZE PAGE SECTIONS: Do not rely solely on basic generic sections. STRONGLY PREFER modern, premium variations (e.g. 'services--bento', 'hero--v6', 'hero--elegant-carousel', 'testimonials--community', 'features--steps', 'gallery--grid') over generic ones to make the design stand out.
-6. LEGITIMATE PRICING: If the business has clear pricing signals or needs packages, prefer detailed tables like 'pricing--comparison' or 'pricing--feature-comparison' over basic ones.
-7. DO NOT include citations (like [1], [cite: 1]) in your output strings. Return clean text.
+2. MATCH BRAND COLORS (MANDATORY OVERRIDE): Analyze ALL provided images (logo, cover photo, post photos) AND search results to determine the dominant brand color. Check the "colorThemes" list — each entry has "primary", "accent", and "background" hex values. Pick the colorTheme whose "primary" hex is closest to the brand's dominant color.
+   - CRITICAL: If the brand is well-known (e.g., "Anytime Fitness" → Purple, "McDonald's" → Red/Yellow, "Starbucks" → Green), you MUST use its iconic colors.
+   - CRITICAL: Do NOT default to the preset's colorTheme. Always independently evaluate brand colors and pick the best match from the list.
+   - If the logo/cover photo is provided as an image, visually analyze it and extract the dominant hex color, then match it to the closest colorTheme entry.
+3. MATCH TYPOGRAPHY TO BRAND PERSONALITY (MANDATORY OVERRIDE): Choose "typographyStyle" based on the brand's personality — do NOT inherit from the preset:
+   - Luxury / high-end / fashion / spa → serif or elegant styles
+   - Tech / SaaS / startup / modern → modern or clean sans-serif
+   - Fitness / sports / energy → bold or strong styles
+   - Professional / corporate / legal / medical → clean or professional styles
+   - Creative / agency / portfolio → expressive or playful styles
+   - Use the "fontFamily" field in "typographyStyles" to confirm the font matches the brand feel.
+   - CRITICAL: DO NOT use the "display" typographyStyle as it causes rendering issues.
+4. MATCH DARK MODE TO BRAND: Set "darkMode" based on brand evidence, NOT the preset default:
+   - Use the chosen colorTheme's "recommendedMode" as the primary signal.
+   - Override to darkMode=true if: the brand uses dark backgrounds, is in nightlife/entertainment/luxury/tech, or the logo is light-colored on dark.
+   - Override to darkMode=false if: the brand is in healthcare/wellness/food/family/education, or uses bright/pastel colors.
+5. CHOOSE THEME INDEPENDENTLY: Pick "theme" based on the business industry — do NOT just copy the preset's theme. The theme controls the overall site personality.
+6. FULLY UTILIZE PAGE SECTIONS: The "sectionsByType" map groups all variants by type. For each type you want to include, READ both the "purpose" field AND the "visualDescription" field of each variant. The "purpose" tells you WHEN to use it; the "visualDescription" tells you HOW IT LOOKS on screen — use both to pick the best-matching variant for the business. 
+   - CRITICAL OVERRIDE: If the brand is highly visual, dynamic, or "cool" (e.g., motorcycles, high-end cars, premium lifestyle, sports), you MUST strongly bias toward premium, image-forward sections like "hero--elegant-carousel", "hero--group-images", "services--bento", and "gallery--grid".
+   - Use industry-specific hero variants (hero--gym, hero--dentist, hero--clinic, etc.) when the business type matches.
+   - Use hero--elegant-carousel for premium/lifestyle/visual businesses (motorcycles, fashion, high-end automotive, luxury, collections). THIS IS HIGHLY RECOMMENDED for brands with striking visual assets like vehicle shots.
+   - Use hero--group-images for dynamic visual brands (sports, powersports, motorcycles, dynamic tech) to show multiple angles or products at once.
+   - Use hero--modern or hero--showcase for service businesses needing trust signals.
+   - Use hero--v6 for tech/SaaS/app businesses.
+   - Use services--bento for businesses with 4–6 distinct service offerings or product categories (e.g., motorcycle segments).
+   - Use features--steps for businesses with a clear process or onboarding flow.
+   - Use gallery--grid or gallery--carousel when the business has visual work to show (motorcycles, vehicles, salons, gyms, restaurants).
+   - Use testimonials--community or testimonials--animated for businesses with strong social proof.
+   - Use team--showcase when the business is people/expertise-driven (clinics, law firms, agencies).
+   STRONGLY PREFER modern, premium variants over generic ones.
+7. LEGITIMATE PRICING: If the business has clear pricing signals or needs packages, prefer detailed tables like 'pricing--comparison' or 'pricing--feature-comparison' over basic ones.
+8. SECTION TYPE UNIQUENESS: Only pick ONE section per sectionType (e.g. one hero, one testimonials, one gallery). Do NOT include two hero variants or two gallery variants.
 
 Respond with a JSON object (no markdown, no code fences, raw JSON only) with exactly these fields:
 1. "brandName" - the exact name of the business (string)
@@ -724,19 +1208,31 @@ Respond with a JSON object (no markdown, no code fences, raw JSON only) with exa
 10. "headerStyle" - choose one from this exact list: ${headerStyles.join(", ") || "none"}
 11. "footerStyle" - choose one from this exact list: ${footerStyles.join(", ") || "none"}
 12. "darkMode" - boolean, pick true if that business style fits better, else false
-13. "activeSections" - array of section IDs chosen from this exact list: ${sectionIds.join(", ") || "none"}
+13. "activeSections" - array of section IDs. Use the "sectionsByType" map above — each key is a section type (e.g. "hero", "services", "testimonials") and its value is an array of variant options. Pick AT MOST ONE variant per type. Only use IDs that appear in "sectionsByType". Valid IDs: ${sectionIds.join(", ") || "none"}
 14. "logoUrl" - absolute image URL of the official logo found via signals or search (e.g. from Facebook profile pic or official site)
 15. "heroImageUrl" - absolute high-quality image URL for the background (e.g. facility photo, team, or matching high-quality stock)
-16. "sectionsData" - an object where keys are the valid configKeys from the sections you chose in "activeSections", and values are objects populated with ACTUAL REAL DATA, according to the "sectionFieldSchema". Do NOT return placeholders! Use the provided scraped text and 'recentPosts' to fully write the content.
+16. "sectionsData" - an object where keys are the valid configKeys from the sections you chose in "activeSections", and values are objects populated with ACTUAL REAL DATA, according to the "sectionFieldSchema". Do NOT return placeholders! Use the provided scraped text, 'about', 'categories', 'recentPosts', and 'pagePhotos' to fully write the content.
+
+CRITICAL rules for "sectionsData" image and content population:
+- KEEP CONTENT EXTREMELY CONCISE: You MUST limit the number of items generated in lists (like services, galleries, features, pricing) to a MAXIMUM of 3 items per section. The model WILL TRUNCATE and FAIL if you generate too much data.
+- SHORT DESCRIPTIONS: Keep all section descriptions, subtitles, and item descriptions to 1 sentence maximum.
+- ABOUT/VALUE PROP sections: Use the "about" field from pageSignals as the primary source for the business description, mission, and story. Extract key selling points from it.
+- GALLERY sections (gallery--grid, gallery--carousel): You MUST populate these with real images. Use "pagePhotos" and "recentPosts[].imageUrl" as the image sources. Map post text as captions/alt text. Do NOT leave gallery items empty if images are available. Limit to 3 items.
+- SERVICES/FEATURES sections: If recentPost images look like product or service photos (based on the inlined images you can see), use those imageUrls for service item images. Extract service names from post text and the "about" field. Limit to 3 items.
+- TESTIMONIALS sections: If recentPosts contain customer reviews, quotes, or feedback text, extract them as testimonial items with the post text as the quote. Limit to 3 items.
+- TEAM sections: If any posts or about text mention staff names or roles, use them to populate team member entries. Limit to 3 items.
+- For any section requiring images where no real image is available, use the heroImageUrl or logoUrl as a fallback rather than leaving it empty.
 
 Rules for "activeSections":
+- Use "sectionsByType" as your menu: each type is a slot, each variant is an option. Pick AT MOST ONE variant per type slot.
 - Balance sections to create a complete, professional website.
-- Sequence: Hero -> Value Prop/About -> Services/Features -> Social Proof (Testimonials/Gallery) -> FAQ/Trust -> Pricing/Packages -> Contact.
-- Include between 8 and 14 sections if enough options exist.
+- SEQUENCE: Hero -> Value Prop/About -> Services/Products (e.g. services--bento) -> Social Proof (Testimonials) -> Visuals (Gallery) -> FAQ/Trust -> Pricing -> Contact.
+- INCLUDE CRITICAL SECTIONS: Always try to include a hero section, an "about" or "features" section, and a "contact" section. YOU MUST LIMIT THE TOTAL NUMBER OF SECTIONS TO EXACTLY 5 TO 7 SECTIONS. If you exceed 7 sections, the output will truncate and fail.
 - Include at least one contact/conversion section.
-- Use only IDs from the allowed list.
+- Use only IDs that appear in "sectionsByType".
+- NEVER include two sections of the same sectionType (e.g. two heroes, two testimonials variants, two gallery variants).
 
-Ensure the output is raw valid JSON.
+Ensure the output is strictly valid JSON without any markdown formatting or code blocks.
 Example response:
 {"brandName":"RainCity Plumbers","heroTitle":"Reliable Plumbing in Seattle","heroSubtitle":"Available 24/7 for all your plumbing emergencies and installations.","contactEmail":"contact@raincity.com","contactPhone":"123-456-7890","location":"Seattle, WA","theme":"hvac-urgent","colorTheme":"reliable","typographyStyle":"modern","headerStyle":"floating","footerStyle":"lead-magnet","darkMode":false,"activeSections":["hero-emergency","features","testimonials","pricing","contact"],"logoUrl":"https://example.com/logo.png","heroImageUrl":"https://example.com/cover.jpg","sectionsData":{"features":{"title":"Our Plumbing Services","items":[{"title":"Emergency Repair","description":"24/7 support."}]}}}`;
 
@@ -752,13 +1248,22 @@ Example response:
             });
         });
 
+        const generationConfig: Record<string, unknown> = {
+            temperature: 0.5,
+            maxOutputTokens: 8192,
+        };
+
         const requestBody: Record<string, unknown> = {
             contents: [{ parts }],
-            generationConfig: {
-                temperature: 0.5,
-                maxOutputTokens: 8192,
-                response_mime_type: useSearch ? "text/plain" : "application/json",
-            },
+            generationConfig,
+        };
+
+        // Even with search enabled, we MUST force valid JSON response structure or Gemini might cut it off.
+        // If we set response_mime_type to application/json, it enforces JSON output. 
+        // We will try setting it to application/json EVEN IF search is enabled, as newer Gemini versions support it.
+        requestBody.generationConfig = {
+            ...generationConfig,
+            response_mime_type: "application/json",
         };
 
         if (useSearch) {
@@ -842,6 +1347,77 @@ Example response:
         }
 
         if (!normalized.brandName && pageSignals?.title) normalized.brandName = pageSignals.title;
+
+        normalized.logoUrl = await ensureHostedImageUrl(normalized.logoUrl);
+        normalized.heroImageUrl = await ensureHostedImageUrl(normalized.heroImageUrl);
+
+        // Server-side fallback: hydrate image-bearing sections from scraped page photos/posts so
+        // the editor overrides preset placeholders with real business photos.
+        if (pageSignals) {
+            const allPhotoUrls = unique([
+                ...(pageSignals.pagePhotos || []),
+                ...(pageSignals.recentPosts || []).filter((p: any) => p.imageUrl).map((p: any) => p.imageUrl),
+            ]
+                .map((url: string) => sanitizeHttpUrl(url))
+                .filter(Boolean));
+            const allPostTexts = (pageSignals.recentPosts || []).map((p: any) => p.text || '').filter(Boolean);
+            const fallbackImages = unique([
+                normalized.heroImageUrl,
+                normalized.logoUrl,
+                sanitizeHttpUrl(parsed.heroImageUrl),
+                sanitizeHttpUrl(parsed.logoUrl),
+            ].filter(Boolean));
+
+            for (const sectionId of normalized.activeSections) {
+                const configKey = sectionIdToKey(sectionId);
+                if (!configKey) continue;
+                
+                // Keep the original AI data intact before hydration so we don't accidentally wipe out titles
+                const originalSectionData = normalized.sectionsData[configKey] || {};
+                
+                normalized.sectionsData[configKey] = hydrateSectionImages(
+                    sectionId,
+                    originalSectionData,
+                    allPhotoUrls,
+                    fallbackImages,
+                    allPostTexts
+                );
+            }
+
+            // Fallback: about/value-prop sections — use the Facebook About text
+            const aboutText = pageSignals.about || pageSignals.description || '';
+            if (aboutText) {
+                for (const sectionId of normalized.activeSections) {
+                    const configKey = sectionIdToKey(sectionId);
+                    if (
+                        (sectionId.includes('about') || sectionId.includes('value') || sectionId.includes('features--steps')) &&
+                        configKey &&
+                        !normalized.sectionsData[configKey]?.description
+                    ) {
+                        normalized.sectionsData[configKey] = {
+                            ...(normalized.sectionsData[configKey] || {}),
+                            description: aboutText.slice(0, 400),
+                        };
+                    }
+                }
+            }
+        }
+
+        for (const sectionId of normalized.activeSections) {
+            const configKey = sectionIdToKey(sectionId);
+            if (!configKey) continue;
+
+            const sectionPayload =
+                typeof normalized.sectionsData[configKey] === "object" && normalized.sectionsData[configKey] !== null
+                    ? (normalized.sectionsData[configKey] as Record<string, any>)
+                    : {};
+            normalized.sectionsData[configKey] = sectionPayload;
+
+            const imageFieldPaths = (SECTION_FIELD_SCHEMA[sectionId] || []).filter((fieldPath) => isImageFieldPath(fieldPath));
+            for (const fieldPath of imageFieldPaths) {
+                await hostImageAtPath(sectionPayload, fieldPath, ensureHostedImageUrl);
+            }
+        }
 
         return NextResponse.json({
             ...normalized,

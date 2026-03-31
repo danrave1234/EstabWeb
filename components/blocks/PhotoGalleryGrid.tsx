@@ -13,6 +13,10 @@ export type PhotoGalleryGridProps = {
   items?: GalleryItem[];
 };
 
+function normalizeText(value?: string) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
 const DEFAULT_ITEMS: GalleryItem[] = [
   { imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80", caption: "Project One", alt: "Gallery image 1" },
   { imageUrl: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=80", caption: "Project Two", alt: "Gallery image 2" },
@@ -46,30 +50,39 @@ export default function PhotoGalleryGrid({
           )}
         </div>
         <div className={`grid gap-6 sm:gap-10 ${gridClass}`}>
-          {galleryItems.map((item, index) => (
-            <div
-              key={index}
-              className="group relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] aspect-square bg-muted shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_32px_64px_-16px_rgba(var(--primary-rgb),0.3)] hover:border-primary/20 hover:-translate-y-2 transition-all duration-500 cursor-pointer"
-            >
-              <img
-                src={item.imageUrl ?? ""}
-                alt={item.alt ?? item.caption ?? `Gallery image ${index + 1}`}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8 sm:p-10 backdrop-blur-[2px]">
-                {item.caption && (
-                  <p className="text-white text-base sm:text-xl font-black tracking-tight leading-tight transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 uppercase">
-                    {item.caption}
-                  </p>
-                )}
-                {item.alt && (
-                  <p className="text-white/60 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] mt-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
-                    {item.alt}
-                  </p>
-                )}
+          {galleryItems.map((item, index) => {
+            const imageUrl = normalizeText(item.imageUrl);
+            const caption = normalizeText(item.caption);
+            const alt = normalizeText(item.alt);
+            const imageAlt = alt || caption || `Gallery image ${index + 1}`;
+
+            return (
+              <div
+                key={index}
+                className="group relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] aspect-square bg-muted shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_32px_64px_-16px_rgba(var(--primary-rgb),0.3)] hover:border-primary/20 hover:-translate-y-2 transition-all duration-500 cursor-pointer"
+              >
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={imageAlt}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                ) : null}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8 sm:p-10 backdrop-blur-[2px]">
+                  {caption && (
+                    <p className="text-white text-base sm:text-xl font-black tracking-tight leading-tight transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 uppercase">
+                      {caption}
+                    </p>
+                  )}
+                  {alt && (
+                    <p className="text-white/60 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] mt-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
+                      {alt}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

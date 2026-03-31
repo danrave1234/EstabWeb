@@ -55,8 +55,12 @@ const NAV_ICON_MAP: Record<string, LucideIcon> = {
   blog: FileText,
 };
 
+function normalizeNavField(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
 function getIconForNav(name: string): LucideIcon {
-  const key = name.trim().toLowerCase();
+  const key = normalizeNavField(name).toLowerCase();
   return NAV_ICON_MAP[key] ?? Menu;
 }
 
@@ -91,7 +95,14 @@ export default function TubelightHeader({
     return href;
   };
 
-  const navItems = navigation.map((item) => ({
+  const normalizedNavigation = Array.isArray(navigation)
+    ? navigation.map((item) => ({
+        name: normalizeNavField(item?.name),
+        href: normalizeNavField(item?.href),
+      }))
+    : [];
+
+  const navItems = normalizedNavigation.map((item) => ({
     name: item.name,
     url: buildHref(item.href),
     icon: getIconForNav(item.name),

@@ -43,10 +43,12 @@ function SessionTrackerInner({ projectId }: { projectId?: string }) {
 export function AnalyticsProvider({
   projectId,
   pageVersionId,
+  enableRecaptcha = true,
   children,
 }: {
   projectId?: string;
   pageVersionId?: string;
+  enableRecaptcha?: boolean;
   children: React.ReactNode;
 }) {
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
@@ -73,7 +75,7 @@ export function AnalyticsProvider({
       {!inPreview && <PageViewTrackerInner projectId={projectId} pageVersionId={pageVersionId} />}
       {!inPreview && <SectionTrackerInner projectId={projectId} pageVersionId={pageVersionId} />}
       {!inPreview && <SessionTrackerInner projectId={projectId} />}
-      {siteKey && (
+      {enableRecaptcha && siteKey && (
         <Script
           src={`https://www.google.com/recaptcha/api.js?render=${siteKey}`}
           strategy="afterInteractive"

@@ -22,6 +22,10 @@ export type HeaderProps = {
   headerStyle?: "sticky" | "static" | "solid" | "floating";
 };
 
+function normalizeNavField(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
 export default function Header({
   brandName,
   logoUrl,
@@ -72,6 +76,22 @@ export default function Header({
 
   const isInternalRoute = (href: string) => href.startsWith("/");
 
+  const getNavItemKey = (item: NavItem, index: number) => {
+    const normalizedName = normalizeNavField(item?.name);
+    const normalizedHref = normalizeNavField(item?.href);
+    return normalizedName || normalizedHref
+      ? `${normalizedName || "item"}-${normalizedHref || index}`
+      : `nav-item-${index}`;
+  };
+
+  const normalizedNavigation = Array.isArray(navigation)
+    ? navigation.map((item) => ({
+        ...item,
+        name: normalizeNavField(item?.name),
+        href: normalizeNavField(item?.href),
+      }))
+    : [];
+
   const initials = brandName
     .split(" ")
     .map((w) => w[0])
@@ -119,10 +139,10 @@ export default function Header({
 
   const DesktopNav = () => (
     <nav aria-label="Primary" className={`hidden md:flex items-center flex-1 min-w-0 ${isFloating ? "gap-0.5 justify-center overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none]" : "gap-1 justify-center"}`}>
-      {navigation.map((item) => (
+      {normalizedNavigation.map((item, index) => (
         isInternalRoute(item.href) ? (
           <Link
-            key={item.name}
+            key={getNavItemKey(item, index)}
             href={buildHref(item.href)}
             className={`font-serif text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2 ${
               isDenseFloating ? "px-2 py-2 text-xs" : isFloating ? "px-3 py-2" : "px-4 py-2"
@@ -133,7 +153,7 @@ export default function Header({
           </Link>
         ) : (
           <a
-            key={item.name}
+            key={getNavItemKey(item, index)}
             href={buildHref(item.href)}
             className={`font-serif text-muted-foreground hover:text-foreground text-sm font-medium transition-colors rounded-lg flex items-center gap-2 ${
               isDenseFloating ? "px-2 py-2 text-xs" : isFloating ? "px-3 py-2" : "px-4 py-2"
@@ -187,10 +207,10 @@ export default function Header({
     mobileOpen ? (
       <div className={`md:hidden ${extraClass ?? "border-t border-border bg-background"}`}>
         <nav id={mobileNavId} aria-label="Mobile Primary" className="px-4 py-4 flex flex-col gap-1">
-          {navigation.map((item) => (
+          {normalizedNavigation.map((item, index) => (
             isInternalRoute(item.href) ? (
               <Link
-                key={item.name}
+                key={getNavItemKey(item, index)}
                 href={buildHref(item.href)}
                 onClick={() => setMobileOpen(false)}
                 className="font-serif py-3 px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl font-medium transition-colors flex items-center gap-2"
@@ -200,7 +220,7 @@ export default function Header({
               </Link>
             ) : (
               <a
-                key={item.name}
+                key={getNavItemKey(item, index)}
                 href={buildHref(item.href)}
                 onClick={() => setMobileOpen(false)}
                 className="font-serif py-3 px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl font-medium transition-colors flex items-center gap-2"

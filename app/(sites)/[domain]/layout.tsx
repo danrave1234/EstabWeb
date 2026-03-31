@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import Script from "next/script";
 import "@/app/globals.css";
 import { allFontVariables, getFontVariables } from "@/lib/fonts";
 import ScrollReveal from "@/components/shared/ScrollReveal";
@@ -243,7 +242,11 @@ export default async function SiteLayout({
         )}
       </head>
       <body className="antialiased">
-        <AnalyticsProvider projectId={projectId || dbConf?.projectId} pageVersionId={pageVersionId}>
+        <AnalyticsProvider
+          projectId={projectId || dbConf?.projectId}
+          pageVersionId={pageVersionId}
+          enableRecaptcha={false}
+        >
           {dbConf?.analytics?.ga4Id && <GoogleAnalytics id={dbConf.analytics.ga4Id} />}
           {dbConf?.analytics?.pixelId && <FacebookPixel id={dbConf.analytics.pixelId} />}
           <NetworkOfflineBanner />
@@ -253,12 +256,6 @@ export default async function SiteLayout({
         </AnalyticsProvider>
         <Analytics />
         <SpeedInsights />
-        {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
-          <Script
-            src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
-            strategy="lazyOnload"
-          />
-        )}
       </body>
     </html>
   );
