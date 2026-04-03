@@ -8,6 +8,29 @@ export function isHeroSectionId(id: string): boolean {
   return id === "hero" || id.startsWith("hero")
 }
 
+export function replaceHeroSectionId(
+  activeSections: string[],
+  currentHeroId: string,
+  nextHeroId: string
+): string[] {
+  const nextSections = activeSections.filter((id) => !isHeroSectionId(id) || id === currentHeroId)
+  const existingIndex = nextSections.indexOf(currentHeroId)
+
+  if (existingIndex >= 0) {
+    nextSections.splice(existingIndex, 1, nextHeroId)
+    return nextSections
+  }
+
+  const found = findHeroInActiveSections(activeSections)
+  if (found) {
+    const fallback = [...activeSections]
+    fallback.splice(found.index, 1, nextHeroId)
+    return fallback.filter((id, index) => !isHeroSectionId(id) || index === found.index)
+  }
+
+  return [nextHeroId, ...activeSections.filter((id) => !isHeroSectionId(id))]
+}
+
 export function findHeroInActiveSections(
   activeSections: string[]
 ): { index: number; id: string } | null {

@@ -12,6 +12,7 @@ import {
   KeyRound,
   Settings,
   ClipboardList,
+  LifeBuoy,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -38,6 +39,7 @@ export default function AdminSidebar({ user, role, collapsed = false, onToggleCo
 
   const navLinks = [
     { name: "Requests", href: "/admin/dashboard", icon: LayoutDashboard },
+    { name: "Support", href: "/admin/support", icon: LifeBuoy },
     { name: "Clients", href: "/admin/clients", icon: Globe },
     { name: "Transactions", href: "/admin/transactions", icon: CreditCard },
     { name: "Template", href: "/admin/template", icon: Layout },
@@ -116,7 +118,7 @@ export default function AdminSidebar({ user, role, collapsed = false, onToggleCo
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-2 py-4 overflow-y-auto">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href
+              const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`)
               const Icon = link.icon
 
               return (

@@ -1,4 +1,4 @@
-import SiteBlockRenderer from "@/components/shared/SiteBlockRenderer";
+import AdminTemplatePreviewClient from "@/components/shared/AdminTemplatePreviewClient";
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getSiteConfig } from "@/lib/utils/site-config";
@@ -30,5 +30,5 @@ export default async function AdminPreviewPage() {
     );
   }
 
-  return <SiteBlockRenderer data={data} isAdmin={true} />;
+  return <AdminTemplatePreviewClient initialData={data} />;
 }

@@ -139,7 +139,7 @@ export default function DashboardPage() {
             </div>
             <h1 className="text-3xl font-black text-foreground mb-4 tracking-tight">Ready to Launch?</h1>
             <p className="text-muted-foreground mb-10 font-medium leading-relaxed font-sans">
-              You haven&apos;t created any websites yet. Start building your professional online presence in minutes.
+              Start from an admin-prepared website draft or redeem a launch code your team already created for you.
             </p>
 
             <div className="space-y-4">
@@ -148,12 +148,12 @@ export default function DashboardPage() {
                 className="flex items-center justify-center gap-3 w-full px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20"
               >
                 <Plus className="w-5 h-5" />
-                Create New Project
+                Start Guided Setup
               </Link>
 
               <div className="flex items-center gap-4 my-8">
                 <div className="h-px bg-border flex-1" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">OR REDEEM CODE</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">OR OPEN A PREPARED SITE</span>
                 <div className="h-px bg-border flex-1" />
               </div>
 
@@ -282,7 +282,6 @@ export default function DashboardPage() {
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary overflow-hidden">
                   {(project.current_config as any)?.brand?.logoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={(project.current_config as any).brand.logoUrl} alt={siteName} className="w-full h-full object-contain" />
                   ) : (
                     <Globe className="w-6 h-6" />
@@ -442,7 +441,6 @@ export default function DashboardPage() {
                     <Link href={`/dashboard?projectId=${project.id}`} className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 overflow-hidden shadow-sm">
                         {(project.current_config as any)?.brand?.logoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
                           <img src={(project.current_config as any).brand.logoUrl} alt={siteName} className="w-full h-full object-contain" />
                         ) : (
                           <Globe className="w-6 h-6" />

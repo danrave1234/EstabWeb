@@ -4,12 +4,12 @@ import LandingPageClient from '@/components/landing/LandingPageClient'
 
 export const metadata: Metadata = {
   title: 'Affordable Business Website Philippines | EstabWeb',
-  description: 'Get a ready business website for your local shop, clinic, salon, restaurant, or service in the Philippines. Easy editing, monthly subscription, and design requests included.',
+  description: 'Launch a managed business website for your local service business in the Philippines. EstabWeb prepares the site for you, hands it off with easy editing, and supports custom domains, analytics, and AI-assisted updates.',
   keywords: [
     'website design philippines price',
     'small business website philippines',
     'affordable web design philippines',
-    'website builder philippines',
+    'managed website philippines',
     'website maintenance cost per month philippines',
     'online store website philippines',
     'landing page price philippines',
@@ -17,8 +17,8 @@ export const metadata: Metadata = {
     'dental clinic website philippines',
     'gym website design philippines',
     'gym website creation philippines',
-    'fitness website builder philippines',
-    'create website philippines'
+    'fitness studio website philippines',
+    'local business website launch philippines'
   ],
 }
 

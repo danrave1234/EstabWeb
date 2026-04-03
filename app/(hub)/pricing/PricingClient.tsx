@@ -54,21 +54,21 @@ export default function PricingClient() {
     ];
 
     const features: PricingFeature[] = [
-        { name: "Launch with managed hosting included", included: "free" },
+        { name: "Launch from an admin-prepared business website", included: "free" },
         { name: "Get your own subdomain right away", included: "free" },
-        { name: "Start with a clean one page website", included: "free" },
-        { name: "Use a ready made business template", included: "free" },
+        { name: "Start with a guided one page website", included: "free" },
+        { name: "Use a ready-made gym or local business template", included: "free" },
         { name: "Works well on mobile phones", included: "free" },
         { name: "Website security certificate included", included: "free" },
         { name: "Add more pages as your business grows", included: "basic" },
         { name: "Use your own custom domain", included: "basic" },
         { name: "See your website visits in one simple dashboard", included: "basic" },
-        { name: "Edit your website easily anytime", included: "basic" },
+        { name: "Edit your launch draft and publish updates anytime", included: "basic" },
         { name: "We help handle hosting and updates", included: "basic" },
         { name: "1 month free monthly care included", included: "basic" },
         { name: "Know which pages help bring inquiries", included: "pro" },
         { name: "See where visitors spend attention before leaving", included: "pro" },
-        { name: "Help your business show on Google", included: "pro" },
+        { name: "Help your business show on Google with SEO tools", included: "pro" },
         { name: "Get faster support when you need changes", included: "pro" },
         { name: "Sell products with inventory management", included: "ecommerce" },
         { name: "Accept online payments", included: "ecommerce" },
@@ -76,9 +76,9 @@ export default function PricingClient() {
     ];
 
     const planSummaries: Record<string, string> = {
-        free: "For trying things out before you upgrade",
-        basic: "Best for small businesses starting online",
-        pro: "Best for growing businesses that want more customers",
+        free: "For testing the guided launch flow before upgrading",
+        basic: "Best for small businesses that want a managed launch",
+        pro: "Best for growing businesses that want analytics and more control",
         ecommerce: "Best for selling products online",
     };
 
@@ -90,10 +90,10 @@ export default function PricingClient() {
                         Transparent Pricing
                     </div>
                     <h1 className="text-xl lg:text-3xl font-black tracking-tight leading-tight">
-                        Website Plans Built to <span className="text-primary">Bring in Customers</span>
+                        Managed Website Plans Built to <span className="text-primary">Bring in Customers</span>
                     </h1>
                     <p className="text-[10px] lg:text-sm text-muted-foreground leading-snug max-w-lg mx-auto">
-                        Pick the plan that fits your business stage. We build it, host it, and you can edit it anytime without tech skills.
+                        Pick the plan that fits your business stage. We prepare the site, host it, and give you the right level of editing, analytics, and domain control for your plan.
                     </p>
                     <p className="text-[8px] lg:text-[9px] font-semibold text-muted-foreground/70">
                         If your website brings just 1 to 2 customers per month, it can already pay for itself.
@@ -129,8 +129,8 @@ export default function PricingClient() {
                 />
 
                 <div className="mt-4 w-full max-w-4xl rounded-[28px] border border-border bg-background p-5 text-center">
-                    <p className="text-sm font-semibold text-foreground">No contracts, cancel anytime. We also help you get set up.</p>
-                    <p className="mt-2 text-xs text-muted-foreground">Free is limited to a single page so you can try the platform without getting stuck in a long commitment.</p>
+                    <p className="text-sm font-semibold text-foreground">No contracts, cancel anytime. We still help you get launched first.</p>
+                    <p className="mt-2 text-xs text-muted-foreground">Starter keeps things guided, while Business and above unlock deeper control like stronger analytics and richer publish flexibility.</p>
                 </div>
 
                 <div className="mt-0 p-5 rounded-[28px] border border-border max-w-3xl w-full flex flex-col md:flex-row items-center justify-between gap-6 bg-muted/30">

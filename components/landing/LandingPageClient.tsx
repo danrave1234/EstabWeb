@@ -12,7 +12,7 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
   const { user } = useAuth()
   const signedInUser = user ?? initialUser
   const primaryHref = signedInUser ? '/dashboard' : '/login?mode=signup'
-  const primaryLabel = signedInUser ? 'Open My Dashboard' : 'Start My Website'
+  const primaryLabel = signedInUser ? 'Open My Dashboard' : 'Start My Launch'
   const [previewMode, setPreviewMode] = React.useState<'light' | 'dark'>('light')
   const carouselRef = React.useRef<HTMLDivElement | null>(null)
   const [canScrollLeft, setCanScrollLeft] = React.useState(false)
@@ -48,8 +48,8 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
       darkImage: '/lawyerdark.png'
     },
     {
-      name: 'Medical Clinic',
-      bestFor: 'Clinics, doctors, and healthcare services',
+      name: 'Gym & Fitness Studio',
+      bestFor: 'Gyms, boutique studios, and membership-based fitness brands',
       vibe: 'Clean and trusted',
       lightImage: '/medicallight.png',
       darkImage: '/medicaldark.png'
@@ -142,12 +142,12 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
           templatePreviews={templatePreviews}
           previewMode={previewMode}
           badgeLabel={undefined}
-          title="Get a Business Website in 1 Day With No Tech Skills Needed"
-          description="We build, host, and let you edit your site anytime. Pay monthly."
+          title="Launch a Managed Business Website in 1 Day"
+          description="We prepare the site, host it, and give you AI-assisted editing after launch. Perfect for gyms, studios, and local service businesses that need inquiries fast."
           points={[
-            'Launch your website in 1 to 2 days',
-            'We handle design, hosting, and updates',
-            'Edit text, photos, and sections anytime',
+            'Admin-prepared draft ready in 1 to 2 days',
+            'We handle design, hosting, launch, and updates',
+            'Edit text, photos, and sections with AI after handoff',
           ]}
         />
 
@@ -157,15 +157,15 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
             <div className="mx-auto mb-8 max-w-3xl rounded-2xl border border-border bg-background p-5 text-center shadow-sm sm:mb-10 sm:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">What this is</p>
               <p className="mt-2 text-base font-semibold text-foreground sm:text-lg">
-                A done for you website with an easy editor that we set up for you.
+                A managed website launch system with an easy editor after we set up the first version for you.
               </p>
-              <p className="mt-3 text-sm text-muted-foreground sm:text-base">Average launch time: 24 hours</p>
+              <p className="mt-3 text-sm text-muted-foreground sm:text-base">Best fit for gyms, fitness studios, and local service businesses that want a prepared site instead of starting from scratch.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
               {[
-                { label: 'Fast launch', value: '1 to 2 Days', color: 'text-primary' },
-                { label: 'Managed for you', value: 'Design + Hosting + Updates', color: 'text-amber-500' },
-                { label: 'Edit anytime', value: 'Text, Photos, Sections', color: 'text-blue-500' },
+                { label: 'Prepared launch', value: '1 to 2 Days', color: 'text-primary' },
+                { label: 'Managed for you', value: 'Draft + Hosting + Updates', color: 'text-amber-500' },
+                { label: 'Post-launch control', value: 'AI + Simple Editing', color: 'text-blue-500' },
               ].map((stat) => (
                 <div
                   key={stat.label}
@@ -187,7 +187,7 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
                 How Much Does a <span className="text-primary">Business Website Cost</span> in the Philippines?
               </h2>
               <p className="mx-auto max-w-2xl text-muted-foreground text-sm sm:text-lg">
-                Most businesses overpay ₱20,000 to ₱50,000 for a website. We do it for a small setup plus monthly.
+                Most businesses overpay ₱20,000 to ₱50,000 for a website, then still have to manage it alone. EstabWeb gives you a prepared launch, monthly care, and editing tools in one flow.
               </p>
             </div>
             <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -195,17 +195,17 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
                 {
                   title: 'Setup Cost',
                   value: 'Small Setup Fee',
-                  desc: 'Launch with your business details, branding, and pages already put together for you.'
+                  desc: 'We prepare your first draft with your business details, branding, and launch-ready sections already arranged for you.'
                 },
                 {
                   title: 'Monthly Cost',
                   value: 'Monthly Plan',
-                  desc: 'Hosting, maintenance, and support stay bundled so you do not need to hire separately.'
+                  desc: 'Hosting, maintenance, support, and post-launch editing tools stay bundled so you do not need a separate agency retainer.'
                 },
                 {
                   title: 'Time to Launch',
                   value: 'Average: 24 Hours',
-                  desc: 'Most sites can be prepared fast because we start from proven templates and set them up for you.'
+                  desc: 'Most sites can be prepared fast because we start from proven vertical templates, especially for gym and fitness businesses.'
                 },
               ].map((item) => (
                 <div key={item.title} className="rounded-2xl border border-border bg-muted/30 p-5 text-left">
@@ -219,10 +219,10 @@ export default function LandingPageClient({ initialUser }: { initialUser: Supaba
             <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-border bg-background p-6 text-left">
               <h3 className="text-lg font-bold text-foreground">What You Actually Get</h3>
               <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                <li>1. A ready to launch business website without hiring a full web agency</li>
+                <li>1. An admin-prepared website draft so you do not start from a blank builder</li>
                 <li>2. Managed hosting, updates, and support under one monthly plan</li>
-                <li>3. An easy editor so you can change text, photos, and sections yourself</li>
-                <li>4. SEO ready pages built to help local customers find you online</li>
+                <li>3. AI-assisted editing so you can update text, photos, and sections after launch</li>
+                <li>4. SEO-ready pages, analytics, and a custom-domain upgrade path to help turn visits into inquiries</li>
               </ul>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                 <Link

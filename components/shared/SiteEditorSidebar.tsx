@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import useSWR from "swr";
-import { Settings, X, ChevronRight, ChevronLeft, Download, Moon, Sun, Type, Layout, Palette, PanelTop, PanelBottom, Layers, Copy, Check, Plus, Trash2, Image as ImageIcon, Wand2, Save, Loader2 } from "lucide-react";
+import { Settings, X, ChevronLeft, Download, Moon, Sun, Type, Layout, Palette, PanelTop, PanelBottom, Layers, Copy, Check, Plus, Trash2, Image as ImageIcon, Wand2, Save, Loader2 } from "lucide-react";
 import { GENRE_PRESETS, GENRE_LABELS } from "@/config/presets";
 import { formatSectionLabel, sectionIdToKey, COLOR_THEME_SWATCHES, TYPOGRAPHY_OPTIONS as GLOBAL_TYPOGRAPHY_OPTIONS } from "@/config/dashboard-config";
 import { BLOCK_REGISTRY } from "@/lib/utils/block-registry";
@@ -18,74 +18,10 @@ import {
 } from "@/lib/utils/template-generation-activity";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/Dialog";
+import { AddSectionModal } from "@/components/dashboard/AddSectionModal";
+import { AiEditorModal } from "@/components/dashboard/AiEditorModal";
 import ImageUpload from "./ImageUpload";
 import TemplateGenerationActivityLog from "./TemplateGenerationActivityLog";
-
-const SECTIONS = [
-  { id: "hero-emergency", label: "Emergency Hero" },
-  { id: "awards", label: "Awards Strip" },
-  { id: "features", label: "Features (Grid)" },
-  { id: "features-modern", label: "Features (Side)" },
-  { id: "practice-areas", label: "Practice Areas" },
-  { id: "how-it-works", label: "How It Works" },
-  { id: "feature-highlight", label: "Feature Highlight" },
-  { id: "attorney-profile", label: "Attorney Profile" },
-  { id: "team-carousel", label: "Team Carousel" },
-  { id: "team-grid", label: "Team Grid" },
-  { id: "testimonials", label: "Testimonials" },
-  { id: "review-trust-bar", label: "Review Trust Bar" },
-  { id: "trust-badges-grid", label: "Trust Badges Grid" },
-  { id: "reviews-grid", label: "Reviews Grid" },
-  { id: "blog", label: "Blog" },
-  { id: "pricing", label: "Pricing" },
-  { id: "featured-properties-grid", label: "Featured Properties" },
-  { id: "financing-section", label: "Financing Options" },
-  { id: "developer-partners", label: "Developer Partners" },
-  { id: "why-choose-me", label: "Agent Section" },
-  { id: "services-grid", label: "Services Grid" },
-  { id: "why-choose-us", label: "Why Choose Us" },
-  { id: "before-after-gallery", label: "Before/After Gallery" },
-  { id: "packages-pricing", label: "Packages & Pricing" },
-  { id: "project-gallery", label: "Project Gallery" },
-  { id: "certifications", label: "Certifications" },
-  { id: "delivery-coverage", label: "Delivery Coverage" },
-  { id: "programs-grid", label: "Programs Grid" },
-  { id: "gym--programs", label: "Gym Programs" },
-  { id: "gym--schedule", label: "Gym Class Schedule" },
-  { id: "gym--memberships", label: "Gym Membership Tiers" },
-  { id: "gym--class-types", label: "Gym Class Types" },
-  { id: "gym--trainers", label: "Gym Trainers" },
-  { id: "gym--results", label: "Gym Results Stories" },
-  { id: "gym--facility", label: "Gym Facility Highlights" },
-  { id: "gym--faq", label: "Gym FAQ" },
-  { id: "faculty-grid", label: "Faculty Grid" },
-  { id: "enrollment-process", label: "Enrollment Process" },
-  { id: "patient-faq", label: "Patient FAQ" },
-  { id: "faq-two-column", label: "FAQ Two Column" },
-  { id: "messenger-sticky-cta", label: "Messenger Sticky CTA" },
-  { id: "service-area-map", label: "Service Area Map" },
-  { id: "before-after-slider", label: "Before/After Slider" },
-  { id: "promo-banner-strip", label: "Promo Banner Strip" },
-  { id: "payment-options-strip", label: "Payment Options Strip" },
-  { id: "facebook-review-embed", label: "Facebook Review Embed" },
-  { id: "coverage-radius-block", label: "Coverage Radius Block" },
-  { id: "common-pests", label: "Common Pests Grid" },
-  { id: "treatment-process", label: "Treatment Process" },
-  { id: "safety-section", label: "Safety Section" },
-  { id: "warranty-block", label: "Warranty Block" },
-  { id: "ac-types-grid", label: "AC Types Grid" },
-  { id: "price-preview-strip", label: "Price Preview Strip" },
-  { id: "emergency-cta-strip", label: "Emergency CTA Strip" },
-  { id: "maintenance-plans", label: "Maintenance Plans" },
-  { id: "product-grid", label: "Product Grid (Ecommerce)" },
-  { id: "before-after-gallery-grid", label: "Before/After Gallery Grid" },
-  { id: "promo-cta-section", label: "Promo CTA Section" },
-  { id: "contact", label: "Contact" },
-  { id: "contact-minimal", label: "Contact Minimal" },
-  { id: "contact-with-map", label: "Contact With Map" },
-  { id: "free-consultation", label: "Free Consultation" },
-  { id: "booking-cta", label: "Booking CTA" },
-] as const;
 
 const HERO_OPTIONS = [
   { value: "lawyer", label: "Lawyer" },
@@ -175,7 +111,7 @@ const TYPOGRAPHY_OPTIONS = [
 const HEADER_STYLE_OPTIONS = ["solid", "floating", "tubelight", "megamenu"] as const;
 const FOOTER_STYLE_OPTIONS = ["lead-magnet", "simple", "minimal"] as const;
 
-function SectionToggle({ id, label, activeSections, onToggle }: { id: string, label: string, activeSections: string[], onToggle: (id: any) => void }) {
+function SectionToggle({ id, label, activeSections, onToggle }: { id: string, label: string, activeSections: string[], onToggle: (id: string) => void }) {
   return (
     <label className="flex items-center gap-2 p-1.5 rounded-lg border border-transparent hover:bg-muted/30 cursor-pointer transition-colors has-[:checked]:border-primary/30 has-[:checked]:bg-primary/5">
       <input
@@ -189,8 +125,6 @@ function SectionToggle({ id, label, activeSections, onToggle }: { id: string, la
   );
 }
 
-type SectionId = (typeof SECTIONS)[number]["id"];
-
 const configFetcher = (url: string) => fetch(url).then((res) => res.json());
 
 type TemplateDraft = {
@@ -200,6 +134,16 @@ type TemplateDraft = {
   created_at: string;
   updated_at: string;
   expires_at: string;
+};
+
+type WorkflowStep = {
+  id: string;
+  label: string;
+  description: string;
+  completed: boolean;
+  actionLabel: string;
+  onClick: () => void;
+  disabled?: boolean;
 };
 
 const TEAM_SECTION_IDS = new Set(["team", "team-carousel", "team-grid", "team--carousel", "team--showcase"]);
@@ -220,15 +164,32 @@ function pickExistingStringKey(section: Record<string, any>, keys: string[], fal
   return fallback;
 }
 
-export default function SiteEditorSidebar() {
+interface SiteEditorSidebarProps {
+  initialData?: any;
+  onDataChange?: (nextData: any) => void;
+}
+
+export default function SiteEditorSidebar({ initialData = null, onDataChange }: SiteEditorSidebarProps) {
   const [isOpen, setIsVisible] = useState(false);
-  const { data: swrData, isLoading: loading } = useSWR<any>("/api/config", configFetcher);
+  const shouldFetchConfig = initialData == null;
+  const { data: swrData, isLoading: loading } = useSWR<any>(shouldFetchConfig ? "/api/config" : null, configFetcher);
   const { data: templateDraftRows, isLoading: draftLoading, mutate: mutateDrafts } = useSWR<TemplateDraft[]>("/api/admin/template-drafts", configFetcher);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<any>(initialData);
+
+  const syncEditorData = (nextData: any) => {
+    setData(nextData);
+    onDataChange?.(nextData);
+  };
 
   useEffect(() => {
-    if (swrData) setData(swrData);
-  }, [swrData]);
+    if (initialData != null) {
+      setData(initialData);
+    }
+  }, [initialData]);
+
+  useEffect(() => {
+    if (shouldFetchConfig && swrData) setData(swrData);
+  }, [shouldFetchConfig, swrData]);
   const [activeTab, setActiveTab] = useState<"presets" | "design" | "layout" | "content" | "brand" | "team" | "contact" | "ai">("presets");
   const [prefix, setPrefix] = useState("");
   const [maxUses, setMaxUses] = useState<number>(1);
@@ -251,6 +212,8 @@ export default function SiteEditorSidebar() {
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [loadingDraftId, setLoadingDraftId] = useState<string | null>(null);
   const [deletingDraftId, setDeletingDraftId] = useState<string | null>(null);
+  const [isAddSectionModalOpen, setIsAddSectionModalOpen] = useState(false);
+  const [isAiEditModalOpen, setIsAiEditModalOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -282,16 +245,18 @@ export default function SiteEditorSidebar() {
   }, []);
 
   const updateData = async (newData: any) => {
-    setData(newData);
+    syncEditorData(newData);
     await fetch("/api/config", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newData),
     });
-    window.location.reload();
+    if (!onDataChange) {
+      window.location.reload();
+    }
   };
 
-  const toggleSection = (id: SectionId) => {
+  const toggleSection = (id: string) => {
     if (!data) return;
     const current = [...(data.activeSections || [])];
 
@@ -303,6 +268,15 @@ export default function SiteEditorSidebar() {
       current.push(id);
     }
     updateData({ ...data, activeSections: current });
+  };
+
+  const addSection = (id: string) => {
+    if (!data) return;
+    if ((data.activeSections || []).includes(id)) return;
+    updateData({
+      ...data,
+      activeSections: [...(data.activeSections || []), id],
+    });
   };
 
   if (loading || !data) return null;
@@ -394,6 +368,60 @@ export default function SiteEditorSidebar() {
     }
   };
 
+  const saveWorkingDraft = async () => {
+    setIsSavingDraft(true);
+    try {
+      const label = draftLabel.trim() || data.brand?.name || "Untitled Working Draft";
+      const res = await fetch("/api/admin/template-drafts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label, payload: data }),
+      });
+      const result = await res.json();
+      if (!res.ok || result.error) throw new Error(result.error || "Failed to save draft");
+      setDraftLabel("");
+      mutateDrafts();
+      toast.success("Temporary admin draft saved");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message || "Failed to save draft");
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
+  const createHandoffCode = async () => {
+    setIsGenerating(true);
+    try {
+      const days = Math.max(1, Number(expireDays) || 7);
+      const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+      const res = await fetch('/api/codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prefix,
+          payload: data,
+          max_uses: Math.max(1, Number(maxUses) || 1),
+          expires_at: expiresAt
+        })
+      });
+      const { code, error } = await res.json();
+      if (error) throw new Error(error);
+
+      try { await navigator.clipboard.writeText(code); } catch { }
+      setGeneratedCode(code);
+      setCopied(true);
+      setIsCodeModalOpen(true);
+      toast.success('Client handoff code created and copied to clipboard');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message || 'Failed to create code');
+    } finally {
+      setIsGenerating(false);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  };
+
   const setTeamMembers = (members: any[], persist = false) => {
     const next = {
       ...data,
@@ -414,6 +442,51 @@ export default function SiteEditorSidebar() {
 
   const templateDrafts = Array.isArray(templateDraftRows) ? templateDraftRows : [];
   const canRunAiTemplate = aiPrompt.trim().length >= 5 || businessPageUrl.trim().length > 0 || businessImageDataUrl.length > 0;
+  const canRunAiEditor = uniqueActiveSections.length > 0;
+  const businessName = getString(data?.brand?.name).trim();
+  const heroHeadline = getString(heroSectionData?.[heroTitleField]).trim();
+  const contactEmail = getString(data?.contact?.email).trim() || getString(contactSectionData?.email).trim();
+  const contactPhone = getString(data?.contact?.phone).trim() || getString(contactSectionData?.phone).trim();
+  const hasBrandBasics = businessName.length > 0;
+  const hasCorePitch = heroHeadline.length > 0 && uniqueActiveSections.length >= 3;
+  const hasContactBasics = contactEmail.length > 0 || contactPhone.length > 0;
+  const workflowSteps: WorkflowStep[] = [
+    {
+      id: "prepare",
+      label: "Prepare draft",
+      description: "Use AI research or load a saved draft to get a prospect-ready starting point.",
+      completed: hasBrandBasics,
+      actionLabel: "Open AI tools",
+      onClick: () => setActiveTab("ai"),
+    },
+    {
+      id: "refine",
+      label: "Refine sections",
+      description: "Polish hero copy, section order, proof, and contact details before sending it out.",
+      completed: hasCorePitch && hasContactBasics,
+      actionLabel: "Edit content",
+      onClick: () => setActiveTab("content"),
+    },
+    {
+      id: "checkpoint",
+      label: "Save checkpoint",
+      description: "Store a temporary admin draft so you can continue iterating for this lead later.",
+      completed: templateDrafts.length > 0,
+      actionLabel: isSavingDraft ? "Saving..." : "Save draft",
+      onClick: () => { void saveWorkingDraft(); },
+      disabled: isSavingDraft || isAiGenerating,
+    },
+    {
+      id: "handoff",
+      label: "Create handoff",
+      description: "Generate the redemption code only when the prepared site is ready for the client to claim.",
+      completed: generatedCode.trim().length > 0,
+      actionLabel: isGenerating ? "Creating..." : "Create code",
+      onClick: () => { void createHandoffCode(); },
+      disabled: isGenerating,
+    },
+  ];
+  const completedWorkflowSteps = workflowSteps.filter((step) => step.completed).length;
 
   return (
     <>
@@ -485,15 +558,56 @@ export default function SiteEditorSidebar() {
 
           {/* Scrollable Body */}
           <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+            <div className="space-y-4 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-primary">Prospect Funnel Workflow</h3>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Move each lead through one repeatable flow: prepare the draft, refine the message, save a checkpoint, then create the redemption code when the site is ready.
+                  </p>
+                </div>
+                <div className="rounded-full border border-primary/20 bg-background px-3 py-1 text-[10px] font-bold text-primary">
+                  {completedWorkflowSteps}/{workflowSteps.length} ready
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                {workflowSteps.map((step, index) => (
+                  <div
+                    key={step.id}
+                    className={`rounded-xl border p-3 ${step.completed ? "border-primary/30 bg-background" : "border-border bg-background/80"}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Step {index + 1}</p>
+                        <h4 className="text-sm font-semibold text-foreground">{step.label}</h4>
+                      </div>
+                      <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${step.completed ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                        {step.completed ? "Ready" : "Pending"}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">{step.description}</p>
+                    <button
+                      type="button"
+                      onClick={step.onClick}
+                      disabled={step.disabled}
+                      className="mt-3 inline-flex w-full items-center justify-center rounded-lg border border-primary/20 bg-background px-3 py-2 text-xs font-bold text-primary hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {step.actionLabel}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             {activeTab === "ai" && (
               <div className="space-y-6">
                 <div className="space-y-4 p-4 border border-border rounded-xl bg-muted/20">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <Wand2 className="w-4 h-4 text-primary" /> Auto-Generate Template
+                    <Wand2 className="w-4 h-4 text-primary" /> AI Draft Assistant
                   </h3>
                   <p className="text-[10px] text-muted-foreground">
-                    Describe the client and let AI build the full setup: copy, hero style, color palette, typography, layout styles, and recommended page sections.
+                    Start with AI research and prefill to build a client-ready draft faster, then manually refine copy, sections, media, theme choices, and order before handoff.
                   </p>
                   <div className="space-y-3">
                     <label className="flex items-center gap-2 rounded-lg border border-border bg-background px-2.5 py-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -510,7 +624,7 @@ export default function SiteEditorSidebar() {
                       <textarea
                         value={aiPrompt}
                         onChange={(e) => setAiPrompt(e.target.value)}
-                        placeholder="e.g. A dentist in Seattle named SmilExperts. Phone is 555-0199..."
+                        placeholder="e.g. A gym in Quezon City focused on strength training, group classes, and personal coaching..."
                         rows={6}
                         className="w-full p-2 text-xs border rounded bg-background resize-none focus:ring-1 focus:ring-primary outline-none"
                       />
@@ -525,7 +639,7 @@ export default function SiteEditorSidebar() {
                         className="w-full p-2 text-xs border rounded bg-background focus:ring-1 focus:ring-primary outline-none"
                       />
                       <p className="text-[10px] text-muted-foreground">
-                        Paste a Facebook page or business website URL to pull public logo/cover/contact signals.
+                        Paste a Facebook page or business website URL to pull public logo, brand, and contact signals before your manual review.
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -558,7 +672,7 @@ export default function SiteEditorSidebar() {
                       />
                       <div className="flex items-center justify-between">
                         <p className="text-[10px] text-muted-foreground">
-                          If Facebook blocks scraping, upload a page screenshot or logo so AI can extract details.
+                          If Facebook blocks scraping, upload a page screenshot or logo so AI can extract brand details for the draft.
                         </p>
                         {businessImageDataUrl && (
                           <button
@@ -709,7 +823,7 @@ export default function SiteEditorSidebar() {
                           }
 
                           updateData(newData);
-                          toast.success('Full template generated with AI');
+                          toast.success('AI draft prepared. Review and refine it before creating a handoff code.');
                           setAiPrompt("");
                         } catch (err: any) {
                           console.error(err);
@@ -730,8 +844,68 @@ export default function SiteEditorSidebar() {
                       className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold disabled:opacity-50 shadow-md flex items-center justify-center gap-2"
                     >
                       {isAiGenerating ? <Wand2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-                      {isAiGenerating ? "Generating..." : "Generate Full Template"}
+                      {isAiGenerating ? "Preparing draft..." : "Prepare AI Draft"}
                     </button>
+
+                    <div className="rounded-lg border border-dashed border-primary/30 bg-background/80 p-3 text-[10px] text-muted-foreground">
+                      Best workflow: prepare the first draft with AI, polish the sections manually, save a temporary draft if needed, then generate a share code only when the site is ready for client redemption.
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("content")}
+                        className="rounded-xl border border-border bg-background px-3 py-3 text-left transition hover:border-primary/30 hover:bg-primary/5"
+                      >
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Next after AI</p>
+                        <p className="mt-1 text-xs font-semibold text-foreground">Polish section content</p>
+                        <p className="mt-1 text-[10px] text-muted-foreground">Go straight into hero, proof, and contact cleanup.</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { void saveWorkingDraft(); }}
+                        disabled={isSavingDraft || isAiGenerating}
+                        className="rounded-xl border border-border bg-background px-3 py-3 text-left transition hover:border-primary/30 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Checkpoint</p>
+                        <p className="mt-1 text-xs font-semibold text-foreground">Save working draft</p>
+                        <p className="mt-1 text-[10px] text-muted-foreground">Keep a recoverable version for this lead before more changes.</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("design")}
+                        className="rounded-xl border border-border bg-background px-3 py-3 text-left transition hover:border-primary/30 hover:bg-primary/5"
+                      >
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Handoff</p>
+                        <p className="mt-1 text-xs font-semibold text-foreground">Open code handoff tools</p>
+                        <p className="mt-1 text-[10px] text-muted-foreground">When the draft is polished, jump to the code creation panel.</p>
+                      </button>
+                    </div>
+
+                    <div className="rounded-xl border border-border bg-background p-3 space-y-3">
+                      <div>
+                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                          <Wand2 className="w-3.5 h-3.5 text-primary" /> AI Template Editor
+                        </h4>
+                        <p className="mt-1 text-[10px] text-muted-foreground leading-relaxed">
+                          Already have a draft loaded? Ask AI to edit the current template, preview the exact proposed operations, then approve only what you want to keep.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+                        <span className="rounded-full bg-muted px-2 py-1">Edits current template only</span>
+                        <span className="rounded-full bg-muted px-2 py-1">Preview before apply</span>
+                        <span className="rounded-full bg-muted px-2 py-1">Keeps manual review in the loop</span>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={!canRunAiEditor || isAiGenerating}
+                        onClick={() => setIsAiEditModalOpen(true)}
+                        className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2 text-xs font-bold text-primary hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Wand2 className="w-4 h-4" />
+                        Edit Current Template with AI
+                      </button>
+                    </div>
 
                     <TemplateGenerationActivityLog
                       entries={aiGenerationLogs}
@@ -749,27 +923,7 @@ export default function SiteEditorSidebar() {
                       />
                       <button
                         disabled={isSavingDraft || isAiGenerating}
-                        onClick={async () => {
-                          setIsSavingDraft(true);
-                          try {
-                            const label = draftLabel.trim() || data.brand?.name || "Untitled Working Draft";
-                            const res = await fetch("/api/admin/template-drafts", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ label, payload: data }),
-                            });
-                            const result = await res.json();
-                            if (!res.ok || result.error) throw new Error(result.error || "Failed to save draft");
-                            setDraftLabel("");
-                            mutateDrafts();
-                            toast.success("Temporary draft saved");
-                          } catch (err: any) {
-                            console.error(err);
-                            toast.error(err?.message || "Failed to save draft");
-                          } finally {
-                            setIsSavingDraft(false);
-                          }
-                        }}
+                        onClick={() => { void saveWorkingDraft(); }}
                         className="h-9 whitespace-nowrap rounded-lg bg-primary px-3 text-xs font-bold text-primary-foreground disabled:opacity-50"
                       >
                         {isSavingDraft ? "Saving..." : "Save Draft"}
@@ -1284,8 +1438,14 @@ export default function SiteEditorSidebar() {
                   {/* Share Code Generation */}
                   <div className="space-y-4">
                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Copy className="w-4 h-4 text-primary" /> Share Code
+                      <Copy className="w-4 h-4 text-primary" /> Client Handoff Code
                     </h3>
+                    <p className="text-[10px] text-muted-foreground">
+                      Create a redemption code only after this prepared draft is ready. The client redeems the code to receive this site as their starting point.
+                    </p>
+                    <div className="rounded-xl border border-dashed border-primary/25 bg-background/70 p-3 text-[10px] text-muted-foreground">
+                      Recommended sequence: finish copy and section edits, save a temporary checkpoint if you still expect revisions, then create the code for the client only when the handoff is ready.
+                    </div>
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
@@ -1322,40 +1482,10 @@ export default function SiteEditorSidebar() {
                         </div>
                         <button
                           disabled={isGenerating}
-                          onClick={async () => {
-                            setIsGenerating(true);
-                            try {
-                              const days = Math.max(1, Number(expireDays) || 7);
-                              const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
-                              const res = await fetch('/api/codes', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                  prefix,
-                                  payload: data,
-                                  max_uses: Math.max(1, Number(maxUses) || 1),
-                                  expires_at: expiresAt
-                                })
-                              });
-                              const { code, error } = await res.json();
-                              if (error) throw new Error(error);
-
-                              try { await navigator.clipboard.writeText(code); } catch { }
-                              setGeneratedCode(code);
-                              setCopied(true);
-                              setIsCodeModalOpen(true);
-                              toast.success('Share Code created and copied to clipboard');
-                            } catch (err: any) {
-                              console.error(err);
-                              toast.error(err?.message || 'Failed to create code');
-                            } finally {
-                              setIsGenerating(false);
-                              setTimeout(() => setCopied(false), 1500);
-                            }
-                          }}
+                          onClick={() => { void createHandoffCode(); }}
                           className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold disabled:opacity-50 shadow-md h-[38px]"
                         >
-                          {isGenerating ? "..." : "Create"}
+                          {isGenerating ? "..." : "Create Code"}
                         </button>
                       </div>
                     </div>
@@ -1367,6 +1497,9 @@ export default function SiteEditorSidebar() {
                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                       <Save className="w-4 h-4 text-primary" /> Saved Drafts
                     </h3>
+                    <p className="text-[10px] text-muted-foreground">
+                      Keep temporary prospect versions here while you iterate with AI and manual edits before generating the final redemption code.
+                    </p>
                   </div>
 
                   <div className="space-y-2 rounded-xl border border-border bg-background/70 p-2">
@@ -1376,7 +1509,7 @@ export default function SiteEditorSidebar() {
                         Loading drafts...
                       </div>
                     ) : templateDrafts.length === 0 ? (
-                      <p className="py-3 text-center text-[10px] text-muted-foreground">No temporary drafts yet.</p>
+                      <p className="py-3 text-center text-[10px] text-muted-foreground">No temporary prospect drafts yet.</p>
                     ) : (
                       <div className="max-h-48 space-y-1 overflow-y-auto pr-1">
                         {templateDrafts.map((draft) => {
@@ -1401,7 +1534,7 @@ export default function SiteEditorSidebar() {
                                     setLoadingDraftId(draft.id);
                                     try {
                                       await updateData(draft.payload);
-                                      toast.success("Draft loaded");
+                                      toast.success("Draft loaded into the builder");
                                     } catch (err: any) {
                                       console.error(err);
                                       toast.error(err?.message || "Failed to load draft");
@@ -1590,54 +1723,57 @@ export default function SiteEditorSidebar() {
 
             {activeTab === "layout" && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                       <Layers className="w-4 h-4 text-primary" /> Page Sections
                     </h3>
-                    <p className="text-[10px] text-muted-foreground mt-1">Enable or disable blocks on your landing page.</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Manage the current page sections here, then use the shared add-section preview to browse every available block variant.
+                    </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddSectionModalOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-primary-foreground shadow-sm hover:opacity-90"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Section
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
-                  {[
-                    { title: "Hero & Identity", filter: (s: any) => s.id.includes('hero') || s.id === 'brand' },
-                    { title: "Trust & Social", filter: (s: any) => s.id.includes('trust') || s.id.includes('review') || s.id.includes('award') || s.id.includes('certifications') || s.id.includes('facebook') },
-                    { title: "Services & Features", filter: (s: any) => s.id.includes('feature') || s.id.includes('service') || s.id.includes('practice') || s.id.includes('program') || s.id.includes('project') || s.id.includes('package') || s.id.includes('membership') || s.id.includes('class') || s.id === 'ac-types-grid' || s.id === 'financing-section' || s.id === 'developer-partners' },
-                    { title: "Process & Info", filter: (s: any) => s.id.includes('how-it-works') || s.id.includes('delivery') || s.id.includes('enrollment') || s.id.includes('faq') || s.id.includes('blog') || s.id.includes('schedule') || s.id === 'why-choose-us' || s.id === 'treatment-process' || s.id === 'gym--faq' },
-                    { title: "Team & Profiles", filter: (s: any) => s.id.includes('team') || s.id.includes('attorney') || s.id.includes('faculty') || s.id === 'why-choose-me' || s.id === 'gym--trainers' },
-                    { title: "Conversion & Contact", filter: (s: any) => s.id.includes('contact') || s.id.includes('booking') || s.id.includes('consultation') || s.id.includes('messenger') || s.id.includes('pricing') || s.id.includes('promo') || s.id.includes('payment') || s.id.includes('area-map') || s.id.includes('coverage-radius') || s.id === 'emergency-cta-strip' || s.id === 'price-preview-strip' || s.id === 'maintenance-plans' || s.id === 'promo-cta-section' },
-                  ].map((group) => (
-                    <div key={group.title} className="space-y-3">
-                      <h4 className="text-[10px] font-bold uppercase text-primary/70 tracking-widest px-2 py-1 bg-primary/5 rounded border-l-2 border-primary">
-                        {group.title}
-                      </h4>
-                      <div className="grid gap-1.5">
-                        {SECTIONS.filter(group.filter).map(({ id, label }) => (
-                          <SectionToggle key={id} id={id} label={label} activeSections={activeSections} onToggle={toggleSection} />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Gallery & Others */}
-                  <div className="space-y-3">
-                    <h4 className="text-[10px] font-bold uppercase text-primary/70 tracking-widest px-2 py-1 bg-primary/5 rounded border-l-2 border-primary">Visuals & Others</h4>
-                    <div className="grid gap-1.5">
-                      {SECTIONS.filter(s =>
-                        s.id.includes('gallery') ||
-                        s.id === 'before-after-slider' ||
-                        s.id === 'before-after-gallery-grid' ||
-                        s.id === 'common-pests' ||
-                        s.id === 'safety-section' ||
-                        s.id === 'gym--results' ||
-                        s.id === 'gym--facility'
-                      ).map(({ id, label }) => (
-                        <SectionToggle key={id} id={id} label={label} activeSections={activeSections} onToggle={toggleSection} />
-                      ))}
-                    </div>
+                <div className="rounded-xl border border-border bg-muted/20 p-3">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Current Page Order</p>
+                    <span className="text-[10px] text-muted-foreground">
+                      {activeSections.length} active section{activeSections.length === 1 ? "" : "s"}
+                    </span>
                   </div>
+
+                  <div className="grid gap-1.5">
+                    {activeSections.map((sectionId: string) => (
+                      <SectionToggle
+                        key={`${sectionId}-${activeSections.indexOf(sectionId)}`}
+                        id={sectionId}
+                        label={formatSectionLabel(sectionId)}
+                        activeSections={activeSections}
+                        onToggle={toggleSection}
+                      />
+                    ))}
+                  </div>
+
+                  <p className="mt-3 text-[10px] text-muted-foreground">
+                    Removing a section here keeps the current builder behavior. Adding new sections now reuses the same dashboard preview picker as the client editor, so all available variants stay in sync.
+                  </p>
                 </div>
+
+                <AddSectionModal
+                  open={isAddSectionModalOpen}
+                  onOpenChange={setIsAddSectionModalOpen}
+                  activeSections={activeSections}
+                  addSection={addSection}
+                  isProOrHigher
+                />
               </div>
             )}
 
@@ -2088,6 +2224,37 @@ export default function SiteEditorSidebar() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AiEditorModal
+        open={isAiEditModalOpen}
+        onOpenChange={setIsAiEditModalOpen}
+        currentConfig={data}
+        isPro
+        canUseCustomHtml
+        title="AI Template Editor"
+        description="Describe how the current admin template should change. AI will propose structured edits you can preview, review, and apply to the current template draft."
+        submitPrompt={({ prompt, currentConfig }) =>
+          fetch("/api/admin/template-ai-edit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt, currentConfig }),
+          })
+        }
+        applyOperationsRequest={({ operations, currentConfig }) =>
+          fetch("/api/admin/template-ai-edit/apply-operations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ operations, currentConfig }),
+          })
+        }
+        applySuccessMessage="AI changes applied to the current template!"
+        onPreview={(previewConfig) => {
+          syncEditorData(previewConfig);
+        }}
+        onApplied={(newDraft) => {
+          syncEditorData(newDraft);
+        }}
+      />
 
       <style jsx global>{`
         .animate-spin-slow {

@@ -15,8 +15,9 @@ This document describes every major feature of the EstabWeb platform: what it do
    - 4.3 [Code Generation & Management](#43-code-generation--management)
    - 4.4 [Client Management](#44-client-management)
    - 4.5 [Change Request Approvals](#45-change-request-approvals)
-   - 4.6 [Transactions](#46-transactions)
-   - 4.7 [Settings](#47-settings)
+   - 4.6 [Support Inbox](#46-support-inbox)
+   - 4.7 [Transactions](#47-transactions)
+   - 4.8 [Settings](#48-settings)
 5. [Client Dashboard](#5-client-dashboard)
    - 5.1 [Live Site Editor](#51-live-site-editor)
    - 5.2 [Section Management](#52-section-management)
@@ -52,7 +53,9 @@ This document describes every major feature of the EstabWeb platform: what it do
    - 8.9 [Upload API](#89-upload-api)
    - 8.10 [Config API](#810-config-api)
    - 8.11 [Cron Jobs](#811-cron-jobs)
-   - 8.12 [Track Lead API](#812-track-lead-api)
+   - 8.12 [Site Status API](#812-site-status-api)
+   - 8.13 [Support API](#813-support-api)
+   - 8.14 [Track Lead API](#814-track-lead-api)
 9. [UI Block Library](#9-ui-block-library)
 10. [Subscription & Plan Gating](#10-subscription--plan-gating)
 11. [Database Schema Summary](#11-database-schema-summary)
@@ -165,9 +168,9 @@ The following paths are never redirected to subdomains on the root domain:
 
 **File:** `app/admin/dashboard/page.tsx`
 
-**What it shows:** Overview of pending change requests, recent client activity, and platform-level stats.
+**What it shows:** Overview of pending change requests, open support requests, recent client activity, and platform-level stats.
 
-**Implementation:** Fetches `change_requests` rows with `status = 'pending'` from Supabase. Displays count badges and a list of pending items with links to the review page.
+**Implementation:** Fetches platform metrics plus `change_requests` rows with `status = 'pending'` and support requests with `status in ('open', 'in_progress')`. Displays count badges and linked summary cards for both admin queues.
 
 ---
 
@@ -182,6 +185,7 @@ The following paths are never redirected to subdomains on the root domain:
 **Implementation:**
 - The template config is stored as a JSON object in a dedicated `templates` table (or a special admin project row).
 - The editor uses the same sidebar editor component as the client dashboard, but targets the template record instead of a client project.
+- The current admin workflow is hybrid: AI can research and prefill a business-specific draft, while admins still manually refine copy, sections, media, styles, and section order before client handoff.
 - Live preview is rendered in an iframe pointing to `/api/config?projectId=...&preview=true`.
 - Changes are saved to `draft_config` of the template record.
 - When the admin is satisfied, they can "lock" the template — this becomes the seed config for all future code redemptions.
@@ -194,12 +198,12 @@ The following paths are never redirected to subdomains on the root domain:
 
 **File:** `app/admin/codes/page.tsx`, `app/api/codes/`
 
-**What it does:** Admin generates redeemable one-time codes that clients use during onboarding to create their project.
+**What it does:** Admin generates redeemable handoff codes that clients use during onboarding to receive an admin-prepared project.
 
 **Implementation:**
-- Admin specifies: template to use, redemption limit (how many times the code can be used), and optional expiry.
+- Admin specifies: the prepared template payload, redemption limit (how many times the code can be used), and optional expiry.
 - A code record is inserted into the `codes` table with a randomly generated alphanumeric string.
-- **Redemption** (`/api/codes/redeem`): Client submits the code → server validates it (not expired, not over limit) → creates a new `projects` row seeded with the template's config → increments the code's `redeemed_count`.
+- **Redemption** (`/api/codes/redeem`): Client submits the code → server validates it (not expired, not over limit) → creates a new `projects` row seeded with the prepared template config → increments the code's `redeemed_count`.
 - **Validation** (`/api/codes/validate`): Checks if a code is valid before the client commits to redeeming it (used in the onboarding UI for instant feedback).
 
 **Display:** Admin sees a table of all codes with columns: code string, template name, redeemed/limit count, status (active/expired/exhausted), created date.
@@ -238,7 +242,25 @@ The following paths are never redirected to subdomains on the root domain:
 
 ---
 
-### 4.6 Transactions
+### 4.6 Support Inbox
+
+**Files:** `app/admin/support/page.tsx`, `app/admin/support/[id]/page.tsx`, `app/admin/support/[id]/SupportRequestDetailClient.tsx`, `app/api/admin/support/[id]/route.ts`, `app/api/admin/support/[id]/reply/route.ts`
+
+**What it does:** Lets admins review client support submissions, manage support status, and reply directly from the admin suite.
+
+**Implementation:**
+1. Clients submit support from `components/shared/SupportSystem.tsx` to `POST /api/support`.
+2. `support_requests` stores the request summary (`type`, `subject`, `message`, `status`, linked `project_id`).
+3. `support_request_messages` stores the thread. The initial client message is mirrored into this table so the admin detail page always renders a full conversation.
+4. `/admin/dashboard` includes a support summary block for open and in-progress requests.
+5. `/admin/support` lists all requests across statuses with requester and project context.
+6. `/admin/support/[id]` shows the thread, captured metadata (page URL / user agent when present), status controls, and the reply composer.
+7. `PATCH /api/admin/support/[id]` updates `open`, `in_progress`, `resolved`, or `closed`.
+8. `POST /api/admin/support/[id]/reply` inserts an admin thread message, assigns the request, reopens resolved/closed items back to `in_progress`, creates the client notification entry, and sends the email reply.
+
+---
+
+### 4.7 Transactions
 
 **File:** `app/admin/transactions/page.tsx`
 
@@ -248,7 +270,7 @@ The following paths are never redirected to subdomains on the root domain:
 
 ---
 
-### 4.7 Settings
+### 4.8 Settings
 
 **File:** `app/admin/settings/page.tsx`
 
@@ -763,7 +785,7 @@ SiteTemplate
 
 **File:** `app/(hub)/page.tsx`, `components/landing/`
 
-The public-facing marketing page for EstabWeb itself. Uses the same block components as client sites but with hardcoded EstabWeb content.
+The public-facing marketing page for EstabWeb itself. Uses the same block components as client sites but with hardcoded EstabWeb content. Current messaging positions the product as a managed website launch platform: admins prepare the first version, clients get a ready draft, and post-launch edits happen through simple dashboard and AI-assisted tools. The landing page also leans toward gym / fitness-studio readiness when showcasing best-fit template examples.
 
 ---
 
@@ -771,7 +793,7 @@ The public-facing marketing page for EstabWeb itself. Uses the same block compon
 
 **File:** `app/(hub)/pricing/page.tsx`
 
-Displays location-aware plan tiers with feature comparison. CTA buttons link to `/subscribe/[projectId]` for authenticated clients or `/login` for visitors. The copy also makes it explicit that if a client needs a fully custom design and end-to-end build (beyond the standard managed plans and templates), they can reach out via the `/contact` page to scope a bespoke project.
+Displays location-aware plan tiers with feature comparison. CTA buttons link to `/subscribe/[projectId]` for authenticated clients or `/login` for visitors. The copy frames plans around the managed-launch workflow: prepared site first, then plan-based control over publishing, analytics depth, and custom-domain value. It also makes it explicit that if a client needs a fully custom design and end-to-end build (beyond the standard managed plans and templates), they can reach out via the `/contact` page to scope a bespoke project.
 
 ---
 
@@ -780,10 +802,10 @@ Displays location-aware plan tiers with feature comparison. CTA buttons link to 
 **File:** `app/(hub)/onboarding/page.tsx`
 
 **What it does:** New clients go through a guided flow after signing up:
-1. Enter their redemption code.
+1. Either choose a vertical/template path or enter their redemption code for a prepared site.
 2. Code is validated via `GET /api/codes/validate`.
 3. On confirmation, `POST /api/codes/redeem` creates the project.
-4. Client is redirected to `/dashboard` with their new project ready.
+4. Client is redirected to `/dashboard` with their new project ready as an admin-prepared draft that they can continue editing or publishing according to plan permissions.
 
 ---
 
@@ -994,7 +1016,26 @@ All API routes are under `app/api/` and use Next.js Route Handlers.
 
 ---
 
-### 8.13 Track Lead API
+### 8.13 Support API
+
+**`POST /api/support`**
+- Auth: required (client)
+- Body: `{ type, subject?, message, projectId?, metadata? }`
+- Logic: validates the request type, creates a `support_requests` row, and mirrors the initial message into `support_request_messages`.
+
+**`PATCH /api/admin/support/[id]`**
+- Auth: requires `admin` or `sub_admin`
+- Body: `{ status }`
+- Logic: updates the request lifecycle state (`open`, `in_progress`, `resolved`, `closed`), assigns the admin, and writes the support status audit event.
+
+**`POST /api/admin/support/[id]/reply`**
+- Auth: requires `admin` or `sub_admin`
+- Body: `{ message }`
+- Logic: appends an admin thread message, assigns the admin, reopens resolved/closed threads to `in_progress`, creates the client notification entry, and sends the email reply.
+
+---
+
+### 8.14 Track Lead API
 
 **`POST /api/track-lead`**
 - No auth required (public endpoint).
@@ -1155,6 +1196,8 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 | `projects` | One per client site — holds `current_config`, `draft_config`, subdomain, custom domain, subscription fields, publish counters |
 | `project_versions` | Immutable version snapshots — one row per publish |
 | `change_requests` | Pending/approved/rejected change requests from free-plan clients |
+| `support_requests` | Client support tickets with type, subject, status, metadata, assignment, and reply state |
+| `support_request_messages` | Threaded support conversation messages for each support request |
 | `codes` | Redeemable template codes with limits and expiry |
 | `templates` | Master template configs managed by admin |
 | `paymongo_links` | PayMongo payment link records with `project_id` for webhook resolution |
@@ -1168,8 +1211,13 @@ All blocks live in `components/blocks/`. They are pure presentational React comp
 - Active template code table is `template_codes` (plus `code_redemptions` audit trail).
 - Master template JSON source is `site_config` key `template_master`.
 
+**Schema updates (2026-04-04):**
+- Added `support_request_messages` for admin/client support threads.
+- Extended `support_requests` with assignment and reply timestamps for the admin inbox workflow.
+- Added support inbox admin APIs and reply/status audit events.
+
 **Row-Level Security (RLS):** All client-facing tables have RLS policies ensuring clients can only read/write their own rows. Admin operations use the service-role client which bypasses RLS.
 
 ---
 
-*Last updated: 2026-03-25*
+*Last updated: 2026-04-04*
