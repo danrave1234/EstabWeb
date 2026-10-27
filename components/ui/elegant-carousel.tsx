@@ -230,24 +230,11 @@ export default function ElegantCarousel({ slides = DEFAULT_SLIDES }: ElegantCaro
               transitionClass
             )}
           >
-            {safeSlides.map((slide, index) => {
-              const isActive = index === currentIndex;
-
-              return (
-                <img
-                  key={`${slide.title}-${index}`}
-                  src={slide.imageUrl}
-                  alt={slide.title}
-                  className={cn(
-                    "absolute inset-0 h-full w-full object-cover transition-opacity duration-500",
-                    isActive ? "opacity-100" : "pointer-events-none opacity-0"
-                  )}
-                  loading={index === 0 ? "eager" : "lazy"}
-                  decoding="async"
-                  aria-hidden={!isActive}
-                />
-              );
-            })}
+            <img
+              src={currentSlide.imageUrl}
+              alt={currentSlide.title}
+              className="h-full w-full object-cover"
+            />
             <div
               className="absolute inset-0"
               style={{

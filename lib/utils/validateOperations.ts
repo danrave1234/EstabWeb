@@ -187,44 +187,6 @@ export function validateOperations(
         break
       }
 
-      case "replace_section": {
-        if (disallowedSectionIds.has(op.sectionKey) || disallowedSectionIds.has(op.newSectionKey)) {
-          errors.push(`Section replacement includes a section that is not available on your current plan.`)
-          continue
-        }
-        if (!ALL_SECTION_IDS.has(op.sectionKey)) {
-          errors.push(`Unknown section key in replace_section: "${op.sectionKey}" - rejected.`)
-          continue
-        }
-        if (!ALL_SECTION_IDS.has(op.newSectionKey)) {
-          errors.push(`Unknown replacement section key: "${op.newSectionKey}" - rejected.`)
-          continue
-        }
-
-        const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
-        if (isRoot && !simulated.includes(op.sectionKey)) {
-          errors.push(`replace_section could not find "${op.sectionKey}" on the homepage.`)
-          continue
-        }
-        if (isRoot && simulated.includes(op.newSectionKey) && op.newSectionKey !== op.sectionKey) {
-          errors.push(`replace_section would duplicate "${op.newSectionKey}" on the homepage.`)
-          continue
-        }
-
-        const safeData = filterSectionPayload(op.newSectionKey, op.data, errors, "add_section")
-        const sanitizedReplaceOp: Operation = safeData
-          ? { ...op, data: sanitizeChanges(safeData, op.newSectionKey) }
-          : { ...op, data: undefined }
-
-        if (isRoot) {
-          const idx = simulated.indexOf(op.sectionKey)
-          if (idx !== -1) simulated.splice(idx, 1, op.newSectionKey)
-        }
-
-        sanitized.push(sanitizedReplaceOp)
-        break
-      }
-
       case "reorder_sections": {
         const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
         const unknownKeys = op.newOrder.filter((k) => !ALL_SECTION_IDS.has(k))

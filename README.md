@@ -4,7 +4,7 @@
 > **To AI Coding Agents**: Always refer to the [AGENTS.md](file:///c:/Users/Danrave/Desktop/Project/template-nextjs-nestjs/boilerplate/AGENTS.md) file before starting any task. You are **REQUIRED** to update `AGENTS.md` and this `README.md` if your changes introduce new conventions, workflows, or significant code patterns.
 
 
-EstabWeb is a multi-tenant managed website launch platform for generating and running industry-optimized websites. Admins prepare a business-specific draft, clients redeem a launch code to open that prepared site, and then edit content from a dashboard with AI-assisted tools instead of starting from a blank builder.
+EstabWeb is a multi-tenant SaaS platform for generating and managing industry-optimized websites. Clients redeem template codes, get an instant starter site, and edit content from a dashboard without writing code.
 
 > Status: Active development, `v0.1.0`.
 
@@ -17,13 +17,6 @@ EstabWeb is a multi-tenant managed website launch platform for generating and ru
 5. Client submits a change request.
 6. Admin approves, publishing `draft_config` to `current_config`.
 7. Public site is served on subdomain or custom domain through middleware routing.
-
-### Current positioning notes
-
-- The core offer is a managed, template-driven launch flow rather than a generic DIY website builder.
-- The strongest first-class vertical today is gyms / fitness studios because the preset system, config keys, and dedicated section mappings are most mature there.
-- `Starter` (`basic`) should be presented as a guided launch and editing plan, while `Business` (`pro`) and above are where richer analytics/value messaging should be emphasized.
-- Product copy should consistently highlight prepared-site onboarding, inquiry generation, analytics visibility, and the custom-domain upgrade path.
 
 ## Tech Stack
 
@@ -64,7 +57,6 @@ EstabWeb is a multi-tenant managed website launch platform for generating and ru
 
 - `POST /api/ai/populate-template` now supports Gemini Search-grounded generation for up-to-date business context.
 - It returns full template recommendations: brand copy, `theme`, `colorTheme`, `typographyStyle`, `headerStyle`, `footerStyle`, `darkMode`, and `activeSections`.
-- In the admin builder, AI is positioned as a draft-preparation assistant: admins are still expected to manually review/refine sections, assets, copy, style choices, and section order before generating a client handoff code.
 - It now injects structured design-system context into the AI prompt (preset blueprints, section labels/config keys, hero/theme labels, color swatches, typography metadata, and dark/light mode hints) so selections follow real preset patterns instead of random combinations.
 - It accepts optional `businessPageUrl` (e.g., Facebook page URL) and extracts public page signals (logo/cover/contact hints) to reduce manual asset setup.
 - It also accepts optional `businessImageDataUrl` (uploaded screenshot/logo) so AI can extract business details when page scraping is blocked.
@@ -80,19 +72,6 @@ EstabWeb is a multi-tenant managed website launch platform for generating and ru
 - Template codes remain the final share step for prospects:
   - Draft first (`template_drafts`)
   - Convert to shareable code (`template_codes`) only when needed
-
-## Support Inbox
-
-- Clients can submit support requests from the shared support widget (`components/shared/SupportSystem.tsx`) through `POST /api/support`.
-- Request metadata/state stays in `support_requests`; the conversation thread is stored in `support_request_messages`.
-- Admin support workflow now lives in:
-  - `/admin/dashboard` for a quick inbox summary
-  - `/admin/support` for the full inbox
-  - `/admin/support/[id]` for status updates and replies
-- Admin reply/status APIs:
-  - `PATCH /api/admin/support/[id]` updates `open`, `in_progress`, `resolved`, or `closed`
-  - `POST /api/admin/support/[id]/reply` appends an admin message, assigns the request, reopens resolved/closed threads to `in_progress`, creates the client notification, and sends the email reply
-- Audit actions for this flow are `support_request_reply` and `support_request_status_update`.
 
 ## Preset Config Notes
 
@@ -174,13 +153,8 @@ migrations/011_add_missing_lead_columns.sql
 migrations/012_add_promo_codes.sql
 migrations/013_add_template_drafts.sql
 migrations/014_add_template_draft_expiry.sql
-migrations/015_add_missing_indexes.sql
-migrations/016_add_session_replays.sql
-migrations/017_drop_session_replays.sql
 migrations/018_session_based_analytics.sql
 migrations/019_add_section_attention_event_type.sql
-migrations/020_add_notifications.sql
-migrations/021_add_support_request_messages.sql
 ```
 
 3. Install and run:
@@ -287,6 +261,7 @@ See `AGENTS.md § 9` for the authoritative rules and free-tier reset values.
 - `docs/whitelabel-flow.md`
 - `docs/PAYMONGO.md`
 - `README_DEPLOY.md`
+
 
 
 

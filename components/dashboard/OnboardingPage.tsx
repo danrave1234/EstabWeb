@@ -156,9 +156,9 @@ function rankPresets(businessType: string | null, sections: string[]) {
 
 // ─── Section toggle card ──────────────────────────────────────────────────────
 function SectionCard({
-  label, description, icon: Icon, color, bg, selected, locked, aiSuggested, onToggle,
+  id, label, description, icon: Icon, color, bg, selected, locked, aiSuggested, onToggle,
 }: {
-  label: string; description: string; icon: React.ElementType;
+  id: string; label: string; description: string; icon: React.ElementType;
   color: string; bg: string; selected: boolean; locked?: boolean; aiSuggested?: boolean; onToggle: () => void;
 }) {
   return (
@@ -308,10 +308,10 @@ export default function OnboardingPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to redeem");
-      toast.success("Prepared site activated! Creating your project...");
+      toast.success("Template applied! Creating your project...");
       window.location.href = `/dashboard?projectId=${json.projectId}`;
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Failed to activate code";
+      const msg = e instanceof Error ? e.message : "Failed to apply code";
       toast.error(msg);
     } finally {
       setIsRedeeming(false);
@@ -372,10 +372,10 @@ export default function OnboardingPage() {
             <div className="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-500 py-8">
               <div className="text-center space-y-3">
                 <h1 className="text-4xl font-black tracking-tight leading-tight">
-                  Open Your <span className="text-primary">Prepared Website</span>
+                  Apply a <span className="text-primary">Template Code</span>
                 </h1>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Enter the code from your EstabWeb admin or sales team to unlock the draft they already prepared for you.
+                  Enter your unique code to instantly set up your website.
                 </p>
               </div>
               <form onSubmit={handleRedeem} className="w-full space-y-4">
@@ -390,7 +390,7 @@ export default function OnboardingPage() {
                   disabled={isRedeeming || !redeemCode.trim()}
                   className="w-full py-5 bg-primary text-primary-foreground rounded-2xl font-black text-lg shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                 >
-                  {isRedeeming ? "Opening..." : "Open Prepared Site"}
+                  {isRedeeming ? "Applying..." : "Activate Template"}
                 </button>
               </form>
               <button

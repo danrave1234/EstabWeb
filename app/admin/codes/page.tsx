@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/Dialog";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -241,22 +241,14 @@ function TemplateCodesWorkspace() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="space-y-3">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">Prepared-site handoff codes</h2>
-            <p className="text-xs text-muted-foreground">
-              These template codes deliver an admin-prepared site to the client. Generate them after the AI + manual draft review is complete, then track who redeemed each handoff.
-            </p>
-          </div>
-          <div className="relative w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search codes or labels..."
-              className="pl-9 h-9 text-xs"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+        <div className="relative w-64">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search codes or labels..."
+            className="pl-9 h-9 text-xs"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
       </div>
 
@@ -287,7 +279,7 @@ function TemplateCodesWorkspace() {
                   <tr><td colSpan={5} className="p-20 text-center text-muted-foreground">
                     <div className="flex flex-col items-center gap-3">
                       <Layout className="w-10 h-10 text-muted-foreground/40" />
-                      <p className="text-sm">No client handoff codes found yet.</p>
+                      <p className="text-sm">No template codes found.</p>
                     </div>
                   </td></tr>
                 ) : (
@@ -299,7 +291,7 @@ function TemplateCodesWorkspace() {
                             <code className="bg-primary/5 text-primary font-mono font-bold px-2 py-1 rounded border border-primary/10">{code.code}</code>
                             <CopyButton text={code.code} />
                           </div>
-                          <span className="text-xs font-medium text-foreground">{code.label || "Untitled Prepared Draft"}</span>
+                          <span className="text-xs font-medium text-foreground">{code.label || "Untitled Snapshot"}</span>
                         </div>
                       </td>
                       <td className="p-4 text-center">
@@ -342,7 +334,7 @@ function TemplateCodesWorkspace() {
       <Dialog open={!!editingCode} onOpenChange={(o) => { if (!o) setEditingCode(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit handoff code limits</DialogTitle>
+            <DialogTitle>Edit Code Limits</DialogTitle>
             <DialogDescription>Code: <span className="font-mono text-primary font-bold">{editingCode?.code}</span></DialogDescription>
           </DialogHeader>
           {editingCode && (
@@ -366,10 +358,10 @@ function TemplateCodesWorkspace() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="w-5 h-5 text-primary" />
-              Redemption History
+              Usage History
             </DialogTitle>
             <DialogDescription>
-              Who redeemed the prepared-site code <code className="font-bold text-foreground">{viewingRedemptions?.code}</code>
+              Who used the code <code className="font-bold text-foreground">{viewingRedemptions?.code}</code>
             </DialogDescription>
           </DialogHeader>
           <div className="mt-4">
@@ -467,7 +459,7 @@ function PromoCodesWorkspace() {
       <div className="max-w-7xl mx-auto space-y-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Redemption Codes</h1>
-          <p className="text-muted-foreground mt-2">Manage prepared-site handoff codes for clients and promotional subscription codes for plan upgrades.</p>
+          <p className="text-muted-foreground mt-2">Manage template snapshots and promotional subscription codes.</p>
         </div>
 
         <Tabs defaultValue="promo" className="space-y-6">

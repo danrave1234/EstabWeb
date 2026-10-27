@@ -4,8 +4,6 @@
  * Always operates on a deep clone — never mutates the original config.
  */
 
-import { isHeroSectionId, replaceHeroSectionId } from "@/lib/dashboard/hero-editor"
-
 export type Operation =
   | {
     type: "add_section"
@@ -23,14 +21,6 @@ export type Operation =
     type: "update_section"
     sectionKey: string
     changes: Record<string, any>
-    pageSlug?: string
-  }
-  | {
-    type: "replace_section"
-    sectionKey: string
-    newSectionKey: string
-    data?: Record<string, any>
-    position?: number
     pageSlug?: string
   }
   | {
@@ -325,47 +315,6 @@ export function applyOperations(
         newConfig[configProp] = {
           ...(newConfig[configProp] ?? {}),
           ...safeChanges,
-        }
-        break
-      }
-
-      case "replace_section": {
-        const isRoot = !op.pageSlug || op.pageSlug === "index" || op.pageSlug === "/"
-        let pageRef = newConfig
-        if (!isRoot && Array.isArray(newConfig.pages)) {
-          const page = newConfig.pages.find((p: any) => p.slug === op.pageSlug)
-          if (page) pageRef = page
-        }
-
-        if (!Array.isArray(pageRef.activeSections)) {
-          pageRef.activeSections = []
-        }
-
-        if (isRoot && isHeroSectionId(op.sectionKey) && isHeroSectionId(op.newSectionKey)) {
-          pageRef.activeSections = replaceHeroSectionId(pageRef.activeSections, op.sectionKey, op.newSectionKey)
-        } else {
-          const existingIndex = pageRef.activeSections.indexOf(op.sectionKey)
-          if (existingIndex !== -1) {
-            pageRef.activeSections.splice(existingIndex, 1, op.newSectionKey)
-          }
-        }
-
-        const oldConfigProp = resolveConfigProp(op.sectionKey)
-        const newConfigProp = resolveConfigProp(op.newSectionKey)
-        const seededValue =
-          newConfig[newConfigProp] ??
-          (newConfig[oldConfigProp] && typeof newConfig[oldConfigProp] === "object"
-            ? structuredClone(newConfig[oldConfigProp])
-            : undefined)
-
-        if (seededValue && newConfig[newConfigProp] == null) {
-          newConfig[newConfigProp] = seededValue
-        }
-        if (op.data && typeof op.data === "object") {
-          newConfig[newConfigProp] = {
-            ...(newConfig[newConfigProp] ?? {}),
-            ...op.data,
-          }
         }
         break
       }

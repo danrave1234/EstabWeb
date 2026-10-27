@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
 import {
   Sparkles,
   Eye,
@@ -72,48 +71,25 @@ function touchesCustomHtmlSection(op: Operation): boolean {
   if (op.type === "update_global" || op.type === "add_page") {
     return false
   }
-  if (op.type === "replace_section") {
-    return op.sectionKey === CUSTOM_HTML_SECTION_ID || op.newSectionKey === CUSTOM_HTML_SECTION_ID
-  }
   return op.sectionKey === CUSTOM_HTML_SECTION_ID
 }
 
 interface AiEditorModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  projectId?: string
+  projectId: string
   currentConfig: Record<string, any>
   onApplied: (newDraft: Record<string, any>) => void
   onPreview: (previewConfig: Record<string, any>) => void
   onPendingChange?: (hasPending: boolean) => void
   isPro?: boolean
   canUseCustomHtml?: boolean
-  title?: string
-  description?: string
-  submitPrompt?: (args: {
-    prompt: string
-    currentConfig: Record<string, any>
-    projectId?: string
-  }) => Promise<Response>
-  applyOperationsRequest?: (args: {
-    operations: Operation[]
-    currentConfig: Record<string, any>
-    projectId?: string
-  }) => Promise<Response>
-  applySuccessMessage?: string
 }
 
 interface ProposedChanges {
   summary: string
   operations: Operation[]
   warnings?: string[]
-}
-
-function cloneConfigSnapshot<T>(value: T): T {
-  if (typeof structuredClone === "function") {
-    return structuredClone(value)
-  }
-  return JSON.parse(JSON.stringify(value)) as T
 }
 
 function operationIcon(op: Operation): string {
@@ -124,8 +100,6 @@ function operationIcon(op: Operation): string {
       return "-"
     case "update_section":
       return "~"
-    case "replace_section":
-      return "↺"
     case "reorder_sections":
       return "<>"
     case "update_global":
@@ -163,8 +137,6 @@ function operationLabel(op: Operation): string {
       const fields = Object.keys(op.changes).map(humanizeKey)
       return `Update "${humanizeSection(op.sectionKey)}" - ${fields.slice(0, 3).join(", ")}${fields.length > 3 ? ` +${fields.length - 3} more` : ""}`
     }
-    case "replace_section":
-      return `Replace "${humanizeSection(op.sectionKey)}" with "${humanizeSection(op.newSectionKey)}"`
     case "reorder_sections":
       return "Reorder sections"
     case "update_global": {
@@ -252,11 +224,6 @@ export function AiEditorModal({
   onPendingChange,
   isPro = false,
   canUseCustomHtml = false,
-  title = "AI Site Editor",
-  description = "Describe what to change. AI returns structured edits that you can preview and approve.",
-  submitPrompt,
-  applyOperationsRequest,
-  applySuccessMessage = "AI changes applied to draft!",
 }: AiEditorModalProps) {
   const [prompt, setPrompt] = React.useState("")
   const [loading, setLoading] = React.useState(false)
@@ -265,13 +232,11 @@ export function AiEditorModal({
   const [submittedPrompt, setSubmittedPrompt] = React.useState("")
   const [error, setError] = React.useState<string | null>(null)
   const [minimized, setMinimized] = React.useState(false)
-  const [proposalBaseConfig, setProposalBaseConfig] = React.useState<Record<string, any> | null>(null)
 
   function reset() {
     setPrompt("")
     setSubmittedPrompt("")
     setProposed(null)
-    setProposalBaseConfig(null)
     setError(null)
     setLoading(false)
     setApplying(false)
@@ -302,21 +267,15 @@ export function AiEditorModal({
     setProposed(null)
 
     try {
-      const res = submitPrompt
-        ? await submitPrompt({
-            projectId,
-            prompt: prompt.trim(),
-            currentConfig,
-          })
-        : await fetch("/api/ai/editor-command", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              projectId,
-              prompt: prompt.trim(),
-              currentConfig,
-            }),
-          })
+      const res = await fetch("/api/ai/editor-command", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId,
+          prompt: prompt.trim(),
+          currentConfig,
+        }),
+      })
       const data = await res.json()
       if (!res.ok) {
         const msg = Array.isArray(data.details) && data.details[0] ? data.details[0] : data.error || "AI request failed."
@@ -346,7 +305,6 @@ export function AiEditorModal({
         operations: data.operations,
         warnings: data.warnings,
       }
-      setProposalBaseConfig(cloneConfigSnapshot(currentConfig))
       setProposed(incoming)
       onPendingChange?.(true)
     } catch {
@@ -361,13 +319,12 @@ export function AiEditorModal({
     setError(null)
     setMinimized(false)
     onPendingChange?.(false)
-    onPreview(proposalBaseConfig ?? currentConfig)
+    onPreview(currentConfig)
   }
 
   function handlePreview() {
     if (!proposed) return
-    const baseConfig = proposalBaseConfig ?? currentConfig
-    const previewConfig = applyOperations(baseConfig, proposed.operations)
+    const previewConfig = applyOperations(currentConfig, proposed.operations)
     onPreview(previewConfig)
     setMinimized(true)
   }
@@ -376,42 +333,30 @@ export function AiEditorModal({
     if (!proposed) return
     setApplying(true)
     try {
-      const res = applyOperationsRequest
-        ? await applyOperationsRequest({
-            projectId,
-            operations: proposed.operations,
-            currentConfig: proposalBaseConfig ?? currentConfig,
-          })
-        : await (async () => {
-            const baseConfig = proposalBaseConfig ?? currentConfig
-            // Sync current editor snapshot first so AI ops apply on the same base
-            // the user previewed (including unsaved local changes).
-            const syncRes = await fetch("/api/project-config", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ projectId, fullConfig: baseConfig }),
-            })
-            const syncData = await syncRes.json()
-            if (!syncRes.ok) {
-              toast.error(syncData.error || "Failed to sync current draft before applying AI changes.")
-              return null
-            }
-
-            return fetch("/api/project-config/apply-operations", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ projectId, operations: proposed.operations }),
-            })
-          })()
-      if (!res) {
+      // Sync current editor snapshot first so AI ops apply on the same base
+      // the user previewed (including unsaved local changes).
+      const syncRes = await fetch("/api/project-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId, fullConfig: currentConfig }),
+      })
+      const syncData = await syncRes.json()
+      if (!syncRes.ok) {
+        toast.error(syncData.error || "Failed to sync current draft before applying AI changes.")
         return
       }
+
+      const res = await fetch("/api/project-config/apply-operations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId, operations: proposed.operations }),
+      })
       const data = await res.json()
       if (!res.ok) {
         toast.error(data.error || "Failed to apply changes.")
         return
       }
-      toast.success(applySuccessMessage)
+      toast.success("AI changes applied to draft!")
       onApplied(data.draft)
       reset()
       onOpenChange(false)
@@ -423,7 +368,7 @@ export function AiEditorModal({
   }
 
   function handleReject() {
-    onPreview(proposalBaseConfig ?? currentConfig)
+    onPreview(currentConfig)
     setMinimized(false)
     onPendingChange?.(false)
     reset()
@@ -477,10 +422,10 @@ export function AiEditorModal({
             <div>
               <DialogTitle className="flex items-center gap-2">
                 <WandSparkles className="w-5 h-5 text-primary" />
-                {title}
+                AI Site Editor
               </DialogTitle>
               <DialogDescription className="mt-1">
-                {description}
+                Describe what to change. AI returns structured edits that you can preview and approve.
               </DialogDescription>
             </div>
             <div className="flex items-center gap-2 text-[11px]">
@@ -588,12 +533,12 @@ export function AiEditorModal({
                 </p>
                 <p className="text-sm text-amber-700 dark:text-amber-400">{error}</p>
                 {error.includes("Pro") && (
-                  <Link
+                  <a
                     href="/pricing"
                     className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-amber-800 dark:text-amber-300 underline underline-offset-2 hover:opacity-80"
                   >
                     View upgrade options
-                  </Link>
+                  </a>
                 )}
               </div>
             )}
@@ -659,13 +604,13 @@ export function AiEditorModal({
                       <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
                         The AI suggested adding a new page, but your current plan only supports single-page sites. Upgrade to a paid plan to apply this change.
                       </p>
-                      <Link
+                      <a
                         href="/pricing"
                         className="inline-flex items-center gap-1.5 mt-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 text-xs font-semibold transition-colors"
                       >
                         <Crown className="w-3.5 h-3.5" />
                         View Plans
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 )}
@@ -680,13 +625,13 @@ export function AiEditorModal({
                       <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
                         The AI suggested a custom HTML section. This feature is available on Pro, Ecommerce, and Custom plans.
                       </p>
-                      <Link
+                      <a
                         href="/pricing"
                         className="inline-flex items-center gap-1.5 mt-2 rounded-md bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 text-xs font-semibold transition-colors"
                       >
                         <Crown className="w-3.5 h-3.5" />
                         View Plans
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 )}

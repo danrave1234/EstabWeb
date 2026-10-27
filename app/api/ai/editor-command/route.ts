@@ -268,7 +268,6 @@ OPERATION TYPES (use ONLY these — no others):
 - { "type": "add_section", "sectionKey": string, "position"?: number, "pageSlug"?: string }
 - { "type": "remove_section", "sectionKey": string, "pageSlug"?: string }
 - { "type": "update_section", "sectionKey": string, "changes": object, "pageSlug"?: string }
-- { "type": "replace_section", "sectionKey": string, "newSectionKey": string, "data"?: object, "pageSlug"?: string }
 - { "type": "reorder_sections", "newOrder": string[], "pageSlug"?: string }
 - { "type": "update_global", "changes": { "colorTheme"?: string, "typographyStyle"?: string, "darkMode"?: boolean, "headerStyle"?: "solid"|"floating"|"tubelight"|"megamenu", "footerStyle"?: string, "brand"?: { "name"?: string, "logoUrl"?: string, "ctaHref"?: string }, "navigation"?: { "name": string, "href": string }[], "footer"?: { "tagline"?: string, "formHeading"?: string, "formSubmitText"?: string, "formThankYouText"?: string, "contactUsLabel"?: string, "callUsNowLabel"?: string, "contactLabel"?: string, "followLabel"?: string, "privacyLabel"?: string, "termsLabel"?: string, "cookieLabel"?: string, "privacyUrl"?: string, "termsUrl"?: string, "cookieUrl"?: string, "showSocial"?: boolean, "showContact"?: boolean, "contact"?: { "email"?: string, "phone"?: string, "address"?: string }, "social"?: { "facebook"?: string, "twitter"?: string, "linkedin"?: string, "instagram"?: string, "facebookEnabled"?: boolean, "twitterEnabled"?: boolean, "linkedinEnabled"?: boolean, "instagramEnabled"?: boolean } } } }
 - { "type": "add_page", "slug": string, "label": string, "sections"?: string[] }  // Only if plan allows more pages (current: ${currentPageCount}/${maxPages})
@@ -277,8 +276,6 @@ STRICT RULES:
 - Return raw JSON only. No markdown. No code fences. No explanation outside JSON.
 - Never return the full config.
 - Never hallucinate unknown section keys — only use keys from VALID SECTION KEYS above.
-- Use "replace_section" whenever you need to switch one section variant to another, especially homepage hero swaps.
-- If you replace a hero variant, also include an "update_section" for the new hero variant so the result previews well immediately.
 - You may remove the "hero" section from any page if the user asks.
 - Never modify domain, subscription_status, script, pages, activeSections directly, or any field not listed above.
 - Never include raw HTML in any string value, EXCEPT inside update_section for sectionKey "custom-html" using fields "html" and "css".
@@ -297,8 +294,7 @@ STRICT RULES:
 - MISSING DATA: If contact info, team photos, or addresses are missing, AUTONOMOUSLY USE THE SEARCH TOOL to find the legitimate data on the web.
 
 EXAMPLE OUTPUT:
-{"summary":"Updated hero messaging for urgency and switched to a bold red theme.","operations":[{"type":"update_section","sectionKey":"hero","changes":{"title":"24/7 Emergency Service – We Respond in 30 Minutes","ctaText":"Call Now"}},{"type":"update_global","changes":{"colorTheme":"red-crimson","typographyStyle":"bold"}}]}
-`
+{"summary":"Updated hero messaging for urgency and switched to a bold red theme.","operations":[{"type":"update_section","sectionKey":"hero","changes":{"title":"24/7 Emergency Service – We Respond in 30 Minutes","ctaText":"Call Now"}},{"type":"update_global","changes":{"colorTheme":"red-crimson","typographyStyle":"bold"}}]}`
 }
 
 function touchesCustomHtmlSection(op: Operation): boolean {

@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import AdminDashboardRequests from '@/components/admin/AdminDashboardRequests'
-import AdminDashboardSupport from '@/components/admin/AdminDashboardSupport'
 import AdminMetricsOverview from '@/components/admin/AdminMetricsOverview'
 import { getAdminMetrics } from '@/lib/utils/admin-metrics'
 import { Suspense } from 'react'
@@ -32,7 +31,7 @@ export default async function AdminRequestsPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Admin Overview</h1>
             <p className="text-muted-foreground mt-2">
-              Platform metrics, pending change requests, and support inbox activity.
+              Platform metrics and pending change requests.
             </p>
           </div>
 
@@ -42,15 +41,6 @@ export default async function AdminRequestsPage() {
             <h2 className="text-xl font-bold tracking-tight">Pending Approvals</h2>
             <Suspense fallback={<div className="h-48 border border-border rounded-2xl bg-muted/20 animate-pulse flex items-center justify-center text-sm text-muted-foreground">Loading pending requests...</div>}>
               <AdminDashboardRequests />
-            </Suspense>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-xl font-bold tracking-tight">Support Inbox</h2>
-            </div>
-            <Suspense fallback={<div className="h-48 border border-border rounded-2xl bg-muted/20 animate-pulse flex items-center justify-center text-sm text-muted-foreground">Loading support inbox...</div>}>
-              <AdminDashboardSupport />
             </Suspense>
           </div>
         </div>
